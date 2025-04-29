@@ -6,6 +6,12 @@ import typeormConfig from '@config/typeorm.config';
   imports: [
     Config.forRoot({
       isGlobal: true,
+      envFilePath: [
+        `.env.${process.env.NODE_ENV}.local`,
+        '.env.local',
+        `.env.${process.env.NODE_ENV}`,
+        '.env',
+      ],
       load: [typeormConfig],
     }),
   ],

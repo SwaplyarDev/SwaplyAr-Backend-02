@@ -13,7 +13,8 @@
     "paths": {
       "@app/*": [ "src/app/*" ],
       "@config/*": [ "src/config/*" ],
-      "@users/*": [ "src/users/*" ]
+      "@users/*": [ "src/users/*" ],
+      "@transactions/*": [ "src/transactions/*" ]
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -3,13 +3,14 @@ import { AppController } from './app.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@config/config.module';
 import typeormConfig from '@config/typeorm.config';
-import { UserModule } from '@users/user.module';
+import { UsersModule } from '@users/users.module';
 
 @Module({
   imports: [
     ConfigModule,
     TypeOrmModule.forRootAsync(typeormConfig.asProvider()),
-    UserModule,
+    UsersModule,
+
   ],
   controllers: [AppController],
   providers: [],

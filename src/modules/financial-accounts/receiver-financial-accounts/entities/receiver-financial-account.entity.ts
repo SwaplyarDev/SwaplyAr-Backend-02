@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Transaction } from "@transactions/entities/transaction.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class ReceiverFinancialAccount {
@@ -11,4 +12,7 @@ id: string;
 firstName:string;
 @Column({name:"last_name"})
 lastName:string;
+
+@OneToMany(()=> Transaction,()=>(transaction) => transaction.senderAccount)
+    transactions: Transaction[];
 }

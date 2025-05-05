@@ -14,7 +14,8 @@
       "@app/*": [ "src/app/*" ],
       "@config/*": [ "src/config/*" ],
       "@users/*": [ "src/users/*" ],
-      "@transactions/*": [ "src/transactions/*" ]
+      "@transactions/*": [ "src/modules/transactions/*" ],
+      "@financial-accounts/*": [ "src/modules/financial-accounts/*" ]
     },
     "incremental": true,
     "skipLibCheck": true,

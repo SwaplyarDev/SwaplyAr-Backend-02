@@ -1,16 +1,17 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('payment_methods')
+@Entity()
 export class PaymentMethod {
     @PrimaryGeneratedColumn('uuid', { name: 'payment_method_id' })
-    paymentMethodId: string;
-
+    id: string;
+  
     @Column({name: 'platform_id'})
-    platformId: string;
-
+    platformId: string;// fk de la tabla plataform
+ 
     @Column({ name: 'method_type'})
-    method_type: 'bank' | 'virtul_bank' | 'receiver_crypto' | 'pix';
+    method_type: 'bank' | 'virtul_bank' | 'receiver_crypto' | 'pix'; 
 
     @Column({name: 'method_id'})
-    methodId: string;
+    methodId: string; // fk de la tabla de banco o billeteras
+
 }

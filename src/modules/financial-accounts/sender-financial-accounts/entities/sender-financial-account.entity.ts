@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Transaction } from "@transactions/entities/transaction.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class SenderFinancialAccount {
@@ -19,6 +20,9 @@ export class SenderFinancialAccount {
 
     @Column({name:"email"})
     email:string;
+
+    @OneToMany(()=> Transaction,()=>(transaction) => transaction.senderAccount)
+    transactions: Transaction[];
     
     //@Column()
     //payment_method_id:string; fk de payment method

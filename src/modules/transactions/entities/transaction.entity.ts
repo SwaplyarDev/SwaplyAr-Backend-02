@@ -1,5 +1,5 @@
-import { ReceiverBankAccount } from '@transactions/payment/payment-accounts/entities/receiverBankAccounts';
-import { SenderBankAccount } from '@transactions/payment/payment-accounts/entities/senderBankAccounts';
+import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
+import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity('transactions')
@@ -25,13 +25,13 @@ export class Transaction {
   @Column({ name:'final_status'})
   finalStatus: string;
 
-  @ManyToOne(()=> SenderBankAccount, (sender) => sender.senderAccountId)
+  @ManyToOne(()=> SenderFinancialAccount, (sender) => sender.transactions)
   @JoinColumn({name: 'sender_account_id'})
-  senderAccount: SenderBankAccount;
+  senderAccount: SenderFinancialAccount;
 
-  @ManyToOne(()=> ReceiverBankAccount,(receiver) => receiver.receiverAccountId)
+  @ManyToOne(()=> ReceiverFinancialAccount,(receiver) => receiver.transactions)
   @JoinColumn({name: 'receiver_account_id'})
-  receiverAccount: ReceiverBankAccount;
+  receiverAccount: ReceiverFinancialAccount;
 
   
 

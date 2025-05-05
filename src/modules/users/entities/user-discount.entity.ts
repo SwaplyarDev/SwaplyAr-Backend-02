@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { User } from '@users/entities/user.entity';
 import { DiscountCode } from '@users/entities/discount-code.entity';
+import { Transaction } from '@transactions/entities/transaction.entity';
 
 @Entity('user_discounts')
 export class UserDiscount {
@@ -18,10 +19,11 @@ export class UserDiscount {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  // TODO: Add transaction
-  // transaction
+  @OneToOne(() => Transaction, { onDelete: 'SET NULL', cascade: true })
+  @JoinColumn({ name: 'transaction_id' })
+  transaction: Transaction;
 
-  @OneToOne(() => DiscountCode, { onDelete: 'CASCADE', cascade: true })
+  @OneToOne(() => DiscountCode, { onDelete: 'SET NULL', cascade: true })
   @JoinColumn({ name: 'discount_code_id' })
   discountCode: DiscountCode;
 

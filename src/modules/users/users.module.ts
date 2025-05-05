@@ -10,12 +10,16 @@ import { UserCategory } from '@users/entities/user-category.entity';
 import { UserContact } from '@users/entities/user-contact.entity';
 import { UserQuestion } from '@users/entities/user-question.entity';
 import { UserDiscount } from '@users/entities/user-discount.entity';
+import { DiscountCode } from '@users/entities/discount-code.entity';
+import { UserBan } from '@users/entities/user-ban.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      DiscountCode,
       User,
       UserAlternativeEmail,
+      UserBan,
       UserCategory,
       UserContact,
       UserDiscount,

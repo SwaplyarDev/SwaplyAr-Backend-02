@@ -2,6 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -47,7 +48,7 @@ export class UserProfile {
   @JoinColumn({ name: 'user_socials_id' })
   userSocials: UserSocials;
 
-  @OneToOne(() => UserCategory, { onDelete: 'CASCADE', cascade: true })
+  @ManyToOne(() => UserCategory, { onDelete: 'CASCADE', cascade: true })
   @JoinColumn({ name: 'user_category_id' })
   category: UserCategory;
 

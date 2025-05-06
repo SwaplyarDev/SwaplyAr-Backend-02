@@ -12,6 +12,6 @@ export class UserCategory {
   @Column({ name: 'user_category' })
   category: string;
 
-  @Column({ name: 'user_reference' })
-  reference: string;
+  @Column({ name: 'user_requirements' })
+  requirements: string;
 }

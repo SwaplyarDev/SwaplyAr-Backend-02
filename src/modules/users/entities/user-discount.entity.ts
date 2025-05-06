@@ -19,11 +19,13 @@ export class UserDiscount {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToOne(() => Transaction, { onDelete: 'SET NULL', cascade: true })
+  @OneToOne(() => Transaction, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'transaction_id' })
   transaction: Transaction;
 
-  @OneToOne(() => DiscountCode, { onDelete: 'SET NULL', cascade: true })
+  @ManyToOne(() => DiscountCode, (discountCode) => discountCode.userDiscounts, {
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'discount_code_id' })
   discountCode: DiscountCode;
 

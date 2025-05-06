@@ -30,5 +30,6 @@ import { UserBan } from '@users/entities/user-ban.entity';
       UserSocials,
     ]),
   ],
+  exports: [TypeOrmModule],
 })
 export class UsersModule {}

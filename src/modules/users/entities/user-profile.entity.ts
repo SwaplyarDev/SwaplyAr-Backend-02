@@ -8,11 +8,18 @@ import {
 } from 'typeorm';
 import { UserSocials } from '@users/entities/user-socials.entity';
 import { UserCategory } from '@users/entities/user-category.entity';
+import { User } from '@users/entities/user.entity';
 
 @Entity('user_profiles')
 export class UserProfile {
   @PrimaryGeneratedColumn('uuid', { name: 'user_profile_id' })
   id: string;
+
+  @OneToOne(() => User, (user) => user.profile, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @Column({ name: 'first_name' })
   firstName: string;
@@ -44,11 +51,12 @@ export class UserProfile {
   @Column('last_activity')
   lastActivity: Date;
 
-  @OneToOne(() => UserSocials, { onDelete: 'CASCADE', cascade: true })
-  @JoinColumn({ name: 'user_socials_id' })
-  userSocials: UserSocials;
+  @OneToOne(() => UserSocials, (socials) => socials.userProfile, {
+    cascade: true,
+  })
+  socials: UserSocials;
 
-  @ManyToOne(() => UserCategory, { onDelete: 'CASCADE', cascade: true })
+  @ManyToOne(() => UserCategory, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'user_category_id' })
   category: UserCategory;
 

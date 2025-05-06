@@ -1,9 +1,22 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { UserProfile } from '@users/entities/user-profile.entity';
 
 @Entity('user_socials')
 export class UserSocials {
   @PrimaryGeneratedColumn('uuid', { name: 'user_socials_id' })
   id: string;
+
+  @OneToOne(() => UserProfile, (userProfile) => userProfile.socials, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'user_profile_id' })
+  userProfile: UserProfile;
 
   @Column({ name: 'whatsapp_number' })
   whatsappNumber: string;

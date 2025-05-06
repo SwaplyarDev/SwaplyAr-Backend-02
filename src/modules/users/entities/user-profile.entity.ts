@@ -48,7 +48,7 @@ export class UserProfile {
   @Column({ name: 'gender', type: 'enum', enum: ['M', 'F', 'O'], default: 'M' })
   gender: 'M' | 'F' | 'O';
 
-  @Column('last_activity')
+  @Column({ name: 'last_activity' })
   lastActivity: Date;
 
   @OneToOne(() => UserSocials, (socials) => socials.userProfile, {
@@ -60,6 +60,6 @@ export class UserProfile {
   @JoinColumn({ name: 'user_category_id' })
   category: UserCategory;
 
-  @Column('profile_picture_url')
+  @Column({ name: 'profile_picture_url' })
   profilePictureUrl: string;
 }

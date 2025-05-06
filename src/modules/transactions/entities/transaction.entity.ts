@@ -33,6 +33,11 @@ export class Transaction {
   @JoinColumn({name: 'receiver_account_id'})
   receiverAccount: ReceiverFinancialAccount;
 
+  //userId
+  //regretId
+  //amountId
+  //noteId
+
   
 
   

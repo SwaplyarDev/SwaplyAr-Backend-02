@@ -1,10 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Transaction } from './entities/transaction.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TransactionsService {
+  constructor(@InjectRepository(Transaction) private readonly transactionsRepository:Repository<Transaction> ){}
   create(createTransactionDto: CreateTransactionDto) {
+  const createAt = new Date();
+const finalStatus = "pending";
+  const transaction = this.transactionsRepository.create({...createTransactionDto,
+     createdAt: createAt,
+      finalStatus: finalStatus
+    });
+
+    console.log(transaction);
+    
     return 'This action adds a new transaction';
   }
 

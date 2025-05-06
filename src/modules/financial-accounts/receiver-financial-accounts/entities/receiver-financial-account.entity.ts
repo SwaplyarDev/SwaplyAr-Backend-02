@@ -13,6 +13,6 @@ firstName:string;
 @Column({name:"last_name"})
 lastName:string;
 
-@OneToMany(()=> Transaction,()=>(transaction) => transaction.senderAccount)
+@OneToMany(()=> Transaction,()=>(transaction) => transaction.receiverAccount)
     transactions: Transaction[];
 }

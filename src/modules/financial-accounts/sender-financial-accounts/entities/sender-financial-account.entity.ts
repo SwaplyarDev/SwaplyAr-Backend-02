@@ -13,7 +13,7 @@ export class SenderFinancialAccount {
     lastName:string;
 
     @Column({name:"identification_number"})
-    identificationNumber:number;
+    identificationNumber:string;
 
     @Column({name:"phone_number"})
     phoneNumber:string;

@@ -5,6 +5,7 @@ import { ConfigModule } from '@config/config.module';
 import typeormConfig from '@config/typeorm.config';
 import { UsersModule } from '@users/users.module';
 import { TransactionsModule } from '@transactions/transactions.module';
+import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { TransactionsModule } from '@transactions/transactions.module';
     TypeOrmModule.forRootAsync(typeormConfig.asProvider()),
     UsersModule,
     TransactionsModule,
+    FinancialAccountsModule
   ],
   controllers: [AppController],
   providers: [],

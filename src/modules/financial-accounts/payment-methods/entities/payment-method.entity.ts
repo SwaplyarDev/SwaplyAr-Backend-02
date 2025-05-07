@@ -1,17 +1,16 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  TableInheritance,
+} from 'typeorm';
 
 @Entity()
+@TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export class PaymentMethod {
-    @PrimaryGeneratedColumn('uuid', { name: 'payment_method_id' })
-    id: string;
-  
-    @Column({name: 'platform_id'})
-    platformId: string;// fk de la tabla plataform
- 
-    @Column({ name: 'method_type'})
-    method_type: 'bank' | 'virtul_bank' | 'receiver_crypto' | 'pix'; 
+  @PrimaryGeneratedColumn('uuid', { name: 'payment_method_id' })
+  id: string;
 
-    @Column({name: 'method_id'})
-    methodId: string; // fk de la tabla de banco o billeteras
-
+  @Column({ name: 'platform_id' })
+  platformId: string; // fk de la tabla plataform
 }

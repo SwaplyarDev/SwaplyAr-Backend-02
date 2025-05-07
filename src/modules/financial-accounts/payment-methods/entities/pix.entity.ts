@@ -1,19 +1,17 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { ChildEntity, Column } from 'typeorm';
+import { PaymentMethod } from '@financial-accounts/payment-methods/entities/payment-method.entity';
 
-@Entity('pix')
-export class Pix{
-@PrimaryGeneratedColumn('uuid', { name: 'pix_id' })
-pixId: string;
+@ChildEntity('pix')
+export class Pix extends PaymentMethod {
+  @Column({ name: 'virtual_bank_id' })
+  virtualBankId: string;
 
-@Column({name:'virtual_bank_id'})
-virtualBankId:string;
+  @Column({ name: 'pix_key' })
+  pixKey: string;
 
-@Column({name:'pix_key'})
-pixKey:string;
+  @Column({ name: 'pix_value' })
+  pixValue: string;
 
-@Column({name:'pix_value'})
-pixValue:string;
-
-@Column({name:'cpf'})
-cpf:string;
+  @Column({ name: 'cpf' })
+  cpf: string;
 }

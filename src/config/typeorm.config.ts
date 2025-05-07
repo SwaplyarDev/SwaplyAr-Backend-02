@@ -4,6 +4,7 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 export default registerAs('typeorm', (): TypeOrmModuleOptions => {
   const isProduction = process.env.NODE_ENV === 'production';
 
+  console.log('dir: ', __dirname);
   return {
     type: 'postgres',
     host: process.env.DB_HOST || 'localhost',
@@ -12,7 +13,7 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD,
     synchronize: !isProduction,
-    autoLoadEntities: true,
+    entities: ['dist/**/*.entity.{ts,js}'],
     dropSchema: !isProduction,
   };
 });

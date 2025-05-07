@@ -1,9 +1,11 @@
 import {
   Column,
   Entity,
+  OneToOne,
   PrimaryGeneratedColumn,
   TableInheritance,
 } from 'typeorm';
+import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
 
 @Entity()
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
@@ -13,4 +15,7 @@ export class PaymentMethod {
 
   @Column({ name: 'platform_id' })
   platformId: string; // fk de la tabla plataform
+
+  @OneToOne(() => FinancialAccount)
+  financialAccount: FinancialAccount;
 }

@@ -13,7 +13,7 @@ import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.
     TypeOrmModule.forRootAsync(typeormConfig.asProvider()),
     UsersModule,
     TransactionsModule,
-    FinancialAccountsModule
+    FinancialAccountsModule,
   ],
   controllers: [AppController],
   providers: [],

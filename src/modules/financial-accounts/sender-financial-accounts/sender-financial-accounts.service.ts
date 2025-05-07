@@ -16,7 +16,10 @@ export class SenderFinancialAccountsService {
     return `This action returns a #${id} senderFinancialAccount`;
   }
 
-  update(id: number, updateSenderFinancialAccountDto: UpdateSenderFinancialAccountDto) {
+  update(
+    id: number,
+    updateSenderFinancialAccountDto: UpdateSenderFinancialAccountDto,
+  ) {
     return `This action updates a #${id} senderFinancialAccount`;
   }
 

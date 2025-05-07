@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProofOfPayment } from './entities/proof-of-payment.entity';
 
 @Module({
-    imports:[TypeOrmModule.forFeature([ProofOfPayment])],
+  imports: [TypeOrmModule.forFeature([ProofOfPayment])],
   controllers: [ProofOfPaymentsController],
   providers: [ProofOfPaymentsService],
 })

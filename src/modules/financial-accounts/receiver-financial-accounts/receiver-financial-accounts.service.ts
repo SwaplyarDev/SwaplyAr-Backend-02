@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateReceiverFinancialAccountDto } from './dto/create-receiver-financial-account.dto'; 
+import { CreateReceiverFinancialAccountDto } from './dto/create-receiver-financial-account.dto';
 import { UpdateReceiverFinancialAccountDto } from './dto/update-receiver-financial-account.dto';
 
 @Injectable()
@@ -16,7 +16,10 @@ export class ReceiverFinancialAccountsService {
     return `This action returns a #${id} ReceiverFinancialAccount`;
   }
 
-  update(id: number, updateReceiverFinancialAccountDto: UpdateReceiverFinancialAccountDto) {
+  update(
+    id: number,
+    updateReceiverFinancialAccountDto: UpdateReceiverFinancialAccountDto,
+  ) {
     return `This action updates a #${id} ReceiverFinancialAccount`;
   }
 

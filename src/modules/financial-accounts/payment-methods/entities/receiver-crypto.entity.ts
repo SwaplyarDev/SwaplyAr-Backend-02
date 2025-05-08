@@ -1,6 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { ChildEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('receiver_crypto')
+@ChildEntity('receiver_crypto')
 export class ReceiverCrypto {
   @PrimaryGeneratedColumn('uuid', { name: 'receiver_crypto_id' })
   receiverCryptoId: string;

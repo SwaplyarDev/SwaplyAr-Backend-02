@@ -1,7 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { ChildEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('bank')
-export class BankAccount {
+@ChildEntity('bank')
+export class Bank {
 @PrimaryGeneratedColumn('uuid', { name: 'bank_id' })
 bankId: string;
 

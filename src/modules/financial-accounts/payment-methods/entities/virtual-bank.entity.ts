@@ -2,7 +2,7 @@ import { ChildEntity, Column } from 'typeorm';
 import { PaymentMethod } from '@financial-accounts/payment-methods/entities/payment-method.entity';
 
 @ChildEntity('virtual_bank')
-export class VirtualBankAccount extends PaymentMethod {
+export class VirtualBank extends PaymentMethod {
   @Column({ name: 'currency' })
   currency: string;
 

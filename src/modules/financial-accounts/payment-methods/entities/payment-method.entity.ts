@@ -8,7 +8,7 @@ import {
 import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
 
 @Entity()
-@TableInheritance({ column: { type: 'varchar', name: 'type' } })
+@TableInheritance({ column: { type: 'varchar', name: 'method' } })
 export class PaymentMethod {
   @PrimaryGeneratedColumn('uuid', { name: 'payment_method_id' })
   id: string;

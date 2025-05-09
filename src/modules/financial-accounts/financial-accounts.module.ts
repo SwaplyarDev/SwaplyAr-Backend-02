@@ -20,5 +20,6 @@ import { ReceiverFinancialAccount } from './receiver-financial-accounts/entities
     ProofOfPaymentsModule,
     PaymentMethodModule,
   ],
+  exports: [FinancialAccountsService],
 })
 export class FinancialAccountsModule {}

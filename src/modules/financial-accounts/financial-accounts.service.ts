@@ -3,25 +3,47 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { SenderFinancialAccount } from "./sender-financial-accounts/entities/sender-financial-account.entity";
 import { Repository } from "typeorm";
 import { ReceiverFinancialAccount } from "./receiver-financial-accounts/entities/receiver-financial-account.entity";
+import { CreateFinancialAccountDto } from "./dto/create-financial-accounts.dto";
+import { SenderFinancialAccountsService } from "./sender-financial-accounts/sender-financial-accounts.service";
+import { ReceiverFinancialAccountsService } from "./receiver-financial-accounts/receiver-financial-accounts.service";
 
 @Injectable()
 export class FinancialAccountsService {
-    constructor(@InjectRepository(SenderFinancialAccount)
-     private readonly senderRepository : Repository<SenderFinancialAccount>,
-     @InjectRepository(ReceiverFinancialAccount)
-     private readonly receiverRepository : Repository<ReceiverFinancialAccount>
+    constructor( private readonly senderService : SenderFinancialAccountsService,
+      private readonly receiverService: ReceiverFinancialAccountsService
     ){}
-  async create(createFinancialAccountDto) {
+
+  async create(createFinancialAccountDto:CreateFinancialAccountDto) {
     const{senderAccount,receiverAccount} = createFinancialAccountDto;
-    const data = this.senderRepository.create(senderAccount);
-    const data2 = this.receiverRepository.create(receiverAccount); // lo guarda en la tabla financial accounts
-   
-    const sender = await this.senderRepository.save(data); // lo guarda en la tabla financial accounts
-    const receiver = await this.receiverRepository.save(data2); // lo guarda en la tabla financial accounts 
+
+const sender = await this.senderService.create(senderAccount); // lo guarda en la tabla financial accounts  
     
+const receiver = await this.receiverService.create(receiverAccount); // lo guarda en la tabla financial accounts
+
     return {sender,receiver}; // lo guarda en la tabla financial accounts 
-  
   }
+
+  async findAllReceiver() {
+    return await this.receiverService.findAll();
+  }
+
+  async findAllSender() {
+    return await this.senderService.findAll();
+  }
+
+
+  async findOneSender(id: string) {
+    return await this.senderService.findOne(id);
+  }
+
+  async findOneReceiver(id: string) {
+    return await this.receiverService.findOne(id);
+  }
+
+
+
+
+
 }
 
 /*

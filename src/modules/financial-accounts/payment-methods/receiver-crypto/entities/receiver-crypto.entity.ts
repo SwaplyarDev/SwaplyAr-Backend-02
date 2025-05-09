@@ -1,9 +1,9 @@
 import { ChildEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { PaymentMethod } from '@financial-accounts/payment-methods/entities/payment-method.entity'; 
 
 @ChildEntity('receiver_crypto')
-export class ReceiverCrypto {
-  @PrimaryGeneratedColumn('uuid', { name: 'receiver_crypto_id' })
-  receiverCryptoId: string;
+export class ReceiverCrypto extends PaymentMethod  {
+
 
   @Column({ name: 'currency' })
   currency: string;

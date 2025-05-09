@@ -8,8 +8,8 @@ export class PaymentMethodController {
   constructor(private readonly paymentMethodService: PaymentMethodService) {}
 
   @Post()
-  create(@Body() createPaymentMethodDto: CreatePaymentMethodDto) {
-    return this.paymentMethodService.create(createPaymentMethodDto);
+  async create(@Body() createPaymentMethodDto: CreatePaymentMethodDto) {
+    return await this.paymentMethodService.create(createPaymentMethodDto);
   }
 
   @Get()

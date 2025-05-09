@@ -7,6 +7,6 @@ export class CreateTransactionDto {
     message: string; 
     createdBy: string; 
     //finalStatus: string; // Final status of the transaction (e.g., 'completed', 'pending', etc.)
-    sender: CreateSenderFinancialAccountDto; 
-    receiver: CreateReceiverFinancialAccountDto; 
+    senderAccount: CreateSenderFinancialAccountDto; 
+    receiverAccount: CreateReceiverFinancialAccountDto; 
 }

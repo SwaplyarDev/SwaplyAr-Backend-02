@@ -7,10 +7,14 @@ import { BankService } from './bank/bank.service';
 import { PixService } from './pix/pix.service';
 import { ReceiverCryptoService } from './receiver-crypto/receiver-crypto.service';
 import { VirtualBankService } from './virutal-bank/virtual-bank.service';
+import { PaymentMethod } from './entities/payment-method.entity';
 
 @Injectable()
 export class PaymentMethodService {
-constructor(private readonly bankService: BankService,
+ 
+constructor(
+  @InjectRepository(PaymentMethod) private readonly paymentMethodRepository: Repository<PaymentMethod>,
+  private readonly bankService: BankService,
   private readonly pixService: PixService,
   private readonly receiverCryptoService: ReceiverCryptoService,
   private readonly virtualBankService: VirtualBankService,
@@ -47,19 +51,20 @@ switch(method){
   }
 }
 
-  findAll() {
-    return `This action returns all paymentMethod`;
-  }
 
-  findOne(id: number) {
-    return `This action returns a #${id} paymentMethod`;
-  }
+async findAllFinancialAccounts() {
 
-  update(id: number, updatePaymentMethodDto: UpdatePaymentMethodDto) {
-    return `This action updates a #${id} paymentMethod`;
-  }
+  return await this.paymentMethodRepository.find();
+}
 
-  remove(id: number) {
-    return `This action removes a #${id} paymentMethod`;
-  }
+
+async findAllBank() {
+  return await this.bankService.findAll();
+}
+
+async findAllPix() {
+  return await this.pixService.findAll();
+}
+
+
 }

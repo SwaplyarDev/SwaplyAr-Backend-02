@@ -6,6 +6,7 @@ import { CreatePixDto } from "./dto/create-pix.dto";
 
 @Injectable()
 export class PixService {
+ 
   constructor(@InjectRepository(Pix) private readonly pixRepository : Repository<Pix> ) {}
 
   async create(createPixDto: CreatePixDto,platformId: string) {
@@ -18,5 +19,9 @@ export class PixService {
     }
   }
 
+
+ async findAll() {
+    return await this.pixRepository.find();
+  }
   
 }

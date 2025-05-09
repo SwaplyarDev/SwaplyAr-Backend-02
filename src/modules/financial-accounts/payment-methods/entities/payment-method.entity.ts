@@ -4,6 +4,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   TableInheritance,
+  ViewColumn,
 } from 'typeorm';
 import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
 
@@ -18,4 +19,7 @@ export class PaymentMethod {
 
   @OneToOne(() => FinancialAccount)
   financialAccount: FinancialAccount;
+  @Column()
+  method: string; // Exponer el campo discriminador
+
 }

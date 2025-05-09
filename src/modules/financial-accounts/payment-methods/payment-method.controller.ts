@@ -13,22 +13,18 @@ export class PaymentMethodController {
   }
 
   @Get()
-  findAll() {
-    return this.paymentMethodService.findAll();
+  async findAll() {
+    return await this.paymentMethodService.findAllFinancialAccounts();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.paymentMethodService.findOne(+id);
+
+  @Get("/bank")
+  async findAllBank() {
+    return await this.paymentMethodService.findAllBank();
+  }
+  @Get("/pix")
+  async findAllPix() {
+    return await this.paymentMethodService.findAllPix();
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePaymentMethodDto: UpdatePaymentMethodDto) {
-    return this.paymentMethodService.update(+id, updatePaymentMethodDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.paymentMethodService.remove(+id);
-  }
 }

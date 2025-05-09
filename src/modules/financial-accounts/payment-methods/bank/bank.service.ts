@@ -6,6 +6,7 @@ import { CreateBankDto } from "./dto/create-bank.dto";
 
 @Injectable()
 export class BankService {
+  
    constructor(@InjectRepository(Bank) private readonly bankRepository: Repository<Bank>){}
 
    async create(createBankDto: CreateBankDto,platformId: string) {
@@ -16,6 +17,10 @@ export class BankService {
      }else{
        return null;
      }
+   }
+
+   async findAll() {
+      return await this.bankRepository.find();
    }
 
 }

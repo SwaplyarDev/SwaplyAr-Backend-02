@@ -7,7 +7,13 @@ import { SenderFinancialAccount } from '@financial-accounts/sender-financial-acc
 import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Transaction,SenderFinancialAccount,ReceiverFinancialAccount])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Transaction,
+      SenderFinancialAccount,
+      ReceiverFinancialAccount,
+    ]),
+  ],
   controllers: [TransactionsController],
   providers: [TransactionsService],
 })

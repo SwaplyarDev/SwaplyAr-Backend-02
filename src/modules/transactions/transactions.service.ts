@@ -19,7 +19,7 @@ const finalStatus = "pending";
     });
 
     console.log(transaction);
-    
+
     return 'This action adds a new transaction';
   }
 

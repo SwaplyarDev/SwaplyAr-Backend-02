@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateReceiverFinancialAccountDto } from './dto/create-receiver-financial-account.dto'; 
+import { CreateReceiverFinancialAccountDto } from './dto/create-receiver-financial-account.dto';
 import { UpdateReceiverFinancialAccountDto } from './dto/update-receiver-financial-account.dto';
 import { ReceiverFinancialAccount } from './entities/receiver-financial-account.entity';
 import { DeepPartial, Repository } from 'typeorm';

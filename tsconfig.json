@@ -13,7 +13,7 @@
     "paths": {
       "@app/*": [ "src/app/*" ],
       "@config/*": [ "src/config/*" ],
-      "@users/*": [ "src/users/*" ],
+      "@users/*": [ "src/modules/users/*" ],
       "@transactions/*": [ "src/modules/transactions/*" ],
       "@financial-accounts/*": [ "src/modules/financial-accounts/*" ]
     },

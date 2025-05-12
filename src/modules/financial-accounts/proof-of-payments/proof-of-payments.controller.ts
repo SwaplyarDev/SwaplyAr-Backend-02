@@ -1,11 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ProofOfPaymentsService } from './proof-of-payments.service';
 import { CreateProofOfPaymentDto } from './dto/create-proof-of-payment.dto';
 import { UpdateProofOfPaymentDto } from './dto/update-proof-of-payment.dto';
 
 @Controller('proof-of-payments')
 export class ProofOfPaymentsController {
-  constructor(private readonly proofOfPaymentsService: ProofOfPaymentsService) {}
+  constructor(
+    private readonly proofOfPaymentsService: ProofOfPaymentsService,
+  ) {}
 
   @Post()
   create(@Body() createProofOfPaymentDto: CreateProofOfPaymentDto) {
@@ -23,7 +33,10 @@ export class ProofOfPaymentsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProofOfPaymentDto: UpdateProofOfPaymentDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateProofOfPaymentDto: UpdateProofOfPaymentDto,
+  ) {
     return this.proofOfPaymentsService.update(+id, updateProofOfPaymentDto);
   }
 

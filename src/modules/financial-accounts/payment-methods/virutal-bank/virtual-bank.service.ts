@@ -8,12 +8,10 @@ import { CreateVirtualBankDto } from "./dto/create-virtual-bank.dto";
 export class VirtualBankService {
    constructor(@InjectRepository(VirtualBank) private readonly virtualBankRepository: Repository<VirtualBank>) {}
    
-   async create(createVirtualBankDto: CreateVirtualBankDto, platformId: string) {
-     if (createVirtualBankDto) {
-       const newVirtualBank = this.virtualBankRepository.create({ ...createVirtualBankDto, platformId });
+   async create(createVirtualBankDto: CreateVirtualBankDto, platformId: string,method:string) {
+    
+       const newVirtualBank = this.virtualBankRepository.create({ ...createVirtualBankDto, platformId,method });
        return await this.virtualBankRepository.save(newVirtualBank);
-     } else {
-       return null;
+    
    }
    }
-}

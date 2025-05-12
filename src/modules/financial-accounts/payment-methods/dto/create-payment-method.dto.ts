@@ -9,7 +9,6 @@ export class CreatePaymentMethodDto {
  // Discriminador para identificar el tipo de método de pago
  method: 'bank' | 'pix' | 'receiver-crypto' | 'virtual-bank';
 
-
     bank?:CreateBankDto
     pix?:CreatePixDto
     receiverCrypto?:CreateReceiverCryptoDto;

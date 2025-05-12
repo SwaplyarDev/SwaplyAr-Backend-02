@@ -9,14 +9,11 @@ export class BankService {
   
    constructor(@InjectRepository(Bank) private readonly bankRepository: Repository<Bank>){}
 
-   async create(createBankDto: CreateBankDto,platformId: string) {
-     if(createBankDto){
-     console.log(createBankDto);
-      const newBank = this.bankRepository.create({...createBankDto,platformId});        
+   async create(createBankDto: CreateBankDto,platformId: string,method:string) {
+    
+      const newBank = this.bankRepository.create({...createBankDto,platformId,method});        
      return await this.bankRepository.save(newBank);
-     }else{
-       return null;
-     }
+   
    }
 
    async findAll() {

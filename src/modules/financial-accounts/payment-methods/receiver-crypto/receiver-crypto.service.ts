@@ -10,13 +10,10 @@ export class ReceiverCryptoService {
     private readonly receiverCryptoRepository: Repository<ReceiverCrypto>,
   ) {}
 
-  async create(createReceiverCryptoDto: CreateReceiverCryptoDto, platformId: string) {
-    if (createReceiverCryptoDto) {
-      const newReceiverCrypto = this.receiverCryptoRepository.create({ ...createReceiverCryptoDto, platformId });
+  async create(createReceiverCryptoDto: CreateReceiverCryptoDto, platformId: string,method:string) {
+   
+      const newReceiverCrypto = this.receiverCryptoRepository.create({ ...createReceiverCryptoDto, platformId,method });
       return await this.receiverCryptoRepository.save(newReceiverCrypto);
-    } else {
-      return null;
-    }
-  }
-
+  
+}
 }

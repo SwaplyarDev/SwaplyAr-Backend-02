@@ -17,9 +17,9 @@ export class PaymentMethod {
   @Column({ name: 'platform_id' })
   platformId: string; // fk de la tabla plataform falta hacer la relacion
 
-  @OneToOne(() => FinancialAccount)
-  financialAccount: FinancialAccount;
   @Column()
   method: string; // Exponer el campo discriminador
+  
+  
 
 }

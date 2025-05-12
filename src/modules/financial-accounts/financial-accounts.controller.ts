@@ -16,6 +16,10 @@ export class FinancialAccountController {
     async findAllSender() {
         return await this.financialAccountsService.findAllSender();
     }
+     @Get("/receiver")
+    async findAllReceiver() {
+        return await this.financialAccountsService.findAllReceiver();
+    }
 
 
 }

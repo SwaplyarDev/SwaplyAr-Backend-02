@@ -4,4 +4,5 @@ import { CreateSenderFinancialAccountDto } from "@financial-accounts/sender-fina
 export class CreateFinancialAccountDto {
     senderAccount: CreateSenderFinancialAccountDto;
     receiverAccount: CreateReceiverFinancialAccountDto;
+    
 }

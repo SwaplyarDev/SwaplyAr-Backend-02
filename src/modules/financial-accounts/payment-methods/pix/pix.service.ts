@@ -9,14 +9,12 @@ export class PixService {
  
   constructor(@InjectRepository(Pix) private readonly pixRepository : Repository<Pix> ) {}
 
-  async create(createPixDto: CreatePixDto,platformId: string) {
+  async create(createPixDto: CreatePixDto,platformId: string,method:string) {
 
-    if (createPixDto) {
-      const newPix = this.pixRepository.create({...createPixDto, platformId});
+
+      const newPix = this.pixRepository.create({...createPixDto, platformId,method});
       return await this.pixRepository.save(newPix);
-    } else {
-      return null;
-    }
+  
   }
 
 

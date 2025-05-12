@@ -21,29 +21,30 @@ constructor(
 ){}
 
 
-  async create(createPaymentMethodDto: CreatePaymentMethodDto) {
+  async create(createPaymentMethodDto: CreatePaymentMethodDto)  {
     const {bank,pix,receiverCrypto,virtualBank,method,platformId} = createPaymentMethodDto
+  
     
 
 switch(method){
   case 'bank':
     if(!bank) throw new BadRequestException("bank es requerido")
-    const newBank = await this.bankService.create(bank,platformId)
+    const newBank = await this.bankService.create(bank,platformId,method)
     return  newBank;
 
     case "pix":
     if(!pix) throw new BadRequestException("pix es requerido")
-    const newPix = await this.pixService.create(pix,platformId)
+    const newPix = await this.pixService.create(pix,platformId,method)
     return  newPix;
 
     case "receiver-crypto":
     if(!receiverCrypto) throw new BadRequestException("receiver-crypto es requerido")
-    const newReceiverCrypto = await this.receiverCryptoService.create(receiverCrypto,platformId)
+    const newReceiverCrypto = await this.receiverCryptoService.create(receiverCrypto,platformId,method)
     return newReceiverCrypto;
 
     case "virtual-bank":
     if(!virtualBank) throw new BadRequestException("virtual-bank es requerido")
-      const newVirtualBank = await this.virtualBankService.create(virtualBank,platformId)
+      const newVirtualBank = await this.virtualBankService.create(virtualBank,platformId,method)
     return newVirtualBank;
   default:
     throw new BadRequestException("El metodo de pago no es valido")
@@ -51,6 +52,9 @@ switch(method){
   }
 }
 
+async save(paymentMethod: PaymentMethod) {
+  return await this.paymentMethodRepository.save(paymentMethod);
+}
 
 async findAllFinancialAccounts() {
 

@@ -24,7 +24,7 @@ export class UserProfile {
   @Column({ name: 'first_name' })
   firstName: string;
 
-  @Column({ name: 'middle_name' })
+  @Column({ name: 'middle_name', nullable: true })
   middleName: string;
 
   @Column({ name: 'last_name' })
@@ -33,22 +33,28 @@ export class UserProfile {
   @Column({ name: 'email' })
   email: string;
 
-  @Column({ name: 'identification' })
+  @Column({ name: 'identification', nullable: true })
   identification: string;
 
-  @Column({ name: 'phone' })
+  @Column({ name: 'phone', nullable: true })
   phone: string;
 
-  @Column({ name: 'birthday' })
+  @Column({ name: 'birthday', type: 'date', nullable: true })
   birthday: Date;
 
-  @Column({ name: 'age', type: 'integer' })
+  @Column({ name: 'age', type: 'integer', nullable: true })
   age: number;
 
-  @Column({ name: 'gender', type: 'enum', enum: ['M', 'F', 'O'], default: 'M' })
+  @Column({
+    name: 'gender',
+    type: 'enum',
+    enum: ['M', 'F', 'O'],
+    default: 'M',
+    nullable: true,
+  })
   gender: 'M' | 'F' | 'O';
 
-  @Column({ name: 'last_activity' })
+  @Column({ name: 'last_activity', nullable: true })
   lastActivity: Date;
 
   @OneToOne(() => UserSocials, (socials) => socials.userProfile, {
@@ -60,6 +66,6 @@ export class UserProfile {
   @JoinColumn({ name: 'user_category_id' })
   category: UserCategory;
 
-  @Column({ name: 'profile_picture_url' })
+  @Column({ name: 'profile_picture_url', nullable: true })
   profilePictureUrl: string;
 }

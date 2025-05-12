@@ -18,10 +18,10 @@ export class UserLocation {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column()
+  @Column({ name: 'country' })
   country: string;
 
-  @Column()
+  @Column({ name: 'department' })
   department: string;
 
   @Column({ name: 'date', type: 'timestamp with time zone' })

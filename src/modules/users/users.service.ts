@@ -17,7 +17,6 @@ export class UsersService {
     const userProfile = new UserProfile();
 
     userProfile.firstName = userDto.firstName;
-    userProfile.middleName = userDto.middleName ? userDto.middleName : '';
     userProfile.lastName = userDto.lastName;
     userProfile.email = userDto.email;
 

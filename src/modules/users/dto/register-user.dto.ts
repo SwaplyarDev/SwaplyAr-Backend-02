@@ -3,7 +3,6 @@ import {
   IsBoolean,
   IsEmail,
   IsNotEmpty,
-  IsOptional,
   IsString,
 } from 'class-validator';
 
@@ -12,12 +11,6 @@ export class RegisterUserDto {
   @IsNotEmpty()
   @IsString()
   firstName: string;
-
-  @IsAlpha()
-  @IsNotEmpty()
-  @IsString()
-  @IsOptional()
-  middleName: string;
 
   @IsAlpha()
   @IsNotEmpty()

@@ -25,14 +25,12 @@ export class PaymentMethodController {
     return await this.paymentMethodService.findAllFinancialAccounts();
   }
 
-
-  @Get("/bank")
+  @Get('/bank')
   async findAllBank() {
     return await this.paymentMethodService.findAllBank();
   }
-  @Get("/pix")
+  @Get('/pix')
   async findAllPix() {
     return await this.paymentMethodService.findAllPix();
   }
-
 }

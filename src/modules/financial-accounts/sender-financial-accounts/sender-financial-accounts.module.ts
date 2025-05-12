@@ -8,7 +8,10 @@ import { PaymentMethod } from '@financial-accounts/payment-methods/entities/paym
 import { PaymentMethodModule } from '@financial-accounts/payment-methods/payment-method.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([SenderFinancialAccount]),PaymentMethodModule],
+  imports: [
+    TypeOrmModule.forFeature([SenderFinancialAccount]),
+    PaymentMethodModule,
+  ],
   controllers: [SenderFinancialAccountsController],
   providers: [SenderFinancialAccountsService],
   exports: [SenderFinancialAccountsService],

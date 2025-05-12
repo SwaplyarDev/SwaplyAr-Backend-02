@@ -19,7 +19,4 @@ export class PaymentMethod {
 
   @Column()
   method: string; // Exponer el campo discriminador
-  
-  
-
 }

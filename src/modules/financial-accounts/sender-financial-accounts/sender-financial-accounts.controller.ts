@@ -30,5 +30,4 @@ export class SenderFinancialAccountsController {
   findAll() {
     return this.senderFinancialAccountsService.findAll();
   }
-
 }

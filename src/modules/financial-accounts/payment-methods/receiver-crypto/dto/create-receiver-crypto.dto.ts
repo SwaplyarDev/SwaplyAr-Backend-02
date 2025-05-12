@@ -1,5 +1,5 @@
 export class CreateReceiverCryptoDto {
-    currency: string;
-    network: string;
-    wallet: string;
+  currency: string;
+  network: string;
+  wallet: string;
 }

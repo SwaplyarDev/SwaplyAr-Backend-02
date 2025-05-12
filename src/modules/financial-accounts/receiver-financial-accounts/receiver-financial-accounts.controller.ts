@@ -31,7 +31,4 @@ export class ReceiverFinancialAccountsController {
   findAll() {
     return this.ReceiverFinancialAccountsService.findAll();
   }
-
- 
-
 }

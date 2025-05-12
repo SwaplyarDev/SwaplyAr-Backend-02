@@ -7,15 +7,18 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class TransactionsService {
-  constructor(@InjectRepository(Transaction) private readonly transactionsRepository:Repository<Transaction> ){}
-  
-  create(createTransactionDto: CreateTransactionDto) {
+  constructor(
+    @InjectRepository(Transaction)
+    private readonly transactionsRepository: Repository<Transaction>,
+  ) {}
 
-  const createAt = new Date();
-const finalStatus = "pending";
-  const transaction = this.transactionsRepository.create({...createTransactionDto,
-     createdAt: createAt,
-      finalStatus: finalStatus
+  create(createTransactionDto: CreateTransactionDto) {
+    const createAt = new Date();
+    const finalStatus = 'pending';
+    const transaction = this.transactionsRepository.create({
+      ...createTransactionDto,
+      createdAt: createAt,
+      finalStatus: finalStatus,
     });
 
     console.log(transaction);

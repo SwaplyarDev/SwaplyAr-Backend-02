@@ -1,7 +1,7 @@
-import { CreatePaymentMethodDto } from "@financial-accounts/payment-methods/dto/create-payment-method.dto";
+import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
 
 export class CreateReceiverFinancialAccountDto {
-    firstName: string;
-    lastName: string;
-    paymentMethod: CreatePaymentMethodDto;
-   }
+  firstName: string;
+  lastName: string;
+  paymentMethod: CreatePaymentMethodDto;
+}

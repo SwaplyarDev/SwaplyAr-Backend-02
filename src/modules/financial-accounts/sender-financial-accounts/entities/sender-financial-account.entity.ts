@@ -9,11 +9,7 @@ export class SenderFinancialAccount extends FinancialAccount {
 
   @Column({ name: 'phone_number' })
   phoneNumber: string;
-  @Column({ name: 'phone_number' })
-  phoneNumber: string;
 
-  @Column({ name: 'email' })
-  email: string;
   @Column({ name: 'email' })
   email: string;
 

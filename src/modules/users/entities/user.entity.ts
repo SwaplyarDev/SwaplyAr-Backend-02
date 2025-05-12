@@ -16,54 +16,65 @@ import { UserBan } from '@users/entities/user-ban.entity';
 import { UserDiscount } from '@users/entities/user-discount.entity';
 import { UserVerification } from '@users/entities/user-verification.entity';
 import { RefreshToken } from '@users/entities/resfresh-token.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid', { name: 'user_id' })
   id: string;
 
+  @Exclude()
   @OneToOne(() => UserProfile, (userProfile) => userProfile.user, {
     cascade: true,
   })
   profile: UserProfile;
 
+  @Exclude()
   @OneToMany(() => UserAlternativeEmail, (userEmail) => userEmail.user, {
     cascade: true,
   })
   alternativeEmails: UserAlternativeEmail[];
 
+  @Exclude()
   @OneToMany(() => UserLocation, (userLocation) => userLocation.user, {
     cascade: true,
   })
   locations: UserLocation[];
 
+  @Exclude()
   @OneToMany(() => UserContact, (userContact) => userContact.user, {
     cascade: true,
   })
   contacts: UserContact[];
 
+  @Exclude()
   @OneToMany(() => UserDiscount, (userDiscount) => userDiscount.user, {
     cascade: true,
   })
   discounts: UserDiscount[];
 
+  @Exclude()
   @OneToMany(() => UserQuestion, (userQuestion) => userQuestion.user, {
     cascade: true,
   })
   questions: UserQuestion[];
 
+  @Exclude()
   @OneToMany(() => UserBan, (userBan) => userBan.user, { cascade: true })
   bans: UserBan[];
 
+  @Exclude()
   @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
   refreshTokens: RefreshToken[];
 
+  @Exclude()
   @OneToMany(
     () => UserVerification,
     (userVerification) => userVerification.user,
   )
   verifications: UserVerification[];
 
+  @Exclude()
   @OneToOne(() => UserRewardsLedger, (rewardsLedger) => rewardsLedger.user, {
     cascade: true,
   })
@@ -90,9 +101,9 @@ export class User {
   })
   validatedAt: Date;
 
-  @Column({ name: 'is_active' })
+  @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @Column({ name: 'is_validated' })
+  @Column({ name: 'is_validated', default: false })
   isValidated: boolean;
 }

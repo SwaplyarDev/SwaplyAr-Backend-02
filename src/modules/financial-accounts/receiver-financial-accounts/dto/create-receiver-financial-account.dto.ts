@@ -1,5 +1,7 @@
+import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
+
 export class CreateReceiverFinancialAccountDto {
   firstName: string;
   lastName: string;
-  //paymentMethodId: string; // fk de payment method
+  paymentMethod: CreatePaymentMethodDto;
 }

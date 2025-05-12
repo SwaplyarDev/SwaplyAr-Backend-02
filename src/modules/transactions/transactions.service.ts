@@ -11,6 +11,7 @@ export class TransactionsService {
     @InjectRepository(Transaction)
     private readonly transactionsRepository: Repository<Transaction>,
   ) {}
+
   create(createTransactionDto: CreateTransactionDto) {
     const createAt = new Date();
     const finalStatus = 'pending';

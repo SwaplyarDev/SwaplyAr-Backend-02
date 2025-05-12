@@ -1,10 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { ChildEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { PaymentMethod } from '@financial-accounts/payment-methods/entities/payment-method.entity';
 
-@Entity('bank')
-export class BankAccount {
-  @PrimaryGeneratedColumn('uuid', { name: 'bank_id' })
-  bankId: string;
-
+@ChildEntity('bank')
+export class Bank extends PaymentMethod {
   @Column({ name: 'currency' })
   currency: string;
 

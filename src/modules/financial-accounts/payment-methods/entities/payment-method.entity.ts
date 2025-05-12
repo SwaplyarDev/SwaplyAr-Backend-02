@@ -1,16 +1,22 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  TableInheritance,
+  ViewColumn,
+} from 'typeorm';
+import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
 
 @Entity()
+@TableInheritance({ column: { type: 'varchar', name: 'method' } })
 export class PaymentMethod {
   @PrimaryGeneratedColumn('uuid', { name: 'payment_method_id' })
   id: string;
 
   @Column({ name: 'platform_id' })
-  platformId: string; // fk de la tabla plataform
+  platformId: string; // fk de la tabla plataform falta hacer la relacion
 
-  @Column({ name: 'method_type' })
-  method_type: 'bank' | 'virtul_bank' | 'receiver_crypto' | 'pix';
-
-  @Column({ name: 'method_id' })
-  methodId: string; // fk de la tabla de banco o billeteras
+  @Column()
+  method: string; // Exponer el campo discriminador
 }

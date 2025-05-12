@@ -30,25 +30,4 @@ export class SenderFinancialAccountsController {
   findAll() {
     return this.senderFinancialAccountsService.findAll();
   }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.senderFinancialAccountsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateSenderFinancialAccountDto: UpdateSenderFinancialAccountDto,
-  ) {
-    return this.senderFinancialAccountsService.update(
-      +id,
-      updateSenderFinancialAccountDto,
-    );
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.senderFinancialAccountsService.remove(+id);
-  }
 }

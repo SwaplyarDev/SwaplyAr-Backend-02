@@ -32,25 +32,6 @@ export class ReceiverFinancialAccountsController {
     return this.ReceiverFinancialAccountsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ReceiverFinancialAccountsService.findOne(+id);
-  }
+ 
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body()
-    updateReceiverFinancialAccountDto: UpdateReceiverFinancialAccountDto,
-  ) {
-    return this.ReceiverFinancialAccountsService.update(
-      +id,
-      updateReceiverFinancialAccountDto,
-    );
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ReceiverFinancialAccountsService.remove(+id);
-  }
 }

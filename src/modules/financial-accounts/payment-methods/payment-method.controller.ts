@@ -16,30 +16,23 @@ export class PaymentMethodController {
   constructor(private readonly paymentMethodService: PaymentMethodService) {}
 
   @Post()
-  create(@Body() createPaymentMethodDto: CreatePaymentMethodDto) {
-    return this.paymentMethodService.create(createPaymentMethodDto);
+  async create(@Body() createPaymentMethodDto: CreatePaymentMethodDto) {
+    return await this.paymentMethodService.create(createPaymentMethodDto);
   }
 
   @Get()
-  findAll() {
-    return this.paymentMethodService.findAll();
+  async findAll() {
+    return await this.paymentMethodService.findAllFinancialAccounts();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.paymentMethodService.findOne(+id);
+
+  @Get("/bank")
+  async findAllBank() {
+    return await this.paymentMethodService.findAllBank();
+  }
+  @Get("/pix")
+  async findAllPix() {
+    return await this.paymentMethodService.findAllPix();
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updatePaymentMethodDto: UpdatePaymentMethodDto,
-  ) {
-    return this.paymentMethodService.update(+id, updatePaymentMethodDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.paymentMethodService.remove(+id);
-  }
 }

@@ -1,5 +1,6 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   OneToMany,
   OneToOne,
@@ -79,10 +80,14 @@ export class User {
   @Column({ name: 'terms_accepted' })
   termsAccepted: boolean;
 
-  @Column({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;
 
-  @Column({ name: 'validated_at', nullable: true })
+  @Column({
+    name: 'validated_at',
+    nullable: true,
+    type: 'timestamp with time zone',
+  })
   validatedAt: Date;
 
   @Column({ name: 'is_active' })

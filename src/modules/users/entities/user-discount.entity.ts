@@ -1,5 +1,6 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -32,9 +33,9 @@ export class UserDiscount {
   @Column({ name: 'is_used' })
   isUsed: boolean;
 
-  @Column({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;
 
-  @Column({ name: 'used_at' })
+  @Column({ name: 'used_at', type: 'timestamp with time zone' })
   usedAt: Date;
 }

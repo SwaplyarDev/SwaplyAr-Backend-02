@@ -24,6 +24,6 @@ export class UserLocation {
   @Column()
   department: string;
 
-  @Column()
+  @Column({ name: 'date', type: 'timestamp with time zone' })
   date: Date;
 }

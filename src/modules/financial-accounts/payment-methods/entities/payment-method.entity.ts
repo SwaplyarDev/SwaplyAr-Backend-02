@@ -15,7 +15,7 @@ export class PaymentMethod {
   id: string;
 
   @Column({ name: 'platform_id' })
-  platformId: string; // fk de la tabla plataform falta hacer la relacion
+  platformId: string; // fk de la tabla platform falta hacer la relación
 
   @Column()
   method: string; // Exponer el campo discriminador

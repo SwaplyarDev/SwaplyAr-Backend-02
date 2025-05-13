@@ -4,7 +4,7 @@ import { CreateReceiverCryptoDto } from '../receiver-crypto/dto/create-receiver-
 import { CreateVirtualBankDto } from '../virutal-bank/dto/create-virtual-bank.dto';
 
 export class CreatePaymentMethodDto {
-  platformId: string; // fk de la tabla plataform
+  platformId: string; // fk de la tabla platform
 
   // Discriminador para identificar el tipo de método de pago
   method: 'bank' | 'pix' | 'receiver-crypto' | 'virtual-bank';

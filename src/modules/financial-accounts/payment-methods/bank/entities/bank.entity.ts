@@ -1,4 +1,4 @@
-import { ChildEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { ChildEntity, Column } from 'typeorm';
 import { PaymentMethod } from '@financial-accounts/payment-methods/entities/payment-method.entity';
 
 @ChildEntity('bank')

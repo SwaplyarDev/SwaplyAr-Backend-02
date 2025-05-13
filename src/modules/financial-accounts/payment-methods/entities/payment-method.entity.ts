@@ -1,12 +1,9 @@
 import {
   Column,
   Entity,
-  OneToOne,
   PrimaryGeneratedColumn,
   TableInheritance,
-  ViewColumn,
 } from 'typeorm';
-import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
 
 @Entity()
 @TableInheritance({ column: { type: 'varchar', name: 'method' } })

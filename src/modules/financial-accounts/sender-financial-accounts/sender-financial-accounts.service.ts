@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSenderFinancialAccountDto } from './dto/create-sender-financial-account.dto';
-import { UpdateSenderFinancialAccountDto } from './dto/update-sender-financial-account.dto';
 import { SenderFinancialAccount } from './entities/sender-financial-account.entity';
-import { DeepPartial, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaymentMethodService } from '@financial-accounts/payment-methods/payment-method.service';
-import { PaymentMethod } from '@financial-accounts/payment-methods/entities/payment-method.entity';
-import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
 
 @Injectable()
 export class SenderFinancialAccountsService {

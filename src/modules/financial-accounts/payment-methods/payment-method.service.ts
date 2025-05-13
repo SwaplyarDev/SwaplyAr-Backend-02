@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
-import { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BankService } from './bank/bank.service';

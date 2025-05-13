@@ -22,10 +22,10 @@ export class UserBan {
   @Column({ name: 'reason' })
   reason: string;
 
-  @Column({ name: 'start_date' })
+  @Column({ name: 'start_date', type: 'timestamp with time zone' })
   startDate: Date;
 
-  @Column({ name: 'end_date' })
+  @Column({ name: 'end_date', type: 'timestamp with time zone' })
   endDate: Date;
 
   @Column({ name: 'is_permanent' })

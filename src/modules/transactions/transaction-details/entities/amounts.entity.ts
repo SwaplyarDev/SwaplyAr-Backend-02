@@ -14,7 +14,7 @@ export class Amounts {
   @Column({ name: 'amount_received' })
   amountReceived: number;
 
-  @Column({ name: 'currency_receiverd' })
+  @Column({ name: 'currency_receiver' })
   currencyReceiver: string;
 
   @Column({ name: 'received' })

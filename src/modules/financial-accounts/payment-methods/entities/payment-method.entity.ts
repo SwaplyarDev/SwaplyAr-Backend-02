@@ -1,12 +1,9 @@
 import {
   Column,
   Entity,
-  OneToOne,
   PrimaryGeneratedColumn,
   TableInheritance,
-  ViewColumn,
 } from 'typeorm';
-import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
 
 @Entity()
 @TableInheritance({ column: { type: 'varchar', name: 'method' } })
@@ -15,7 +12,7 @@ export class PaymentMethod {
   id: string;
 
   @Column({ name: 'platform_id' })
-  platformId: string; // fk de la tabla plataform falta hacer la relacion
+  platformId: string; // fk de la tabla platform falta hacer la relación
 
   @Column()
   method: string; // Exponer el campo discriminador

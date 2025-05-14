@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
-import { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BankService } from './bank/bank.service';
@@ -27,33 +26,29 @@ export class PaymentMethodService {
     switch (method) {
       case 'bank':
         if (!bank) throw new BadRequestException('bank es requerido');
-        const newBank = await this.bankService.create(bank, platformId, method);
-        return newBank;
+        return await this.bankService.create(bank, platformId, method);
 
       case 'pix':
         if (!pix) throw new BadRequestException('pix es requerido');
-        const newPix = await this.pixService.create(pix, platformId, method);
-        return newPix;
+        return await this.pixService.create(pix, platformId, method);
 
       case 'receiver-crypto':
         if (!receiverCrypto)
           throw new BadRequestException('receiver-crypto es requerido');
-        const newReceiverCrypto = await this.receiverCryptoService.create(
+        return await this.receiverCryptoService.create(
           receiverCrypto,
           platformId,
           method,
         );
-        return newReceiverCrypto;
 
       case 'virtual-bank':
         if (!virtualBank)
           throw new BadRequestException('virtual-bank es requerido');
-        const newVirtualBank = await this.virtualBankService.create(
+        return await this.virtualBankService.create(
           virtualBank,
           platformId,
           method,
         );
-        return newVirtualBank;
       default:
         throw new BadRequestException('El metodo de pago no es valido');
     }

@@ -21,6 +21,7 @@ export class PaymentMethodController {
   async findAllBank() {
     return await this.paymentMethodService.findAllBank();
   }
+
   @Get('/pix')
   async findAllPix() {
     return await this.paymentMethodService.findAllPix();

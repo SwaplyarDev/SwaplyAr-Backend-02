@@ -1,8 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { SenderFinancialAccount } from './sender-financial-accounts/entities/sender-financial-account.entity';
-import { Repository } from 'typeorm';
-import { ReceiverFinancialAccount } from './receiver-financial-accounts/entities/receiver-financial-account.entity';
 import { CreateFinancialAccountDto } from './dto/create-financial-accounts.dto';
 import { SenderFinancialAccountsService } from './sender-financial-accounts/sender-financial-accounts.service';
 import { ReceiverFinancialAccountsService } from './receiver-financial-accounts/receiver-financial-accounts.service';

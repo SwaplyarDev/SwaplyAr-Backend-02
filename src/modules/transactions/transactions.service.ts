@@ -40,8 +40,8 @@ const amount = await this.amountService.create(createTransactionDto.amount);
     return  await this.transactionsRepository.save(newTransaction);
   }
 
-  findAll() {
-    return `This action returns all transactions`;
+ async  findAll() {
+    return await this.transactionsRepository.find({relations:{senderAccount:true,receiverAccount:true,amount:true}});
   }
 
   findOne(id: number) {

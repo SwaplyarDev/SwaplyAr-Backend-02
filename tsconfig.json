@@ -15,8 +15,8 @@
       "@config/*": [ "src/config/*" ],
       "@users/*": [ "src/modules/users/*" ],
       "@transactions/*": [ "src/modules/transactions/*" ],
-      "@financial-accounts/*": [ "src/modules/financial-accounts/*" ]
       "@financial-accounts/*": [ "src/modules/financial-accounts/*" ],
+      "@auth/*": [ "src/modules/auth/*" ],
       "@mailer/*": [ "src/modules/mailer/*" ]
     },
     "incremental": true,

@@ -1,25 +1,25 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Pix } from "./entities/pix.entity";
-import { Repository } from "typeorm";
-import { CreatePixDto } from "./dto/create-pix.dto";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Pix } from './entities/pix.entity';
+import { Repository } from 'typeorm';
+import { CreatePixDto } from './dto/create-pix.dto';
 
 @Injectable()
 export class PixService {
- 
-  constructor(@InjectRepository(Pix) private readonly pixRepository : Repository<Pix> ) {}
+  constructor(
+    @InjectRepository(Pix) private readonly pixRepository: Repository<Pix>,
+  ) {}
 
-  async create(createPixDto: CreatePixDto,platformId: string,method:string) {
-
-
-      const newPix = this.pixRepository.create({...createPixDto, platformId,method});
-      return await this.pixRepository.save(newPix);
-  
+  async create(createPixDto: CreatePixDto, platformId: string, method: string) {
+    const newPix = this.pixRepository.create({
+      ...createPixDto,
+      platformId,
+      method,
+    });
+    return await this.pixRepository.save(newPix);
   }
 
-
- async findAll() {
+  async findAll() {
     return await this.pixRepository.find();
   }
-  
 }

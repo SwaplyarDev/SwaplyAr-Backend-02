@@ -1,15 +1,6 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { SenderFinancialAccountsService } from './sender-financial-accounts.service';
 import { CreateSenderFinancialAccountDto } from './dto/create-sender-financial-account.dto';
-import { UpdateSenderFinancialAccountDto } from './dto/update-sender-financial-account.dto';
 
 @Controller('sender-financial-accounts')
 export class SenderFinancialAccountsController {
@@ -30,5 +21,4 @@ export class SenderFinancialAccountsController {
   findAll() {
     return this.senderFinancialAccountsService.findAll();
   }
-
 }

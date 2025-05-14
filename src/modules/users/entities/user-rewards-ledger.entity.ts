@@ -16,12 +16,12 @@ export class UserRewardsLedger {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ name: 'stars_count' })
+  @Column({ name: 'stars_count', default: 0 })
   starsCount: number;
 
-  @Column({ name: 'progress_amount' })
+  @Column({ name: 'progress_amount', default: 0 })
   progressAmount: number;
 
-  @Column({ name: 'times_granted' })
+  @Column({ name: 'times_granted', default: 0 })
   timesGranted: number;
 }

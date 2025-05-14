@@ -14,7 +14,11 @@ import { ReceiverFinancialAccount } from './receiver-financial-accounts/entities
   controllers: [FinancialAccountController],
   providers: [FinancialAccountsService],
   imports: [
-    TypeOrmModule.forFeature([FinancialAccount,SenderFinancialAccount,ReceiverFinancialAccount]),
+    TypeOrmModule.forFeature([
+      FinancialAccount,
+      SenderFinancialAccount,
+      ReceiverFinancialAccount,
+    ]),
     SenderFinancialAccountsModule,
     ReceiverFinancialAccountsModule,
     ProofOfPaymentsModule,

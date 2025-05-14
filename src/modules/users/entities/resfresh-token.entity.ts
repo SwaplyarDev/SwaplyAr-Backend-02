@@ -19,6 +19,6 @@ export class RefreshToken {
   @Column({ name: 'refresh_token' })
   refreshToken: string;
 
-  @Column({ name: 'expiry_date' })
+  @Column({ name: 'expiry_date', type: 'timestamp with time zone' })
   expiryDate: Date;
 }

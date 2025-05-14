@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule as Config } from '@nestjs/config';
 import typeormConfig from '@config/typeorm.config';
+import nodemailerConfig from '@config/nodemailer.config';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import typeormConfig from '@config/typeorm.config';
         `.env.${process.env.NODE_ENV}`,
         '.env',
       ],
-      load: [typeormConfig],
+      load: [typeormConfig, nodemailerConfig],
     }),
   ],
 })

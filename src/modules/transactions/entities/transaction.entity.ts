@@ -1,5 +1,6 @@
 import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
 import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
+import { Amount } from '@transactions/amounts/entities/amount.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,6 +8,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 
 @Entity('transactions')
@@ -15,7 +17,7 @@ export class Transaction {
   id: string;
 
   @Column({ name: 'payments_id' })
-  paymentsId: string;
+  paymentsId: string; //para el recibo proof of payments
 
   @Column({ name: 'country_transaction' })
   countryTransaction: string;
@@ -43,8 +45,22 @@ export class Transaction {
   @JoinColumn({ name: 'receiver_account_id' })
   receiverAccount: ReceiverFinancialAccount;
 
-  //userId
-  //regretId
-  //amountId
-  //noteId
+  //TODO: falta crear la entidad
+  @Column({ nullable: true, default: null })
+  regretId:string
+
+   //TODO: falta crear la entidad
+  @Column({ nullable: true, default: null })
+  userId:string
+
+   //TODO: falta crear la entidad
+  @Column({ nullable: true,default: null })
+  noteId :string
+
+ //TODO: falta crear la entidad
+  //proofOfPaymentId 
+
+  @OneToOne(()=> Amount)
+  @JoinColumn({ name: 'amount_id' })
+  amount : Amount;
 }

@@ -1,15 +1,6 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ReceiverFinancialAccountsService } from './receiver-financial-accounts.service';
 import { CreateReceiverFinancialAccountDto } from './dto/create-receiver-financial-account.dto';
-import { UpdateReceiverFinancialAccountDto } from './dto/update-receiver-financial-account.dto';
 
 @Controller('receiver-financial-accounts')
 export class ReceiverFinancialAccountsController {

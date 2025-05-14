@@ -36,6 +36,6 @@ export class UserVerification {
   @Column({ name: 'rejection_note' })
   rejectionNote: string;
 
-  @Column({ name: 'verified_at' })
+  @Column({ name: 'verified_at', type: 'timestamp with time zone' })
   verifiedAt: Date;
 }

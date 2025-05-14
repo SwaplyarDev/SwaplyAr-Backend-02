@@ -21,5 +21,6 @@ import { Amount } from './amounts/entities/amount.entity';
   ],
   controllers: [TransactionsController],
   providers: [TransactionsService,AmountsService],
+  exports: [TransactionsService,AmountsService],
 })
 export class TransactionsModule {}

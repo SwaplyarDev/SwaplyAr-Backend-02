@@ -4,30 +4,44 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { Repository } from 'typeorm';
+import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
+import { Amount } from './amounts/entities/amount.entity';
+import { AmountsService } from './amounts/amounts.service';
 
 @Injectable()
 export class TransactionsService {
   constructor(
     @InjectRepository(Transaction)
     private readonly transactionsRepository: Repository<Transaction>,
+    private readonly financialAccountService : FinancialAccountsService,
+    private readonly amountService:AmountsService,
   ) {}
 
-  create(createTransactionDto: CreateTransactionDto) {
+  async create(createTransactionDto: CreateTransactionDto) {
+
     const createAt = new Date();
     const finalStatus = 'pending';
+
+ const financialAccount = await this.financialAccountService.create(createTransactionDto.financialAccounts);
+
+const amount = await this.amountService.create(createTransactionDto.amount);
+
     const transaction = this.transactionsRepository.create({
       ...createTransactionDto,
+      senderAccount: financialAccount.sender,
+      receiverAccount: financialAccount.receiver,
       createdAt: createAt,
       finalStatus: finalStatus,
+      amount: amount,
     });
 
-    console.log(transaction);
+    const newTransaction = this.transactionsRepository.create(transaction);
 
-    return 'This action adds a new transaction';
+    return  await this.transactionsRepository.save(newTransaction);
   }
 
-  findAll() {
-    return `This action returns all transactions`;
+ async  findAll() {
+    return await this.transactionsRepository.find({relations:{senderAccount:true,receiverAccount:true,amount:true}});
   }
 
   findOne(id: number) {

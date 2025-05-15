@@ -5,6 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
 import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
+import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
+import { AmountsService } from './amounts/amounts.service';
+import { Amount } from './amounts/entities/amount.entity';
 
 @Module({
   imports: [
@@ -12,9 +15,12 @@ import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial
       Transaction,
       SenderFinancialAccount,
       ReceiverFinancialAccount,
+      Amount
     ]),
+    FinancialAccountsModule,
   ],
   controllers: [TransactionsController],
-  providers: [TransactionsService],
+  providers: [TransactionsService,AmountsService],
+  exports: [TransactionsService,AmountsService],
 })
 export class TransactionsModule {}

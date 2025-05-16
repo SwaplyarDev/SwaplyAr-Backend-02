@@ -14,15 +14,16 @@ export class MailerService {
     );
   }
 
-  async sendMail(to: string, message: string) {
+  async sendAuthCodeMail(to: string, code: string) {
     const from = this.configService.get<string>('nodemailer.auth.user');
     this.logger.log(`Mailer verification: ${await this.mailer.verify()}`);
-    this.logger.log(`Sending mail from ${from} to ${to}`);
+    this.logger.log(`Sending mail from ${from} to ${to} with code ${code}`);
+
     await this.mailer.sendMail({
       from,
       to,
       subject: 'Código de autenticación',
-      text: message,
+      text: code, // Email templates will be added later.
     });
   }
 }

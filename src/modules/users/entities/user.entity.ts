@@ -17,6 +17,7 @@ import { UserDiscount } from '@users/entities/user-discount.entity';
 import { UserVerification } from '@users/entities/user-verification.entity';
 import { RefreshToken } from '@users/entities/resfresh-token.entity';
 import { Exclude } from 'class-transformer';
+import { OtpCode } from '@auth/entities/otp-code.entity';
 
 @Entity('users')
 export class User {
@@ -73,6 +74,10 @@ export class User {
     (userVerification) => userVerification.user,
   )
   verifications: UserVerification[];
+
+  @Exclude()
+  @OneToMany(() => OtpCode, (otpCode) => otpCode.user)
+  otpCodes: OtpCode[];
 
   @Exclude()
   @OneToOne(() => UserRewardsLedger, (rewardsLedger) => rewardsLedger.user, {

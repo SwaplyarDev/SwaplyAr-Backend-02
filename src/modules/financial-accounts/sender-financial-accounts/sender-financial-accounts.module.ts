@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { SenderFinancialAccountsService } from './sender-financial-accounts.service';
-import { SenderFinancialAccountsController } from './sender-financial-accounts.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SenderFinancialAccount } from './entities/sender-financial-account.entity';
 import { PaymentMethodModule } from '@financial-accounts/payment-methods/payment-method.module';
@@ -10,7 +9,7 @@ import { PaymentMethodModule } from '@financial-accounts/payment-methods/payment
     TypeOrmModule.forFeature([SenderFinancialAccount]),
     PaymentMethodModule,
   ],
-  controllers: [SenderFinancialAccountsController],
+  controllers: [],
   providers: [SenderFinancialAccountsService],
   exports: [SenderFinancialAccountsService],
 })

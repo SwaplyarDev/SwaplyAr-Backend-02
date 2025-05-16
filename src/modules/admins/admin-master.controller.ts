@@ -27,9 +27,9 @@ export class AdminMasterController {
     return this.adminMasterService.createTransactionStatusService(createAdminMasterDto);
   }
 
-  @Get('/admin-transaction/status')
-  getTransactionStatus() {
-    return this.adminMasterService.getTransactionStatusService();
+  @Get('/admin-transaction/status/:transactionId')
+  getTransactionStatus(transactionId: string) {
+    return this.adminMasterService.getTransactionStatusService(transactionId);
   }
 
    @Post('/transactions/voucher')

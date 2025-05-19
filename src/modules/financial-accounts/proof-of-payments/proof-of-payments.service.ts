@@ -15,7 +15,10 @@ constructor(private readonly fileUploadService : FileUploadService,
 
   async create(file: FileUploadDTO) {
   const folder = "proof-of-payments"; //aca ira la carpeta donde se guardara la img en cloudinary
-  const imgUrl = await this.fileUploadService.uploadFile(file,folder);
+
+  const fileName= `proofOfPayment_${file.originalName}_${Date.now()}` // le agregamos un nombre para la img
+
+  const imgUrl = await this.fileUploadService.uploadFile(file,folder, fileName);
   if(!imgUrl){
     throw new Error("error al subir la imagen")
   }

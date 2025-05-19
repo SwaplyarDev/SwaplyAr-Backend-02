@@ -6,8 +6,8 @@ import { FileUploadDTO } from './dto/file-upload.dto';
 export class FileUploadService {
     constructor(private readonly cloudinaryService: CloudinaryService){}
 
-async uploadFile( file:FileUploadDTO,folder:string ) :Promise<string> {   
-    const url = await this.cloudinaryService.uploadFile(file.buffer,folder,file.originalName);
+async uploadFile( file:FileUploadDTO,folder:string,fileName:string ) :Promise<string> {   
+    const url = await this.cloudinaryService.uploadFile(file.buffer,folder,fileName);
     return url;
     }  
 }

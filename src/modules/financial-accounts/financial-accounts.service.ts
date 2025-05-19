@@ -17,7 +17,7 @@ export class FinancialAccountsService {
     const receiver = await this.receiverService.create(receiverAccount); // lo guarda en la tabla financial accounts
     const sender = await this.senderService.create(senderAccount); // lo guarda en la tabla financial accounts
 
-    return { sender, receiver }; // lo guarda en la tabla financial accounts
+    return { sender, receiver }; //retorna un objeto con los dos accounts
   }
 
   async findAllReceiver() {

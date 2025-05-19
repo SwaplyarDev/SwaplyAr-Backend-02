@@ -13,10 +13,10 @@ export class CloudinaryService {
     });
   }
 
-  async uploadFile(buffer: Buffer, folder:string, originalName?: string ): Promise<string> {
+  async uploadFile(buffer: Buffer, folder:string, fileName: string ): Promise<string> {
     const options: UploadApiOptions = {
       folder: folder,
-      public_id: originalName,
+      public_id: fileName,
       resource_type: 'auto'
     };
 

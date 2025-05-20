@@ -15,7 +15,8 @@
       "@config/*": [ "src/config/*" ],
       "@users/*": [ "src/modules/users/*" ],
       "@transactions/*": [ "src/modules/transactions/*" ],
-      "@financial-accounts/*": [ "src/modules/financial-accounts/*" ]
+      "@financial-accounts/*": [ "src/modules/financial-accounts/*" ],
+      "@admin/*": [ "src/modules/admin/*" ]
     },
     "incremental": true,
     "skipLibCheck": true,

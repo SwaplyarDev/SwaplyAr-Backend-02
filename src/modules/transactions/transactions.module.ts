@@ -8,6 +8,10 @@ import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial
 import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
 import { AmountsService } from './amounts/amounts.service';
 import { Amount } from './amounts/entities/amount.entity';
+import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
+import { FileUploadService } from '../file-upload/file-upload.service';
+import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
+import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
 
 @Module({
   imports: [
@@ -15,12 +19,13 @@ import { Amount } from './amounts/entities/amount.entity';
       Transaction,
       SenderFinancialAccount,
       ReceiverFinancialAccount,
-      Amount
+      Amount,
+      ProofOfPayment
     ]),
     FinancialAccountsModule,
   ],
   controllers: [TransactionsController],
-  providers: [TransactionsService,AmountsService],
-  exports: [TransactionsService,AmountsService],
+  providers: [TransactionsService,AmountsService,ProofOfPaymentsService,FileUploadService,CloudinaryService],
+  exports: [TransactionsService,AmountsService,ProofOfPaymentsService,FileUploadService,CloudinaryService],
 })
 export class TransactionsModule {}

@@ -10,7 +10,6 @@ export class FinancialAccountsService {
     private readonly receiverService: ReceiverFinancialAccountsService,
   ) {}
 
-  
   async create(createFinancialAccountDto: CreateFinancialAccountDto) {
     const { senderAccount, receiverAccount } = createFinancialAccountDto;
 
@@ -36,5 +35,3 @@ export class FinancialAccountsService {
     return await this.receiverService.findOne(id);
   }
 }
-
-

@@ -9,4 +9,4 @@ export class CreateDimAdministrativoDto {
   email?: string;
   nationalId?: string;
   hireDate?: string;
-} 
+}

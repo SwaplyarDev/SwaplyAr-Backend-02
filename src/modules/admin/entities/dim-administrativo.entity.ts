@@ -1,9 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { AdministracionMaster } from './administracion-master.entity';
 
 @Entity('dim_administrativos')
@@ -41,6 +36,9 @@ export class DimAdministrativo {
   @Column({ name: 'hire_date', type: 'date', nullable: true })
   hireDate: string;
 
-  @OneToMany(() => AdministracionMaster, (master: AdministracionMaster) => master.administrativo)
+  @OneToMany(
+    () => AdministracionMaster,
+    (master: AdministracionMaster) => master.administrativo,
+  )
   transactions: AdministracionMaster[];
-} 
+}

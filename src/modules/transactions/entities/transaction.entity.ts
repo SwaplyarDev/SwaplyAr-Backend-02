@@ -18,8 +18,8 @@ export class Transaction {
   @PrimaryGeneratedColumn('uuid', { name: 'transaction_id' })
   id: string;
 
- // @Column({ name: 'payments_id' })
- // paymentsId: string; //para el recibo proof of payments
+  // @Column({ name: 'payments_id' })
+  // paymentsId: string; //para el recibo proof of payments
 
   @Column({ name: 'country_transaction' })
   countryTransaction: string;
@@ -49,22 +49,21 @@ export class Transaction {
 
   //TODO: falta crear la entidad
   @Column({ nullable: true, default: null })
-  regretId:string
+  regretId: string;
 
-   //TODO: falta crear la entidad
+  //TODO: falta crear la entidad
   @Column({ nullable: true, default: null })
-  userId:string
+  userId: string;
 
-   //TODO: falta crear la entidad
-  @Column({ nullable: true,default: null })
-  noteId :string
+  //TODO: falta crear la entidad
+  @Column({ nullable: true, default: null })
+  noteId: string;
 
- 
-  @OneToOne(()=> ProofOfPayment,(proof)=> proof.transaction)
+  @OneToOne(() => ProofOfPayment, (proof) => proof.transaction)
   @JoinColumn({ name: 'payments_id' })
-  proofOfPayment: ProofOfPayment
+  proofOfPayment: ProofOfPayment;
 
-  @OneToOne(()=> Amount)
+  @OneToOne(() => Amount)
   @JoinColumn({ name: 'amount_id' })
-  amount : Amount;
+  amount: Amount;
 }

@@ -23,9 +23,13 @@ export class AdministracionMaster {
   transaction: Transaction;
 
   // Relación con el administrador responsable
-  @ManyToOne(() => DimAdministrativo, (admin: DimAdministrativo) => admin.transactions, {
-    eager: false,
-  })
+  @ManyToOne(
+    () => DimAdministrativo,
+    (admin: DimAdministrativo) => admin.transactions,
+    {
+      eager: false,
+    },
+  )
   @JoinColumn({ name: 'administrativo_id' })
   administrativo: DimAdministrativo;
 
@@ -46,6 +50,9 @@ export class AdministracionMaster {
   transferReceived: string;
 
   // Logs de estado asociados
-  @OneToMany(() => AdministracionStatusLog, (log: AdministracionStatusLog) => log.transaction)
+  @OneToMany(
+    () => AdministracionStatusLog,
+    (log: AdministracionStatusLog) => log.transaction,
+  )
   statusLogs: AdministracionStatusLog[];
-} 
+}

@@ -7,6 +7,7 @@ import { UsersModule } from '@users/users.module';
 import { TransactionsModule } from '@transactions/transactions.module';
 import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
 import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
+import { AdminModule } from '@admin/admin.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
     UsersModule,
     TransactionsModule,
     FinancialAccountsModule,
-    FileUploadModule
+    FileUploadModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [],

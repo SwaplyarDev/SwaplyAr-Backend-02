@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { v2 as cloudinary, UploadApiOptions, UploadApiResponse } from 'cloudinary';
+import {
+  v2 as cloudinary,
+  UploadApiOptions,
+  UploadApiResponse,
+} from 'cloudinary';
 import * as dotenv from 'dotenv';
 
 @Injectable()
@@ -13,11 +17,15 @@ export class CloudinaryService {
     });
   }
 
-  async uploadFile(buffer: Buffer, folder:string, fileName: string ): Promise<string> {
+  async uploadFile(
+    buffer: Buffer,
+    folder: string,
+    fileName: string,
+  ): Promise<string> {
     const options: UploadApiOptions = {
       folder: folder,
       public_id: fileName,
-      resource_type: 'auto'
+      resource_type: 'auto',
     };
 
     return new Promise((resolve, reject) => {

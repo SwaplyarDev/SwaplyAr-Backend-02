@@ -13,16 +13,24 @@ export class AdministracionStatusLog {
   @PrimaryGeneratedColumn('increment', { name: 'log_id' })
   id: number;
 
-  @ManyToOne(() => AdministracionMaster, (master: AdministracionMaster) => master.statusLogs, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(
+    () => AdministracionMaster,
+    (master: AdministracionMaster) => master.statusLogs,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({ name: 'transaction_id' })
   transaction: AdministracionMaster;
 
   @Column({ type: 'enum', enum: AdminStatus })
   status: AdminStatus;
 
-  @Column({ type: 'timestamp', name: 'changed_at', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({
+    type: 'timestamp',
+    name: 'changed_at',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   changedAt: Date;
 
   @Column({ type: 'text', nullable: true })
@@ -42,4 +50,4 @@ export class AdministracionStatusLog {
 
   @Column({ type: 'text', name: 'approved_note', nullable: true })
   approvedNote: string;
-} 
+}

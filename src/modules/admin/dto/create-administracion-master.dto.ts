@@ -7,4 +7,4 @@ export class CreateAdministracionMasterDto {
   beginTransaction?: Date;
   endTransaction?: Date;
   transferReceived?: string;
-} 
+}

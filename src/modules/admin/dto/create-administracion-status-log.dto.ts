@@ -9,4 +9,4 @@ export class CreateAdministracionStatusLogDto {
   transactionSwaplyar?: string;
   transactionReceipt?: string;
   approvedNote?: string;
-} 
+}

@@ -20,30 +20,29 @@ export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
   @Post()
-   @UseInterceptors(FileInterceptor('file'))
-  async create(@Body() body:any, @UploadedFile() file : Express.Multer.File) {
-
+  @UseInterceptors(FileInterceptor('file'))
+  async create(@Body() body: any, @UploadedFile() file: Express.Multer.File) {
     //al enviar en formdata y enviar tantos campos como se requiere, el body llega como un string
     // por eso se hace el parseo
-     const parsedDto = JSON.parse(body.createTransactionDto);
-     
-     // se crea una instancia de la clase createTransactionDto
-  const createTransactionDto = plainToInstance(CreateTransactionDto, parsedDto);
+    const parsedDto = JSON.parse(body.createTransactionDto);
 
-  
-    return await this.transactionsService.create(createTransactionDto,{
-    buffer:file.buffer,
-    fieldName:file.fieldname,
-    mimeType:file.mimetype,
-    originalName:file.originalname,
-    size:file.size
-  });
+    // se crea una instancia de la clase createTransactionDto
+    const createTransactionDto = plainToInstance(
+      CreateTransactionDto,
+      parsedDto,
+    );
+
+    return await this.transactionsService.create(createTransactionDto, {
+      buffer: file.buffer,
+      fieldName: file.fieldname,
+      mimeType: file.mimetype,
+      originalName: file.originalname,
+      size: file.size,
+    });
   }
 
   @Get()
   findAll() {
     return this.transactionsService.findAll();
   }
-
- 
 }

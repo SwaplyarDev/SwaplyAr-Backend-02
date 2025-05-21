@@ -22,6 +22,7 @@ export class TransactionsService {
     const createAt = new Date();
     const finalStatus = 'pending';
 
+
  const financialAccount = await this.financialAccountService.create(createTransactionDto.financialAccounts);
 
 const amount = await this.amountService.create(createTransactionDto.amount);

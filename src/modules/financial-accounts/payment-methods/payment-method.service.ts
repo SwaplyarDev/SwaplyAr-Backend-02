@@ -23,6 +23,7 @@ export class PaymentMethodService {
     const { bank, pix, receiverCrypto, virtualBank, method, platformId } =
       createPaymentMethodDto;
 
+      //dependiendo el metodo de pago se llama al servicio correspondiente
     switch (method) {
       case 'bank':
         if (!bank) throw new BadRequestException('bank es requerido');

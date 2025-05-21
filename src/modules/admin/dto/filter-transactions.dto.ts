@@ -1,7 +1,8 @@
-import { IsOptional, IsNumberString } from 'class-validator';
+import { IsOptional, IsNumberString, IsString } from 'class-validator';
 
 export class FilterTransactionsDto {
   @IsOptional()
+  @IsString()
   where?: string; // JSON string con condiciones
 
   @IsOptional()

@@ -2,7 +2,7 @@ import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/p
 import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
 import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
 import { Amount } from '@transactions/amounts/entities/amount.entity';
-import { TransactionStatus } from 'src/enums/trasanction-status.enum';
+import { TransactionStatus } from 'src/enum/trasanction-status.enum';
 import {
   Entity,
   PrimaryGeneratedColumn,

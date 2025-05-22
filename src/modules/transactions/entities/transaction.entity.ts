@@ -2,6 +2,7 @@ import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/p
 import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
 import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
 import { Amount } from '@transactions/amounts/entities/amount.entity';
+import { TransactionStatus } from 'src/enum/trasanction-status.enum';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -33,8 +34,8 @@ export class Transaction {
   @Column({ name: 'created_by' })
   createdBy: string;
 
-  @Column({ name: 'final_status' })
-  finalStatus: string;
+  @Column({ type:"enum", enum:TransactionStatus ,default:TransactionStatus.Pending, name: 'final_status' })
+  finalStatus: TransactionStatus;
 
   @ManyToOne(() => SenderFinancialAccount, (sender) => sender.transactions)
   @JoinColumn({ name: 'sender_account_id' })

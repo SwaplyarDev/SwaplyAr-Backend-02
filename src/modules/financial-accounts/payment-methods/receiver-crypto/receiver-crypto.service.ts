@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ReceiverCrypto } from './entities/receiver-crypto.entity';
 import { Repository } from 'typeorm';
 import { CreateReceiverCryptoDto } from './dto/create-receiver-crypto.dto';
+import { Platform } from 'src/enum/platform.enum';
 
 @Injectable()
 export class ReceiverCryptoService {
@@ -13,7 +14,7 @@ export class ReceiverCryptoService {
 
   async create(
     createReceiverCryptoDto: CreateReceiverCryptoDto,
-    platformId: string,
+    platformId: Platform,
     method: string,
   ) {
     const newReceiverCrypto = this.receiverCryptoRepository.create({

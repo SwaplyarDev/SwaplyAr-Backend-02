@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { VirtualBank } from './entities/virtual-bank.entity';
 import { Repository } from 'typeorm';
 import { CreateVirtualBankDto } from './dto/create-virtual-bank.dto';
+import { Platform } from 'src/enum/platform.enum';
 
 @Injectable()
 export class VirtualBankService {
@@ -13,7 +14,7 @@ export class VirtualBankService {
 
   async create(
     createVirtualBankDto: CreateVirtualBankDto,
-    platformId: string,
+    platformId: Platform,
     method: string,
   ) {
     const newVirtualBank = this.virtualBankRepository.create({

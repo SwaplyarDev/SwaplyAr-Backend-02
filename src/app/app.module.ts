@@ -8,6 +8,9 @@ import { TransactionsModule } from '@transactions/transactions.module';
 import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
 import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
 import { AdminModule } from '@admin/admin.module';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from 'src/common/jwt.strategy';
 
 @Module({
   imports: [
@@ -18,8 +21,13 @@ import { AdminModule } from '@admin/admin.module';
     FinancialAccountsModule,
     FileUploadModule,
     AdminModule,
+    PassportModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'tu_clave_secreta',
+      signOptions: { expiresIn: '1d' },
+    }),
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [JwtStrategy],
 })
 export class AppModule {}

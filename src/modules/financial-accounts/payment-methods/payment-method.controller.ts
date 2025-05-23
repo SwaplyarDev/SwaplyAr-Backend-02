@@ -17,6 +17,7 @@ export class PaymentMethodController {
   }
 
   @Get('/bank')
+  @Get('/bank')
   async findAllBank() {
     return await this.paymentMethodService.findAllBank();
   }

@@ -1,5 +1,8 @@
+import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
 import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
+import { Amount } from '@transactions/amounts/entities/amount.entity';
+import { TransactionStatus } from 'src/enum/trasanction-status.enum';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,6 +10,8 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToOne,
+  OneToMany,
 } from 'typeorm';
 
 @Entity('transactions')
@@ -14,8 +19,8 @@ export class Transaction {
   @PrimaryGeneratedColumn('uuid', { name: 'transaction_id' })
   id: string;
 
-  @Column({ name: 'payments_id' })
-  paymentsId: string;
+ // @Column({ name: 'payments_id' })
+ // paymentsId: string; //para el recibo proof of payments
 
   @Column({ name: 'country_transaction' })
   countryTransaction: string;
@@ -29,8 +34,8 @@ export class Transaction {
   @Column({ name: 'created_by' })
   createdBy: string;
 
-  @Column({ name: 'final_status' })
-  finalStatus: string;
+  @Column({ type:"enum", enum:TransactionStatus ,default:TransactionStatus.Pending, name: 'final_status' })
+  finalStatus: TransactionStatus;
 
   @ManyToOne(() => SenderFinancialAccount, (sender) => sender.transactions)
   @JoinColumn({ name: 'sender_account_id' })
@@ -43,8 +48,24 @@ export class Transaction {
   @JoinColumn({ name: 'receiver_account_id' })
   receiverAccount: ReceiverFinancialAccount;
 
-  //userId
-  //regretId
-  //amountId
-  //noteId
+  //TODO: falta crear la entidad
+  @Column({ nullable: true, default: null })
+  regretId:string
+
+   //TODO: falta crear la entidad
+  @Column({ nullable: true, default: null })
+  userId:string
+
+   //TODO: falta crear la entidad
+  @Column({ nullable: true,default: null })
+  noteId :string
+
+ 
+  @OneToOne(()=> ProofOfPayment,(proof)=> proof.transaction)
+  @JoinColumn({ name: 'payments_id' })
+  proofOfPayment: ProofOfPayment
+
+  @OneToOne(()=> Amount)
+  @JoinColumn({ name: 'amount_id' })
+  amount : Amount;
 }

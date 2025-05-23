@@ -7,6 +7,7 @@ import { PixService } from './pix/pix.service';
 import { ReceiverCryptoService } from './receiver-crypto/receiver-crypto.service';
 import { VirtualBankService } from './virutal-bank/virtual-bank.service';
 import { PaymentMethod } from './entities/payment-method.entity';
+import { Platform } from 'src/enum/platform.enum';
 
 @Injectable()
 export class PaymentMethodService {
@@ -23,6 +24,12 @@ export class PaymentMethodService {
     const { bank, pix, receiverCrypto, virtualBank, method, platformId } =
       createPaymentMethodDto;
 
+      if(platformId){
+        if (!Object.values(Platform).includes(platformId))
+          throw new BadRequestException('El platformId no es valido');
+      }
+
+      //dependiendo el metodo de pago se llama al servicio correspondiente
     switch (method) {
       case 'bank':
         if (!bank) throw new BadRequestException('bank es requerido');

@@ -8,6 +8,7 @@ import { TransactionsModule } from '@transactions/transactions.module';
 import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
 import { AuthModule } from '@auth/auth.module';
 import { MailerModule } from '@mailer/mailer.module';
+import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MailerModule } from '@mailer/mailer.module';
     FinancialAccountsModule,
     MailerModule,
     AuthModule,
+    FileUploadModule,
   ],
   controllers: [AppController],
   providers: [],

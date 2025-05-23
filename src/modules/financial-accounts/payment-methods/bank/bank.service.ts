@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Bank } from './entities/bank.entity';
 import { Repository } from 'typeorm';
 import { CreateBankDto } from './dto/create-bank.dto';
+import { Platform } from 'src/enum/platform.enum';
 
 @Injectable()
 export class BankService {
@@ -12,7 +13,7 @@ export class BankService {
 
   async create(
     createBankDto: CreateBankDto,
-    platformId: string,
+    platformId: Platform,
     method: string,
   ) {
     const newBank = this.bankRepository.create({

@@ -4,15 +4,7 @@ import { FinancialAccount } from '@financial-accounts/entities/financial-account
 
 @ChildEntity('sender')
 export class SenderFinancialAccount extends FinancialAccount {
-  @Column({ name: 'identification_number' })
-  identificationNumber: string;
-
-  @Column({ name: 'phone_number' })
-  phoneNumber: string;
-
-  @Column({ name: 'email' })
-  email: string;
-
-  @OneToMany(() => Transaction, (transaction) => transaction.senderAccount)
+  @OneToMany(() => Transaction, (transaction) => transaction.receiverAccount)
   transactions: Transaction[];
+
 }

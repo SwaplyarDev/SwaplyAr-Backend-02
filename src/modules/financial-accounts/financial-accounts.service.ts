@@ -10,14 +10,14 @@ export class FinancialAccountsService {
     private readonly receiverService: ReceiverFinancialAccountsService,
   ) {}
 
+  
   async create(createFinancialAccountDto: CreateFinancialAccountDto) {
     const { senderAccount, receiverAccount } = createFinancialAccountDto;
 
+    const receiver = await this.receiverService.create(receiverAccount); // lo guarda en la tabla financial accounts
     const sender = await this.senderService.create(senderAccount); // lo guarda en la tabla financial accounts
 
-    const receiver = await this.receiverService.create(receiverAccount); // lo guarda en la tabla financial accounts
-
-    return { sender, receiver }; // lo guarda en la tabla financial accounts
+    return { sender, receiver }; //retorna un objeto con los dos accounts
   }
 
   async findAllReceiver() {
@@ -37,17 +37,4 @@ export class FinancialAccountsService {
   }
 }
 
-/*
- {"senderAccount":{
-    "firstName":"Agustin",
-    "lastName":"Malugani",
-    "identificationNumber":"12345678",
-    "phoneNumber":"3413857748",
-    "email":"agusmalugani@email.com"
-  },
-  "receiverAccount":{
-    "firstName":"Alan",
-    "lastName":"Prueba"
-  }
- }
-  */
+

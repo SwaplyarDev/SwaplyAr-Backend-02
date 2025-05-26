@@ -6,6 +6,8 @@ import typeormConfig from '@config/typeorm.config';
 import { UsersModule } from '@users/users.module';
 import { TransactionsModule } from '@transactions/transactions.module';
 import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
+import { AuthModule } from '@auth/auth.module';
+import { MailerModule } from '@mailer/mailer.module';
 import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
 
 @Module({
@@ -15,7 +17,9 @@ import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
     UsersModule,
     TransactionsModule,
     FinancialAccountsModule,
-    FileUploadModule
+    MailerModule,
+    AuthModule,
+    FileUploadModule,
   ],
   controllers: [AppController],
   providers: [],

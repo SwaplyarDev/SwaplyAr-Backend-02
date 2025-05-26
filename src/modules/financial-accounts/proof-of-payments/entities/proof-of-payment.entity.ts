@@ -12,9 +12,6 @@ export class ProofOfPayment {
   @Column({ name: 'create_at' })
   createAt: Date;
 
-  @OneToOne(() => Transaction, (trans) =>trans.proofOfPayment)
-  transaction: Transaction; 
-
-
-
+  @OneToOne(() => Transaction, (trans) => trans.proofOfPayment)
+  transaction: Transaction;
 }

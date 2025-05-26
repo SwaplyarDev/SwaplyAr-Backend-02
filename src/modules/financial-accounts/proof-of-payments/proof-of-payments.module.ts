@@ -8,7 +8,7 @@ import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
 @Module({
   imports: [TypeOrmModule.forFeature([ProofOfPayment])],
   controllers: [],
-  providers: [ProofOfPaymentsService,FileUploadService,CloudinaryService],
-  exports:[ProofOfPaymentsService]
+  providers: [ProofOfPaymentsService, FileUploadService, CloudinaryService],
+  exports: [ProofOfPaymentsService],
 })
 export class ProofOfPaymentsModule {}

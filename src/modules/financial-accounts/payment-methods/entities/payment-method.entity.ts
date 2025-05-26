@@ -12,7 +12,7 @@ export class PaymentMethod {
   @PrimaryGeneratedColumn('uuid', { name: 'payment_method_id' })
   id: string;
 
-  @Column({ name: 'platform_id', type:"enum", enum: Platform,  })
+  @Column({ name: 'platform_id', type: 'enum', enum: Platform })
   platformId: Platform; // fk de la tabla platform falta hacer la relación
 
   @Column()

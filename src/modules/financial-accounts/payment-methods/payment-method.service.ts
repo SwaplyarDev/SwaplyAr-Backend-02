@@ -24,12 +24,12 @@ export class PaymentMethodService {
     const { bank, pix, receiverCrypto, virtualBank, method, platformId } =
       createPaymentMethodDto;
 
-      if(platformId){
-        if (!Object.values(Platform).includes(platformId))
-          throw new BadRequestException('El platformId no es valido');
-      }
+    if (platformId) {
+      if (!Object.values(Platform).includes(platformId))
+        throw new BadRequestException('El platformId no es valido');
+    }
 
-      //dependiendo el metodo de pago se llama al servicio correspondiente
+    //dependiendo el metodo de pago se llama al servicio correspondiente
     switch (method) {
       case 'bank':
         if (!bank) throw new BadRequestException('bank es requerido');

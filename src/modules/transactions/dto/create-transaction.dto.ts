@@ -6,6 +6,6 @@ export class CreateTransactionDto {
   countryTransaction: string;
   message: string;
   createdBy: string;
-  financialAccounts:CreateFinancialAccountDto;
-  amount : CreateAmountDto;
+  financialAccounts: CreateFinancialAccountDto;
+  amount: CreateAmountDto;
 }

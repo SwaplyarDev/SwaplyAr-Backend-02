@@ -20,12 +20,24 @@ import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
       SenderFinancialAccount,
       ReceiverFinancialAccount,
       Amount,
-      ProofOfPayment
+      ProofOfPayment,
     ]),
     FinancialAccountsModule,
   ],
   controllers: [TransactionsController],
-  providers: [TransactionsService,AmountsService,ProofOfPaymentsService,FileUploadService,CloudinaryService],
-  exports: [TransactionsService,AmountsService,ProofOfPaymentsService,FileUploadService,CloudinaryService],
+  providers: [
+    TransactionsService,
+    AmountsService,
+    ProofOfPaymentsService,
+    FileUploadService,
+    CloudinaryService,
+  ],
+  exports: [
+    TransactionsService,
+    AmountsService,
+    ProofOfPaymentsService,
+    FileUploadService,
+    CloudinaryService,
+  ],
 })
 export class TransactionsModule {}

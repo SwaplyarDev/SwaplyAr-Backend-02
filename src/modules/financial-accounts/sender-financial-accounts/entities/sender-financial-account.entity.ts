@@ -6,5 +6,4 @@ import { FinancialAccount } from '@financial-accounts/entities/financial-account
 export class SenderFinancialAccount extends FinancialAccount {
   @OneToMany(() => Transaction, (transaction) => transaction.receiverAccount)
   transactions: Transaction[];
-
 }

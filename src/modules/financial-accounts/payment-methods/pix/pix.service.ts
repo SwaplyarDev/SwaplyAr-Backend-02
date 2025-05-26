@@ -11,7 +11,11 @@ export class PixService {
     @InjectRepository(Pix) private readonly pixRepository: Repository<Pix>,
   ) {}
 
-  async create(createPixDto: CreatePixDto, platformId: Platform, method: string) {
+  async create(
+    createPixDto: CreatePixDto,
+    platformId: Platform,
+    method: string,
+  ) {
     const newPix = this.pixRepository.create({
       ...createPixDto,
       platformId,

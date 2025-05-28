@@ -30,14 +30,16 @@ export class AuthService {
 
   async validateOtpCode(user: User, code: string): Promise<boolean> {
     const otpCode = await this.otpCodeRepository.findOne({
-      where: { code, user },
+      where: { code, user: { id: user.id } },
     });
 
     if (!otpCode) {
       return false;
     }
 
-    const isExpired = otpCode.expiryDate.getTime() > Date.now();
+    const isExpired = otpCode.expiryDate.getTime() < Date.now();
+
+    console.log('Is OTP Code valid:', !isExpired && !otpCode.isUsed);
     return !(isExpired || otpCode.isUsed);
   }
 }

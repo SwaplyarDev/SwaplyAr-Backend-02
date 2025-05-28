@@ -111,4 +111,7 @@ export class User {
 
   @Column({ name: 'is_validated', default: false })
   isValidated: boolean;
+
+  @Column({ nullable: true })
+  refreshToken?: string;
 }

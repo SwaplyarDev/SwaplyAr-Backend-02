@@ -54,8 +54,11 @@ export class AuthController {
       throw new BadRequestException('Code is invalid');
     }
 
-     // Generar access token
-    const payload = { sub: user.id };
+    // Marcar el código OTP como usado
+    await this.authService.markOtpCodeAsUsed(user, validateCodeDto.code);
+
+    // Generar access token
+    const payload = { sub: user.id, email: validateCodeDto.email, role: user.role };
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: '15m',
     });
@@ -71,6 +74,7 @@ export class AuthController {
     await this.usersService.save(user);
 
     return { access_token: accessToken, refresh_token: refreshToken };
+
 
   }
 }

@@ -25,5 +25,7 @@ export class MailerService {
       subject: 'Código de autenticación',
       text: code, // Email templates will be added later.
     });
+
+    return { message: `The code has been sent to the email ${to}` };
   }
 }

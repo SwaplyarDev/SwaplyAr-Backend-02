@@ -75,6 +75,37 @@ export class AuthController {
 
     return { access_token: accessToken, refresh_token: refreshToken };
 
+  }
 
+  @Post('/refresh')
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(@Body('userId') userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user || !user.refreshToken) {
+      throw new BadRequestException('Invalid user or refresh token not found');
+    }
+
+    let payload: any;
+    try {
+      payload = this.jwtService.verify(user.refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+    } catch {
+      throw new BadRequestException('Invalid or expired refresh token');
+    }
+
+    console.log('Payload from refresh token:', payload);
+    
+    // Obtener el email desde el payload del refresh token
+    const email = payload.email;
+    // Generar nuevo access token
+    const newPayload = { sub: user.id, email: email, role: user.role };
+    const accessToken = this.jwtService.sign(newPayload, {
+      expiresIn: '15m',
+    });
+
+    return { access_token: accessToken };
   }
 }
+
+

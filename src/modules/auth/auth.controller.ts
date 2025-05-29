@@ -94,8 +94,6 @@ export class AuthController {
       throw new BadRequestException('Invalid or expired refresh token');
     }
 
-    console.log('Payload from refresh token:', payload);
-    
     // Obtener el email desde el payload del refresh token
     const email = payload.email;
     // Generar nuevo access token

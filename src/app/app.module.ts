@@ -9,7 +9,8 @@ import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.
 import { AuthModule } from '@auth/auth.module';
 import { MailerModule } from '@mailer/mailer.module';
 import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
-
+import { RegretsModule } from '@transactions/regrets/regrets.module';
+import { NotesModule } from '@transactions/notes/notes.module';
 @Module({
   imports: [
     ConfigModule,
@@ -20,6 +21,8 @@ import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
     MailerModule,
     AuthModule,
     FileUploadModule,
+    RegretsModule,
+    NotesModule,
   ],
   controllers: [AppController],
   providers: [],

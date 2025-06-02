@@ -35,6 +35,10 @@ DB_PASSWORD=
 
 EMAIL_USER=
 EMAIL_PASS=
+
+# JWT Configuration
+JWT_SECRET=
+JWT_REFRESH_SECRET= 
 ```
 
 > ⚠️ No incluyas valores sensibles en el repositorio.

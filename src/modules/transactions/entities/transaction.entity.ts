@@ -14,6 +14,9 @@ import {
   OneToMany,
 } from 'typeorm';
 
+import { Note } from '@transactions/notes/entities/note.entity';
+import { Regret } from '@transactions/regrets/entities/regrets.entity';
+
 @Entity('transactions')
 export class Transaction {
   @PrimaryGeneratedColumn('uuid', { name: 'transaction_id' })
@@ -53,17 +56,20 @@ export class Transaction {
   @JoinColumn({ name: 'receiver_account_id' })
   receiverAccount: ReceiverFinancialAccount;
 
-  //TODO: falta crear la entidad
-  @Column({ nullable: true, default: null })
-  regretId: string;
 
   //TODO: falta crear la entidad
   @Column({ nullable: true, default: null })
   userId: string;
 
-  //TODO: falta crear la entidad
-  @Column({ nullable: true, default: null })
-  noteId: string;
+  //TODO: falta crear la entidad de note y regrets
+ 
+  @OneToOne(() => Note, (note) => note.transaction)
+  @JoinColumn({ name: 'note_id' })
+  note: Note;
+
+  @OneToOne(() => Regret, (regret) => regret.transaction)
+  @JoinColumn({ name: 'regret_id' })
+  regret: Regret;
 
   @OneToOne(() => ProofOfPayment, (proof) => proof.transaction)
   @JoinColumn({ name: 'payments_id' })
@@ -73,3 +79,22 @@ export class Transaction {
   @JoinColumn({ name: 'amount_id' })
   amount: Amount;
 }
+
+
+// Relaciones de Transacciones y Pagos
+// transactions.status_id > transaction_status.id_status  
+// transactions.sender_accounts_id > sender_bank_accounts.sender_accounts_id  
+// transactions.user_id > users.user_id  
+// transactions.regret_id > regrets.regret_id  
+// transactions.note_id > notes.note_id
+// transactions.receiver_accounts_id > receiver_bank_accounts.receiver_accounts_id  
+// transactions.amount_id > amounts.amounts_id
+
+
+// Relaciones del Historial de Transacciones
+//transaction_state_history.transactions_id > transactions.transactions_id  
+//transaction_state_history.id_status  > transaction_status.id_status  
+//transaction_edit_history.transactions_id > transactions.transactions_id
+//transaction_edit_history.edited_by > users.user_id 
+//transaction_edit_history.edited_by > notes.note_id
+//regrets.payment_info_id > transaction_payment_info.payment_info_id

@@ -11,6 +11,7 @@ import { UsersService } from '@users/users.service';
 import { MailerService } from '@mailer/mailer.service';
 import { AuthService } from '@auth/auth.service';
 import { ValidateCodeDto } from '@auth/dto/validate-code.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('login')
 export class AuthController {
@@ -18,6 +19,7 @@ export class AuthController {
     private usersService: UsersService,
     private mailService: MailerService,
     private authService: AuthService,
+    private jwtService: JwtService,
   ) {}
 
   @Post('/email/send')
@@ -43,15 +45,36 @@ export class AuthController {
         'Email address not associated with any account',
       );
     }
-
     const isCodeValid = await this.authService.validateOtpCode(
       user,
       validateCodeDto.code,
     );
+  
     if (!isCodeValid) {
       throw new BadRequestException('Code is invalid');
     }
 
-    // TODO: Generate and send JWT Token with Passport.
+    // Marcar el código OTP como usado
+    await this.authService.markOtpCodeAsUsed(user, validateCodeDto.code);
+
+    // Generar access token
+    const payload = { sub: user.id, email: validateCodeDto.email, role: user.role };
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: '15m',
+    });
+
+    // Generar refresh token
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: '7d',
+    });
+
+    // Guardar el refresh token en la base de datos 
+    user.refreshToken = refreshToken;
+    await this.usersService.save(user);
+
+    return { access_token: accessToken, refresh_token: refreshToken };
+
+
   }
 }

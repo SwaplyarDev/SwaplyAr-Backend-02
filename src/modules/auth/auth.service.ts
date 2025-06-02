@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthService {
+  
   constructor(
     @InjectRepository(OtpCode) private otpCodeRepository: Repository<OtpCode>,
   ) {}
@@ -30,14 +31,26 @@ export class AuthService {
 
   async validateOtpCode(user: User, code: string): Promise<boolean> {
     const otpCode = await this.otpCodeRepository.findOne({
-      where: { code, user },
+      where: { code, user: { id: user.id } },
     });
 
     if (!otpCode) {
       return false;
     }
 
-    const isExpired = otpCode.expiryDate.getTime() > Date.now();
+    const isExpired = otpCode.expiryDate.getTime() < Date.now();
+
     return !(isExpired || otpCode.isUsed);
+  }
+
+  async markOtpCodeAsUsed(user: User, code: string) {
+    const otpCode = await this.otpCodeRepository.findOne({
+    where: { code, user: { id: user.id } },
+    });
+
+    if (otpCode) {
+      otpCode.isUsed = true;
+      await this.otpCodeRepository.save(otpCode);
+    }
   }
 }

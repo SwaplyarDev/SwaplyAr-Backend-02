@@ -14,6 +14,7 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
+import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 
 @Controller('transactions')
 export class TransactionsController {
@@ -32,13 +33,24 @@ export class TransactionsController {
       parsedDto,
     );
 
-    return await this.transactionsService.create(createTransactionDto, {
-      buffer: file.buffer,
-      fieldName: file.fieldname,
-      mimeType: file.mimetype,
-      originalName: file.originalname,
-      size: file.size,
-    });
+    // Si no se envía archivo, file será undefined
+    const fileData: FileUploadDTO = file
+      ? {
+          buffer: file.buffer,
+          fieldName: file.fieldname,
+          mimeType: file.mimetype,
+          originalName: file.originalname,
+          size: file.size,
+        }
+      : {
+          buffer: Buffer.from(''),
+          fieldName: '',
+          mimeType: '',
+          originalName: '',
+          size: 0,
+        };
+
+    return await this.transactionsService.create(createTransactionDto, fileData);
   }
 
   @Get()

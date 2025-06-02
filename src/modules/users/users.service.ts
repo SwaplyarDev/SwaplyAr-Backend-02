@@ -36,6 +36,13 @@ export class UsersService {
     });
   }
 
+  async findById(id: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { id },
+      relations: { profile: true, rewardsLedger: true },
+    });
+  }
+
   async findAll(): Promise<User[]> {
     return this.userRepository.find();
   }

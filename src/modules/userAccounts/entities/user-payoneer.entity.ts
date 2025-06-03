@@ -13,6 +13,6 @@ export class UserPayoneer {
   email_account: string;
 
   @ManyToOne(() => UserAccount)
-  @JoinColumn({ name: 'account_id', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'account_id', referencedColumnName: 'account_id' })
   userAccount: UserAccount;
 }

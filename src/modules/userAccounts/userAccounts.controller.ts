@@ -40,16 +40,18 @@ export class AccountsController {
 
     return { message: 'bank created', bank: newBank };
   }
-}
+
 /*
   @Delete()
   @HttpCode(HttpStatus.OK)
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {
     return this.accountsService.deleteBankAccount(req.user, dto.bankAccountId);
   }
-
+*/
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user')
   @Get()
   async findAll(@Request() req) {
     return this.accountsService.findAllByUser(req.user);
   }
-}*/
+}

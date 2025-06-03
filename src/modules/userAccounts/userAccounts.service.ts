@@ -1,5 +1,4 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
-import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { validateFields } from './helpers/validate-fields.helper';
 import { validateUserAccount } from './helpers/validate-user-account.helper';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -119,5 +118,14 @@ export class AccountsService {
       this.logger.error('Error creating bank:', err);
       throw new BadRequestException('Error creating bank account');
     }
+  }
+
+  async findAllByUser(user: any) {
+    // Busca todas las cuentas del usuario
+    const accounts = await this.userAccountRepo.find({
+    where: { userId: user.id },
+  });
+  
+    return accounts;
   }
 }

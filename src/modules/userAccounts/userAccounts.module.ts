@@ -9,6 +9,7 @@ import { UserVirtualBank } from './entities/user-virtual-bank.entity';
 import { UserWise } from './entities/user-wise.entity';
 import { UserPayPal } from './entities/user-paypal.entity';
 import { UserPayoneer } from './entities/user-payoneer.entity';
+import { UserPix } from './entities/user-pix.entity';
 
 @Module({
   imports: [
@@ -18,7 +19,9 @@ import { UserPayoneer } from './entities/user-payoneer.entity';
       UserReceiverCrypto,
       UserPayPal,
       UserWise,
-      UserPayoneer,]),
+      UserPayoneer,
+      UserPix,
+    ]),
     ],
   controllers: [AccountsController],
   providers: [AccountsService],

@@ -22,6 +22,6 @@ export class UserWise {
   transfer_code: number;
 
   @ManyToOne(() => UserAccount)
-  @JoinColumn({ name: 'account_id', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'account_id', referencedColumnName: 'account_id' })
   userAccount: UserAccount;
 }

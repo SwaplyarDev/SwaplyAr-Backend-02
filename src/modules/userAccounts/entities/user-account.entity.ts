@@ -9,7 +9,7 @@ export class UserAccount {
   @Column({ name: 'account_name' })
   accountName: string;
 
-  @Column({ name: 'currency', length: 3 })
+  @Column({ name: 'currency', length: 10 })
   currency: string;
 
   @Column({ name: 'status', type: 'boolean', default: true })

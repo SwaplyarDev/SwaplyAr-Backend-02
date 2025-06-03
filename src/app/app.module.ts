@@ -9,6 +9,8 @@ import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.
 import { AuthModule } from '@auth/auth.module';
 import { MailerModule } from '@mailer/mailer.module';
 import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
+import { UserAccountsModule } from 'src/modules/userAccounts/userAccounts.module';
+
 import { RegretsModule } from '@transactions/regrets/regrets.module';
 import { NotesModule } from '@transactions/notes/notes.module';
 @Module({
@@ -21,6 +23,7 @@ import { NotesModule } from '@transactions/notes/notes.module';
     MailerModule,
     AuthModule,
     FileUploadModule,
+    UserAccountsModule,
     RegretsModule,
     NotesModule,
   ],

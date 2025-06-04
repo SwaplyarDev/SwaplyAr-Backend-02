@@ -15,10 +15,8 @@ import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles } from '@auth/decorators/roles.decorator';
 
 import { AccountsService } from './userAccounts.service';
-/*
 import { DeleteBankAccountDto } from './dto/delete-bank-account.dto';
 
-**/
 
 @UseGuards(JwtAuthGuard)
 @Controller('users/accounts')
@@ -41,13 +39,15 @@ export class AccountsController {
     return { message: 'bank created', bank: newBank };
   }
 
-/*
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user')
   @Delete()
   @HttpCode(HttpStatus.OK)
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {
     return this.accountsService.deleteBankAccount(req.user, dto.bankAccountId);
   }
-*/
+
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @Get()

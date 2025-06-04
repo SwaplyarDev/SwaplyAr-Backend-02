@@ -120,12 +120,55 @@ export class AccountsService {
     }
   }
 
+  async deleteBankAccount(user: any, bankAccountId: string) {
+    // Busca la cuenta principal del usuario
+    const userAccount = await this.userAccountRepo.findOne({
+      where: { account_id: bankAccountId, userId: user.id },
+    });
+
+    if (!userAccount) {
+      throw new BadRequestException('Cuenta no encontrada o no pertenece al usuario');
+    }
+
+  // Elimina solo en la tabla específica según el tipo de cuenta
+      switch (userAccount.typeId) {
+      case 1: // Bank
+        await this.bankAccountRepo.delete({ account_id: bankAccountId });
+        break;
+      case 2: // PayPal
+        await this.payPalRepo.delete({ account_id: bankAccountId });
+        break;
+      case 3: // Wise
+        await this.wiseRepo.delete({ account_id: bankAccountId });
+        break;
+      case 4: // Payoneer
+        await this.payoneerRepo.delete({ account_id: bankAccountId });
+        break;
+      case 5: // Pix
+        await this.pixRepo.delete({ account_id: bankAccountId });
+        break;
+      case 6: // Virtual Bank
+        await this.virtualBankRepo.delete({ account_id: bankAccountId });
+        break;
+      case 7: // Receiver Crypto
+        await this.receiverCryptoRepo.delete({ account_id: bankAccountId });
+        break;
+      default:
+        throw new BadRequestException('Tipo de cuenta no soportado');
+    }
+
+    // Elimina la cuenta principal
+    await this.userAccountRepo.delete({ account_id: bankAccountId });
+
+    return { message: 'Cuenta eliminada correctamente' };
+  }
+
   async findAllByUser(user: any) {
     // Busca todas las cuentas del usuario
     const accounts = await this.userAccountRepo.find({
     where: { userId: user.id },
-  });
-  
+    });
+
     return accounts;
   }
 }

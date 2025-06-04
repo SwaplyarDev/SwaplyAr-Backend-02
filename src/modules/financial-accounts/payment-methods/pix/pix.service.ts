@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Pix } from './entities/pix.entity';
 import { Repository } from 'typeorm';
 import { CreatePixDto } from './dto/create-pix.dto';
+import { Platform } from 'src/enum/platform.enum';
 
 @Injectable()
 export class PixService {
@@ -10,7 +11,11 @@ export class PixService {
     @InjectRepository(Pix) private readonly pixRepository: Repository<Pix>,
   ) {}
 
-  async create(createPixDto: CreatePixDto, platformId: string, method: string) {
+  async create(
+    createPixDto: CreatePixDto,
+    platformId: Platform,
+    method: string,
+  ) {
     const newPix = this.pixRepository.create({
       ...createPixDto,
       platformId,

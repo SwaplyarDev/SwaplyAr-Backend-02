@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import {
   v2 as cloudinary,
   UploadApiOptions,
@@ -22,6 +22,10 @@ export class CloudinaryService {
     folder: string,
     fileName: string,
   ): Promise<string> {
+    if (!buffer || buffer.length === 0) {
+      throw new BadRequestException('No se envió ningún archivo o el archivo está vacío');
+    }
+
     const options: UploadApiOptions = {
       folder: folder,
       public_id: fileName,

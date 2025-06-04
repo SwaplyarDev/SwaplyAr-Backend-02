@@ -6,8 +6,11 @@ import typeormConfig from '@config/typeorm.config';
 import { UsersModule } from '@users/users.module';
 import { TransactionsModule } from '@transactions/transactions.module';
 import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
+import { AuthModule } from '@auth/auth.module';
+import { MailerModule } from '@mailer/mailer.module';
 import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
-import { AdminModule } from '@admin/admin.module';
+import { RegretsModule } from '@transactions/regrets/regrets.module';
+import { NotesModule } from '@transactions/notes/notes.module';import { AdminModule } from '@admin/admin.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/common/jwt.strategy';
@@ -20,6 +23,10 @@ import { JwtStrategy } from 'src/common/jwt.strategy';
     TransactionsModule,
     FinancialAccountsModule,
     FileUploadModule,
+    RegretsModule,
+    NotesModule,
+    MailerModule,
+    AuthModule,
     AdminModule,
     PassportModule,
     JwtModule.register({

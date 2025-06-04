@@ -25,7 +25,6 @@ export class TransactionsService {
     file: FileUploadDTO,
   ) {
     const createAt = new Date();
-    const finalStatus = 'pending';
     //llama al servicio de financialAccount y le envia el sender y receiver para su creacion o traer sus id
     const financialAccount = await this.financialAccountService.create(
       createTransactionDto.financialAccounts,
@@ -42,7 +41,6 @@ export class TransactionsService {
       senderAccount: financialAccount.sender,
       receiverAccount: financialAccount.receiver,
       createdAt: createAt,
-      finalStatus: finalStatus,
       amount: amount,
       proofOfPayment: proofOfPayment,
     });

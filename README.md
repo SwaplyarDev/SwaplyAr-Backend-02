@@ -111,6 +111,10 @@ DB_PASSWORD=
 # Email (Nodemailer / Gmail)
 EMAIL_USER=
 EMAIL_PASS=
+
+# JWT Configuration
+JWT_SECRET= 
+JWT_REFRESH_SECRET= 
 ```
 
 ---

@@ -58,7 +58,18 @@ export class AuthController {
     await this.authService.markOtpCodeAsUsed(user, validateCodeDto.code);
 
     // Generar access token
-    const payload = { sub: user.id, email: validateCodeDto.email, role: user.role };
+    const payload = { 
+      sub: user.id, 
+      email: validateCodeDto.email,
+      role: user.role,
+      fullName: user.profile.firstName + ' ' + user.profile.lastName,
+      terms: user.termsAccepted,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      profile: user.profile,
+      category: user.profile.category,
+      isValidated: user.isValidated,
+      };
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: '1h',
     });
@@ -97,9 +108,20 @@ export class AuthController {
     // Obtener el email desde el payload del refresh token
     const email = payload.email;
     // Generar nuevo access token
-    const newPayload = { sub: user.id, email: email, role: user.role };
+    const newPayload = { 
+      sub: user.id, 
+      email: email,
+      role: user.role,
+      fullName: user.profile.firstName + ' ' + user.profile.lastName,
+      terms: user.termsAccepted,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      profile: user.profile,
+      category: user.profile.category,
+      isValidated: user.isValidated,
+      };;
     const accessToken = this.jwtService.sign(newPayload, {
-      expiresIn: '15m',
+      expiresIn: '1h',
     });
 
     return { access_token: accessToken };

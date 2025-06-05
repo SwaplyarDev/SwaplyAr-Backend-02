@@ -23,11 +23,11 @@ import { DeleteBankAccountDto } from './dto/delete-bank-account.dto';
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('user')
-    @Post()
-    @HttpCode(HttpStatus.CREATED)
-    async create(@Request() req, @Body() dto: CreateBankAccountDto) {
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user')
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Request() req, @Body() dto: CreateBankAccountDto) {
     const userId = req.user.id;
     const newBank = await this.accountsService.createUserBank(
       dto.formData,

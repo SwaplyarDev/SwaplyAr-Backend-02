@@ -119,7 +119,7 @@ export class AuthController {
       profile: user.profile,
       category: user.profile.category,
       isValidated: user.isValidated,
-      };;
+      };
     const accessToken = this.jwtService.sign(newPayload, {
       expiresIn: '1h',
     });

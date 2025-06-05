@@ -60,7 +60,7 @@ export class AuthController {
     // Generar access token
     const payload = { sub: user.id, email: validateCodeDto.email, role: user.role };
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: '15m',
+      expiresIn: '1h',
     });
 
     // Generar refresh token

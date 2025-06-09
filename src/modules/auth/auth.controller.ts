@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  ValidationPipe,
 } from '@nestjs/common';
 import { SendCodeDto } from '@auth/dto/send-code.dto';
 import { UsersService } from '@users/users.service';
@@ -24,7 +25,7 @@ export class AuthController {
 
   @Post('/email/send')
   @HttpCode(HttpStatus.OK)
-  async sendOtpCode(@Body() sendCodeDto: SendCodeDto) {
+  async sendOtpCode(@Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) sendCodeDto: SendCodeDto) {
     const user = await this.usersService.findByEmail(sendCodeDto.email);
     if (!user) {
       throw new BadRequestException(
@@ -77,7 +78,7 @@ export class AuthController {
     // Generar refresh token
     const refreshToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: '7d',
+      // expiresIn: '7d',
     });
 
     // Guardar el refresh token en la base de datos 
@@ -85,7 +86,6 @@ export class AuthController {
     await this.usersService.save(user);
 
     return { access_token: accessToken, refresh_token: refreshToken };
-
   }
 
   @Post('/refresh')

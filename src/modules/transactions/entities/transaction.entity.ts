@@ -56,12 +56,10 @@ export class Transaction {
   @JoinColumn({ name: 'receiver_account_id' })
   receiverAccount: ReceiverFinancialAccount;
 
-
-  //TODO: falta crear la entidad
+  
   @Column({ nullable: true, default: null })
   userId: string;
 
-  //TODO: falta crear la entidad de note y regrets
  
   @OneToOne(() => Note, (note) => note.transaction)
   @JoinColumn({ name: 'note_id' })

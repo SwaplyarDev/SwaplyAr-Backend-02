@@ -17,7 +17,8 @@
       "@transactions/*": [ "src/modules/transactions/*" ],
       "@financial-accounts/*": [ "src/modules/financial-accounts/*" ],
       "@auth/*": [ "src/modules/auth/*" ],
-      "@mailer/*": [ "src/modules/mailer/*" ]
+      "@mailer/*": [ "src/modules/mailer/*" ],
+      "@admin/*": [ "src/modules/admin/*" ]
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  ValidationPipe,
 } from '@nestjs/common';
 import { SendCodeDto } from '@auth/dto/send-code.dto';
 import { UsersService } from '@users/users.service';
@@ -24,7 +25,7 @@ export class AuthController {
 
   @Post('/email/send')
   @HttpCode(HttpStatus.OK)
-  async sendOtpCode(@Body() sendCodeDto: SendCodeDto) {
+  async sendOtpCode(@Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) sendCodeDto: SendCodeDto) {
     const user = await this.usersService.findByEmail(sendCodeDto.email);
     if (!user) {
       throw new BadRequestException(

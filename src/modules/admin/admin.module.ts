@@ -10,6 +10,8 @@ import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
 import { TransactionStatusFieldsMiddleware } from '../../common/middlewares/transaction-status-fields.middleware';
 import { UpdateReceiverFieldsMiddleware } from '../../common/middlewares/update-receiver-fields.middleware';
 import { UpdateTransactionFieldsMiddleware } from '../../common/middlewares/update-transaction-fields.middleware';
+import { Transaction } from '../transactions/entities/transaction.entity';
+import { ProofOfPaymentsModule } from '@financial-accounts/proof-of-payments/proof-of-payments.module';
 
 @Module({
   imports: [
@@ -17,8 +19,10 @@ import { UpdateTransactionFieldsMiddleware } from '../../common/middlewares/upda
       AdministracionMaster,
       AdministracionStatusLog,
       DimAdministrativo,
+      Transaction,
     ]),
     FileUploadModule,
+    ProofOfPaymentsModule,
   ],
   controllers: [AdminController],
   providers: [AdminService, AdminRoleGuard],

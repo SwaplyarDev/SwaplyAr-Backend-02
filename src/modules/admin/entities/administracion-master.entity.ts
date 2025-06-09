@@ -15,11 +15,11 @@ import { AdministracionStatusLog } from './administracion-status-log.entity';
 @Entity('administracion_master')
 export class AdministracionMaster {
   @PrimaryColumn('uuid', { name: 'transaction_id' })
-  id: string;
+  transactionId: string;
 
   // Relación con la transacción original
   @OneToOne(() => Transaction, { eager: false })
-  @JoinColumn({ name: 'transaction_id' })
+  @JoinColumn({ name: 'transaction_id', referencedColumnName: 'id' })
   transaction: Transaction;
 
   // Relación con el administrador responsable

@@ -22,11 +22,13 @@ import { User } from '../../common/user.decorator';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { UpdateReceiverDto } from './dto/update-receiver.dto';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
+import { AdminStatus } from './entities/admin-status.enum';
 
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
+  //funciona
   @Get('transactions')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async getAllTransactions(
@@ -38,7 +40,6 @@ export class AdminController {
     const dynamicFilters = { ...query };
     delete dynamicFilters.page;
     delete dynamicFilters.perPage;
-    // userEmail solo si no es admin
     const userEmail = user.role === 'admin' || user.role === 'super_admin' ? null : user.email;
     return this.adminService.findAllTransactionsPaginated(
       userEmail,
@@ -48,6 +49,7 @@ export class AdminController {
     );
   }
 
+  //funciona
   @Post('transactions/voucher')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @UseInterceptors(FileInterceptor('comprobante'))
@@ -61,6 +63,7 @@ export class AdminController {
       body.comprobante,
     );
   }
+
 
   @Get('transactions/status/:id')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
@@ -96,8 +99,8 @@ export class AdminController {
     const userEmail = user.email;
     const userRole = user.role;
     const isAdmin = userRole === 'admin' || userRole === 'super_admin';
-    const senderEmail = transaction.transaction?.senderAccount?.email;
-    const receiverEmail = (transaction.transaction?.receiverAccount as any)?.email;
+    const senderEmail = transaction.senderAccount?.email;
+    const receiverEmail = (transaction.receiverAccount as any)?.email;
     const isOwner = senderEmail === userEmail || receiverEmail === userEmail;
     if (!isAdmin && !isOwner) {
       return {
@@ -114,7 +117,7 @@ export class AdminController {
   @Post('transactions/status/:status')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async updateStatusByType(
-    @Param('status') status: string,
+    @Param('status') status: AdminStatus,
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) body: UpdateStatusDto & any,
   ) {
     const transactionId = body.transactionId;

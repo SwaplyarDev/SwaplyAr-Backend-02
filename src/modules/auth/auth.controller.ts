@@ -57,16 +57,67 @@ export class AuthController {
     // Marcar el código OTP como usado
     await this.authService.markOtpCodeAsUsed(user, validateCodeDto.code);
 
-    // Generar access token
-    const payload = { sub: user.id, email: validateCodeDto.email, role: user.role };
+    // Construir el payload extendido
+    const payload: any = {
+      id: user.id,
+      fullName: user.profile ? `${user.profile.firstName} ${user.profile.lastName}` : undefined,
+      terms: user.termsAccepted,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      isBanned: Array.isArray(user.bans) ? user.bans.some(ban => ban.isActive) : false,
+      userVerification: user.verifications ? user.verifications.map(v => ({
+        id: v.id,
+        status: v.verificationStatus,
+        verifiedAt: v.verifiedAt
+      })) : [],
+      profile: user.profile ? {
+        firstName: user.profile.firstName,
+        lastName: user.profile.lastName,
+        email: user.profile.email,
+        identification: user.profile.identification,
+        phone: user.profile.phone,
+        birthday: user.profile.birthday,
+        age: user.profile.age,
+        gender: user.profile.gender,
+        lastActivity: user.profile.lastActivity,
+        profilePictureUrl: user.profile.profilePictureUrl
+      } : undefined,
+      social: user.profile && user.profile.socials ? {
+        whatsappNumber: user.profile.socials.whatsappNumber,
+        facebook: user.profile.socials.facebook,
+        instagram: user.profile.socials.instagram,
+        tiktok: user.profile.socials.tiktok,
+        twitterX: user.profile.socials.twitterX,
+        snapchat: user.profile.socials.snapchat,
+        linkedin: user.profile.socials.linkedin,
+        youtube: user.profile.socials.youtube,
+        pinterest: user.profile.socials.pinterest
+      } : undefined,
+      category: user.profile && user.profile.category ? {
+        id: user.profile.category.id,
+        category: user.profile.category.category,
+        requirements: user.profile.category.requirements
+      } : undefined,
+      ban: Array.isArray(user.bans) && user.bans.length > 0 ? user.bans.map(ban => ({
+        id: ban.id,
+        reason: ban.reason,
+        startDate: ban.startDate,
+        endDate: ban.endDate,
+        isPermanent: ban.isPermanent,
+        isActive: ban.isActive
+      })) : [],
+      email: validateCodeDto.email,
+      role: user.role
+    };
+
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: '15m',
+      // expiresIn: '15m', // puedes quitar esto si quieres que no expire
     });
 
     // Generar refresh token
     const refreshToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: '7d',
+      // expiresIn: '7d',
     });
 
     // Guardar el refresh token en la base de datos 
@@ -74,7 +125,6 @@ export class AuthController {
     await this.usersService.save(user);
 
     return { access_token: accessToken, refresh_token: refreshToken };
-
   }
 
   @Post('/refresh')

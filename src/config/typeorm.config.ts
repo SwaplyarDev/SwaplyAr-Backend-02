@@ -12,8 +12,8 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
     port: process.env.DB_PORT ? +process.env.DB_PORT : 5432,
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD,
-    synchronize: !isProduction,
+    synchronize: true,
     entities: ['dist/**/*.entity.{ts,js}'],
-    dropSchema: !isProduction,
+    dropSchema: false,
   };
 });

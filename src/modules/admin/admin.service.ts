@@ -1,48 +1,48 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindManyOptions } from 'typeorm';
-import { AdministracionMaster } from './entities/administracion-master.entity';
+import { Transaction } from '../../modules/transactions/entities/transaction.entity';
 import { AdministracionStatusLog } from './entities/administracion-status-log.entity';
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import { FileUploadService } from '../file-upload/file-upload.service';
+import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 
 @Injectable()
 export class AdminService {
   constructor(
-    @InjectRepository(AdministracionMaster)
-    private readonly adminMasterRepository: Repository<AdministracionMaster>,
+    @InjectRepository(Transaction)
+    private readonly transactionsRepository: Repository<Transaction>,
     @InjectRepository(AdministracionStatusLog)
     private readonly statusLogRepository: Repository<AdministracionStatusLog>,
     private readonly fileUploadService: FileUploadService,
+    private readonly proofOfPaymentService: ProofOfPaymentsService,
   ) {}
-
-
 
   /* -------------------------------------------------------------------------- */
   /*                                 FIND ALL                                   */
   /* -------------------------------------------------------------------------- */
-  async findAllTransactions(): Promise<AdministracionMaster[]> {
-    return await this.adminMasterRepository.find({
+  async findAllTransactions(): Promise<Transaction[]> {
+    return await this.transactionsRepository.find({
       relations: {
-        administrativo: true,
-        transaction: true,
-        statusLogs: true,
+        senderAccount: true,
+        receiverAccount: true,
+        amount: true,
+        proofOfPayment: true,
       },
     });
   }
 
-
-
   /* -------------------------------------------------------------------------- */
   /*                         GET TRANSACTION BY ID                              */
   /* -------------------------------------------------------------------------- */
-  async getTransactionById(id: string): Promise<AdministracionMaster> {
-    const transaction = await this.adminMasterRepository.findOne({
+  async getTransactionById(id: string): Promise<Transaction> {
+    const transaction = await this.transactionsRepository.findOne({
       where: { id },
       relations: {
-        administrativo: true,
-        transaction: true,
-        statusLogs: true,
+        senderAccount: true,
+        receiverAccount: true,
+        amount: true,
+        proofOfPayment: true,
       },
     });
     if (!transaction) {
@@ -53,17 +53,13 @@ export class AdminService {
     return transaction;
   }
 
-
-
-
-
   /* -------------------------------------------------------------------------- */
   /*                        STATUS HISTORY FOR A TX                              */
   /* -------------------------------------------------------------------------- */
   async getStatusHistory(id: string): Promise<AdministracionStatusLog[]> {
     try {
       const statusHistory = await this.statusLogRepository.find({
-        where: { transaction: { id } },
+        where: { transaction: { transactionId: id } },
         order: { changedAt: 'DESC' },
       });
       if (!statusHistory || statusHistory.length === 0) {
@@ -78,31 +74,21 @@ export class AdminService {
     }
   }
 
-
-
-
-
   /* -------------------------------------------------------------------------- */
   /*                    UPDATE TRANSACTION STATUS BY TYPE                       */
   /* -------------------------------------------------------------------------- */
   async updateTransactionStatusByType(transactionId: string, status: string, additionalInfo: any = {}) {
-    // Validar que la transacción exista
-    const transaction = await this.adminMasterRepository.findOne({ where: { id: transactionId } });
+    const transaction = await this.transactionsRepository.findOne({ where: { id: transactionId } });
     if (!transaction) {
       throw new Error('Transacción no encontrada.');
     }
-    // Actualizar el estado
-    await this.adminMasterRepository.update(
+    await this.transactionsRepository.update(
       { id: transactionId },
-      { status: status as any, ...additionalInfo },
+      { finalStatus: status as any, ...additionalInfo },
     );
-    // Leer la transacción actualizada
-    const updated = await this.adminMasterRepository.findOne({ where: { id: transactionId } });
+    const updated = await this.transactionsRepository.findOne({ where: { id: transactionId } });
     return { message: 'Estado actualizado', status, transaction: updated };
   }
-
-
-
 
   /* -------------------------------------------------------------------------- */
   /*                       ADD TRANSACTION RECEIPT (FILE)                       */
@@ -119,10 +105,8 @@ export class AdminService {
     if (!transactionId) {
       throw new Error('Se requiere transactionId en la solicitud');
     }
-
     let url: string | undefined;
-
-    // Si viene archivo
+    let proofOfPayment: any = undefined;
     if (file && file.buffer) {
       const fileName = `voucher_${transactionId}_${Date.now()}`;
       const dto: FileUploadDTO = {
@@ -132,35 +116,25 @@ export class AdminService {
         originalName: file.originalname || fileName,
         size: file.size || file.buffer.length,
       };
-      url = await this.fileUploadService.uploadFile(
-        dto,
-        'SwaplyAr/transactions',
-        fileName,
-      );
+      // Crear ProofOfPayment y asociar
+      proofOfPayment = await this.proofOfPaymentService.create(dto);
+      url = proofOfPayment.imgUrl;
     } else if (comprobante) {
+      let buffer: Buffer;
+      let fileName = `voucher_${transactionId}_${Date.now()}`;
       if (comprobante.startsWith('http')) {
-        if (comprobante.includes('cloudinary.com')) {
-          url = comprobante;
-        } else {
-          const fileName = `voucher_${transactionId}_${Date.now()}`;
-          const buffer = Buffer.from(comprobante);
-          const dto: FileUploadDTO = {
-            buffer,
-            fieldName: 'comprobante',
-            mimeType: 'image/png',
-            originalName: fileName,
-            size: buffer.length,
-          };
-          url = await this.fileUploadService.uploadFile(
-            dto,
-            'SwaplyAr/transactions',
-            fileName,
-          );
-        }
+        url = comprobante;
+        // Crear ProofOfPayment solo con la URL
+        proofOfPayment = await this.proofOfPaymentService.create({
+          buffer: Buffer.from(''),
+          fieldName: 'comprobante',
+          mimeType: 'image/png',
+          originalName: fileName,
+          size: 0,
+        });
       } else if (comprobante.startsWith('data:')) {
         const base64Data = comprobante.split(',')[1];
-        const buffer = Buffer.from(base64Data, 'base64');
-        const fileName = `voucher_${transactionId}_${Date.now()}`;
+        buffer = Buffer.from(base64Data, 'base64');
         const dto: FileUploadDTO = {
           buffer,
           fieldName: 'comprobante',
@@ -168,62 +142,49 @@ export class AdminService {
           originalName: fileName,
           size: buffer.length,
         };
-        url = await this.fileUploadService.uploadFile(
-          dto,
-          'SwaplyAr/transactions',
-          fileName,
-        );
+        proofOfPayment = await this.proofOfPaymentService.create(dto);
+        url = proofOfPayment.imgUrl;
       } else {
         throw new Error('El formato del comprobante no es válido. Debe ser una URL o una imagen en base64.');
       }
     } else {
       throw new Error('Se requiere un archivo o comprobante válido en la solicitud');
     }
-
-    // Actualizar la transacción con la URL del comprobante
-    await this.adminMasterRepository.update(
+    // Actualizar la transacción con el ProofOfPayment
+    await this.transactionsRepository.update(
       { id: transactionId },
-      { transferReceived: url },
+      { proofOfPayment: proofOfPayment },
     );
     return { message: 'Comprobante cargado', url };
   }
 
-
-
-
   /* -------------------------------------------------------------------------- */
   /*                           FILTER & PAGINATION                              */
   /* -------------------------------------------------------------------------- */
-  async findFiltered(options: FindManyOptions<AdministracionMaster>) {
-    return await this.adminMasterRepository.find(options);
+  async findFiltered(options: FindManyOptions<Transaction>) {
+    return await this.transactionsRepository.find(options);
   }
-
-
-
 
   /* -------------------------------------------------------------------------- */
   /*                              PLACEHOLDERS                                  */
   /* -------------------------------------------------------------------------- */
   async updateAdminTransaction(id: string, payload: any) {
     // TODO: lógica de actualización
-    await this.adminMasterRepository.update({ id }, payload);
+    await this.transactionsRepository.update({ id }, payload);
     return { message: 'Transacción administrativa actualizada' };
   }
 
-
-
-
   async updateReceiver(id: string, payload: any) {
     const { bank_name, sender_method_value, document_value } = payload;
-    const transaction = await this.adminMasterRepository.findOne({
+    const transaction = await this.transactionsRepository.findOne({
       where: { id },
-      relations: { transaction: true },
+      relations: { receiverAccount: true },
     });
     if (!transaction) {
       throw new Error('Transacción no encontrada.');
     }
     // Solo actualiza los campos enviados
-    const receiver = (transaction.transaction as any)?.receiverAccount;
+    const receiver = (transaction.receiverAccount as any);
     if (!receiver) {
       throw new Error('No se encontró receiver asociado a la transacción.');
     }
@@ -233,20 +194,17 @@ export class AdminService {
     // Guardar cambios en receiver
     await (receiver as any).save?.(); // Si receiver es entidad, guardar
     // Devolver la transacción actualizada
-    const updated = await this.adminMasterRepository.findOne({
+    const updated = await this.transactionsRepository.findOne({
       where: { id },
-      relations: { transaction: true },
+      relations: { receiverAccount: true },
     });
     return updated;
   }
 
-
-  
-
   async updateTransaction(id: string, payload: any) {
-    const transaction = await this.adminMasterRepository.findOne({
+    const transaction = await this.transactionsRepository.findOne({
       where: { id },
-      relations: { transaction: true },
+      relations: { senderAccount: true, receiverAccount: true, amount: true, proofOfPayment: true },
     });
     if (!transaction) {
       throw new Error('Transacción no encontrada.');
@@ -257,11 +215,11 @@ export class AdminService {
         transaction[key] = payload[key];
       }
     });
-    await this.adminMasterRepository.save(transaction);
+    await this.transactionsRepository.save(transaction);
     // Devolver la transacción actualizada
-    const updated = await this.adminMasterRepository.findOne({
+    const updated = await this.transactionsRepository.findOne({
       where: { id },
-      relations: { transaction: true },
+      relations: { senderAccount: true, receiverAccount: true, amount: true, proofOfPayment: true },
     });
     return updated;
   }
@@ -285,13 +243,14 @@ export class AdminService {
       perPage: number;
       totalTransactions: number;
     };
-    data: AdministracionMaster[];
+    data: Transaction[];
   }> {
     // Construir el query builder
-    const qb = this.adminMasterRepository.createQueryBuilder('admin')
-      .leftJoinAndSelect('admin.transaction', 'transaction')
-      .leftJoinAndSelect('admin.administrativo', 'administrativo')
-      .leftJoinAndSelect('admin.statusLogs', 'statusLogs');
+    const qb = this.transactionsRepository.createQueryBuilder('transaction')
+      .leftJoinAndSelect('transaction.senderAccount', 'senderAccount')
+      .leftJoinAndSelect('transaction.receiverAccount', 'receiverAccount')
+      .leftJoinAndSelect('transaction.amount', 'amount')
+      .leftJoinAndSelect('transaction.proofOfPayment', 'proofOfPayment');
 
     // Filtro por email (si no es admin)
     if (userEmail) {
@@ -306,14 +265,14 @@ export class AdminService {
       if (value === undefined || value === null || value === '') return;
       // Ejemplo: status, beginTransaction, etc
       if (key === 'status') {
-        qb.andWhere('admin.status = :status', { status: value });
+        qb.andWhere('transaction.finalStatus = :status', { status: value });
       } else if (key === 'beginTransaction') {
-        qb.andWhere('admin.beginTransaction >= :beginTransaction', { beginTransaction: value });
+        qb.andWhere('transaction.beginTransaction >= :beginTransaction', { beginTransaction: value });
       } else if (key === 'endTransaction') {
-        qb.andWhere('admin.endTransaction <= :endTransaction', { endTransaction: value });
+        qb.andWhere('transaction.endTransaction <= :endTransaction', { endTransaction: value });
       } else {
-        // Filtro genérico por campo en admin
-        qb.andWhere(`admin.${key} = :${key}`, { [key]: value });
+        // Filtro genérico por campo en transaction
+        qb.andWhere(`transaction.${key} = :${key}`, { [key]: value });
       }
     });
 

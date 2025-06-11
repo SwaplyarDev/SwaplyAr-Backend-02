@@ -3,13 +3,13 @@ import { IsOptional, IsString } from 'class-validator';
 export class UpdateReceiverDto {
   @IsOptional()
   @IsString()
-  bank_name?: string;
+  bankName?: string;
 
   @IsOptional()
   @IsString()
-  sender_method_value?: string;
+  sendMethodValue?: string;
 
   @IsOptional()
   @IsString()
-  document_value?: string;
+  documentValue?: string;
 } 

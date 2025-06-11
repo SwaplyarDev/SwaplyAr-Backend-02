@@ -1,5 +1,5 @@
 import { IsOptional, IsEnum, IsString, IsDateString } from 'class-validator';
-import { AdminStatus } from '../entities/admin-status.enum';
+import { AdminStatus } from '../../../enum/admin-status.enum';
 
 export class UpdateTransactionDto {
   @IsOptional()

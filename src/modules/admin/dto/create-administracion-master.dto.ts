@@ -1,4 +1,4 @@
-import { AdminStatus } from '../entities/admin-status.enum';
+import { AdminStatus } from '../../../enum/admin-status.enum';
 import { IsNotEmpty, IsUUID, IsEnum, IsOptional, IsString, IsDateString } from 'class-validator';
 
 export class CreateAdministracionMasterDto {

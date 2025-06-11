@@ -22,7 +22,8 @@ import { User } from '../../common/user.decorator';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { UpdateReceiverDto } from './dto/update-receiver.dto';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
-import { AdminStatus } from './entities/admin-status.enum';
+import { AdminStatus } from '../../enum/admin-status.enum';
+import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -108,12 +109,24 @@ export class AdminController {
         message: 'Acceso no autorizado a esta transacción.',
       };
     }
+
+    const receiver = transaction.receiverAccount as any;
+    if (!receiver) {
+      throw new Error('No se encontró receiver asociado a la transacción.');
+    }
+    // Accede al método de pago tipo banco
+    const paymentMethod = receiver.paymentMethod;
+    if (!paymentMethod || paymentMethod.method !== 'bank') {
+      throw new Error('No se encontró banco asociado al receiver.');
+    }
+
     return {
       success: true,
       data: transaction,
     };
   }
 
+  
   @Post('transactions/status/:status')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async updateStatusByType(
@@ -139,11 +152,12 @@ export class AdminController {
     };
   }
 
+  //funciona
   @Put('transactions/:id/receiver')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async updateReceiver(
     @Param('id') id: string,
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) body: UpdateReceiverDto,
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) body: UpdateBankDto,
   ) {
     if (!id) {
       return {

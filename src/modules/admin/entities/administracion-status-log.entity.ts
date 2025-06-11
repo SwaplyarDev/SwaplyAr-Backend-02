@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { AdminStatus } from './admin-status.enum';
+import { AdminStatus } from '../../../enum/admin-status.enum';
 import { AdministracionMaster } from './administracion-master.entity';
 
 @Entity('administracion_status_log')

@@ -3,8 +3,9 @@ import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/
 export class CreateReceiverFinancialAccountDto {
   firstName: string;
   lastName: string;
-  identificationNumber: string;
+  document_value: string;
   phoneNumber: string;
   email: string;
   paymentMethod: CreatePaymentMethodDto;
+  bank_name: string;
 }

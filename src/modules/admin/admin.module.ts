@@ -12,6 +12,8 @@ import { UpdateReceiverFieldsMiddleware } from '../../common/middlewares/update-
 import { UpdateTransactionFieldsMiddleware } from '../../common/middlewares/update-transaction-fields.middleware';
 import { Transaction } from '../transactions/entities/transaction.entity';
 import { ProofOfPaymentsModule } from '@financial-accounts/proof-of-payments/proof-of-payments.module';
+import { BankModule } from '../financial-accounts/payment-methods/bank/bank.module';
+
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { ProofOfPaymentsModule } from '@financial-accounts/proof-of-payments/pro
     ]),
     FileUploadModule,
     ProofOfPaymentsModule,
+    BankModule,
   ],
   controllers: [AdminController],
   providers: [AdminService, AdminRoleGuard],

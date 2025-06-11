@@ -6,6 +6,10 @@ import { AdministracionStatusLog } from './entities/administracion-status-log.en
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
+import { BankService } from '../financial-accounts/payment-methods/bank/bank.service';
+import { UpdateBankDto } from '../financial-accounts/payment-methods/bank/dto/create-bank.dto';
+import { AdministracionMaster } from './entities/administracion-master.entity';
+import { AdminStatus } from '../../enum/admin-status.enum';
 
 @Injectable()
 export class AdminService {
@@ -14,8 +18,11 @@ export class AdminService {
     private readonly transactionsRepository: Repository<Transaction>,
     @InjectRepository(AdministracionStatusLog)
     private readonly statusLogRepository: Repository<AdministracionStatusLog>,
+    @InjectRepository(AdministracionMaster)
+    private readonly adminMasterRepository: Repository<AdministracionMaster>,
     private readonly fileUploadService: FileUploadService,
     private readonly proofOfPaymentService: ProofOfPaymentsService,
+    private readonly bankService: BankService,
   ) {}
 
   /* -------------------------------------------------------------------------- */
@@ -38,12 +45,13 @@ export class AdminService {
   async getTransactionById(id: string): Promise<Transaction> {
     const transaction = await this.transactionsRepository.findOne({
       where: { id },
-      relations: {
-        senderAccount: true,
-        receiverAccount: true,
-        amount: true,
-        proofOfPayment: true,
-      },
+      relations: [
+        'senderAccount',
+        'receiverAccount',
+        'receiverAccount.paymentMethod',
+        'amount',
+        'proofOfPayment'
+      ],
     });
     if (!transaction) {
       Logger.warn(`Transacción no encontrada con ID: ${id}`);
@@ -82,6 +90,24 @@ export class AdminService {
     if (!transaction) {
       throw new Error('Transacción no encontrada.');
     }
+    // Buscar o crear registro en administracion_master
+    let adminMaster = await this.adminMasterRepository.findOne({ where: { transactionId } });
+    if (!adminMaster) {
+      adminMaster = this.adminMasterRepository.create({ transactionId, status: status as AdminStatus });
+      await this.adminMasterRepository.save(adminMaster);
+    }
+    // Actualizar el estado en administracion_master
+    await this.adminMasterRepository.update(
+      { transactionId },
+      { status: status as any },
+    );
+    // Crear log de estado
+    await this.statusLogRepository.save({
+      transaction: adminMaster,
+      status: status as any,
+      changedAt: new Date(),
+    });
+    // Actualizar el estado en la transacción (opcional, si quieres mantener sincronizado)
     await this.transactionsRepository.update(
       { id: transactionId },
       { finalStatus: status as any, ...additionalInfo },
@@ -175,28 +201,30 @@ export class AdminService {
   }
 
   async updateReceiver(id: string, payload: any) {
-    const { bank_name, sender_method_value, document_value } = payload;
     const transaction = await this.transactionsRepository.findOne({
       where: { id },
-      relations: { receiverAccount: true },
+      relations: ['receiverAccount', 'receiverAccount.paymentMethod'],
     });
     if (!transaction) {
       throw new Error('Transacción no encontrada.');
     }
-    // Solo actualiza los campos enviados
-    const receiver = (transaction.receiverAccount as any);
+    const receiver = transaction.receiverAccount as any;
     if (!receiver) {
       throw new Error('No se encontró receiver asociado a la transacción.');
     }
-    if (bank_name) receiver.bankName = bank_name;
-    if (sender_method_value) receiver.senderMethodValue = sender_method_value;
-    if (document_value) receiver.documentValue = document_value;
-    // Guardar cambios en receiver
-    await (receiver as any).save?.(); // Si receiver es entidad, guardar
+    // Obtener el banco asociado al receiver
+    const paymentMethod = receiver.paymentMethod;
+    if (!paymentMethod || paymentMethod.method !== 'bank') {
+      throw new Error('No se encontró banco asociado al receiver.');
+    }
+    const bank = paymentMethod;
+    // Actualizar el banco usando BankService
+    const updateBankDto: UpdateBankDto = { ...payload };
+    await this.bankService.update(bank.id, updateBankDto);
     // Devolver la transacción actualizada
     const updated = await this.transactionsRepository.findOne({
       where: { id },
-      relations: { receiverAccount: true },
+      relations: ['receiverAccount', 'receiverAccount.paymentMethod'],
     });
     return updated;
   }

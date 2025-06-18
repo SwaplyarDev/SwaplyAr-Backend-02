@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Get,
 } from '@nestjs/common';
 import { SendCodeDto } from '@auth/dto/send-code.dto';
 import { UsersService } from '@users/users.service';
@@ -13,7 +14,7 @@ import { AuthService } from '@auth/auth.service';
 import { ValidateCodeDto } from '@auth/dto/validate-code.dto';
 import { JwtService } from '@nestjs/jwt';
 
-@Controller('login')
+@Controller(['login'])
 export class AuthController {
   constructor(
     private usersService: UsersService,
@@ -153,6 +154,12 @@ export class AuthController {
     });
 
     return { access_token: accessToken };
+  }
+
+  @Get('/email-verification')
+  @HttpCode(HttpStatus.OK)
+  async emailVerificationInfo() {
+    return { message: 'Endpoint de verificación de email disponible.' };
   }
 }
 

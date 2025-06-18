@@ -10,8 +10,8 @@ import { AdministracionMaster } from './administracion-master.entity';
 
 @Entity('administracion_status_log')
 export class AdministracionStatusLog {
-  @PrimaryGeneratedColumn('increment', { name: 'log_id' })
-  id: number;
+  @PrimaryGeneratedColumn('uuid', { name: 'log_id' })
+  id: string;
 
   @ManyToOne(
     () => AdministracionMaster,

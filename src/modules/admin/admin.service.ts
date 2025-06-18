@@ -90,24 +90,48 @@ export class AdminService {
     if (!transaction) {
       throw new Error('Transacción no encontrada.');
     }
-    // Buscar o crear registro en administracion_master
+    
     let adminMaster = await this.adminMasterRepository.findOne({ where: { transactionId } });
     if (!adminMaster) {
       adminMaster = this.adminMasterRepository.create({ transactionId, status: status as AdminStatus });
       await this.adminMasterRepository.save(adminMaster);
     }
-    // Actualizar el estado en administracion_master
     await this.adminMasterRepository.update(
       { transactionId },
       { status: status as any },
     );
-    // Crear log de estado
-    await this.statusLogRepository.save({
-      transaction: adminMaster,
+
+    const existingLog = await this.statusLogRepository.findOne({
+      where: {
+        transaction: { transactionId }
+      },
+      order: { changedAt: 'DESC' }
+    });
+
+    // Preparar los campos adicionales del log
+    const logFields = {
       status: status as any,
       changedAt: new Date(),
-    });
-    // Actualizar el estado en la transacción (opcional, si quieres mantener sincronizado)
+      note: additionalInfo.note || null,
+      cause: additionalInfo.cause || null,
+      result: additionalInfo.result || null,
+      transactionSwaplyar: additionalInfo.transactionSwaplyar || null,
+      transactionReceipt: additionalInfo.transactionReceipt || null,
+      approvedNote: additionalInfo.approvedNote || null
+    };
+
+    if (existingLog) {
+      await this.statusLogRepository.update(
+        { id: existingLog.id },
+        logFields
+      );
+    } else {
+      await this.statusLogRepository.save({
+        transaction: adminMaster,
+        ...logFields
+      });
+    }
+
     await this.transactionsRepository.update(
       { id: transactionId },
       { finalStatus: status as any, ...additionalInfo },
@@ -176,7 +200,6 @@ export class AdminService {
     } else {
       throw new Error('Se requiere un archivo o comprobante válido en la solicitud');
     }
-    // Actualizar la transacción con el ProofOfPayment
     await this.transactionsRepository.update(
       { id: transactionId },
       { proofOfPayment: proofOfPayment },

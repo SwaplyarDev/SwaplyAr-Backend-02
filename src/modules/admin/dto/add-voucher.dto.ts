@@ -1,11 +1,14 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class AddVoucherDto {
+  @ApiProperty({ description: 'ID de la transaccion' , example: '123'})
   @IsNotEmpty()
   @IsString()
   transactionId: string;
 
   @IsOptional()
   @IsString()
-  comprobante?: string; // Puede ser base64 o URL
+  @ApiProperty({ description: 'Comprobante de la transaccion' , example: 'base64'})
+  comprobante?: string; 
 }

@@ -14,7 +14,9 @@ import { MailerService } from '@mailer/mailer.service';
 import { AuthService } from '@auth/auth.service';
 import { ValidateCodeDto } from '@auth/dto/validate-code.dto';
 import { JwtService } from '@nestjs/jwt';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @Controller(['login'])
 export class AuthController {
   constructor(
@@ -24,6 +26,28 @@ export class AuthController {
     private jwtService: JwtService,
   ) {}
 
+
+  //documentado
+  @ApiOperation({ summary: 'Enviar código OTP al email del usuario' })
+  @ApiResponse({ status: 200, description: 'Código enviado correctamente', schema: {
+    example: {
+      success: true,
+      message: 'Código enviado correctamente'
+    }
+  }})
+  @ApiResponse({ status: 400, description: 'Email address not associated with any account' })
+  @ApiBody({
+    description: 'Email del usuario',
+    type: SendCodeDto,
+    examples: {
+      ejemplo1: {
+        summary: 'Ejemplo de request',
+        value: {
+          email: 'nahuel@gmail.com'
+        }
+      }
+    }
+  })
   @Post('/email/send')
   @HttpCode(HttpStatus.OK)
   async sendOtpCode(@Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) sendCodeDto: SendCodeDto) {
@@ -38,6 +62,29 @@ export class AuthController {
     return this.mailService.sendAuthCodeMail(user.profile.email, otpCode.code);
   }
 
+
+  //documentado
+  @ApiOperation({ summary: 'Validar código OTP recibido por email' })
+  @ApiResponse({ status: 200, description: 'Tokens generados correctamente', schema: {
+    example: {
+      access_token: 'jwt-access-token',
+      refresh_token: 'jwt-refresh-token'
+    }
+  }})
+  @ApiResponse({ status: 400, description: 'Email address not associated with any account o código inválido' })
+  @ApiBody({
+    description: 'Email y código OTP',
+    type: ValidateCodeDto,
+    examples: {
+      ejemplo1: {
+        summary: 'Ejemplo de request',
+        value: {
+          email: 'nahuel@gmail.com',
+          code: '123456'
+        }
+      }
+    }
+  })
   @Post('/email/validate')
   @HttpCode(HttpStatus.OK)
   async validateOtpCode(@Body() validateCodeDto: ValidateCodeDto) {
@@ -59,7 +106,7 @@ export class AuthController {
     // Marcar el código OTP como usado
     await this.authService.markOtpCodeAsUsed(user, validateCodeDto.code);
 
-    // Generar access token
+   
     const payload = { 
       sub: user.id, 
       email: validateCodeDto.email,
@@ -89,6 +136,23 @@ export class AuthController {
     return { access_token: accessToken, refresh_token: refreshToken };
   }
 
+
+  //documentado
+  @ApiOperation({ summary: 'Renovar access token usando refresh token' })
+  @ApiResponse({ status: 200, description: 'Nuevo access token generado', schema: {
+    example: {
+      access_token: 'jwt-access-token'
+    }
+  }})
+  @ApiResponse({ status: 400, description: 'Invalid user or refresh token not found' })
+  @ApiBody({
+    description: 'ID del usuario',
+    schema: {
+      example: {
+        userId: 'uuid-del-usuario'
+      }
+    }
+  })
   @Post('/refresh')
   @HttpCode(HttpStatus.OK)
   async refreshToken(@Body('userId') userId: string) {
@@ -128,6 +192,15 @@ export class AuthController {
     return { access_token: accessToken };
   }
 
+  
+
+  //documentado
+  @ApiOperation({ summary: 'Información del endpoint de verificación de email' })
+  @ApiResponse({ status: 200, description: 'Mensaje informativo', schema: {
+    example: {
+      message: 'Endpoint de verificación de email disponible.'
+    }
+  }})
   @Get('/email-verification')
   @HttpCode(HttpStatus.OK)
   async emailVerificationInfo() {

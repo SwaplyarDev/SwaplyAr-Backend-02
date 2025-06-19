@@ -24,12 +24,41 @@ import { UpdateReceiverDto } from './dto/update-receiver.dto';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
 import { AdminStatus } from '../../enum/admin-status.enum';
 import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags, ApiBody, ApiParam } from '@nestjs/swagger';
 
+@ApiTags('Admin')
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  //funciona
+  @ApiOperation({ summary: 'Obtener todas las transacciones' })
+  @ApiResponse({ status: 200, description: 'Transacciones obtenidas correctamente', schema: {
+    example: {
+      meta: {
+        totalPages: 5,
+        page: 1,
+        perPage: 6,
+        totalTransactions: 30
+      },
+      data: [
+        {
+          id: 'uuid',
+          status: 'pending',
+        }
+      ]
+    }
+  }})
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 403, description: 'Prohibido' })
+  @ApiResponse({ status: 404, description: 'No encontrado' })
+  @ApiResponse({ status: 500, description: 'Error interno del servidor' })
+  @ApiQuery({ name: 'page', required: false, description: 'Número de página', example: 1 })
+  @ApiQuery({ name: 'perPage', required: false, description: 'Elementos por página', example: 10 })
+  @ApiQuery({ name: 'query', required: false, description: 'Parámetros de búsqueda', example: '{"status":"pending"}' })
+  @ApiQuery({ name: 'user', required: false, description: 'Usuario' })
+  @ApiQuery({ name: 'userEmail', required: false, description: 'Email del usuario' })
+  @ApiQuery({ name: 'userRole', required: false, description: 'Rol del usuario' })
+  @ApiQuery({ name: 'isAdmin', required: false, description: 'Es admin' })
   @Get('transactions')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async getAllTransactions(
@@ -50,7 +79,22 @@ export class AdminController {
     );
   }
 
-  //funciona
+  @ApiOperation({ summary: 'Agregar comprobante a una transacción' })
+  @ApiResponse({ status: 201, description: 'Comprobante agregado correctamente'})
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiBody({
+    description: 'Datos para agregar comprobante',
+    type: AddVoucherDto,
+    examples: {
+      ejemplo1: {
+        summary: 'Ejemplo de request',
+        value: {
+          transactionId: '123',
+          comprobante: 'base64string'
+        }
+      }
+    }
+  })
   @Post('transactions/voucher')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @UseInterceptors(FileInterceptor('comprobante'))
@@ -65,7 +109,21 @@ export class AdminController {
     );
   }
 
-
+  @ApiOperation({ summary: 'Obtener historial de estados de una transacción' })
+  @ApiResponse({ status: 200, description: 'Historial obtenido correctamente', schema: {
+    example: {
+      success: true,
+      message: 'Historial de estados obtenido correctamente',
+      data: [
+        {
+          status: 'pending',
+          changedAt: '2024-01-01T00:00:00Z',
+          note: 'Creada',
+        }
+      ]
+    }
+  }})
+  @ApiParam({ name: 'id', description: 'ID de la transacción', example: 'uuid' })
   @Get('transactions/status/:id')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async getStatusHistory(@Param('id') id: string) {
@@ -77,6 +135,10 @@ export class AdminController {
     };
   }
 
+  @ApiOperation({ summary: 'Obtener una transacción por ID' })
+  @ApiResponse({ status: 200, description: 'Transacción encontrada',})
+  @ApiResponse({ status: 404, description: 'Transacción no encontrada' })
+  @ApiParam({ name: 'id', description: 'ID de la transacción', example: 'uuid' })
   @Get('transactions/:id')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async getTransaction(
@@ -96,7 +158,6 @@ export class AdminController {
         message: 'Transacción no encontrada.',
       };
     }
-    // Verificar autorización
     const userEmail = user.email;
     const userRole = user.role;
     const isAdmin = userRole === 'admin' || userRole === 'super_admin';
@@ -114,7 +175,6 @@ export class AdminController {
     if (!receiver) {
       throw new Error('No se encontró receiver asociado a la transacción.');
     }
-    // Accede al método de pago tipo banco
     const paymentMethod = receiver.paymentMethod;
     if (!paymentMethod || paymentMethod.method !== 'bank') {
       throw new Error('No se encontró banco asociado al receiver.');
@@ -126,7 +186,28 @@ export class AdminController {
     };
   }
 
-  
+  @ApiOperation({ summary: 'Actualizar el estado de una transacción por tipo' })
+  @ApiResponse({ status: 200, description: 'Estado actualizado correctamente', schema: {
+    example: {
+      success: true,
+      message: 'Estado actualizado a approved correctamente',
+      data: { }
+    }
+  }})
+  @ApiResponse({ status: 400, description: 'Se requiere el ID de la transacción' })
+  @ApiParam({ name: 'status', description: 'Nuevo estado', example: 'approved' })
+  @ApiBody({
+    description: 'Datos para actualizar el estado',
+    type: UpdateStatusDto,
+    examples: {
+      ejemplo1: {
+        summary: 'Ejemplo de request',
+        value: {
+          transactionId: 'uuid'
+        }
+      }
+    }
+  })
   @Post('transactions/status/:status')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async updateStatusByType(
@@ -152,7 +233,30 @@ export class AdminController {
     };
   }
 
-  //funciona
+  @ApiOperation({ summary: 'Actualizar datos del receptor de una transacción' })
+  @ApiResponse({ status: 200, description: 'Transacción actualizada correctamente', schema: {
+    example: {
+      success: true,
+      message: 'Transacción actualizada correctamente',
+      data: {  }
+    }
+  }})
+  @ApiResponse({ status: 400, description: 'Transaction ID is required' })
+  @ApiParam({ name: 'id', description: 'ID de la transacción', example: 'uuid' })
+  @ApiBody({
+    description: 'Datos para actualizar el receptor',
+    type: UpdateBankDto,
+    examples: {
+      ejemplo1: {
+        summary: 'Ejemplo de request',
+        value: {
+          bankName: 'Banco Nacion',
+          sendMethodValue: '1234567890123456789012',
+          documentValue: '1234567890'
+        }
+      }
+    }
+  })
   @Put('transactions/:id/receiver')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async updateReceiver(
@@ -173,6 +277,75 @@ export class AdminController {
     };
   }
 
+  @ApiOperation({ summary: 'Actualizar una transacción' })
+  @ApiResponse({ status: 200, description: 'Transacción actualizada correctamente', schema: {
+    example: {
+      success: true,
+      message: 'Transacción actualizada correctamente',
+      data: {  }
+    }
+  }})
+  @ApiParam({ name: 'id', description: 'ID de la transacción', example: 'uuid' })
+  @ApiBody({
+    description: 'Datos para actualizar la transacción',
+    type: UpdateTransactionDto,
+    examples: {
+      ejemplo1: {
+        summary: 'Ejemplo de request',
+        value: {
+          countryTransaction: 'Argentina',
+          message: 'Transferencia de prueba',
+          createdBy: 'nahu.davila@gmail.com',
+          financialAccounts: {
+            senderAccount: {
+              firstName: 'Juan',
+              lastName: 'Pérez',
+              email: 'juan@swaply.com',
+              paymentMethod: {
+                platformId: 'bank',
+                method: 'bank',
+                bank: {
+                  currency: 'ARS',
+                  bankName: 'Banco Nación',
+                  sendMethodKey: 'CBU',
+                  sendMethodValue: '1234567890123456789012',
+                  documentType: 'DNI',
+                  documentValue: '87654321'
+                }
+              }
+            },
+            receiverAccount: {
+              firstName: 'Ana',
+              lastName: 'García',
+              document_value: '12345678',
+              phoneNumber: '1122334455',
+              email: 'ana@example.com',
+              bank_name: 'Banco Galicia',
+              paymentMethod: {
+                platformId: 'bank',
+                method: 'bank',
+                bank: {
+                  currency: 'ARS',
+                  bankName: 'Banco Galicia',
+                  sendMethodKey: 'CBU',
+                  sendMethodValue: '1234567890123456789012',
+                  documentType: 'DNI',
+                  documentValue: '12345678'
+                }
+              }
+            }
+          },
+          amount: {
+            amountSent: 1000,
+            currencySent: 'ARS',
+            amountReceived: 900,
+            currencyReceived: 'BRL',
+            received: false
+          }
+        }
+      }
+    }
+  })
   @Put('transactions/:id')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async updateTransaction(

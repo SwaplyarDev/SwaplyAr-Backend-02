@@ -18,7 +18,8 @@
       "@financial-accounts/*": [ "src/modules/financial-accounts/*" ],
       "@auth/*": [ "src/modules/auth/*" ],
       "@mailer/*": [ "src/modules/mailer/*" ],
-      "@admin/*": [ "src/modules/admin/*" ]
+      "@admin/*": [ "src/modules/admin/*" ],
+      "@otp/*": [ "src/modules/otp/*" ]
     },
     "incremental": true,
     "skipLibCheck": true,

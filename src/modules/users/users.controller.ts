@@ -9,11 +9,15 @@ import { RegisterUserDto } from '@users/dto/register-user.dto';
 import { UsersService } from '@users//users.service';
 import { User } from '@users/entities/user.entity';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import {OtpService} from "../otp/otp.service";
 
 @ApiTags('Usuarios')
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+      private usersService: UsersService,
+      private otpService: OtpService,
+  ) {}
 
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
@@ -36,6 +40,8 @@ export class UsersController {
   })
   @Post('register')
   async register(@Body() userDto: RegisterUserDto): Promise<User> {
-    return this.usersService.register(userDto);
+    const user = await this.usersService.register(userDto);
+    await this.otpService.generateAndSendOtp(user);
+    return user;
   }
 }

@@ -1,30 +1,40 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { OtpCode } from '@auth/entities/otp-code.entity';
-import { User }from '@users/entities/user.entity';
-import { MailerService } from '@mailer/mailer.service';
-import { generate } from 'otp-generator';
-import { UsersService } from '@users/users.service';
+import { InjectRepository }                from '@nestjs/typeorm';
+import { Repository }                      from 'typeorm';
+import { OtpCode }                         from '@auth/entities/otp-code.entity';
+import { User }                            from '@users/entities/user.entity';
+import { MailerService }                   from '@mailer/mailer.service';
+import { generate }                        from 'otp-generator';
 
 @Injectable()
 export class OtpService {
     constructor(
+        @InjectRepository(User)
+        private readonly userRepo: Repository<User>,
+
         @InjectRepository(OtpCode)
         private readonly otpRepo: Repository<OtpCode>,
+
         private readonly mailer: MailerService,
-        private readonly usersService: UsersService,
     ) {}
 
     async sendOtpToEmail(email: string): Promise<void> {
-        const user = await this.usersService.findByEmail(email);
+        // ahora buscás el usuario tú mismo:
+        const user = await this.userRepo.findOne({
+            where: { profile: { email } },
+            relations: ['profile'],
+        });
         if (!user) throw new BadRequestException('Email not associated');
+
         const otp = await this.createOtpFor(user);
         await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
     }
 
     async validateOtpAndGetUser(email: string, code: string): Promise<User> {
-        const user = await this.usersService.findByEmail(email);
+        const user = await this.userRepo.findOne({
+            where: { profile: { email } },
+            relations: ['profile'],
+        });
         if (!user) throw new BadRequestException('Email not associated');
 
         const otp = await this.otpRepo.findOne({
@@ -46,11 +56,17 @@ export class OtpService {
             upperCaseAlphabets: false,
             specialChars: false,
         }).trim();
+
         const otp = this.otpRepo.create({
             user,
             code,
             expiryDate: new Date(Date.now() + 60 * 60 * 1000),
         });
         return this.otpRepo.save(otp);
+    }
+
+    async generateAndSendOtp(user: User): Promise<void> {
+        const otp = await this.createOtpFor(user);
+        await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
     }
 }

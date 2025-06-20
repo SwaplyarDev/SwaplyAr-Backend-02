@@ -1,12 +1,11 @@
-// src/modules/otp/otp.service.ts
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { InjectRepository }                from '@nestjs/typeorm';
-import { Repository }                      from 'typeorm';
-import { OtpCode }                         from '@auth/entities/otp-code.entity';
-import { User }                            from '@users/entities/user.entity';
-import { MailerService }                   from '@mailer/mailer.service';
-import { generate }                        from 'otp-generator';
-import { UsersService }                    from '@users/users.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { OtpCode } from '@auth/entities/otp-code.entity';
+import { User }from '@users/entities/user.entity';
+import { MailerService } from '@mailer/mailer.service';
+import { generate } from 'otp-generator';
+import { UsersService } from '@users/users.service';
 
 @Injectable()
 export class OtpService {

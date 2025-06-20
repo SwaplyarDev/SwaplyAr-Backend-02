@@ -5,13 +5,13 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { AdminStatus } from './admin-status.enum';
+import { AdminStatus } from '../../../enum/admin-status.enum';
 import { AdministracionMaster } from './administracion-master.entity';
 
 @Entity('administracion_status_log')
 export class AdministracionStatusLog {
-  @PrimaryGeneratedColumn('increment', { name: 'log_id' })
-  id: number;
+  @PrimaryGeneratedColumn('uuid', { name: 'log_id' })
+  id: string;
 
   @ManyToOne(
     () => AdministracionMaster,

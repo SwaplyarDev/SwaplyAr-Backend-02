@@ -7,7 +7,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
-import { AdminStatus } from './admin-status.enum';
+import { AdminStatus } from '../../../enum/admin-status.enum';
 import { DimAdministrativo } from './dim-administrativo.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { AdministracionStatusLog } from './administracion-status-log.entity';

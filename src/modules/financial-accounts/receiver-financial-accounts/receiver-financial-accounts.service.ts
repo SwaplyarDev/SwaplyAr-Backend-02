@@ -37,4 +37,12 @@ export class ReceiverFinancialAccountsService {
   async findOne(id: string) {
     return await this.receiverRepository.findOne({ where: { id } }); // lo guarda en la tabla financial accounts
   }
+
+  async addBankToReceiver(receiverId: string, bankDto: any, platformId: any) {
+    const receiver = await this.receiverRepository.findOne({ where: { id: receiverId }, relations: { paymentMethod: true } });
+    if (!receiver) throw new Error('Receiver not found');
+    const newBank = await this.paymentMethodService.create({ bank: bankDto, method: 'bank', platformId });
+    receiver.paymentMethod = newBank;
+    return await this.receiverRepository.save(receiver);
+  }
 }

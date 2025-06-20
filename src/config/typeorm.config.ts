@@ -14,6 +14,6 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
     password: process.env.DB_PASSWORD,
     synchronize: true,
     entities: ['dist/**/*.entity.{ts,js}'],
-    dropSchema: false,
+    dropSchema: true,
   };
 });

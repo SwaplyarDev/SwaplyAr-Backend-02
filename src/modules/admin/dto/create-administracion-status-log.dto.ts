@@ -1,35 +1,44 @@
-import { AdminStatus } from '../entities/admin-status.enum';
+import { AdminStatus } from '../../../enum/admin-status.enum';
 import { IsNotEmpty, IsUUID, IsEnum, IsOptional, IsString, IsBoolean } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAdministracionStatusLogDto {
+  @ApiProperty({ description: 'ID de la transaccion' , example: '1234567890'})
   @IsUUID()
   @IsNotEmpty()
   transactionId: string;
 
+  @ApiProperty({ description: 'Estado del administrativo' , example: '1234567890'})
   @IsEnum(AdminStatus)
   @IsNotEmpty()
   status: AdminStatus;
 
+  @ApiProperty({ description: 'Nota del administrativo' , example: '1234567890'})
   @IsOptional()
   @IsString()
   note?: string;
 
+  @ApiProperty({ description: 'Causa del administrativo' , example: '1234567890'})
   @IsOptional()
   @IsString()
   cause?: string;
 
+  @ApiProperty({ description: 'Resultado del administrativo' , example: '1234567890'})
   @IsOptional()
   @IsBoolean()
   result?: boolean;
 
+  @ApiProperty({ description: 'Transaccion swaplyar' , example: '1234567890'})
   @IsOptional()
   @IsString()
   transactionSwaplyar?: string;
 
+  @ApiProperty({ description: 'Transaccion recibida' , example: '1234567890'})
   @IsOptional()
   @IsString()
   transactionReceipt?: string;
 
+  @ApiProperty({ description: 'Nota de aprobacion' , example: '1234567890'})
   @IsOptional()
   @IsString()
   approvedNote?: string;

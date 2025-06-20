@@ -10,19 +10,69 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
-import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
-import { RolesGuard } from '@auth/guards/roles.guard';
-import { Roles } from '@auth/decorators/roles.decorator';
-
 import { AccountsService } from './userAccounts.service';
 import { DeleteBankAccountDto } from './dto/delete-bank-account.dto';
+import { JwtAuthGuard } from 'src/common/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 
-
+@ApiTags('Cuentas de Usuario')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('users/accounts')
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
+  @ApiOperation({ summary: 'Crear una cuenta bancaria para el usuario autenticado' })
+  @ApiResponse({ status: 201, description: 'Cuenta bancaria creada correctamente', schema: {
+    example: {
+      message: 'bank created',
+      bank: {
+        id: 'uuid',
+        typeAccount: 'bank',
+        formData: { /* ... */ },
+        userAccValues: {
+          first_name: 'Juan',
+          last_name: 'Pérez',
+          identification: '12345678',
+          currency: 'ARS',
+          account_name: 'Cuenta Principal',
+          account_type: 1
+        }
+      }
+    }
+  }})
+  @ApiBody({
+    description: 'Datos para crear la cuenta bancaria',
+    type: CreateBankAccountDto,
+    examples: {
+      ejemplo1: {
+        summary: 'Ejemplo de request',
+        value: {
+          typeAccount: 'bank',
+          formData: {
+            currency: 'ARS',
+            bank_name: 'Banco Nación',
+            send_method_key: 'CBU',
+            send_method_value: '1234567890123456789012',
+            document_type: 'DNI',
+            document_value: '12345678',
+            alias: 'juan.nacion',
+            branch: 'Sucursal Centro'
+          },
+          userAccValues: {
+            first_name: 'Juan',
+            last_name: 'Pérez',
+            identification: '12345678',
+            currency: 'ARS',
+            account_name: 'Cuenta Principal',
+            account_type: 1
+          }
+        }
+      }
+    }
+  })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @Post()
@@ -39,6 +89,9 @@ export class AccountsController {
     return { message: 'bank created', bank: newBank };
   }
 
+
+  //no lelva documentacion de swagger
+ 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @Delete()
@@ -48,6 +101,25 @@ export class AccountsController {
   }
 
 
+
+  @ApiOperation({ summary: 'Obtener todas las cuentas del usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Lista de cuentas del usuario', schema: {
+    example: [
+      {
+        id: 'uuid',
+        typeAccount: 'bank',
+        formData: { /* ... */ },
+        userAccValues: {
+          first_name: 'Juan',
+          last_name: 'Pérez',
+          identification: '12345678',
+          currency: 'ARS',
+          account_name: 'Cuenta Principal',
+          account_type: 1
+        }
+      }
+    ]
+  }})
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @Get()

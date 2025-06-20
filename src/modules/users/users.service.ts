@@ -16,13 +16,13 @@ export class UsersService {
     const user = new User();
     const userProfile = new UserProfile();
 
-    userProfile.firstName = userDto.firstName;
-    userProfile.lastName = userDto.lastName;
-    userProfile.email = userDto.email;
+    userProfile.firstName = userDto.firstName || 'Nombre';
+    userProfile.lastName = userDto.lastName || 'Apellido';
+    userProfile.email = userDto.email || 'sin.email@dominio.com';
 
     user.profile = userProfile;
-    user.termsAccepted = userDto.termsAccepted;
-    user.role = userDto.role;
+    user.termsAccepted = userDto.termsAccepted ?? false;
+    user.role = userDto.role || 'user';
 
     user.rewardsLedger = new UserRewardsLedger();
 

@@ -6,8 +6,7 @@ import { AuthService } from '@auth/auth.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OtpCode } from '@auth/entities/otp-code.entity';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from 'src/common/jwt.strategy';
 
 @Module({
   imports: [

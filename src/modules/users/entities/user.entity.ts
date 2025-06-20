@@ -93,7 +93,7 @@ export class User {
   })
   role: 'user' | 'admin' | 'super_admin';
 
-  @Column({ name: 'terms_accepted' })
+  @Column({ name: 'terms_accepted', default: false })
   termsAccepted: boolean;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })

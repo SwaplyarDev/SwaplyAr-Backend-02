@@ -27,4 +27,9 @@ export class BankService {
   async findAll() {
     return await this.bankRepository.find();
   }
+
+  async update(id: string, updateBankDto: Partial<CreateBankDto>) {
+    await this.bankRepository.update({ id }, updateBankDto);
+    return this.bankRepository.findOne({ where: { id } });
+  }
 }

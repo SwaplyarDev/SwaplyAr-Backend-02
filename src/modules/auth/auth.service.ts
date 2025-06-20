@@ -1,56 +1,57 @@
-import { Injectable } from '@nestjs/common';
-import { User } from '@users/entities/user.entity';
-import { OtpCode } from '@auth/entities/otp-code.entity';
-import { generate } from 'otp-generator';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+// src/modules/auth/auth.service.ts
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { InjectRepository }                from '@nestjs/typeorm';
+import { Repository }                      from 'typeorm';
+import { User }                            from '@users/entities/user.entity';
+import { JwtService }                      from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  
   constructor(
-    @InjectRepository(OtpCode) private otpCodeRepository: Repository<OtpCode>,
+      @InjectRepository(User)
+      private readonly userRepo: Repository<User>,  // ← inyecta User repo
+      private readonly jwtService: JwtService,
   ) {}
 
-  createOtpCode(user: User): Promise<OtpCode> {
-    const code = generate(6, {
-      lowerCaseAlphabets: false,
-      upperCaseAlphabets: false,
-      specialChars: false,
-    });
-
-    const otpCode = new OtpCode();
-    otpCode.code = code;
-    otpCode.user = user;
-
-    const oneHourInMillis = 60 * 60 * 1000;
-    otpCode.expiryDate = new Date(Date.now() + oneHourInMillis);
-
-    return this.otpCodeRepository.save(otpCode);
+  private buildPayload(user: User) {
+    return {
+      sub: user.id,
+      email: user.profile.email,
+      role: user.role,
+      fullName: `${user.profile.firstName} ${user.profile.lastName}`,
+      terms: user.termsAccepted,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      profile: user.profile,
+      category: user.profile.category,
+      isValidated: user.isValidated,
+    };
   }
 
-  async validateOtpCode(user: User, code: string): Promise<boolean> {
-    const otpCode = await this.otpCodeRepository.findOne({
-      where: { code, user: { id: user.id } },
+  async generateTokens(user: User) {
+    const payload = this.buildPayload(user);
+    const accessToken  = this.jwtService.sign(payload, { expiresIn: '1h' });
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: '7d',
     });
 
-    if (!otpCode) {
-      return false;
-    }
+    user.refreshToken = refreshToken;
+    await this.userRepo.save(user);
 
-    const isExpired = otpCode.expiryDate.getTime() < Date.now();
-
-    return !(isExpired || otpCode.isUsed);
+    return { access_token: accessToken, refresh_token: refreshToken };
   }
 
-  async markOtpCodeAsUsed(user: User, code: string) {
-    const otpCode = await this.otpCodeRepository.findOne({
-    where: { code, user: { id: user.id } },
-    });
-
-    if (otpCode) {
-      otpCode.isUsed = true;
-      await this.otpCodeRepository.save(otpCode);
+  async refreshAccessToken(userId: string) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user || !user.refreshToken) {
+      throw new BadRequestException('Invalid user or refresh token');
     }
+    this.jwtService.verify(user.refreshToken, {
+      secret: process.env.JWT_REFRESH_SECRET,
+    });
+    const payload = this.buildPayload(user);
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
+    return { access_token: accessToken };
   }
 }

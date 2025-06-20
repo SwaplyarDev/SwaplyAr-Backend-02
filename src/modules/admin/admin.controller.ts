@@ -24,9 +24,10 @@ import { UpdateReceiverDto } from './dto/update-receiver.dto';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
 import { AdminStatus } from '../../enum/admin-status.enum';
 import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags, ApiBody, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiBody, ApiParam, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 
 @ApiTags('Admin')
+@ApiBearerAuth()
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
@@ -52,13 +53,6 @@ export class AdminController {
   @ApiResponse({ status: 403, description: 'Prohibido' })
   @ApiResponse({ status: 404, description: 'No encontrado' })
   @ApiResponse({ status: 500, description: 'Error interno del servidor' })
-  @ApiQuery({ name: 'page', required: false, description: 'Número de página', example: 1 })
-  @ApiQuery({ name: 'perPage', required: false, description: 'Elementos por página', example: 10 })
-  @ApiQuery({ name: 'query', required: false, description: 'Parámetros de búsqueda', example: '{"status":"pending"}' })
-  @ApiQuery({ name: 'user', required: false, description: 'Usuario' })
-  @ApiQuery({ name: 'userEmail', required: false, description: 'Email del usuario' })
-  @ApiQuery({ name: 'userRole', required: false, description: 'Rol del usuario' })
-  @ApiQuery({ name: 'isAdmin', required: false, description: 'Es admin' })
   @Get('transactions')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async getAllTransactions(
@@ -80,21 +74,27 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Agregar comprobante a una transacción' })
-  @ApiResponse({ status: 201, description: 'Comprobante agregado correctamente'})
-  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Datos para agregar comprobante',
-    type: AddVoucherDto,
-    examples: {
-      ejemplo1: {
-        summary: 'Ejemplo de request',
-        value: {
-          transactionId: '123',
-          comprobante: 'base64string'
-        }
-      }
-    }
+    description: 'Sube un comprobante para una transacción. El `transactionId` es obligatorio y el `comprobante` es el archivo.',
+    schema: {
+      type: 'object',
+      properties: {
+        transactionId: {
+          type: 'string',
+          description: 'ID de la transacción a la que se asocia el comprobante.',
+        },
+        comprobante: {
+          type: 'string',
+          format: 'binary',
+          description: 'El archivo del comprobante (e.g., PDF, JPG).',
+        },
+      },
+      required: ['transactionId', 'comprobante'],
+    },
   })
+  @ApiResponse({ status: 201, description: 'Comprobante agregado correctamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @Post('transactions/voucher')
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @UseInterceptors(FileInterceptor('comprobante'))

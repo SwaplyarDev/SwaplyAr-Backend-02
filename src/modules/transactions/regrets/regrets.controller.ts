@@ -80,46 +80,13 @@ export class RegretsController {
     return this.regretsService.findOne(id);
   }
 
-  @ApiOperation({ summary: 'Actualizar un arrepentimiento' })
-  @ApiResponse({ status: 200, description: 'Arrepentimiento actualizado correctamente', schema: {
-    example: {
-      id: 'uuid',
-      transaction_id: '123',
-      last_name: 'Davila',
-      email: 'nahuel@gmail.com',
-      phone_number: '1234567890',
-      status: 'approved',
-      note: 'Nota actualizada'
-    }
-  }})
-  @ApiParam({ name: 'id', description: 'ID del arrepentimiento', example: 'uuid' })
-  @ApiBody({
-    description: 'Datos para actualizar el arrepentimiento',
-    type: UpdateRegretDto,
-    examples: {
-      ejemplo1: {
-        summary: 'Ejemplo de request',
-        value: {
-          transaction_id: '123',
-          last_name: 'Davila',
-          email: 'nahuel@gmail.com',
-          phone_number: '1234567890',
-          status: 'approved',
-          note: 'Nota actualizada'
-        }
-      }
-    }
-  })
+ 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRegretDto: UpdateRegretDto) {
     return this.regretsService.update(id, updateRegretDto);
   }
 
-  @ApiOperation({ summary: 'Eliminar un arrepentimiento' })
-  @ApiResponse({ status: 200, description: 'Arrepentimiento eliminado correctamente', schema: {
-    example: { message: 'Arrepentimiento eliminado correctamente' }
-  }})
-  @ApiParam({ name: 'id', description: 'ID del arrepentimiento', example: 'uuid' })
+ 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.regretsService.remove(id);

@@ -17,16 +17,7 @@ export class UsersController {
 
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
-  @ApiResponse({ status: 201, description: 'Usuario registrado correctamente', schema: {
-    example: {
-      id: 'uuid',
-      firstName: 'Nahuel',
-      lastName: 'Davila',
-      email: 'nahuel@gmail.com',
-      role: 'user',
-      termsAccepted: true
-    }
-  }})
+  @ApiResponse({ status: 201, description: 'Usuario registrado correctamente'})
   @ApiBody({
     description: 'Datos para registrar un usuario',
     type: RegisterUserDto,

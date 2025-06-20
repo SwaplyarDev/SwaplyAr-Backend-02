@@ -15,9 +15,10 @@ import { DeleteBankAccountDto } from './dto/delete-bank-account.dto';
 import { JwtAuthGuard } from 'src/common/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('Cuentas de Usuario')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('users/accounts')
 export class AccountsController {
@@ -51,8 +52,12 @@ export class AccountsController {
         value: {
           typeAccount: 'bank',
           formData: {
-            bankName: 'Banco Nación',
-            cbu: '1234567890123456789012',
+            currency: 'ARS',
+            bank_name: 'Banco Nación',
+            send_method_key: 'CBU',
+            send_method_value: '1234567890123456789012',
+            document_type: 'DNI',
+            document_value: '12345678',
             alias: 'juan.nacion',
             branch: 'Sucursal Centro'
           },
@@ -84,22 +89,9 @@ export class AccountsController {
     return { message: 'bank created', bank: newBank };
   }
 
-  @ApiOperation({ summary: 'Eliminar una cuenta bancaria del usuario autenticado' })
-  @ApiResponse({ status: 200, description: 'Cuenta bancaria eliminada correctamente', schema: {
-    example: { message: 'Cuenta bancaria eliminada correctamente' }
-  }})
-  @ApiBody({
-    description: 'Datos para eliminar la cuenta bancaria',
-    type: DeleteBankAccountDto,
-    examples: {
-      ejemplo1: {
-        summary: 'Ejemplo de request',
-        value: {
-          bankAccountId: 'uuid-cuenta-banco'
-        }
-      }
-    }
-  })
+
+  //no lelva documentacion de swagger
+ 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @Delete()
@@ -107,6 +99,8 @@ export class AccountsController {
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {
     return this.accountsService.deleteBankAccount(req.user, dto.bankAccountId);
   }
+
+
 
   @ApiOperation({ summary: 'Obtener todas las cuentas del usuario autenticado' })
   @ApiResponse({ status: 200, description: 'Lista de cuentas del usuario', schema: {

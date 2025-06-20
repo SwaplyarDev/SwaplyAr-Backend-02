@@ -1,17 +1,20 @@
-// src/modules/otp/otp.module.ts
-import { Module }        from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { OtpCode }       from '@auth/entities/otp-code.entity';
-import { User }          from '@users/entities/user.entity';
-import { OtpService }    from './otp.service';
-import { MailerModule }  from '@mailer/mailer.module';
+import { MailerModule } from '@mailer/mailer.module';
+import { OtpService } from './otp.service';
+import { OtpController } from './otp.controller';
+import { OtpCode } from '@auth/entities/otp-code.entity';
+import { User } from '@users/entities/user.entity';
+import {AuthModule} from "@auth/auth.module";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([User, OtpCode]),  // ¡ENTIDADES, no módulos!
-        MailerModule,                               // módulo de mailing
+        TypeOrmModule.forFeature([User, OtpCode]),
+        MailerModule,
+        AuthModule,
     ],
     providers: [OtpService],
-    exports:    [OtpService],
+    controllers: [OtpController],
+    exports: [OtpService],
 })
 export class OtpModule {}

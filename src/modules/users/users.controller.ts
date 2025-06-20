@@ -9,7 +9,7 @@ import { RegisterUserDto } from '@users/dto/register-user.dto';
 import { UsersService } from '@users//users.service';
 import { User } from '@users/entities/user.entity';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import {OtpService} from "../otp/otp.service";
+import {OtpService} from "@otp/otp.service";
 
 @ApiTags('Usuarios')
 @Controller('users')

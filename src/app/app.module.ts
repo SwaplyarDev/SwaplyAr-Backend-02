@@ -10,12 +10,13 @@ import { AuthModule } from '@auth/auth.module';
 import { MailerModule } from '@mailer/mailer.module';
 import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
 import { UserAccountsModule } from 'src/modules/userAccounts/userAccounts.module';
-
 import { RegretsModule } from '@transactions/regrets/regrets.module';
-import { NotesModule } from '@transactions/notes/notes.module';import { AdminModule } from '@admin/admin.module';
+import { NotesModule } from '@transactions/notes/notes.module';
+import { AdminModule } from '@admin/admin.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/common/jwt.strategy';
+import {OtpModule} from "@otp/otp.module";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { JwtStrategy } from 'src/common/jwt.strategy';
     UserAccountsModule,
     RegretsModule,
     NotesModule,
+    OtpModule,
     MailerModule,
     AuthModule,
     AdminModule,

@@ -52,8 +52,7 @@ export class RegretsController {
         last_name: 'Davila',
         email: 'nahuel@gmail.com',
         phone_number: '1234567890',
-        status: 'pending',
-        note: 'Nota de prueba'
+        description : "me arrepenti "
       }
     ]
   }})

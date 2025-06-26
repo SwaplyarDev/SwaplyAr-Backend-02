@@ -38,7 +38,7 @@ export class AdminController {
       meta: {
         totalPages: 5,
         page: 1,
-        perPage: 6,
+        perPage: 12,
         totalTransactions: 30
       },
       data: [
@@ -68,7 +68,7 @@ export class AdminController {
     return this.adminService.findAllTransactionsPaginated(
       userEmail,
       page ? parseInt(page) : 1,
-      perPage ? parseInt(perPage) : 6,
+      perPage ? parseInt(perPage) : 12,
       dynamicFilters
     );
   }

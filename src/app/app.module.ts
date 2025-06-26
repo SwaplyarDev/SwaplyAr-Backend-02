@@ -16,7 +16,9 @@ import { AdminModule } from '@admin/admin.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/common/jwt.strategy';
+import { AbandonedTransactionsModule } from '@transactions/abandoned-transactions/abandoned-transactions.module';
 import {OtpModule} from "@otp/otp.module";
+
 
 @Module({
   imports: [
@@ -33,6 +35,7 @@ import {OtpModule} from "@otp/otp.module";
     MailerModule,
     AuthModule,
     AdminModule,
+    AbandonedTransactionsModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',

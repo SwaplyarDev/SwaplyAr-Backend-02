@@ -12,10 +12,12 @@ import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
 import { UserAccountsModule } from 'src/modules/userAccounts/userAccounts.module';
 
 import { RegretsModule } from '@transactions/regrets/regrets.module';
-import { NotesModule } from '@transactions/notes/notes.module';import { AdminModule } from '@admin/admin.module';
+import { NotesModule } from '@transactions/notes/notes.module';
+import { AdminModule } from '@admin/admin.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/common/jwt.strategy';
+import { AbandonedTransactionsModule } from '@transactions/abandoned-transactions/abandoned-transactions.module';
 
 @Module({
   imports: [
@@ -31,6 +33,7 @@ import { JwtStrategy } from 'src/common/jwt.strategy';
     MailerModule,
     AuthModule,
     AdminModule,
+    AbandonedTransactionsModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',

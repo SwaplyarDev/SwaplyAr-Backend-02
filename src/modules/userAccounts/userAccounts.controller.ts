@@ -126,4 +126,6 @@ export class AccountsController {
   async findAll(@Request() req) {
     return this.accountsService.findAllByUser(req.user);
   }
+
+  //GET:ID
 }

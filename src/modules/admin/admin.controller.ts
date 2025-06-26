@@ -9,26 +9,27 @@ import {
   UseInterceptors,
   Query,
   UseGuards,
-  Logger,
   ValidationPipe,
+  Request,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AddVoucherDto } from './dto/add-voucher.dto';
-import { FilterTransactionsDto } from './dto/filter-transactions.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { User } from '../../common/user.decorator';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
-import { UpdateReceiverDto } from './dto/update-receiver.dto';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
 import { AdminStatus } from '../../enum/admin-status.enum';
 import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
-import { ApiOperation, ApiResponse, ApiTags, ApiBody, ApiParam, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiBody, ApiParam, ApiBearerAuth, ApiConsumes, ApiQuery } from '@nestjs/swagger';
+import { User as UserEntity } from '@users/entities/user.entity';
+import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('admin')
+@UseGuards(JwtAuthGuard, AdminRoleGuard)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
@@ -54,7 +55,6 @@ export class AdminController {
   @ApiResponse({ status: 404, description: 'No encontrado' })
   @ApiResponse({ status: 500, description: 'Error interno del servidor' })
   @Get('transactions')
-  @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async getAllTransactions(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -96,7 +96,6 @@ export class AdminController {
   @ApiResponse({ status: 201, description: 'Comprobante agregado correctamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @Post('transactions/voucher')
-  @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @UseInterceptors(FileInterceptor('comprobante'))
   async addVoucher(
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) body: AddVoucherDto,
@@ -109,24 +108,38 @@ export class AdminController {
     );
   }
 
-  @ApiOperation({ summary: 'Obtener historial de estados de una transacción' })
-  @ApiResponse({ status: 200, description: 'Historial obtenido correctamente', schema: {
-    example: {
-      success: true,
-      message: 'Historial de estados obtenido correctamente',
-      data: [
-        {
-          status: 'pending',
-          changedAt: '2024-01-01T00:00:00Z',
-          note: 'Creada',
-        }
-      ]
-    }
-  }})
-  @ApiParam({ name: 'id', description: 'ID de la transacción', example: 'uuid' })
   @Get('transactions/status/:id')
-  @UseGuards(JwtAuthGuard, AdminRoleGuard)
-  async getStatusHistory(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Obtener historial de estados de una transacción' })
+  @ApiResponse({
+    status: 200,
+    description: 'Historial de estados obtenido correctamente',
+    schema: {
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string' },
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              status: { type: 'string' },
+              changedAt: { type: 'string', format: 'date-time' },
+              message: { type: 'string' },
+              changedByAdmin: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  name: { type: 'string' }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  })
+  async getStatusHistory(@Param('id') id: string): Promise<{ success: boolean; message: string; data: StatusHistoryResponse[] }> {
     const statusHistory = await this.adminService.getStatusHistory(id);
     return {
       success: true,
@@ -135,12 +148,80 @@ export class AdminController {
     };
   }
 
+  @Get('transactions/status')
+  @ApiOperation({ summary: 'Obtener historial completo de estados de todas las transacciones' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiResponse({
+    status: 200,
+    description: 'Historial de estados obtenido correctamente',
+    schema: {
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              status: { type: 'string' },
+              changedAt: { type: 'string', format: 'date-time' },
+              message: { type: 'string' },
+              changedByAdmin: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  name: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        meta: {
+          type: 'object',
+          properties: {
+            total: { type: 'number' },
+            page: { type: 'number' },
+            limit: { type: 'number' },
+            totalPages: { type: 'number' }
+          }
+        }
+      }
+    }
+  })
+  async getAllStatusHistory(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10
+  ): Promise<{ data: StatusHistoryResponse[]; meta: { total: number; page: number; limit: number; totalPages: number } }> {
+    return await this.adminService.getAllStatusHistory(page, limit);
+  }
+
+  @Post('transactions/:id/status')
+  @ApiOperation({ summary: 'Actualizar estado de una transacción' })
+  @ApiResponse({
+    status: 200,
+    description: 'Estado actualizado correctamente'
+  })
+  async updateTransactionStatus(
+    @Param('id') id: string,
+    @Body('status') status: AdminStatus,
+    @Body('message') message: string,
+    @Body('additionalData') additionalData: Record<string, any>,
+    @Request() req: { user: UserEntity }
+  ) {
+    return await this.adminService.updateTransactionStatusByType(
+      id,
+      status,
+      req.user,
+      message,
+      additionalData
+    );
+  }
+
   @ApiOperation({ summary: 'Obtener una transacción por ID' })
   @ApiResponse({ status: 200, description: 'Transacción encontrada',})
   @ApiResponse({ status: 404, description: 'Transacción no encontrada' })
   @ApiParam({ name: 'id', description: 'ID de la transacción', example: 'uuid' })
   @Get('transactions/:id')
-  @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async getTransaction(
     @Param('id') id: string,
     @User() user: any,
@@ -209,10 +290,10 @@ export class AdminController {
     }
   })
   @Post('transactions/status/:status')
-  @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async updateStatusByType(
     @Param('status') status: AdminStatus,
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) body: UpdateStatusDto & any,
+    @Request() req: { user: UserEntity }
   ) {
     const transactionId = body.transactionId;
     if (!transactionId) {
@@ -224,7 +305,9 @@ export class AdminController {
     const result = await this.adminService.updateTransactionStatusByType(
       transactionId,
       status,
-      {}, 
+      req.user,
+      body.message,
+      body.additionalData
     );
     return {
       success: true,
@@ -258,7 +341,6 @@ export class AdminController {
     }
   })
   @Put('transactions/:id/receiver')
-  @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async updateReceiver(
     @Param('id') id: string,
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) body: UpdateBankDto,
@@ -347,7 +429,6 @@ export class AdminController {
     }
   })
   @Put('transactions/:id')
-  @UseGuards(JwtAuthGuard, AdminRoleGuard)
   async updateTransaction(
     @Param('id') id: string,
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) body: UpdateTransactionDto,

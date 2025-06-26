@@ -17,7 +17,7 @@ export class MailerService {
   async sendAuthCodeMail(to: string, code: string) {
     const from = this.configService.get<string>('nodemailer.auth.user');
     this.logger.log(`Mailer verification: ${await this.mailer.verify()}`);
-    this.logger.log(`Sending mail from ${from} to ${to} with code ${code}`);
+    this.logger.log(`Sending mail from ${from} to ${to}`);
 
     await this.mailer.sendMail({
       from,

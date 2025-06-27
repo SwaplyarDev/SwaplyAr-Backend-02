@@ -38,7 +38,6 @@ export class AdministracionStatusLog {
   @Column({ type: 'text', nullable: true })
   message: string;
 
-  // Relación con el usuario administrador que hizo el cambio
   @ManyToOne(() => User, { eager: false })
   @JoinColumn({ name: 'changed_by_admin_id' })
   changedByAdmin: User;

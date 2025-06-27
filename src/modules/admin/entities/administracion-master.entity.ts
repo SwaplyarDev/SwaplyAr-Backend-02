@@ -6,11 +6,13 @@ import {
   OneToOne,
   OneToMany,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { AdminStatus } from '../../../enum/admin-status.enum';
-import { DimAdministrativo } from './dim-administrativo.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { AdministracionStatusLog } from './administracion-status-log.entity';
+import { User } from '@users/entities/user.entity';
 
 @Entity('administracion_master')
 export class AdministracionMaster {
@@ -22,16 +24,13 @@ export class AdministracionMaster {
   @JoinColumn({ name: 'transaction_id', referencedColumnName: 'id' })
   transaction: Transaction;
 
-  // Relación con el administrador responsable
-  @ManyToOne(
-    () => DimAdministrativo,
-    (admin: DimAdministrativo) => admin.transactions,
-    {
-      eager: false,
-    },
-  )
-  @JoinColumn({ name: 'administrativo_id' })
-  administrativo: DimAdministrativo;
+  // Relación con el usuario administrador
+  @ManyToOne(() => User, { eager: false })
+  @JoinColumn({ name: 'admin_user_id' })
+  adminUser: User;
+
+  @Column({ name: 'admin_user_id', type: 'uuid' })
+  adminUserId: string;
 
   @Column({
     type: 'enum',
@@ -39,6 +38,12 @@ export class AdministracionMaster {
     default: AdminStatus.Pending,
   })
   status: AdminStatus;
+
+  @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
+  updatedAt: Date;
 
   @Column({ type: 'timestamp', name: 'begin_transaction', nullable: true })
   beginTransaction: Date;
@@ -53,6 +58,9 @@ export class AdministracionMaster {
   @OneToMany(
     () => AdministracionStatusLog,
     (log: AdministracionStatusLog) => log.transaction,
+    {
+      cascade: true
+    }
   )
   statusLogs: AdministracionStatusLog[];
 }

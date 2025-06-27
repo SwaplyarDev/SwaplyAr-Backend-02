@@ -4,9 +4,11 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
 } from 'typeorm';
 import { AdminStatus } from '../../../enum/admin-status.enum';
 import { AdministracionMaster } from './administracion-master.entity';
+import { User } from '@users/entities/user.entity';
 
 @Entity('administracion_status_log')
 export class AdministracionStatusLog {
@@ -26,7 +28,7 @@ export class AdministracionStatusLog {
   @Column({ type: 'enum', enum: AdminStatus })
   status: AdminStatus;
 
-  @Column({
+  @CreateDateColumn({
     type: 'timestamp',
     name: 'changed_at',
     default: () => 'CURRENT_TIMESTAMP',
@@ -34,20 +36,15 @@ export class AdministracionStatusLog {
   changedAt: Date;
 
   @Column({ type: 'text', nullable: true })
-  note: string;
+  message: string;
 
-  @Column({ type: 'text', nullable: true })
-  cause: string;
+  @ManyToOne(() => User, { eager: false })
+  @JoinColumn({ name: 'changed_by_admin_id' })
+  changedByAdmin: User;
 
-  @Column({ type: 'boolean', nullable: true })
-  result: boolean;
+  @Column({ name: 'changed_by_admin_id', type: 'uuid' })
+  changedByAdminId: string;
 
-  @Column({ type: 'text', name: 'transaction_swaplyar', nullable: true })
-  transactionSwaplyar: string;
-
-  @Column({ type: 'text', name: 'transaction_receipt', nullable: true })
-  transactionReceipt: string;
-
-  @Column({ type: 'text', name: 'approved_note', nullable: true })
-  approvedNote: string;
+  @Column({ type: 'jsonb', nullable: true })
+  additionalData: Record<string, any>;
 }

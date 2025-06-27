@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindManyOptions } from 'typeorm';
 import { Transaction } from '../../modules/transactions/entities/transaction.entity';
@@ -10,9 +10,14 @@ import { BankService } from '../financial-accounts/payment-methods/bank/bank.ser
 import { UpdateBankDto } from '../financial-accounts/payment-methods/bank/dto/create-bank.dto';
 import { AdministracionMaster } from './entities/administracion-master.entity';
 import { AdminStatus } from '../../enum/admin-status.enum';
+import { User } from '@users/entities/user.entity';
+import { TransactionStatus } from '../../enum/trasanction-status.enum';
+import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     @InjectRepository(Transaction)
     private readonly transactionsRepository: Repository<Transaction>,
@@ -24,6 +29,25 @@ export class AdminService {
     private readonly proofOfPaymentService: ProofOfPaymentsService,
     private readonly bankService: BankService,
   ) {}
+
+  private convertAdminStatusToTransactionStatus(status: AdminStatus): TransactionStatus {
+    // Mapeo directo entre AdminStatus y TransactionStatus
+    const statusMap: Record<AdminStatus, TransactionStatus> = {
+      [AdminStatus.Pending]: TransactionStatus.Pending,
+      [AdminStatus.ReviewPayment]: TransactionStatus.Review_Payment,
+      [AdminStatus.Approved]: TransactionStatus.Approved,
+      [AdminStatus.Rejected]: TransactionStatus.Rejected,
+      [AdminStatus.RefundInTransit]: TransactionStatus.Refund_In_Transit,
+      [AdminStatus.InTransit]: TransactionStatus.In_Transit,
+      [AdminStatus.Discrepancy]: TransactionStatus.Discrepancy,
+      [AdminStatus.Canceled]: TransactionStatus.Canceled,
+      [AdminStatus.Modified]: TransactionStatus.Modified,
+      [AdminStatus.Refunded]: TransactionStatus.Refunded,
+      [AdminStatus.Completed]: TransactionStatus.Completed,
+    };
+
+    return statusMap[status] || TransactionStatus.Pending;
+  }
 
   /* -------------------------------------------------------------------------- */
   /*                                 FIND ALL                                   */
@@ -64,20 +88,45 @@ export class AdminService {
   /* -------------------------------------------------------------------------- */
   /*                        STATUS HISTORY FOR A TX                              */
   /* -------------------------------------------------------------------------- */
-  async getStatusHistory(id: string): Promise<AdministracionStatusLog[]> {
+  async getStatusHistory(id: string): Promise<StatusHistoryResponse[]> {
     try {
       const statusHistory = await this.statusLogRepository.find({
         where: { transaction: { transactionId: id } },
+        relations: ['changedByAdmin', 'changedByAdmin.profile'],
+        select: {
+          id: true,
+          status: true,
+          changedAt: true,
+          message: true,
+          changedByAdmin: {
+            id: true,
+            profile: {
+              firstName: true,
+              lastName: true
+            }
+          }
+        },
         order: { changedAt: 'DESC' },
       });
+
       if (!statusHistory || statusHistory.length === 0) {
-        Logger.error('No se encontró historial de estados.');
+        this.logger.warn(`No se encontró historial de estados para la transacción ${id}`);
         throw new NotFoundException('No se encontró historial de estados.');
       }
-      Logger.log('Historial de estados obtenido correctamente');
-      return statusHistory;
+
+      // Transformar la respuesta para tener el formato deseado
+      const formattedHistory: StatusHistoryResponse[] = statusHistory.map(log => ({
+        ...log,
+        changedByAdmin: {
+          id: log.changedByAdmin.id,
+          name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`
+        }
+      }));
+
+      this.logger.log(`Historial de estados obtenido correctamente para la transacción ${id}`);
+      return formattedHistory;
     } catch (error) {
-      Logger.error('Error al obtener el historial de estados:', error);
+      this.logger.error(`Error al obtener el historial de estados para la transacción ${id}:`, error);
       throw error;
     }
   }
@@ -85,59 +134,80 @@ export class AdminService {
   /* -------------------------------------------------------------------------- */
   /*                    UPDATE TRANSACTION STATUS BY TYPE                       */
   /* -------------------------------------------------------------------------- */
-  async updateTransactionStatusByType(transactionId: string, status: string, additionalInfo: any = {}) {
-    const transaction = await this.transactionsRepository.findOne({ where: { id: transactionId } });
-    if (!transaction) {
-      throw new Error('Transacción no encontrada.');
+  async updateTransactionStatusByType(
+    transactionId: string, 
+    status: AdminStatus, 
+    adminUser: User,
+    message?: string,
+    additionalData?: Record<string, any>
+  ) {
+    // Verificar que el usuario sea admin o super_admin
+    if (!['admin', 'super_admin'].includes(adminUser.role)) {
+      throw new UnauthorizedException('Solo los administradores pueden actualizar el estado de las transacciones');
     }
-    
-    let adminMaster = await this.adminMasterRepository.findOne({ where: { transactionId } });
-    if (!adminMaster) {
-      adminMaster = this.adminMasterRepository.create({ transactionId, status: status as AdminStatus });
-      await this.adminMasterRepository.save(adminMaster);
-    }
-    await this.adminMasterRepository.update(
-      { transactionId },
-      { status: status as any },
-    );
 
-    const existingLog = await this.statusLogRepository.findOne({
-      where: {
-        transaction: { transactionId }
-      },
-      order: { changedAt: 'DESC' }
+    const transaction = await this.transactionsRepository.findOne({ 
+      where: { id: transactionId } 
     });
 
-    // Preparar los campos adicionales del log
-    const logFields = {
-      status: status as any,
-      changedAt: new Date(),
-      note: additionalInfo.note || null,
-      cause: additionalInfo.cause || null,
-      result: additionalInfo.result || null,
-      transactionSwaplyar: additionalInfo.transactionSwaplyar || null,
-      transactionReceipt: additionalInfo.transactionReceipt || null,
-      approvedNote: additionalInfo.approvedNote || null
-    };
-
-    if (existingLog) {
-      await this.statusLogRepository.update(
-        { id: existingLog.id },
-        logFields
-      );
-    } else {
-      await this.statusLogRepository.save({
-        transaction: adminMaster,
-        ...logFields
-      });
+    if (!transaction) {
+      throw new NotFoundException('Transacción no encontrada.');
     }
 
+    // Buscar o crear el registro en administracion_master
+    let adminMaster = await this.adminMasterRepository.findOne({ 
+      where: { transactionId } 
+    });
+
+    if (!adminMaster) {
+      adminMaster = this.adminMasterRepository.create({
+        transactionId,
+        status,
+        adminUserId: adminUser.id
+      });
+      await this.adminMasterRepository.save(adminMaster);
+    } else {
+      // Actualizar el estado en administracion_master
+      await this.adminMasterRepository.update(
+        { transactionId },
+        { 
+          status,
+          adminUserId: adminUser.id
+        }
+      );
+    }
+
+    // Crear nuevo registro en el historial
+    const statusLog = this.statusLogRepository.create({
+      transaction: adminMaster,
+      status,
+      message,
+      changedByAdminId: adminUser.id,
+      additionalData
+    });
+
+    await this.statusLogRepository.save(statusLog);
+
+    // Convertir el estado de admin a estado de transacción
+    const transactionStatus = this.convertAdminStatusToTransactionStatus(status);
+
+    // Actualizar el estado en la transacción
     await this.transactionsRepository.update(
       { id: transactionId },
-      { finalStatus: status as any, ...additionalInfo },
+      { finalStatus: transactionStatus }
     );
-    const updated = await this.transactionsRepository.findOne({ where: { id: transactionId } });
-    return { message: 'Estado actualizado', status, transaction: updated };
+
+    const updatedTransaction = await this.transactionsRepository.findOne({ 
+      where: { id: transactionId } 
+    });
+
+    this.logger.log(`Estado de transacción ${transactionId} actualizado a ${status} por admin ${adminUser.id}`);
+
+    return { 
+      message: 'Estado actualizado', 
+      status, 
+      transaction: updatedTransaction 
+    };
   }
 
   /* -------------------------------------------------------------------------- */
@@ -350,5 +420,54 @@ export class AdminService {
       },
       data,
     };
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                           GET ALL STATUS HISTORY                           */
+  /* -------------------------------------------------------------------------- */
+  async getAllStatusHistory(page = 1, limit = 10) {
+    try {
+      const [statusHistory, total] = await this.statusLogRepository.findAndCount({
+        relations: ['transaction', 'changedByAdmin', 'changedByAdmin.profile'],
+        select: {
+          id: true,
+          status: true,
+          changedAt: true,
+          message: true,
+          changedByAdmin: {
+            id: true,
+            profile: {
+              firstName: true,
+              lastName: true
+            }
+          }
+        },
+        order: { changedAt: 'DESC' },
+        skip: (page - 1) * limit,
+        take: limit
+      });
+
+      // Transformar la respuesta para tener el formato deseado
+      const formattedHistory: StatusHistoryResponse[] = statusHistory.map(log => ({
+        ...log,
+        changedByAdmin: {
+          id: log.changedByAdmin.id,
+          name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`
+        }
+      }));
+
+      return {
+        data: formattedHistory,
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        }
+      };
+    } catch (error) {
+      this.logger.error('Error al obtener el historial completo de estados:', error);
+      throw error;
+    }
   }
 } 

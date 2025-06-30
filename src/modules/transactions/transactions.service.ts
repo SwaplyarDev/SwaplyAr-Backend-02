@@ -25,15 +25,11 @@ export class TransactionsService {
     file: FileUploadDTO,
   ) {
     const createAt = new Date();
-    //llama al servicio de financialAccount y le envia el sender y receiver para su creacion o traer sus id
     const financialAccount = await this.financialAccountService.create(
       createTransactionDto.financialAccounts,
     );
-
-    //llama al servicio de amount y le envia los datos del amount para su creacion
     const amount = await this.amountService.create(createTransactionDto.amount);
 
-    //llama al servicio de proofofpayment y le envia la img para su creacion
     const proofOfPayment = await this.proofOfPaymentService.create(file);
 
     const transaction = this.transactionsRepository.create({
@@ -59,7 +55,6 @@ export class TransactionsService {
     });
   }
 
-  // Nuevo método para obtener transacción por email
   async getTransactionByEmail(transactionId: string, userEmail: string): Promise<Transaction> {
     if (!userEmail) {
       throw new ForbiddenException('Email is required');
@@ -83,7 +78,6 @@ export class TransactionsService {
       throw new NotFoundException('Transaction not found');
     }
 
-    // Verificar si el email proporcionado coincide con el creador o el receptor
     if (
       transaction.createdBy !== userEmail &&
       transaction.receiverAccount?.email !== userEmail &&

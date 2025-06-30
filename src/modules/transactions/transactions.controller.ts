@@ -114,11 +114,8 @@ export class TransactionsController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async create(@Body() body: any, @UploadedFile() file: Express.Multer.File) {
-    //al enviar en formdata y enviar tantos campos como se requiere, el body llega como un string
-    // por eso se hace el parseo
     const parsedDto = JSON.parse(body.createTransactionDto);
 
-    // se crea una instancia de la clase createTransactionDto
     const createTransactionDto = plainToInstance(
       CreateTransactionDto,
       parsedDto,

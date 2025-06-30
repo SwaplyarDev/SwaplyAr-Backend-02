@@ -19,7 +19,11 @@
       "@auth/*": [ "src/modules/auth/*" ],
       "@mailer/*": [ "src/modules/mailer/*" ],
       "@admin/*": [ "src/modules/admin/*" ],
-      "@otp/*": [ "src/modules/otp/*" ]
+      "@otp/*": [ "src/modules/otp/*" ],
+      "@discount/*": ["src/modules/discount/*"],
+      "@interfaces/*": ["src/common/interfaces/*"],
+      "@decorators/*": ["src/common/decorators/*"],
+      "@guards/*": ["src/common/guards/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

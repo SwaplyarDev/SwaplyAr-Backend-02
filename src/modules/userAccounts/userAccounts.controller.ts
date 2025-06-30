@@ -12,7 +12,7 @@ import {
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { AccountsService } from './userAccounts.service';
 import { DeleteBankAccountDto } from './dto/delete-bank-account.dto';
-import { JwtAuthGuard } from 'src/common/jwt-auth.guard';
+import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';

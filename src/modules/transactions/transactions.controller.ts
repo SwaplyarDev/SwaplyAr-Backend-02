@@ -8,6 +8,8 @@ import {
   Post,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -15,7 +17,11 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../../common/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Transaction } from './entities/transaction.entity';
 
 @ApiTags('Transacciones')
 @Controller('transactions')
@@ -108,11 +114,8 @@ export class TransactionsController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async create(@Body() body: any, @UploadedFile() file: Express.Multer.File) {
-    //al enviar en formdata y enviar tantos campos como se requiere, el body llega como un string
-    // por eso se hace el parseo
     const parsedDto = JSON.parse(body.createTransactionDto);
 
-    // se crea una instancia de la clase createTransactionDto
     const createTransactionDto = plainToInstance(
       CreateTransactionDto,
       parsedDto,
@@ -158,5 +161,25 @@ export class TransactionsController {
   @Get()
   findAll() {
     return this.transactionsService.findAll();
+  }
+
+  @Get(':transaction_id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user')
+  @ApiOperation({ summary: 'Obtiene una transacción específica por su ID verificando el email del usuario' })
+  @ApiResponse({
+    status: 200,
+    description: 'La transacción fue encontrada y el usuario tiene acceso',
+    type: Transaction,
+  })
+  @ApiResponse({ status: 403, description: 'Acceso no autorizado a la transacción' })
+  @ApiResponse({ status: 404, description: 'Transacción no encontrada' })
+  async getTransactionByEmail(
+    @Param('transaction_id') transactionId: string,
+    @Request() req,
+  ) {
+    const userEmail = req.user.email;
+    return this.transactionsService.getTransactionByEmail(transactionId, userEmail);
   }
 }

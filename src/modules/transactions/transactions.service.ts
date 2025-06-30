@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,15 +25,11 @@ export class TransactionsService {
     file: FileUploadDTO,
   ) {
     const createAt = new Date();
-    //llama al servicio de financialAccount y le envia el sender y receiver para su creacion o traer sus id
     const financialAccount = await this.financialAccountService.create(
       createTransactionDto.financialAccounts,
     );
-
-    //llama al servicio de amount y le envia los datos del amount para su creacion
     const amount = await this.amountService.create(createTransactionDto.amount);
 
-    //llama al servicio de proofofpayment y le envia la img para su creacion
     const proofOfPayment = await this.proofOfPaymentService.create(file);
 
     const transaction = this.transactionsRepository.create({
@@ -57,5 +53,39 @@ export class TransactionsService {
         proofOfPayment: true,
       },
     });
+  }
+
+  async getTransactionByEmail(transactionId: string, userEmail: string): Promise<Transaction> {
+    if (!userEmail) {
+      throw new ForbiddenException('Email is required');
+    }
+
+    const transaction = await this.transactionsRepository.findOne({
+      where: { id: transactionId },
+      relations: {
+        senderAccount: {
+          paymentMethod: true
+        },
+        receiverAccount: {
+          paymentMethod: true
+        },
+        amount: true,
+        proofOfPayment: true
+      },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    if (
+      transaction.createdBy !== userEmail &&
+      transaction.receiverAccount?.email !== userEmail &&
+      transaction.senderAccount?.email !== userEmail
+    ) {
+      throw new ForbiddenException('Unauthorized access to this transaction');
+    }
+
+    return transaction;
   }
 }

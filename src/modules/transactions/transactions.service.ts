@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -57,5 +57,41 @@ export class TransactionsService {
         proofOfPayment: true,
       },
     });
+  }
+
+  // Nuevo método para obtener transacción por email
+  async getTransactionByEmail(transactionId: string, userEmail: string): Promise<Transaction> {
+    if (!userEmail) {
+      throw new ForbiddenException('Email is required');
+    }
+
+    const transaction = await this.transactionsRepository.findOne({
+      where: { id: transactionId },
+      relations: {
+        senderAccount: {
+          paymentMethod: true
+        },
+        receiverAccount: {
+          paymentMethod: true
+        },
+        amount: true,
+        proofOfPayment: true
+      },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    // Verificar si el email proporcionado coincide con el creador o el receptor
+    if (
+      transaction.createdBy !== userEmail &&
+      transaction.receiverAccount?.email !== userEmail &&
+      transaction.senderAccount?.email !== userEmail
+    ) {
+      throw new ForbiddenException('Unauthorized access to this transaction');
+    }
+
+    return transaction;
   }
 }

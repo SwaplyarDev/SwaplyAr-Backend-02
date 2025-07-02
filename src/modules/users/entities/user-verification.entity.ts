@@ -4,38 +4,53 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from '@users/entities/user.entity';
 
-@Entity('user_verifications')
-export class UserVerification {
-  @PrimaryGeneratedColumn('uuid', { name: 'user_verification_id' })
-  id: string;
+export enum VerificationStatus {
+  PENDING = 'pending',
+  VERIFIED = 'verified',
+  REJECTED = 'rejected'
+}
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
+@Entity('user_verification')
+export class UserVerification {
+  @PrimaryGeneratedColumn('uuid')
+  verification_id: string;
+
+  @ManyToOne(() => User, user => user.verifications)
   user: User;
 
-  @Column({ name: 'document_front' })
-  documentFront: string;
+  @Column()
+  users_id: string;
 
-  @Column({ name: 'document_back' })
-  documentBack: string;
+  @Column()
+  document_front: string;
 
-  @Column({ name: 'selfie_image' })
-  selfieImage: string;
+  @Column()
+  document_back: string;
+
+  @Column()
+  selfie_image: string;
 
   @Column({
     type: 'enum',
-    enum: ['pending', 'verified', 'rejected'],
-    default: 'pending',
-    name: 'verification_status',
+    enum: VerificationStatus,
+    default: VerificationStatus.PENDING
   })
-  verificationStatus: 'pending' | 'verified' | 'rejected';
+  verification_status: VerificationStatus;
 
-  @Column({ name: 'rejection_note' })
-  rejectionNote: string;
+  @Column({ nullable: true })
+  note_rejection: string;
 
-  @Column({ name: 'verified_at', type: 'timestamp with time zone' })
-  verifiedAt: Date;
+  @Column({ nullable: true })
+  verified_at: Date;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 }

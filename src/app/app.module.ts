@@ -18,6 +18,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/common/jwt.strategy';
 import { AbandonedTransactionsModule } from '@transactions/abandoned-transactions/abandoned-transactions.module';
 import {OtpModule} from "@otp/otp.module";
+import { UserVerificationModule } from '@users/verification/user-verification.module';
 
 
 @Module({
@@ -37,6 +38,7 @@ import {OtpModule} from "@otp/otp.module";
     AdminModule,
     AbandonedTransactionsModule,
     PassportModule,
+    UserVerificationModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',
       signOptions: { expiresIn: '1d' },

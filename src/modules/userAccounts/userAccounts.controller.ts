@@ -17,6 +17,9 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 
+
+//TODO: GET (user/accounts/:id) ,  GET (user/user:id/accounts) , GET (user/user:id/accounts/account:id),
+
 @ApiTags('Cuentas de Usuario')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)

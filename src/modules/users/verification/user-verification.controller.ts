@@ -38,6 +38,9 @@ import { UserVerificationService } from './user-verification.service';
 export class UserVerificationController {
   constructor(private readonly verificationService: UserVerificationService) {}
 
+
+
+  //TODO : FALTA PUT (verification/upload), FALTA GET ( verification/user-validation) ,PUT (verification/verification-status), 
   @Post('upload')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ 

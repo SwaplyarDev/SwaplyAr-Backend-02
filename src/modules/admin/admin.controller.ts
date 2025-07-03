@@ -54,6 +54,7 @@ export class AdminController {
   @ApiResponse({ status: 403, description: 'Prohibido' })
   @ApiResponse({ status: 404, description: 'No encontrado' })
   @ApiResponse({ status: 500, description: 'Error interno del servidor' })
+  
   @Get('transactions')
   async getAllTransactions(
     @Query('page') page: string,

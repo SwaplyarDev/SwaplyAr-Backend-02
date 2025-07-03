@@ -9,6 +9,8 @@ import { AbandonedTransaction } from '../entities/abandoned-transaction.entity';
 export class AbandonedTransactionsController {
   constructor(private readonly abandonedTransactionsService: AbandonedTransactionsService) {}
 
+
+
   @Post()
   @ApiOperation({ summary: 'Crear una nueva transacción abandonada' })
   @ApiResponse({
@@ -20,6 +22,8 @@ export class AbandonedTransactionsController {
     return await this.abandonedTransactionsService.create(createAbandonedTransactionDto);
   }
 
+
+
   @Get()
   @ApiOperation({ summary: 'Obtener todas las transacciones abandonadas' })
   @ApiResponse({
@@ -30,6 +34,8 @@ export class AbandonedTransactionsController {
   async findAll(): Promise<AbandonedTransaction[]> {
     return await this.abandonedTransactionsService.findAll();
   }
+
+
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una transacción abandonada por ID' })
@@ -45,6 +51,9 @@ export class AbandonedTransactionsController {
   async findOne(@Param('id') id: string): Promise<AbandonedTransaction> {
     return await this.abandonedTransactionsService.findOne(id);
   }
+
+
+
 
   @Put(':id')
   @ApiOperation({ summary: 'Actualizar una transacción abandonada' })
@@ -64,6 +73,8 @@ export class AbandonedTransactionsController {
     return await this.abandonedTransactionsService.update(id, updateAbandonedTransactionDto);
   }
 
+
+
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar una transacción abandonada' })
   @ApiResponse({
@@ -77,4 +88,6 @@ export class AbandonedTransactionsController {
   async remove(@Param('id') id: string): Promise<void> {
     return await this.abandonedTransactionsService.remove(id);
   }
+
+  
 } 

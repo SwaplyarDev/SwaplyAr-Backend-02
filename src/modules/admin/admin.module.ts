@@ -9,6 +9,7 @@ import { FileUploadModule } from '../file-upload/file-upload.module';
 import { ProofOfPaymentsModule } from '@financial-accounts/proof-of-payments/proof-of-payments.module';
 import { BankModule } from '@financial-accounts/payment-methods/bank/bank.module';
 import { UsersModule } from '@users/users.module';
+import { MailerModule } from '../mailer/mailer.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UsersModule } from '@users/users.module';
     ProofOfPaymentsModule,
     BankModule,
     UsersModule,
+    MailerModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

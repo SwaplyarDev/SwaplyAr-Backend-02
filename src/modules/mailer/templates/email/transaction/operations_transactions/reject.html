@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rechazada</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      font-family: 'Roboto', sans-serif;
+    }
+    
+    .blue-border {
+      height: 7px;
+      background-color: #012d8a;
+      width: 95%;
+      margin: 0 auto;
+      border-radius: 20px;
+    }
+    .title {
+      align-self: stretch;
+      color: #252526;
+      text-align: center;
+      font-size: 28px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 130%;
+    }
+    .info {
+      color: #252526;
+      text-align: justify;
+      font-size: 16px;
+      font-style: normal;
+      font-weight: 300;
+      line-height: 150%;
+    }
+    .info span {
+      color: #000;
+      font-weight: 600;
+    }
+    .last_info {
+      color: #252526;
+      text-align: center;
+      font-size: 16px;
+      font-style: normal;
+      font-weight: 300;
+      line-height: 150%;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 20px;
+    }
+    .header {
+      padding: 0 10px;
+      text-align: left;
+    }
+    .transaction-info {
+      color: #012A8E;
+      text-align: center;
+      font-size: 40px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 120%;
+    }
+    .cta-button {
+      text-align: center;
+      display: inline-block;
+      margin: 20px 0;
+      padding: 10px 20px;
+      color: white;
+      background-color: #012d8a;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <section class="blue-border"></section>
+    <!-- Header -->
+    <div class="header" style="text-align: right; font-size: 12px; color: #333">
+      @{{MODIFICATION_DATE}}SwaplyAr | Group OA.
+    </div>
+    <div class="header">
+      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" alt="SwaplyAr Logotipo"
+        style="width: 200px; margin-bottom: 10px;" />
+    </div>
+
+    <!-- Main Content -->
+    <div style="text-align: center; padding: 0 20px">
+      <img
+        src="https://s3-alpha-sig.figma.com/img/58d0/9d7c/179717695e738a0a094559edff75bce5?Expires=1740960000&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=bg7bZ9OlN3Zd4n1g4n4NfeDSMotz5MOXPN3N6HOOeFLx9VuEIso18M5vxlPHStx~SRqzBUnUDmxX9OpuhddQBccoJ2XvMGC-0KLKG~7q7Mj4qzjpRb8Auel5DTEjFDt7De60IQEo8kpyMHVZjUeB-8KGCKux63EVF23D0wxU0diL-dbJhUKwIPPo0~N4d6PM4j3tRTiUD0oVNxD2AkBpxcODE2UpjoRI241ThalggAMUJPn9G1Wys9tT0r7Rw3AmsaekLmWAhqPCOv9Cowm~F1mMQy5uI0IEGpUnrvh2v7jf3CTuVGOcRU01JyVaCJ6egij2G-ue3nn0V4qykxTQNA__"
+        alt="Personaje" style="max-width: 95%; height: auto" />
+    </div>
+
+    <div class="title">
+      <h3>
+        Solicitud Rechazada
+      </h3>
+    </div>
+
+    <div class="transaction-info" style="padding-top: 10px">
+      #{{TRANSACTION_ID}}
+    </div>
+
+    <section class="info" style="text-align: start; padding-top: 15px">
+      <p>
+        Hola, <span>{{NAME}} {{LAST_NAME}}</span>.<br><br>
+
+        Lamentamos informarte que tu solicitud <span>#{{TRANSACTION_ID}}</span> no pudo ser procesada y ha sido
+        rechazada por motivos de seguridad.<br><br>
+
+        Si lo deseas, puedes generar una nueva solicitud. Si necesitas más información o asistencia, no dudes en
+        contactarnos.<br><br>
+
+        <span>Atentamente,<br>
+          Soporte de SwaplyAR</span>
+      </p>
+    </section>
+
+    <section class="last_info" style="text-align: center; width: 100%; border-top: 2px solid #012A8E;">
+      <p>Puedes iniciar una nueva solicitud en<br>
+        SwaplyAr.com</p>
+      <a href="{{BASE_URL}}" style="color: white" class="cta-button">SwaplyAr.com</a>
+    </section>
+
+    <!-- Links -->
+    <nav>
+      <table role="presentation" style="
+        border-top: 1px solid rgb(92, 124, 199);
+        font-size: 18px;
+        padding-bottom: 20px;
+        text-align: center;
+        color: black;
+        width: 100%;
+      ">
+        <tr>
+          <td style="padding-right: 20px; padding-left: 22px; padding-top: 12px">
+            <a href="{{BASE_URL}}/info/help-center" style="color: black; text-decoration: none">Contactanos</a>
+          </td>
+          <td style="
+                width: 1px;
+                background-color: rgb(92, 124, 199);
+                position: relative;
+                top: 5px;
+              "></td>
+          <td style="padding-left: 20px; padding-top: 12px">
+            <a href="{{BASE_URL}}/info/terms-and-conditions" style="color: black; text-decoration: none">Avisos
+              Legales</a>
+          </td>
+        </tr>
+      </table>
+    </nav>
+
+    <section style="color: #161F33; text-align: justify; font-size: 8px; font-style: normal; font-weight: 300; line-height: 150%;">
+      <p style="font-size: 10px;">
+        Este mensaje puede contener información confidencial. No compartas información sobre esta transacción con
+        terceros. Si no eres el destinatario indicado, notifícaselo al remitente de inmediato y borra este correo
+        electronico de tu sistema.
+      </p>
+    </section>
+
+    <section>
+      <table role="presentation" style="margin-top: 20px; text-align: center">
+        <tr>
+          <td style="padding-right: 21px; padding-left: 4rem;">
+            <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1730818197/logo-solosw_b8nke4.png"
+              alt="SwaplyAr Plus Rewards" style="width: 77px; height: auto" />
+          </td>
+          <td style="width: 1px; background-color: rgb(92, 124, 199)"></td>
+          <td style="padding-left: 20px">
+            <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1739977015/1_b6ho52.png" alt="Logo Solo"
+              style="width: 141px; height: auto" />
+          </td>
+        </tr>
+      </table>
+    </section>
+
+    <footer>
+      <nav>
+        <table role="presentation" style="width: 95%; text-align: center; padding-top: 10px;">
+          <tr>
+            <td>
+              <a href="https://www.linkedin.com/company/swaplyar/" style="text-decoration: none">
+                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/linkedin_jhsarf.png"
+                  alt="Logo Linkedin" style="width: 28px; height: auto; margin-left: 10px" />
+              </a>
+              <a href="https://www.instagram.com/swaplyar/" style="text-decoration: none">
+                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330494/instagram_ihxf7s.png"
+                  alt="Logo Instagram" style="width: 28px; height: auto; margin-left: 10px" />
+              </a>
+              <a href="" style="text-decoration: none">
+                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330493/facebook_cqn0dm.png"
+                  alt="Logo Facebook" style="width: 28px; height: auto; margin-left: 10px" />
+              </a>
+              <a href="https://api.whatsapp.com/send?phone=5491123832198" style="text-decoration: none">
+                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/whatsapp_ji3tfh.png"
+                  alt="Logo WhatsApp" style="width: 28px; height: auto; margin-left: 10px" />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-size: 10px; color: rgba(203, 196, 188)">
+              {{DATE_HOUR}}
+            </td>
+          </tr>
+        </table>
+      </nav>
+    </footer>
+    <section class="blue-border"></section>
+  </div>
+</body>
+
+</html> 

@@ -3,8 +3,8 @@ import { CreateSenderFinancialAccountDto } from '@financial-accounts/sender-fina
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateFinancialAccountDto {
-  @ApiProperty({ description: 'Cuenta emisora' , example: '123'})
+  @ApiProperty({ description: 'Cuenta emisora', example: '123' })
   senderAccount: CreateSenderFinancialAccountDto;
-  @ApiProperty({ description: 'Cuenta receptora' , example: '123'})
+  @ApiProperty({ description: 'Cuenta receptora', example: '123' })
   receiverAccount: CreateReceiverFinancialAccountDto;
 }

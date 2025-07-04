@@ -22,7 +22,16 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
 import { AdminStatus } from '../../enum/admin-status.enum';
 import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
-import { ApiOperation, ApiResponse, ApiTags, ApiBody, ApiParam, ApiBearerAuth, ApiConsumes, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBody,
+  ApiParam,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { User as UserEntity } from '@users/entities/user.entity';
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 
@@ -34,27 +43,30 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @ApiOperation({ summary: 'Obtener todas las transacciones' })
-  @ApiResponse({ status: 200, description: 'Transacciones obtenidas correctamente', schema: {
-    example: {
-      meta: {
-        totalPages: 5,
-        page: 1,
-        perPage: 12,
-        totalTransactions: 30
+  @ApiResponse({
+    status: 200,
+    description: 'Transacciones obtenidas correctamente',
+    schema: {
+      example: {
+        meta: {
+          totalPages: 5,
+          page: 1,
+          perPage: 12,
+          totalTransactions: 30,
+        },
+        data: [
+          {
+            id: 'uuid',
+            status: 'pending',
+          },
+        ],
       },
-      data: [
-        {
-          id: 'uuid',
-          status: 'pending',
-        }
-      ]
-    }
-  }})
+    },
+  })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 403, description: 'Prohibido' })
   @ApiResponse({ status: 404, description: 'No encontrado' })
   @ApiResponse({ status: 500, description: 'Error interno del servidor' })
-  
   @Get('transactions')
   async getAllTransactions(
     @Query('page') page: string,
@@ -65,25 +77,28 @@ export class AdminController {
     const dynamicFilters = { ...query };
     delete dynamicFilters.page;
     delete dynamicFilters.perPage;
-    const userEmail = user.role === 'admin' || user.role === 'super_admin' ? null : user.email;
+    const userEmail =
+      user.role === 'admin' || user.role === 'super_admin' ? null : user.email;
     return this.adminService.findAllTransactionsPaginated(
       userEmail,
       page ? parseInt(page) : 1,
       perPage ? parseInt(perPage) : 12,
-      dynamicFilters
+      dynamicFilters,
     );
   }
 
   @ApiOperation({ summary: 'Agregar comprobante a una transacción' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Sube un comprobante para una transacción. El `transactionId` es obligatorio y el `comprobante` es el archivo.',
+    description:
+      'Sube un comprobante para una transacción. El `transactionId` es obligatorio y el `comprobante` es el archivo.',
     schema: {
       type: 'object',
       properties: {
         transactionId: {
           type: 'string',
-          description: 'ID de la transacción a la que se asocia el comprobante.',
+          description:
+            'ID de la transacción a la que se asocia el comprobante.',
         },
         comprobante: {
           type: 'string',
@@ -94,12 +109,16 @@ export class AdminController {
       required: ['transactionId', 'comprobante'],
     },
   })
-  @ApiResponse({ status: 201, description: 'Comprobante agregado correctamente' })
+  @ApiResponse({
+    status: 201,
+    description: 'Comprobante agregado correctamente',
+  })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @Post('transactions/voucher')
   @UseInterceptors(FileInterceptor('comprobante'))
   async addVoucher(
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) body: AddVoucherDto,
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+    body: AddVoucherDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
     return this.adminService.addTransactionReceipt(
@@ -131,16 +150,20 @@ export class AdminController {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
-                  name: { type: 'string' }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                  name: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   })
-  async getStatusHistory(@Param('id') id: string): Promise<{ success: boolean; message: string; data: StatusHistoryResponse[] }> {
+  async getStatusHistory(@Param('id') id: string): Promise<{
+    success: boolean;
+    message: string;
+    data: StatusHistoryResponse[];
+  }> {
     const statusHistory = await this.adminService.getStatusHistory(id);
     return {
       success: true,
@@ -150,7 +173,9 @@ export class AdminController {
   }
 
   @Get('transactions/status')
-  @ApiOperation({ summary: 'Obtener historial completo de estados de todas las transacciones' })
+  @ApiOperation({
+    summary: 'Obtener historial completo de estados de todas las transacciones',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiResponse({
@@ -171,11 +196,11 @@ export class AdminController {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
-                  name: { type: 'string' }
-                }
-              }
-            }
-          }
+                  name: { type: 'string' },
+                },
+              },
+            },
+          },
         },
         meta: {
           type: 'object',
@@ -183,16 +208,19 @@ export class AdminController {
             total: { type: 'number' },
             page: { type: 'number' },
             limit: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
   })
   async getAllStatusHistory(
     @Query('page') page = 1,
-    @Query('limit') limit = 10
-  ): Promise<{ data: StatusHistoryResponse[]; meta: { total: number; page: number; limit: number; totalPages: number } }> {
+    @Query('limit') limit = 10,
+  ): Promise<{
+    data: StatusHistoryResponse[];
+    meta: { total: number; page: number; limit: number; totalPages: number };
+  }> {
     return await this.adminService.getAllStatusHistory(page, limit);
   }
 
@@ -200,33 +228,34 @@ export class AdminController {
   @ApiOperation({ summary: 'Actualizar estado de una transacción' })
   @ApiResponse({
     status: 200,
-    description: 'Estado actualizado correctamente'
+    description: 'Estado actualizado correctamente',
   })
   async updateTransactionStatus(
     @Param('id') id: string,
     @Body('status') status: AdminStatus,
     @Body('message') message: string,
     @Body('additionalData') additionalData: Record<string, any>,
-    @Request() req: { user: UserEntity }
+    @Request() req: { user: UserEntity },
   ) {
     return await this.adminService.updateTransactionStatusByType(
       id,
       status,
       req.user,
       message,
-      additionalData
+      additionalData,
     );
   }
 
   @ApiOperation({ summary: 'Obtener una transacción por ID' })
-  @ApiResponse({ status: 200, description: 'Transacción encontrada',})
+  @ApiResponse({ status: 200, description: 'Transacción encontrada' })
   @ApiResponse({ status: 404, description: 'Transacción no encontrada' })
-  @ApiParam({ name: 'id', description: 'ID de la transacción', example: 'uuid' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la transacción',
+    example: 'uuid',
+  })
   @Get('transactions/:id')
-  async getTransaction(
-    @Param('id') id: string,
-    @User() user: any,
-  ) {
+  async getTransaction(@Param('id') id: string, @User() user: any) {
     if (!id) {
       return {
         success: false,
@@ -269,15 +298,26 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Actualizar el estado de una transacción por tipo' })
-  @ApiResponse({ status: 200, description: 'Estado actualizado correctamente', schema: {
-    example: {
-      success: true,
-      message: 'Estado actualizado a approved correctamente',
-      data: { }
-    }
-  }})
-  @ApiResponse({ status: 400, description: 'Se requiere el ID de la transacción' })
-  @ApiParam({ name: 'status', description: 'Nuevo estado', example: 'approved' })
+  @ApiResponse({
+    status: 200,
+    description: 'Estado actualizado correctamente',
+    schema: {
+      example: {
+        success: true,
+        message: 'Estado actualizado a approved correctamente',
+        data: {},
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Se requiere el ID de la transacción',
+  })
+  @ApiParam({
+    name: 'status',
+    description: 'Nuevo estado',
+    example: 'approved',
+  })
   @ApiBody({
     description: 'Datos para actualizar el estado',
     type: UpdateStatusDto,
@@ -285,16 +325,17 @@ export class AdminController {
       ejemplo1: {
         summary: 'Ejemplo de request',
         value: {
-          transactionId: 'uuid'
-        }
-      }
-    }
+          transactionId: 'uuid',
+        },
+      },
+    },
   })
   @Post('transactions/status/:status')
   async updateStatusByType(
     @Param('status') status: AdminStatus,
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) body: UpdateStatusDto & any,
-    @Request() req: { user: UserEntity }
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+    body: UpdateStatusDto & any,
+    @Request() req: { user: UserEntity },
   ) {
     const transactionId = body.transactionId;
     if (!transactionId) {
@@ -308,7 +349,7 @@ export class AdminController {
       status,
       req.user,
       body.message,
-      body.additionalData
+      body.additionalData,
     );
     return {
       success: true,
@@ -318,15 +359,23 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Actualizar datos del receptor de una transacción' })
-  @ApiResponse({ status: 200, description: 'Transacción actualizada correctamente', schema: {
-    example: {
-      success: true,
-      message: 'Transacción actualizada correctamente',
-      data: {  }
-    }
-  }})
+  @ApiResponse({
+    status: 200,
+    description: 'Transacción actualizada correctamente',
+    schema: {
+      example: {
+        success: true,
+        message: 'Transacción actualizada correctamente',
+        data: {},
+      },
+    },
+  })
   @ApiResponse({ status: 400, description: 'Transaction ID is required' })
-  @ApiParam({ name: 'id', description: 'ID de la transacción', example: 'uuid' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la transacción',
+    example: 'uuid',
+  })
   @ApiBody({
     description: 'Datos para actualizar el receptor',
     type: UpdateBankDto,
@@ -336,15 +385,16 @@ export class AdminController {
         value: {
           bankName: 'Banco Nacion',
           sendMethodValue: '1234567890123456789012',
-          documentValue: '1234567890'
-        }
-      }
-    }
+          documentValue: '1234567890',
+        },
+      },
+    },
   })
   @Put('transactions/:id/receiver')
   async updateReceiver(
     @Param('id') id: string,
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) body: UpdateBankDto,
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+    body: UpdateBankDto,
   ) {
     if (!id) {
       return {
@@ -361,14 +411,22 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Actualizar una transacción' })
-  @ApiResponse({ status: 200, description: 'Transacción actualizada correctamente', schema: {
-    example: {
-      success: true,
-      message: 'Transacción actualizada correctamente',
-      data: {  }
-    }
-  }})
-  @ApiParam({ name: 'id', description: 'ID de la transacción', example: 'uuid' })
+  @ApiResponse({
+    status: 200,
+    description: 'Transacción actualizada correctamente',
+    schema: {
+      example: {
+        success: true,
+        message: 'Transacción actualizada correctamente',
+        data: {},
+      },
+    },
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la transacción',
+    example: 'uuid',
+  })
   @ApiBody({
     description: 'Datos para actualizar la transacción',
     type: UpdateTransactionDto,
@@ -393,9 +451,9 @@ export class AdminController {
                   sendMethodKey: 'CBU',
                   sendMethodValue: '1234567890123456789012',
                   documentType: 'DNI',
-                  documentValue: '87654321'
-                }
-              }
+                  documentValue: '87654321',
+                },
+              },
             },
             receiverAccount: {
               firstName: 'Ana',
@@ -413,26 +471,27 @@ export class AdminController {
                   sendMethodKey: 'CBU',
                   sendMethodValue: '1234567890123456789012',
                   documentType: 'DNI',
-                  documentValue: '12345678'
-                }
-              }
-            }
+                  documentValue: '12345678',
+                },
+              },
+            },
           },
           amount: {
             amountSent: 1000,
             currencySent: 'ARS',
             amountReceived: 900,
             currencyReceived: 'BRL',
-            received: false
-          }
-        }
-      }
-    }
+            received: false,
+          },
+        },
+      },
+    },
   })
   @Put('transactions/:id')
   async updateTransaction(
     @Param('id') id: string,
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) body: UpdateTransactionDto,
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+    body: UpdateTransactionDto,
   ) {
     const result = await this.adminService.updateTransaction(id, body);
     return {

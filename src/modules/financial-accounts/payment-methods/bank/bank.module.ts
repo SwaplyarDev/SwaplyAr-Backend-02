@@ -8,4 +8,4 @@ import { Bank } from './entities/bank.entity';
   providers: [BankService],
   exports: [BankService],
 })
-export class BankModule {} 
+export class BankModule {}

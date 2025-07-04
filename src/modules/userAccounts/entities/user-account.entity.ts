@@ -1,9 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { User } from '@users/entities/user.entity';
 
 @Entity('user_account')
 export class UserAccount {
-  @PrimaryGeneratedColumn( 'uuid', { name: 'account_id'})
+  @PrimaryGeneratedColumn('uuid', { name: 'account_id' })
   account_id: string;
 
   @Column({ name: 'account_name' })

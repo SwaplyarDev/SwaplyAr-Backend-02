@@ -23,7 +23,9 @@ export class CloudinaryService {
     fileName: string,
   ): Promise<string> {
     if (!buffer || buffer.length === 0) {
-      throw new BadRequestException('No se envió ningún archivo o el archivo está vacío');
+      throw new BadRequestException(
+        'No se envió ningún archivo o el archivo está vacío',
+      );
     }
 
     const options: UploadApiOptions = {

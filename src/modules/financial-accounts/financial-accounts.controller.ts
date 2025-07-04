@@ -11,22 +11,30 @@ export class FinancialAccountController {
   ) {}
 
   @ApiOperation({ summary: 'Crear cuentas financieras (emisor y receptor)' })
-  @ApiResponse({ status: 201, description: 'Cuentas creadas correctamente', schema: {
-    example: {
-      sender: {
-        id: 'uuid-sender',
-        firstName: 'Juan',
-        lastName: 'Pérez',
-        paymentMethod: { /* ... */ }
+  @ApiResponse({
+    status: 201,
+    description: 'Cuentas creadas correctamente',
+    schema: {
+      example: {
+        sender: {
+          id: 'uuid-sender',
+          firstName: 'Juan',
+          lastName: 'Pérez',
+          paymentMethod: {
+            /* ... */
+          },
+        },
+        receiver: {
+          id: 'uuid-receiver',
+          firstName: 'Ana',
+          lastName: 'García',
+          paymentMethod: {
+            /* ... */
+          },
+        },
       },
-      receiver: {
-        id: 'uuid-receiver',
-        firstName: 'Ana',
-        lastName: 'García',
-        paymentMethod: { /* ... */ }
-      }
-    }
-  }})
+    },
+  })
   @ApiBody({
     description: 'Datos para crear cuentas financieras',
     type: CreateFinancialAccountDto,
@@ -46,9 +54,9 @@ export class FinancialAccountController {
                 sendMethodKey: 'CBU',
                 sendMethodValue: '1234567890123456789012',
                 documentType: 'DNI',
-                documentValue: '87654321'
-              }
-            }
+                documentValue: '87654321',
+              },
+            },
           },
           receiverAccount: {
             firstName: 'Ana',
@@ -66,13 +74,13 @@ export class FinancialAccountController {
                 sendMethodKey: 'CBU',
                 sendMethodValue: '1234567890123456789012',
                 documentType: 'DNI',
-                documentValue: '12345678'
-              }
-            }
-          }
-        }
-      }
-    }
+                documentValue: '12345678',
+              },
+            },
+          },
+        },
+      },
+    },
   })
   @Post()
   async create(@Body() createFinancialAccountDto: CreateFinancialAccountDto) {
@@ -80,32 +88,44 @@ export class FinancialAccountController {
   }
 
   @ApiOperation({ summary: 'Obtener todas las cuentas financieras emisoras' })
-  @ApiResponse({ status: 200, description: 'Lista de cuentas emisoras', schema: {
-    example: [
-      {
-        id: 'uuid-sender',
-        firstName: 'Juan',
-        lastName: 'Pérez',
-        paymentMethod: { /* ... */ }
-      }
-    ]
-  }})
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de cuentas emisoras',
+    schema: {
+      example: [
+        {
+          id: 'uuid-sender',
+          firstName: 'Juan',
+          lastName: 'Pérez',
+          paymentMethod: {
+            /* ... */
+          },
+        },
+      ],
+    },
+  })
   @Get('/sender')
   async findAllSender() {
     return await this.financialAccountsService.findAllSender();
   }
 
   @ApiOperation({ summary: 'Obtener todas las cuentas financieras receptoras' })
-  @ApiResponse({ status: 200, description: 'Lista de cuentas receptoras', schema: {
-    example: [
-      {
-        id: 'uuid-receiver',
-        firstName: 'Ana',
-        lastName: 'García',
-        paymentMethod: { /* ... */ }
-      }
-    ]
-  }})
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de cuentas receptoras',
+    schema: {
+      example: [
+        {
+          id: 'uuid-receiver',
+          firstName: 'Ana',
+          lastName: 'García',
+          paymentMethod: {
+            /* ... */
+          },
+        },
+      ],
+    },
+  })
   @Get('/receiver')
   async findAllReceiver() {
     return await this.financialAccountsService.findAllReceiver();

@@ -14,7 +14,9 @@ export class NotesService {
   ) {}
 
   async create(transactionId: string, createNoteDto: any) {
-    const transaction = await this.transactionRepository.findOne({ where: { id: transactionId } });
+    const transaction = await this.transactionRepository.findOne({
+      where: { id: transactionId },
+    });
     if (!transaction) throw new NotFoundException('Transacción no encontrada');
 
     const note = this.notesRepository.create({
@@ -40,13 +42,15 @@ export class NotesService {
 
   async update(id: string, updateNoteDto: any) {
     const result = await this.notesRepository.update(id, updateNoteDto);
-    if (result.affected === 0) throw new NotFoundException('Nota no encontrada');
+    if (result.affected === 0)
+      throw new NotFoundException('Nota no encontrada');
     return this.findOne(id);
   }
 
   async remove(id: string) {
     const result = await this.notesRepository.delete(id);
-    if (result.affected === 0) throw new NotFoundException('Nota no encontrada');
+    if (result.affected === 0)
+      throw new NotFoundException('Nota no encontrada');
     return { message: 'Nota eliminada correctamente' };
   }
-} 
+}

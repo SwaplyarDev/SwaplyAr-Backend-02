@@ -1,5 +1,12 @@
 // note.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Transaction as TransactionEntity } from '@transactions/entities/transaction.entity';
 
 @Entity('notes')
@@ -21,11 +28,9 @@ export class Note {
   transaction: TransactionEntity;
 }
 
-
 /* notes [icon: note, color: orange] {
     note_id    varchar pk   // Identificador único de la nota
     img_url    varchar      // imagen del comprobante
     message    varchar      // Contenido del mensaje
     created_at timestamp   // Fecha de creación de la nota
   } */
-  

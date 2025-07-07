@@ -25,13 +25,16 @@ import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/crea
 import { ApiOperation, ApiResponse, ApiTags, ApiBody, ApiParam, ApiBearerAuth, ApiConsumes, ApiQuery } from '@nestjs/swagger';
 import { User as UserEntity } from '@users/entities/user.entity';
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
+import { MailerService } from '../mailer/mailer.service';
+import { Transaction } from 'typeorm';
+
 
 @ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminRoleGuard)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(private readonly adminService: AdminService, private readonly mailerService: MailerService) {}
 
   @ApiOperation({ summary: 'Obtener todas las transacciones' })
   @ApiResponse({ status: 200, description: 'Transacciones obtenidas correctamente', schema: {
@@ -209,13 +212,23 @@ export class AdminController {
     @Body('additionalData') additionalData: Record<string, any>,
     @Request() req: { user: UserEntity }
   ) {
-    return await this.adminService.updateTransactionStatusByType(
+    const result = await this.adminService.updateTransactionStatusByType(
       id,
       status,
       req.user,
       message,
       additionalData
     );
+
+    // Obtener la transacción actualizada para tener acceso al createdBy
+    const transaction = await this.adminService.getTransactionById(id);
+
+    // Enviar correos electrónicos según el estado
+    if (transaction && transaction.createdBy) {
+      await this.mailerService.sendStatusEmail(transaction.createdBy, status);
+    }
+
+    return result;
   }
 
   @ApiOperation({ summary: 'Obtener una transacción por ID' })

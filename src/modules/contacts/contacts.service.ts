@@ -22,23 +22,12 @@ export class ContactService {
   async createContact(
     dto: CreateContactDto,
   ): Promise<{ message: string; contact_id: string }> {
-    /*    const existing = await this.contactRepository.findOne({
-      where: { email: dto.email },
-    });
- */
     const user_register = await this.usersService.findByEmail(dto.email);
-    console.log('user_register', user_register);
 
     if (user_register) {
-      console.log('usuario registrado', user_register);
+      dto.user_id = user_register.id;
     }
 
-    /*   if (existing) {
-      throw new BadRequestException(
-        'Ya existe un mensaje enviado con este email',
-      );
-    }
- */
     const contact = this.contactRepository.create(dto);
     const saved = await this.contactRepository.save(contact);
 

@@ -57,7 +57,6 @@ export class ContactController {
   }
 
   // obtiene todos los contactos
-
   @ApiOperation({ summary: 'Obtener todos los contactos' })
   @ApiResponse({ status: 200, description: 'Lista de contactos' })
   @UseGuards(JwtAuthGuard, AdminRoleGuard)

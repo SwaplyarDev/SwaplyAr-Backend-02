@@ -1,19 +1,16 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Contact } from './entities/contants.entity';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/uptate-contact.dto';
-
+import { UsersService } from '@users/users.service';
 @Injectable()
 export class ContactService {
   constructor(
     @InjectRepository(Contact)
-    private contactRepository: Repository<Contact>, // repositorio de contactos
+    private contactRepository: Repository<Contact>,
+    private readonly usersService: UsersService,
   ) {}
 
   // obtiene todos los contactos
@@ -25,16 +22,23 @@ export class ContactService {
   async createContact(
     dto: CreateContactDto,
   ): Promise<{ message: string; contact_id: string }> {
-    const existing = await this.contactRepository.findOne({
+    /*    const existing = await this.contactRepository.findOne({
       where: { email: dto.email },
     });
+ */
+    const user_register = await this.usersService.findByEmail(dto.email);
+    console.log('user_register', user_register);
 
-    if (existing) {
+    if (user_register) {
+      console.log('usuario registrado', user_register);
+    }
+
+    /*   if (existing) {
       throw new BadRequestException(
         'Ya existe un mensaje enviado con este email',
       );
     }
-
+ */
     const contact = this.contactRepository.create(dto);
     const saved = await this.contactRepository.save(contact);
 

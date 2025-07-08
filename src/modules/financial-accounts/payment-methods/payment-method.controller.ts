@@ -9,21 +9,25 @@ export class PaymentMethodController {
   constructor(private readonly paymentMethodService: PaymentMethodService) {}
 
   @ApiOperation({ summary: 'Crear un método de pago' })
-  @ApiResponse({ status: 201, description: 'Método de pago creado correctamente', schema: {
-    example: {
-      id: 'uuid',
-      platformId: 'bank',
-      method: 'bank',
-      bank: {
-        currency: 'ARS',
-        bankName: 'Banco Nación',
-        sendMethodKey: 'CBU',
-        sendMethodValue: '1234567890123456789012',
-        documentType: 'DNI',
-        documentValue: '87654321'
-      }
-    }
-  }})
+  @ApiResponse({
+    status: 201,
+    description: 'Método de pago creado correctamente',
+    schema: {
+      example: {
+        id: 'uuid',
+        platformId: 'bank',
+        method: 'bank',
+        bank: {
+          currency: 'ARS',
+          bankName: 'Banco Nación',
+          sendMethodKey: 'CBU',
+          sendMethodValue: '1234567890123456789012',
+          documentType: 'DNI',
+          documentValue: '87654321',
+        },
+      },
+    },
+  })
   @ApiBody({
     description: 'Datos para crear un método de pago',
     type: CreatePaymentMethodDto,
@@ -39,9 +43,9 @@ export class PaymentMethodController {
             sendMethodKey: 'CBU',
             sendMethodValue: '1234567890123456789012',
             documentType: 'DNI',
-            documentValue: '87654321'
-          }
-        }
+            documentValue: '87654321',
+          },
+        },
       },
       pix: {
         summary: 'Método de pago tipo pix',
@@ -52,9 +56,9 @@ export class PaymentMethodController {
             virtualBankId: 'uuid-virtual-bank',
             pixKey: 'clavePix',
             pixValue: 'valorPix',
-            cpf: '12345678900'
-          }
-        }
+            cpf: '12345678900',
+          },
+        },
       },
       crypto: {
         summary: 'Método de pago tipo receiver-crypto',
@@ -64,9 +68,9 @@ export class PaymentMethodController {
           receiverCrypto: {
             currency: 'USDT',
             network: 'TRON',
-            wallet: 'T9z...'
-          }
-        }
+            wallet: 'T9z...',
+          },
+        },
       },
       virtualBank: {
         summary: 'Método de pago tipo banco virtual',
@@ -76,11 +80,11 @@ export class PaymentMethodController {
           virtualBank: {
             currency: 'BRL',
             emailAccount: 'usuario@banco.com',
-            transferCode: 'codigo123'
-          }
-        }
-      }
-    }
+            transferCode: 'codigo123',
+          },
+        },
+      },
+    },
   })
   @Post()
   async create(@Body() createPaymentMethodDto: CreatePaymentMethodDto) {
@@ -88,52 +92,66 @@ export class PaymentMethodController {
   }
 
   @ApiOperation({ summary: 'Obtener todos los métodos de pago' })
-  @ApiResponse({ status: 200, description: 'Lista de métodos de pago', schema: {
-    example: [
-      {
-        id: 'uuid',
-        platformId: 'bank',
-        method: 'bank',
-        bank: { /* ... */ }
-      }
-    ]
-  }})
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de métodos de pago',
+    schema: {
+      example: [
+        {
+          id: 'uuid',
+          platformId: 'bank',
+          method: 'bank',
+          bank: {
+            /* ... */
+          },
+        },
+      ],
+    },
+  })
   @Get()
   async findAll() {
     return await this.paymentMethodService.findAllFinancialAccounts();
   }
 
   @ApiOperation({ summary: 'Obtener todos los métodos de pago tipo banco' })
-  @ApiResponse({ status: 200, description: 'Lista de bancos', schema: {
-    example: [
-      {
-        id: 'uuid',
-        currency: 'ARS',
-        bankName: 'Banco Nación',
-        sendMethodKey: 'CBU',
-        sendMethodValue: '1234567890123456789012',
-        documentType: 'DNI',
-        documentValue: '87654321'
-      }
-    ]
-  }})
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de bancos',
+    schema: {
+      example: [
+        {
+          id: 'uuid',
+          currency: 'ARS',
+          bankName: 'Banco Nación',
+          sendMethodKey: 'CBU',
+          sendMethodValue: '1234567890123456789012',
+          documentType: 'DNI',
+          documentValue: '87654321',
+        },
+      ],
+    },
+  })
   @Get('/bank')
   async findAllBank() {
     return await this.paymentMethodService.findAllBank();
   }
 
   @ApiOperation({ summary: 'Obtener todos los métodos de pago tipo pix' })
-  @ApiResponse({ status: 200, description: 'Lista de pix', schema: {
-    example: [
-      {
-        id: 'uuid',
-        virtualBankId: 'uuid-virtual-bank',
-        pixKey: 'clavePix',
-        pixValue: 'valorPix',
-        cpf: '12345678900'
-      }
-    ]
-  }})
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de pix',
+    schema: {
+      example: [
+        {
+          id: 'uuid',
+          virtualBankId: 'uuid-virtual-bank',
+          pixKey: 'clavePix',
+          pixValue: 'valorPix',
+          cpf: '12345678900',
+        },
+      ],
+    },
+  })
   @Get('/pix')
   async findAllPix() {
     return await this.paymentMethodService.findAllPix();

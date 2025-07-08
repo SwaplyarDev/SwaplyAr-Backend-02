@@ -1,4 +1,8 @@
-import { Injectable, NestMiddleware, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NestMiddleware,
+  BadRequestException,
+} from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
 @Injectable()
@@ -9,12 +13,16 @@ export class TransactionStatusFieldsMiddleware implements NestMiddleware {
     switch (status) {
       case 'review_payment':
         if (!body.review) {
-          throw new BadRequestException('Se requiere código de transferencia para el estado review_payment');
+          throw new BadRequestException(
+            'Se requiere código de transferencia para el estado review_payment',
+          );
         }
         break;
       case 'discrepancy':
         if (!body.descripcion) {
-          throw new BadRequestException('Se requiere descripción de la discrepancia');
+          throw new BadRequestException(
+            'Se requiere descripción de la discrepancia',
+          );
         }
         break;
       case 'canceled':
@@ -24,12 +32,16 @@ export class TransactionStatusFieldsMiddleware implements NestMiddleware {
         break;
       case 'modified':
         if (!body.descripcion) {
-          throw new BadRequestException('Se requiere descripción de la modificación');
+          throw new BadRequestException(
+            'Se requiere descripción de la modificación',
+          );
         }
         break;
       case 'refunded':
         if (!body.codigo_transferencia) {
-          throw new BadRequestException('Se requiere código de transferencia de reembolso');
+          throw new BadRequestException(
+            'Se requiere código de transferencia de reembolso',
+          );
         }
         break;
       default:
@@ -37,4 +49,4 @@ export class TransactionStatusFieldsMiddleware implements NestMiddleware {
     }
     next();
   }
-} 
+}

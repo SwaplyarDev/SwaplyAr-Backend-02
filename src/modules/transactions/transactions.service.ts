@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -55,7 +59,10 @@ export class TransactionsService {
     });
   }
 
-  async getTransactionByEmail(transactionId: string, userEmail: string): Promise<Transaction> {
+  async getTransactionByEmail(
+    transactionId: string,
+    userEmail: string,
+  ): Promise<Transaction> {
     if (!userEmail) {
       throw new ForbiddenException('Email is required');
     }
@@ -64,13 +71,13 @@ export class TransactionsService {
       where: { id: transactionId },
       relations: {
         senderAccount: {
-          paymentMethod: true
+          paymentMethod: true,
         },
         receiverAccount: {
-          paymentMethod: true
+          paymentMethod: true,
         },
         amount: true,
-        proofOfPayment: true
+        proofOfPayment: true,
       },
     });
 

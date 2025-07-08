@@ -13,4 +13,4 @@ export interface StatusHistoryResponse {
   };
   changedByAdminId: string;
   additionalData?: Record<string, any>;
-} 
+}

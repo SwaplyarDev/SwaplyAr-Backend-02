@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindManyOptions } from 'typeorm';
 import { Transaction } from '../../modules/transactions/entities/transaction.entity';
@@ -30,7 +35,9 @@ export class AdminService {
     private readonly bankService: BankService,
   ) {}
 
-  private convertAdminStatusToTransactionStatus(status: AdminStatus): TransactionStatus {
+  private convertAdminStatusToTransactionStatus(
+    status: AdminStatus,
+  ): TransactionStatus {
     // Mapeo directo entre AdminStatus y TransactionStatus
     const statusMap: Record<AdminStatus, TransactionStatus> = {
       [AdminStatus.Pending]: TransactionStatus.Pending,
@@ -74,7 +81,7 @@ export class AdminService {
         'receiverAccount',
         'receiverAccount.paymentMethod',
         'amount',
-        'proofOfPayment'
+        'proofOfPayment',
       ],
     });
     if (!transaction) {
@@ -102,31 +109,40 @@ export class AdminService {
             id: true,
             profile: {
               firstName: true,
-              lastName: true
-            }
-          }
+              lastName: true,
+            },
+          },
         },
         order: { changedAt: 'DESC' },
       });
 
       if (!statusHistory || statusHistory.length === 0) {
-        this.logger.warn(`No se encontró historial de estados para la transacción ${id}`);
+        this.logger.warn(
+          `No se encontró historial de estados para la transacción ${id}`,
+        );
         throw new NotFoundException('No se encontró historial de estados.');
       }
 
       // Transformar la respuesta para tener el formato deseado
-      const formattedHistory: StatusHistoryResponse[] = statusHistory.map(log => ({
-        ...log,
-        changedByAdmin: {
-          id: log.changedByAdmin.id,
-          name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`
-        }
-      }));
+      const formattedHistory: StatusHistoryResponse[] = statusHistory.map(
+        (log) => ({
+          ...log,
+          changedByAdmin: {
+            id: log.changedByAdmin.id,
+            name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`,
+          },
+        }),
+      );
 
-      this.logger.log(`Historial de estados obtenido correctamente para la transacción ${id}`);
+      this.logger.log(
+        `Historial de estados obtenido correctamente para la transacción ${id}`,
+      );
       return formattedHistory;
     } catch (error) {
-      this.logger.error(`Error al obtener el historial de estados para la transacción ${id}:`, error);
+      this.logger.error(
+        `Error al obtener el historial de estados para la transacción ${id}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -135,19 +151,21 @@ export class AdminService {
   /*                    UPDATE TRANSACTION STATUS BY TYPE                       */
   /* -------------------------------------------------------------------------- */
   async updateTransactionStatusByType(
-    transactionId: string, 
-    status: AdminStatus, 
+    transactionId: string,
+    status: AdminStatus,
     adminUser: User,
     message?: string,
-    additionalData?: Record<string, any>
+    additionalData?: Record<string, any>,
   ) {
     // Verificar que el usuario sea admin o super_admin
     if (!['admin', 'super_admin'].includes(adminUser.role)) {
-      throw new UnauthorizedException('Solo los administradores pueden actualizar el estado de las transacciones');
+      throw new UnauthorizedException(
+        'Solo los administradores pueden actualizar el estado de las transacciones',
+      );
     }
 
-    const transaction = await this.transactionsRepository.findOne({ 
-      where: { id: transactionId } 
+    const transaction = await this.transactionsRepository.findOne({
+      where: { id: transactionId },
     });
 
     if (!transaction) {
@@ -155,25 +173,25 @@ export class AdminService {
     }
 
     // Buscar o crear el registro en administracion_master
-    let adminMaster = await this.adminMasterRepository.findOne({ 
-      where: { transactionId } 
+    let adminMaster = await this.adminMasterRepository.findOne({
+      where: { transactionId },
     });
 
     if (!adminMaster) {
       adminMaster = this.adminMasterRepository.create({
         transactionId,
         status,
-        adminUserId: adminUser.id
+        adminUserId: adminUser.id,
       });
       await this.adminMasterRepository.save(adminMaster);
     } else {
       // Actualizar el estado en administracion_master
       await this.adminMasterRepository.update(
         { transactionId },
-        { 
+        {
           status,
-          adminUserId: adminUser.id
-        }
+          adminUserId: adminUser.id,
+        },
       );
     }
 
@@ -183,30 +201,33 @@ export class AdminService {
       status,
       message,
       changedByAdminId: adminUser.id,
-      additionalData
+      additionalData,
     });
 
     await this.statusLogRepository.save(statusLog);
 
     // Convertir el estado de admin a estado de transacción
-    const transactionStatus = this.convertAdminStatusToTransactionStatus(status);
+    const transactionStatus =
+      this.convertAdminStatusToTransactionStatus(status);
 
     // Actualizar el estado en la transacción
     await this.transactionsRepository.update(
       { id: transactionId },
-      { finalStatus: transactionStatus }
+      { finalStatus: transactionStatus },
     );
 
-    const updatedTransaction = await this.transactionsRepository.findOne({ 
-      where: { id: transactionId } 
+    const updatedTransaction = await this.transactionsRepository.findOne({
+      where: { id: transactionId },
     });
 
-    this.logger.log(`Estado de transacción ${transactionId} actualizado a ${status} por admin ${adminUser.id}`);
+    this.logger.log(
+      `Estado de transacción ${transactionId} actualizado a ${status} por admin ${adminUser.id}`,
+    );
 
-    return { 
-      message: 'Estado actualizado', 
-      status, 
-      transaction: updatedTransaction 
+    return {
+      message: 'Estado actualizado',
+      status,
+      transaction: updatedTransaction,
     };
   }
 
@@ -241,7 +262,7 @@ export class AdminService {
       url = proofOfPayment.imgUrl;
     } else if (comprobante) {
       let buffer: Buffer;
-      let fileName = `voucher_${transactionId}_${Date.now()}`;
+      const fileName = `voucher_${transactionId}_${Date.now()}`;
       if (comprobante.startsWith('http')) {
         url = comprobante;
         // Crear ProofOfPayment solo con la URL
@@ -265,10 +286,14 @@ export class AdminService {
         proofOfPayment = await this.proofOfPaymentService.create(dto);
         url = proofOfPayment.imgUrl;
       } else {
-        throw new Error('El formato del comprobante no es válido. Debe ser una URL o una imagen en base64.');
+        throw new Error(
+          'El formato del comprobante no es válido. Debe ser una URL o una imagen en base64.',
+        );
       }
     } else {
-      throw new Error('Se requiere un archivo o comprobante válido en la solicitud');
+      throw new Error(
+        'Se requiere un archivo o comprobante válido en la solicitud',
+      );
     }
     await this.transactionsRepository.update(
       { id: transactionId },
@@ -325,7 +350,12 @@ export class AdminService {
   async updateTransaction(id: string, payload: any) {
     const transaction = await this.transactionsRepository.findOne({
       where: { id },
-      relations: { senderAccount: true, receiverAccount: true, amount: true, proofOfPayment: true },
+      relations: {
+        senderAccount: true,
+        receiverAccount: true,
+        amount: true,
+        proofOfPayment: true,
+      },
     });
     if (!transaction) {
       throw new Error('Transacción no encontrada.');
@@ -340,7 +370,12 @@ export class AdminService {
     // Devolver la transacción actualizada
     const updated = await this.transactionsRepository.findOne({
       where: { id },
-      relations: { senderAccount: true, receiverAccount: true, amount: true, proofOfPayment: true },
+      relations: {
+        senderAccount: true,
+        receiverAccount: true,
+        amount: true,
+        proofOfPayment: true,
+      },
     });
     return updated;
   }
@@ -356,7 +391,7 @@ export class AdminService {
     userEmail: string | null,
     page = 1,
     perPage = 6,
-    filters: Record<string, any> = {}
+    filters: Record<string, any> = {},
   ): Promise<{
     meta: {
       totalPages: number;
@@ -367,7 +402,8 @@ export class AdminService {
     data: Transaction[];
   }> {
     // Construir el query builder
-    const qb = this.transactionsRepository.createQueryBuilder('transaction')
+    const qb = this.transactionsRepository
+      .createQueryBuilder('transaction')
       .leftJoinAndSelect('transaction.senderAccount', 'senderAccount')
       .leftJoinAndSelect('transaction.receiverAccount', 'receiverAccount')
       .leftJoinAndSelect('transaction.amount', 'amount')
@@ -377,7 +413,7 @@ export class AdminService {
     if (userEmail) {
       qb.andWhere(
         '(transaction.createdBy = :userEmail OR transaction.senderAccount.email = :userEmail)',
-        { userEmail }
+        { userEmail },
       );
     }
 
@@ -388,9 +424,13 @@ export class AdminService {
       if (key === 'status') {
         qb.andWhere('transaction.finalStatus = :status', { status: value });
       } else if (key === 'beginTransaction') {
-        qb.andWhere('transaction.beginTransaction >= :beginTransaction', { beginTransaction: value });
+        qb.andWhere('transaction.beginTransaction >= :beginTransaction', {
+          beginTransaction: value,
+        });
       } else if (key === 'endTransaction') {
-        qb.andWhere('transaction.endTransaction <= :endTransaction', { endTransaction: value });
+        qb.andWhere('transaction.endTransaction <= :endTransaction', {
+          endTransaction: value,
+        });
       } else {
         // Filtro genérico por campo en transaction
         qb.andWhere(`transaction.${key} = :${key}`, { [key]: value });
@@ -427,34 +467,41 @@ export class AdminService {
   /* -------------------------------------------------------------------------- */
   async getAllStatusHistory(page = 1, limit = 10) {
     try {
-      const [statusHistory, total] = await this.statusLogRepository.findAndCount({
-        relations: ['transaction', 'changedByAdmin', 'changedByAdmin.profile'],
-        select: {
-          id: true,
-          status: true,
-          changedAt: true,
-          message: true,
-          changedByAdmin: {
+      const [statusHistory, total] =
+        await this.statusLogRepository.findAndCount({
+          relations: [
+            'transaction',
+            'changedByAdmin',
+            'changedByAdmin.profile',
+          ],
+          select: {
             id: true,
-            profile: {
-              firstName: true,
-              lastName: true
-            }
-          }
-        },
-        order: { changedAt: 'DESC' },
-        skip: (page - 1) * limit,
-        take: limit
-      });
+            status: true,
+            changedAt: true,
+            message: true,
+            changedByAdmin: {
+              id: true,
+              profile: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+          order: { changedAt: 'DESC' },
+          skip: (page - 1) * limit,
+          take: limit,
+        });
 
       // Transformar la respuesta para tener el formato deseado
-      const formattedHistory: StatusHistoryResponse[] = statusHistory.map(log => ({
-        ...log,
-        changedByAdmin: {
-          id: log.changedByAdmin.id,
-          name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`
-        }
-      }));
+      const formattedHistory: StatusHistoryResponse[] = statusHistory.map(
+        (log) => ({
+          ...log,
+          changedByAdmin: {
+            id: log.changedByAdmin.id,
+            name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`,
+          },
+        }),
+      );
 
       return {
         data: formattedHistory,
@@ -462,12 +509,15 @@ export class AdminService {
           total,
           page,
           limit,
-          totalPages: Math.ceil(total / limit)
-        }
+          totalPages: Math.ceil(total / limit),
+        },
       };
     } catch (error) {
-      this.logger.error('Error al obtener el historial completo de estados:', error);
+      this.logger.error(
+        'Error al obtener el historial completo de estados:',
+        error,
+      );
       throw error;
     }
   }
-} 
+}

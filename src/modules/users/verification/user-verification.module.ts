@@ -7,11 +7,9 @@ import { UserVerificationService } from './user-verification.service';
 import { CloudinaryService } from '../../../service/cloudinary/cloudinary.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UserVerification, User])
-  ],
+  imports: [TypeOrmModule.forFeature([UserVerification, User])],
   controllers: [UserVerificationController],
   providers: [UserVerificationService, CloudinaryService],
-  exports: [UserVerificationService]
+  exports: [UserVerificationService],
 })
-export class UserVerificationModule {} 
+export class UserVerificationModule {}

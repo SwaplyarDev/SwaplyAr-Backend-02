@@ -59,8 +59,8 @@ export class AdministracionMaster {
     () => AdministracionStatusLog,
     (log: AdministracionStatusLog) => log.transaction,
     {
-      cascade: true
-    }
+      cascade: true,
+    },
   )
   statusLogs: AdministracionStatusLog[];
 }

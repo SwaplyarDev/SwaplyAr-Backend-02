@@ -22,4 +22,4 @@ export class EstadoValidoPipe implements PipeTransform {
     }
     return value;
   }
-} 
+}

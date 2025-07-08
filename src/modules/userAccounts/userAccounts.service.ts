@@ -42,10 +42,9 @@ export class AccountsService {
     userId: string,
   ) {
     try {
-      
       validateFields(typeAccount, formData, 'create');
       validateUserAccount(userAccValues);
-      
+
       const userAccount = this.userAccountRepo.create({
         accountName: userAccValues.account_name,
         currency: userAccValues.currency,
@@ -58,7 +57,7 @@ export class AccountsService {
       if (typeAccount === 'bank') {
         specificAccount = this.bankAccountRepo.create({
           ...formData,
-          account_id: savedUserAccount.account_id, 
+          account_id: savedUserAccount.account_id,
           userAccount: savedUserAccount,
         });
         await this.bankAccountRepo.save(specificAccount);
@@ -77,43 +76,47 @@ export class AccountsService {
         });
         await this.receiverCryptoRepo.save(specificAccount);
       } else if (typeAccount === 'crypto') {
-      specificAccount = this.receiverCryptoRepo.create({
-        ...formData,
-        account_id: savedUserAccount.account_id,
-        userAccount: savedUserAccount,
-      });
-      await this.receiverCryptoRepo.save(specificAccount);
-    } else if (typeAccount === 'paypal') {
-      specificAccount = this.payPalRepo.create({
-        ...formData,
-        account_id: savedUserAccount.account_id,
-        userAccount: savedUserAccount,
-      });
-      await this.payPalRepo.save(specificAccount);
-    } else if (typeAccount === 'wise') {
-      specificAccount = this.wiseRepo.create({
-        ...formData,
-        account_id: savedUserAccount.account_id,
-        userAccount: savedUserAccount,
-      });
-      await this.wiseRepo.save(specificAccount);
-    } else if (typeAccount === 'payoneer') {
-      specificAccount = this.payoneerRepo.create({
-        ...formData,
-        account_id: savedUserAccount.account_id,
-        userAccount: savedUserAccount,
-      });
-      await this.payoneerRepo.save(specificAccount);
-    } else if (typeAccount === 'pix') {
-      specificAccount = this.pixRepo.create({
-        ...formData,
-        account_id: savedUserAccount.account_id,
-        userAccount: savedUserAccount,
-      });
-      await this.pixRepo.save(specificAccount);
-    }
+        specificAccount = this.receiverCryptoRepo.create({
+          ...formData,
+          account_id: savedUserAccount.account_id,
+          userAccount: savedUserAccount,
+        });
+        await this.receiverCryptoRepo.save(specificAccount);
+      } else if (typeAccount === 'paypal') {
+        specificAccount = this.payPalRepo.create({
+          ...formData,
+          account_id: savedUserAccount.account_id,
+          userAccount: savedUserAccount,
+        });
+        await this.payPalRepo.save(specificAccount);
+      } else if (typeAccount === 'wise') {
+        specificAccount = this.wiseRepo.create({
+          ...formData,
+          account_id: savedUserAccount.account_id,
+          userAccount: savedUserAccount,
+        });
+        await this.wiseRepo.save(specificAccount);
+      } else if (typeAccount === 'payoneer') {
+        specificAccount = this.payoneerRepo.create({
+          ...formData,
+          account_id: savedUserAccount.account_id,
+          userAccount: savedUserAccount,
+        });
+        await this.payoneerRepo.save(specificAccount);
+      } else if (typeAccount === 'pix') {
+        specificAccount = this.pixRepo.create({
+          ...formData,
+          account_id: savedUserAccount.account_id,
+          userAccount: savedUserAccount,
+        });
+        await this.pixRepo.save(specificAccount);
+      }
 
-      return { message: 'bank created', bank: savedUserAccount, details: specificAccount };
+      return {
+        message: 'bank created',
+        bank: savedUserAccount,
+        details: specificAccount,
+      };
     } catch (err) {
       this.logger.error('Error creating bank:', err);
       throw new BadRequestException('Error creating bank account');
@@ -127,11 +130,13 @@ export class AccountsService {
     });
 
     if (!userAccount) {
-      throw new BadRequestException('Cuenta no encontrada o no pertenece al usuario');
+      throw new BadRequestException(
+        'Cuenta no encontrada o no pertenece al usuario',
+      );
     }
 
-  // Elimina solo en la tabla específica según el tipo de cuenta
-      switch (userAccount.typeId) {
+    // Elimina solo en la tabla específica según el tipo de cuenta
+    switch (userAccount.typeId) {
       case 1: // Bank
         await this.bankAccountRepo.delete({ account_id: bankAccountId });
         break;
@@ -166,7 +171,7 @@ export class AccountsService {
   async findAllByUser(user: any) {
     // Busca todas las cuentas del usuario
     const accounts = await this.userAccountRepo.find({
-    where: { userId: user.id },
+      where: { userId: user.id },
     });
 
     return accounts;

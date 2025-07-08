@@ -10,4 +10,4 @@ import { RegretsController } from './regrets.controller';
   providers: [RegretsService],
   exports: [RegretsService],
 })
-export class RegretsModule {} 
+export class RegretsModule {}

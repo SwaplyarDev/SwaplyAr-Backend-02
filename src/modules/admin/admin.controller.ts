@@ -37,13 +37,15 @@ import { StatusHistoryResponse } from 'src/common/interfaces/status-history.inte
 import { MailerService } from '../mailer/mailer.service';
 import { Transaction } from 'typeorm';
 
-
 @ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminRoleGuard)
 export class AdminController {
-  constructor(private readonly adminService: AdminService, private readonly mailerService: MailerService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly mailerService: MailerService,
+  ) {}
 
   @ApiOperation({ summary: 'Obtener todas las transacciones' })
   @ApiResponse({

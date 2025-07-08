@@ -59,7 +59,7 @@ export class ContactController {
   // obtiene todos los contactos
   @ApiOperation({ summary: 'Obtener todos los contactos' })
   @ApiResponse({ status: 200, description: 'Lista de contactos' })
-  @UseGuards(JwtAuthGuard /* , AdminRoleGuard */)
+  @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Get()
   async getAll() {
     return this.contactService.getAllContacts();
@@ -74,7 +74,7 @@ export class ContactController {
     type: Contact,
   })
   @ApiResponse({ status: 404, description: 'Contacto no encontrado' })
-  @UseGuards(JwtAuthGuard /*  AdminRoleGuard */)
+  @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Get(':id')
   async getById(@Param('id') id: string): Promise<Contact> {
     return this.contactService.getContactById(id);
@@ -93,7 +93,7 @@ export class ContactController {
     type: Contact,
   })
   @ApiResponse({ status: 404, description: 'Contacto no encontrado' })
-  @UseGuards(JwtAuthGuard /* , AdminRoleGuard */)
+  @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Get('email/:email')
   async getByEmail(@Param('email') email: string): Promise<Contact> {
     return this.contactService.getContactByEmail(email);
@@ -127,7 +127,7 @@ export class ContactController {
   })
 
   //actualiza un contacto por ID
-  @UseGuards(JwtAuthGuard /* , AdminRoleGuard */)
+  @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Put(':id')
   async update(
     @Param('id') id: string,

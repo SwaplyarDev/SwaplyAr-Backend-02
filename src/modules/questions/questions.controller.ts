@@ -42,7 +42,7 @@ export class QuestionsController {
 
   @ApiOperation({ summary: 'Crear una nueva pregunta (admin solo)' })
   @ApiResponse({ status: 201, description: 'Pregunta creada correctamente', type: Question })
-  //@UseGuards(AdminRoleGuard)
+  @UseGuards(AdminRoleGuard)
   @Post()
   async createQuestion(@Body() createQuestionDto: CreateQuestionDto): Promise<Question> {
     return this.questionsService.create(createQuestionDto);
@@ -51,7 +51,7 @@ export class QuestionsController {
   @ApiOperation({ summary: 'Eliminar una pregunta (admin solo)' })
   @ApiResponse({ status: 204, description: 'Pregunta eliminada correctamente' })
   @ApiResponse({ status: 404, description: 'Pregunta no encontrada' })
-  //@UseGuards(AdminRoleGuard)
+  @UseGuards(AdminRoleGuard)
   @Delete(':id')
 
   async deleteQuestion(@Param('id') id: string): Promise<void> {

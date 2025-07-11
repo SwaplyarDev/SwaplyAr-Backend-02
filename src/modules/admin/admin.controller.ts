@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -36,6 +37,8 @@ import { User as UserEntity } from '@users/entities/user.entity';
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { MailerService } from '../mailer/mailer.service';
 import { Transaction } from 'typeorm';
+
+
 
 @ApiTags('Admin')
 @ApiBearerAuth()

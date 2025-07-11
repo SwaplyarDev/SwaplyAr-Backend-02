@@ -19,6 +19,8 @@ import { JwtStrategy } from 'src/common/jwt.strategy';
 import { AbandonedTransactionsModule } from '@transactions/abandoned-transactions/abandoned-transactions.module';
 import { OtpModule } from '@otp/otp.module';
 import { UserVerificationModule } from '@users/verification/user-verification.module';
+import { QuestionsModule } from '../modules/questions/questions.module';
+
 import { ContactModule } from 'src/modules/contacts/contacts.module';
 
 @Module({
@@ -38,6 +40,7 @@ import { ContactModule } from 'src/modules/contacts/contacts.module';
     AdminModule,
     AbandonedTransactionsModule,
     PassportModule,
+    QuestionsModule,
     ContactModule,
     UserVerificationModule,
     JwtModule.register({

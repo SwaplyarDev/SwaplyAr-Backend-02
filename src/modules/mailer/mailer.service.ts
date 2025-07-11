@@ -6,7 +6,6 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AdminStatus } from 'src/enum/admin-status.enum';
 
-
 @Injectable()
 export class MailerService {
   private readonly mailer: Transporter;
@@ -38,15 +37,17 @@ export class MailerService {
       // Verificar configuración
       const config = this.configService.get('nodemailer');
       this.logger.log('Nodemailer config:', config);
-      
+
       const from = config.auth.user;
       if (!from || !config.auth.pass) {
-        throw new Error('Missing email configuration. Please check EMAIL_USER and EMAIL_PASS environment variables.');
+        throw new Error(
+          'Missing email configuration. Please check EMAIL_USER and EMAIL_PASS environment variables.',
+        );
       }
 
       this.logger.log(`Mailer verification: ${await this.mailer.verify()}`);
       this.logger.log(`Sending mail from ${from} to ${to}`);
-      
+
       let subject = '';
       let html = '';
       let templatePath = '';
@@ -54,31 +55,52 @@ export class MailerService {
       switch (status) {
         case AdminStatus.Approved:
           subject = 'Transacción Aprobada';
-          templatePath = join(__dirname, 'templates/email/transaction/operations_transactions/approved.html');
+          templatePath = join(
+            __dirname,
+            'templates/email/transaction/operations_transactions/approved.html',
+          );
           break;
         case AdminStatus.Canceled:
           subject = 'Transacción Cancelada';
-          templatePath = join(__dirname, 'templates/email/transaction/operations_transactions/canceled.html');
+          templatePath = join(
+            __dirname,
+            'templates/email/transaction/operations_transactions/canceled.html',
+          );
           break;
         case AdminStatus.Completed:
           subject = 'Transacción Completada';
-          templatePath = join(__dirname, 'templates/email/transaction/operations_transactions/completed.html');
+          templatePath = join(
+            __dirname,
+            'templates/email/transaction/operations_transactions/completed.html',
+          );
           break;
         case AdminStatus.Discrepancy:
           subject = 'Discrepancia en la Transacción';
-          templatePath = join(__dirname, 'templates/email/transaction/operations_transactions/discrepancy.html');
+          templatePath = join(
+            __dirname,
+            'templates/email/transaction/operations_transactions/discrepancy.html',
+          );
           break;
         case AdminStatus.Modified:
           subject = 'Transacción Modificada';
-          templatePath = join(__dirname, 'templates/email/transaction/operations_transactions/modified.html');
+          templatePath = join(
+            __dirname,
+            'templates/email/transaction/operations_transactions/modified.html',
+          );
           break;
         case AdminStatus.Refunded:
           subject = 'Transacción Reembolsada';
-          templatePath = join(__dirname, 'templates/email/transaction/operations_transactions/refunded.html');
+          templatePath = join(
+            __dirname,
+            'templates/email/transaction/operations_transactions/refunded.html',
+          );
           break;
         case AdminStatus.Rejected:
           subject = 'Transacción Rechazada';
-          templatePath = join(__dirname, 'templates/email/transaction/operations_transactions/reject.html');
+          templatePath = join(
+            __dirname,
+            'templates/email/transaction/operations_transactions/reject.html',
+          );
           break;
       }
 
@@ -98,7 +120,10 @@ export class MailerService {
         html,
       };
 
-      this.logger.log('Sending mail with options:', { ...mailOptions, html: 'HTML content hidden for brevity' });
+      this.logger.log('Sending mail with options:', {
+        ...mailOptions,
+        html: 'HTML content hidden for brevity',
+      });
       const result = await this.mailer.sendMail(mailOptions);
       this.logger.log('Mail sent successfully:', result);
 

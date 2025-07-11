@@ -12,7 +12,7 @@ import { User } from '@users/entities/user.entity';
 export enum VerificationStatus {
   PENDING = 'pending',
   VERIFIED = 'verified',
-  REJECTED = 'rejected'
+  REJECTED = 'rejected',
 }
 
 @Entity('user_verification')
@@ -20,7 +20,7 @@ export class UserVerification {
   @PrimaryGeneratedColumn('uuid')
   verification_id: string;
 
-  @ManyToOne(() => User, user => user.verifications)
+  @ManyToOne(() => User, (user) => user.verifications)
   user: User;
 
   @Column()
@@ -38,7 +38,7 @@ export class UserVerification {
   @Column({
     type: 'enum',
     enum: VerificationStatus,
-    default: VerificationStatus.PENDING
+    default: VerificationStatus.PENDING,
   })
   verification_status: VerificationStatus;
 

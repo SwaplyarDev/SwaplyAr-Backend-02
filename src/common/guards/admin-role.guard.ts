@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  ForbiddenException,
+} from '@nestjs/common';
 
 @Injectable()
 export class AdminRoleGuard implements CanActivate {
@@ -10,4 +15,4 @@ export class AdminRoleGuard implements CanActivate {
     }
     return true;
   }
-} 
+}

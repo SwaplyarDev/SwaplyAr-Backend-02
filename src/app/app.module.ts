@@ -17,10 +17,11 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/common/jwt.strategy';
 import { AbandonedTransactionsModule } from '@transactions/abandoned-transactions/abandoned-transactions.module';
-import {OtpModule} from "@otp/otp.module";
+import { OtpModule } from '@otp/otp.module';
 import { UserVerificationModule } from '@users/verification/user-verification.module';
 import { QuestionsModule } from '../modules/questions/questions.module';
 
+import { ContactModule } from 'src/modules/contacts/contacts.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { QuestionsModule } from '../modules/questions/questions.module';
     AbandonedTransactionsModule,
     PassportModule,
     QuestionsModule,
+    ContactModule,
     UserVerificationModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',

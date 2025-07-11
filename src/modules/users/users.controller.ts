@@ -12,8 +12,15 @@ import { RegisterUserDto } from '@users/dto/register-user.dto';
 import { UpdateUserRoleDto } from '@users/dto/update-user-role.dto';
 import { UsersService } from '@users//users.service';
 import { User } from '@users/entities/user.entity';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
-import { OtpService } from "@otp/otp.service";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
+import { OtpService } from '@otp/otp.service';
 import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -28,7 +35,7 @@ export class UsersController {
 
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
-  @ApiResponse({ status: 201, description: 'Usuario registrado correctamente'})
+  @ApiResponse({ status: 201, description: 'Usuario registrado correctamente' })
   @ApiBody({
     description: 'Datos para registrar un usuario',
     type: RegisterUserDto,
@@ -40,10 +47,10 @@ export class UsersController {
           lastName: 'Davila',
           email: 'nahuel@gmail.com',
           role: 'user',
-          termsAccepted: true
-        }
-      }
-    }
+          termsAccepted: true,
+        },
+      },
+    },
   })
   @Post('register')
   async register(@Body() userDto: RegisterUserDto): Promise<User> {
@@ -61,18 +68,21 @@ export class UsersController {
   @ApiParam({
     name: 'userId',
     description: 'ID del usuario a actualizar',
-    type: 'string'
+    type: 'string',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Rol de usuario actualizado correctamente',
-    type: User
+    type: User,
   })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  @ApiResponse({ status: 403, description: 'No tiene permisos para realizar esta acción' })
+  @ApiResponse({
+    status: 403,
+    description: 'No tiene permisos para realizar esta acción',
+  })
   async updateUserRole(
     @Param('userId') userId: string,
-    @Body() updateRoleDto: UpdateUserRoleDto
+    @Body() updateRoleDto: UpdateUserRoleDto,
   ): Promise<User> {
     return this.usersService.updateUserRole(userId, updateRoleDto.role);
   }

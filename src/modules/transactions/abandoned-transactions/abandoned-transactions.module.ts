@@ -10,4 +10,4 @@ import { AbandonedTransaction } from '../entities/abandoned-transaction.entity';
   providers: [AbandonedTransactionsService],
   exports: [AbandonedTransactionsService],
 })
-export class AbandonedTransactionsModule {} 
+export class AbandonedTransactionsModule {}

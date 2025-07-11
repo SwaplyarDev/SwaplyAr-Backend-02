@@ -1,6 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 
-export function validateFields(typeAccount: string, formData: Record<string, any>, typeVerif: 'create' | 'update') {
+export function validateFields(
+  typeAccount: string,
+  formData: Record<string, any>,
+  typeVerif: 'create' | 'update',
+) {
   const requiredFields = {
     bank: [
       'currency',

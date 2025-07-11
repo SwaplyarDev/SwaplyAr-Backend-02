@@ -1,7 +1,15 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserVerification, VerificationStatus } from '../entities/user-verification.entity';
+import {
+  UserVerification,
+  VerificationStatus,
+} from '../entities/user-verification.entity';
 import { User } from '../entities/user.entity';
 import { CloudinaryService } from '../../../service/cloudinary/cloudinary.service';
 
@@ -15,13 +23,22 @@ export class UserVerificationService {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async create(userId: string, files: {
-    document_front?: Express.Multer.File[];
-    document_back?: Express.Multer.File[];
-    selfie_image?: Express.Multer.File[];
-  }): Promise<UserVerification> {
-    if (!files.document_front?.[0] || !files.document_back?.[0] || !files.selfie_image?.[0]) {
-      throw new BadRequestException('Se requieren tres imágenes: frente y reverso del documento, y selfie');
+  async create(
+    userId: string,
+    files: {
+      document_front?: Express.Multer.File[];
+      document_back?: Express.Multer.File[];
+      selfie_image?: Express.Multer.File[];
+    },
+  ): Promise<UserVerification> {
+    if (
+      !files.document_front?.[0] ||
+      !files.document_back?.[0] ||
+      !files.selfie_image?.[0]
+    ) {
+      throw new BadRequestException(
+        'Se requieren tres imágenes: frente y reverso del documento, y selfie',
+      );
     }
 
     // Verificar si el usuario existe
@@ -34,32 +51,34 @@ export class UserVerificationService {
     const existingVerification = await this.userVerificationRepository.findOne({
       where: {
         users_id: userId,
-        verification_status: VerificationStatus.PENDING
-      }
+        verification_status: VerificationStatus.PENDING,
+      },
     });
 
     if (existingVerification) {
-      throw new ConflictException('Ya existe una solicitud de verificación pendiente para este usuario');
+      throw new ConflictException(
+        'Ya existe una solicitud de verificación pendiente para este usuario',
+      );
     }
 
     const folder = 'SwaplyAr/admin/user_verification';
-    
+
     const frontImageUrl = await this.cloudinaryService.uploadFile(
       files.document_front[0].buffer,
       folder,
-      `front_${userId}`
+      `front_${userId}`,
     );
 
     const backImageUrl = await this.cloudinaryService.uploadFile(
       files.document_back[0].buffer,
       folder,
-      `back_${userId}`
+      `back_${userId}`,
     );
 
     const selfieImageUrl = await this.cloudinaryService.uploadFile(
       files.selfie_image[0].buffer,
       folder,
-      `selfie_${userId}`
+      `selfie_${userId}`,
     );
 
     // Crear nueva verificación
@@ -69,7 +88,7 @@ export class UserVerificationService {
       document_front: frontImageUrl,
       document_back: backImageUrl,
       selfie_image: selfieImageUrl,
-      verification_status: VerificationStatus.PENDING
+      verification_status: VerificationStatus.PENDING,
     });
 
     return this.userVerificationRepository.save(verification);
@@ -78,11 +97,13 @@ export class UserVerificationService {
   async findByUserId(userId: string): Promise<UserVerification> {
     const verification = await this.userVerificationRepository.findOne({
       where: { users_id: userId },
-      order: { created_at: 'DESC' }
+      order: { created_at: 'DESC' },
     });
 
     if (!verification) {
-      throw new NotFoundException('No se encontró verificación para este usuario');
+      throw new NotFoundException(
+        'No se encontró verificación para este usuario',
+      );
     }
 
     return verification;
@@ -91,10 +112,10 @@ export class UserVerificationService {
   async updateStatus(
     verificationId: string,
     status: VerificationStatus,
-    noteRejection?: string
+    noteRejection?: string,
   ): Promise<UserVerification> {
     const verification = await this.userVerificationRepository.findOne({
-      where: { verification_id: verificationId }
+      where: { verification_id: verificationId },
     });
 
     if (!verification) {
@@ -119,7 +140,7 @@ export class UserVerificationService {
   async findPendingVerifications(): Promise<UserVerification[]> {
     return this.userVerificationRepository.find({
       where: { verification_status: VerificationStatus.PENDING },
-      relations: ['user']
+      relations: ['user'],
     });
   }
-} 
+}

@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, Transaction } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToOne,
+  JoinColumn,
+  Transaction,
+} from 'typeorm';
 import { Transaction as TransactionEntity } from '@transactions/entities/transaction.entity';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 
@@ -14,7 +21,7 @@ export class Regret {
   email: string;
 
   @Column({ type: 'varchar', name: 'phone_number' })
-  phone_number: string; 
+  phone_number: string;
 
   @Column({ type: 'varchar', name: 'description' })
   description: string;
@@ -31,10 +38,7 @@ export class Regret {
   @OneToOne(() => ProofOfPayment)
   @JoinColumn({ name: 'payment_info_id' })
   proofOfPayment: ProofOfPayment;
-
 }
-
-
 
 /* regrets [icon: x-circle, color: orange] {
     regret_id       varchar pk   // Identificador único del reclamo/regret

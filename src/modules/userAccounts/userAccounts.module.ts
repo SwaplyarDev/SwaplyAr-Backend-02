@@ -13,7 +13,8 @@ import { UserPix } from './entities/user-pix.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserAccount, 
+    TypeOrmModule.forFeature([
+      UserAccount,
       UserBank,
       UserVirtualBank,
       UserReceiverCrypto,
@@ -22,7 +23,7 @@ import { UserPix } from './entities/user-pix.entity';
       UserPayoneer,
       UserPix,
     ]),
-    ],
+  ],
   controllers: [AccountsController],
   providers: [AccountsService],
   exports: [AccountsService],

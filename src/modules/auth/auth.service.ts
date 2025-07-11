@@ -1,16 +1,16 @@
 // src/modules/auth/auth.service.ts
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { InjectRepository }                from '@nestjs/typeorm';
-import { Repository }                      from 'typeorm';
-import { User }                            from '@users/entities/user.entity';
-import { JwtService }                      from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '@users/entities/user.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
-      @InjectRepository(User)
-      private readonly userRepo: Repository<User>,  // ← inyecta User repo
-      private readonly jwtService: JwtService,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>, // ← inyecta User repo
+    private readonly jwtService: JwtService,
   ) {}
 
   private buildPayload(user: User) {
@@ -30,7 +30,7 @@ export class AuthService {
 
   async generateTokens(user: User) {
     const payload = this.buildPayload(user);
-    const accessToken  = this.jwtService.sign(payload, { expiresIn: '1h' });
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
     const refreshToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
       expiresIn: '7d',

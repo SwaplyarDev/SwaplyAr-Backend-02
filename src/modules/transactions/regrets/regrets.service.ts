@@ -32,4 +32,4 @@ export class RegretsService {
   remove(id: string) {
     return this.regretsRepository.delete(id);
   }
-} 
+}

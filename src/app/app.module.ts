@@ -19,6 +19,7 @@ import { JwtStrategy } from 'src/common/jwt.strategy';
 import { AbandonedTransactionsModule } from '@transactions/abandoned-transactions/abandoned-transactions.module';
 import {OtpModule} from "@otp/otp.module";
 import { UserVerificationModule } from '@users/verification/user-verification.module';
+import { QuestionsModule } from '../modules/questions/questions.module';
 
 
 @Module({
@@ -38,6 +39,7 @@ import { UserVerificationModule } from '@users/verification/user-verification.mo
     AdminModule,
     AbandonedTransactionsModule,
     PassportModule,
+    QuestionsModule,
     UserVerificationModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',

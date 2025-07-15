@@ -15,6 +15,7 @@ import { NotFoundException } from '@nestjs/common';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { Question } from './entities/question.entity';
+import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { createQuestionSchema, deleteQuestionSchema} from './validation/question.schema';
 import { BadRequestException } from '@nestjs/common';
 
@@ -46,7 +47,7 @@ export class QuestionsController {
   @ApiOperation({ summary: 'Crear una nueva pregunta (admin solo)' })
   @ApiResponse({ status: 201, description: 'Pregunta creada correctamente', type: Question })
   @ApiBody({ type: CreateQuestionDto })
-  @UseGuards(AdminRoleGuard)
+  @UseGuards(JwtAuthGuard ,AdminRoleGuard)
   @Post()
   async createQuestion(@Body() body: CreateQuestionDto): Promise<Question> {
     const result = createQuestionSchema.safeParse(body);
@@ -66,7 +67,7 @@ export class QuestionsController {
   @ApiOperation({ summary: 'Eliminar una pregunta (admin solo)' })
   @ApiResponse({ status: 204, description: 'Pregunta eliminada correctamente' })
   @ApiResponse({ status: 404, description: 'Pregunta no encontrada' })
-  @UseGuards(AdminRoleGuard)
+  @UseGuards(JwtAuthGuard ,AdminRoleGuard)
   @Delete(':id')
   async deleteQuestion(@Param('id') id: string): Promise<void> {
     const result = deleteQuestionSchema.safeParse({ id });

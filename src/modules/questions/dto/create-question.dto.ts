@@ -1,5 +1,6 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+
 import { ApiProperty } from '@nestjs/swagger';
+
 export class CreateQuestionDto {
   // @IsString()
   // @IsNotEmpty()
@@ -12,16 +13,16 @@ export class CreateQuestionDto {
     example: '¿Cómo se usa la app?',
     description: 'Título de la pregunta frecuente',
   })
-  @IsString()
-  @IsNotEmpty()
+  // @IsString()
+  // @IsNotEmpty()
   title: string;
 
   @ApiProperty({
     example: 'Para usar la app, primero debés registrarte...',
     description: 'Descripción de la pregunta frecuente',
   })
-  @IsString()
-  @IsNotEmpty()
+  //@IsString()
+  //@IsNotEmpty()
   description: string;
 
 }

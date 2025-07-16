@@ -1,27 +1,29 @@
 import {
-  Column,
   Entity,
-  JoinColumn,
-  OneToOne,
   PrimaryGeneratedColumn,
+  OneToOne,
+  JoinColumn,
+  Column,
+  UpdateDateColumn,
 } from 'typeorm';
-import { User } from '@users/entities/user.entity';
+import { User } from './user.entity';
 
-@Entity('user_rewards_ledgers')
+@Entity('user_rewards_ledger')
 export class UserRewardsLedger {
-  @PrimaryGeneratedColumn('uuid', { name: 'user_rewards_ledger_id' })
+  @PrimaryGeneratedColumn('uuid', { name: 'ledger_id' })
   id: string;
 
-  @OneToOne(() => User, (user) => user.rewardsLedger, { onDelete: 'CASCADE' })
+  @OneToOne(() => User, (user) => user.rewardsLedger)
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ name: 'stars_count', default: 0 })
-  starsCount: number;
+  @Column({ type: 'decimal', default: 0 })
+  quantity: number;
 
-  @Column({ name: 'progress_amount', default: 0 })
-  progressAmount: number;
+  @Column({ type: 'int', default: 0 })
+  stars: number;
 
-  @Column({ name: 'times_granted', default: 0 })
-  timesGranted: number;
+  // opcional: timestamp de última actualización
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }

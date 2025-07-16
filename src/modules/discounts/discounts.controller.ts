@@ -28,6 +28,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { User } from '@common/user.decorator';
 import { User as UserEntity } from '@users/entities/user.entity';
 import { CreateDiscountCodeDto } from '@discounts/dto/create-discount-code.dto';
+import { UpdateStarDto } from '@discounts/dto/update-star.dto';
 
 const ADMIN_ROLES = ['admin', 'super_admin'] as const;
 const ALL_USER_ROLES = ['user', 'admin', 'super_admin'] as const;
@@ -89,8 +90,13 @@ export class DiscountsController {
 
   @Get('user-discounts')
   @Roles(...ADMIN_ROLES)
-  @ApiOperation({ summary: 'Obtener descuentos de todos los usuarios con filtro opcional' })
-  @ApiResponse({ status: 200, description: 'Listado de descuentos de usuarios' })
+  @ApiOperation({
+    summary: 'Obtener descuentos de todos los usuarios con filtro opcional',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Listado de descuentos de usuarios',
+  })
   async getAllUserDiscounts(
     @Query() filterDto: FilterUserDiscountsDto,
   ): Promise<DataResponse<any[]>> {
@@ -101,12 +107,18 @@ export class DiscountsController {
   @Get('user-discounts/me')
   @Roles(...ALL_USER_ROLES)
   @ApiOperation({ summary: 'Obtener descuentos del usuario autenticado' })
-  @ApiResponse({ status: 200, description: 'Listado de descuentos del usuario' })
+  @ApiResponse({
+    status: 200,
+    description: 'Listado de descuentos del usuario',
+  })
   async getMyUserDiscounts(
     @Query() filterDto: FilterUserDiscountsDto,
     @User() user: UserEntity,
   ): Promise<DataResponse<any[]>> {
-    const discounts = await this.discountService.getUserDiscounts(filterDto, user.id);
+    const discounts = await this.discountService.getUserDiscounts(
+      filterDto,
+      user.id,
+    );
     return { data: discounts };
   }
 
@@ -118,7 +130,10 @@ export class DiscountsController {
     @Param('id', ParseUUIDPipe) id: string,
     @User() user: UserEntity,
   ): Promise<DataResponse<any>> {
-    const discount = await this.discountService.getUserDiscountById(id, user.id);
+    const discount = await this.discountService.getUserDiscountById(
+      id,
+      user.id,
+    );
     return { data: discount };
   }
 
@@ -144,5 +159,41 @@ export class DiscountsController {
   ): Promise<DataResponse<void>> {
     await this.discountService.deleteUserDiscount(id);
     return { data: undefined };
+  }
+  /*
+  *  RECOMPENSAS
+   */
+  @Put('update-star')
+  @Roles('user', 'admin', 'super_admin')
+  @ApiOperation({ summary: 'Actualizar recompensas de usuario (estrellas)' })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Recompensa actualizada, devuelve true si se completó un ciclo',
+  })
+  async updateStar(
+    @Body() dto: UpdateStarDto,
+    @User() user: UserEntity,
+  ): Promise<{ data: boolean }> {
+    const result = await this.discountService.updateStars(dto, user.id);
+    return { data: result };
+  }
+
+  @Get('stars')
+  @Roles('user', 'admin', 'super_admin')
+  @ApiOperation({
+    summary: 'Obtener recompensas del usuario (cantidad y estrellas)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Datos de recompensa',
+    schema: {
+      example: { data: { quantity: 500, stars: 2 } },
+    },
+  })
+  async getStars(
+    @User() user: UserEntity,
+  ): Promise<{ quantity: number; stars: number }> {
+    return this.discountService.getStars(user.id);
   }
 }

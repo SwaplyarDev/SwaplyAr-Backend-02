@@ -16,6 +16,8 @@ import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
 import { CreateDiscountCodeDto } from './dto/create-discount-code.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UpdateStarDto } from '@discounts/dto/update-star.dto';
+import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
 
 export class DiscountService {
   constructor(
@@ -27,6 +29,8 @@ export class DiscountService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(Transaction)
     private readonly transactionRepo: Repository<Transaction>,
+    @InjectRepository(UserRewardsLedger)
+    private readonly rewardsLedgerRepo: Repository<UserRewardsLedger>,
   ) {}
 
   /**
@@ -216,5 +220,58 @@ export class DiscountService {
         qb.andWhere('ud.isUsed = :used', { used: false });
       }
     }
+  }
+  /*** RECOMPENSAS / ESTRELLAS ***/
+
+  private static readonly CYCLE_QUANTITY = 500;
+  private static readonly CYCLE_STARS = 5;
+
+  /**
+   * Suma `quantity` al acumulado del usuario.
+   * Devuelve `true` si al sumar se completa un ciclo (>=500 y 5 transacciones), y reinicia contadores.
+   */
+  async updateStars(dto: UpdateStarDto, userId: string): Promise<boolean> {
+    const ledger = await this.getOrCreateUserLedger(userId);
+
+    ledger.quantity += dto.quantity;
+    ledger.stars += 1;
+
+    const cycleCompleted =
+      ledger.quantity >= DiscountService.CYCLE_QUANTITY &&
+      ledger.stars >= DiscountService.CYCLE_STARS;
+
+    if (cycleCompleted) {
+      ledger.quantity = 0;
+      ledger.stars = 0;
+    }
+
+    await this.rewardsLedgerRepo.save(ledger);
+    return cycleCompleted;
+  }
+
+  async getStars(userId: string): Promise<{ quantity: number; stars: number }> {
+    const ledger = await this.rewardsLedgerRepo.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+    return {
+      quantity: ledger?.quantity ?? 0,
+      stars: ledger?.stars ?? 0,
+    };
+  }
+
+  private async getOrCreateUserLedger(userId: string) {
+    let ledger = await this.rewardsLedgerRepo.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+
+    if (!ledger) {
+      const user = await this.userRepo.findOne({ where: { id: userId } });
+      if (!user) throw new NotFoundException('Usuario no encontrado');
+      ledger = this.rewardsLedgerRepo.create({ user, quantity: 0, stars: 0 });
+    }
+
+    return ledger;
   }
 }

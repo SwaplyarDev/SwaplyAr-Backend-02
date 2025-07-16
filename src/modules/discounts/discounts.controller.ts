@@ -1,4 +1,3 @@
-
 import {
   Controller,
   Post,
@@ -29,104 +28,121 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { User } from '@common/user.decorator';
 import { User as UserEntity } from '@users/entities/user.entity';
 import { CreateDiscountCodeDto } from '@discounts/dto/create-discount-code.dto';
+
+const ADMIN_ROLES = ['admin', 'super_admin'] as const;
+const ALL_USER_ROLES = ['user', 'admin', 'super_admin'] as const;
+
+interface DataResponse<T> {
+  data: T;
+}
+
+@Controller('discounts')
+@ApiTags('discounts')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
+export class DiscountsController {
   constructor(private readonly discountService: DiscountService) {}
 
   @Post('codes')
-  @Roles('admin', 'super_admin')
+  @Roles(...ADMIN_ROLES)
   @ApiOperation({ summary: 'Crear un nuevo código de descuento global' })
   @ApiResponse({ status: 201, description: 'Código creado correctamente' })
   @HttpCode(HttpStatus.CREATED)
   async createDiscountCode(
     @Body() dto: CreateDiscountCodeDto,
-  ): Promise<{ data: string }> {
+  ): Promise<DataResponse<string>> {
     const id = await this.discountService.createDiscountCode(dto);
     return { data: id };
   }
+
   @Post('create')
-  @Roles('admin', 'super_admin')
+  @Roles(...ADMIN_ROLES)
   @ApiOperation({ summary: 'Crear nuevo descuento de usuario' })
   @ApiResponse({ status: 201, description: 'Descuento creado exitosamente' })
   @HttpCode(HttpStatus.CREATED)
-  async createUserDiscount(@Body() dto: CreateUserDiscountDto): Promise<any> {
-    return this.discountService.createUserDiscount(dto);
+  async createUserDiscountForUser(
+    @Body() dto: CreateUserDiscountDto,
+  ): Promise<DataResponse<string>> {
+    const id = await this.discountService.createUserDiscount(dto);
+    return { data: id };
   }
 
   @Get('existing-codes')
-  @Roles('user', 'admin', 'super_admin')
+  @Roles(...ALL_USER_ROLES)
   @ApiOperation({ summary: 'Obtener todos los códigos de descuento globales' })
   @ApiResponse({ status: 200, description: 'Listado de códigos' })
-  async getExistingCodes(): Promise<any> {
-    return this.discountService.getAllDiscountCodes();
+  async getAllDiscountCodes(): Promise<DataResponse<any[]>> {
+    const codes = await this.discountService.getAllDiscountCodes();
+    return { data: codes };
   }
 
   @Get('existing-codes/:id')
-  @Roles('user', 'admin', 'super_admin')
+  @Roles(...ALL_USER_ROLES)
   @ApiOperation({ summary: 'Obtener un código de descuento global por ID' })
   @ApiResponse({ status: 200, description: 'Código encontrado' })
-  async getDiscountByCodeId(
+  async getDiscountCodeById(
     @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<any> {
-    return this.discountService.getDiscountByCodeId(id);
+  ): Promise<DataResponse<any>> {
+    const code = await this.discountService.getDiscountByCodeId(id);
+    return { data: code };
   }
 
   @Get('user-discounts')
-  @Roles('admin', 'super_admin')
-  @ApiOperation({
-    summary: 'Obtener descuentos de todos los usuarios con filtro opcional',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Listado de descuentos de usuarios',
-  })
-  async getAllUsersDiscounts(
+  @Roles(...ADMIN_ROLES)
+  @ApiOperation({ summary: 'Obtener descuentos de todos los usuarios con filtro opcional' })
+  @ApiResponse({ status: 200, description: 'Listado de descuentos de usuarios' })
+  async getAllUserDiscounts(
     @Query() filterDto: FilterUserDiscountsDto,
-  ): Promise<any> {
-    return this.discountService.getAllUserDiscounts(filterDto);
+  ): Promise<DataResponse<any[]>> {
+    const discounts = await this.discountService.getAllUserDiscounts(filterDto);
+    return { data: discounts };
   }
 
   @Get('user-discounts/me')
-  @Roles('user', 'admin', 'super_admin')
+  @Roles(...ALL_USER_ROLES)
   @ApiOperation({ summary: 'Obtener descuentos del usuario autenticado' })
-  @ApiResponse({
-    status: 200,
-    description: 'Listado de descuentos del usuario',
-  })
-  async getDiscountsByUser(
+  @ApiResponse({ status: 200, description: 'Listado de descuentos del usuario' })
+  async getMyUserDiscounts(
     @Query() filterDto: FilterUserDiscountsDto,
     @User() user: UserEntity,
-  ): Promise<any> {
-    return this.discountService.getUserDiscounts(filterDto, user.id);
+  ): Promise<DataResponse<any[]>> {
+    const discounts = await this.discountService.getUserDiscounts(filterDto, user.id);
+    return { data: discounts };
   }
 
   @Get('user-discounts/:id')
-  @Roles('user', 'admin', 'super_admin')
+  @Roles(...ALL_USER_ROLES)
   @ApiOperation({ summary: 'Obtener un descuento de usuario por su ID' })
   @ApiResponse({ status: 200, description: 'Descuento encontrado' })
-  async getDiscountByDiscountId(
+  async getUserDiscountById(
     @Param('id', ParseUUIDPipe) id: string,
     @User() user: UserEntity,
-  ): Promise<any> {
-    return this.discountService.getUserDiscountById(id, user.id);
+  ): Promise<DataResponse<any>> {
+    const discount = await this.discountService.getUserDiscountById(id, user.id);
+    return { data: discount };
   }
 
   @Put('user-discounts/:id')
-  @Roles('user', 'admin', 'super_admin')
+  @Roles(...ALL_USER_ROLES)
   @ApiOperation({ summary: 'Actualizar un descuento de usuario por ID' })
   @ApiResponse({ status: 200, description: 'Descuento actualizado' })
-  async updateDiscount(
+  async updateUserDiscount(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateUserDiscountDto,
     @User() user: UserEntity,
-  ): Promise<any> {
-    return this.discountService.updateUserDiscount(id, dto, user.id);
+  ): Promise<DataResponse<void>> {
+    await this.discountService.updateUserDiscount(id, dto, user.id);
+    return { data: undefined };
   }
 
   @Delete('user-discounts/:id')
-  @Roles('admin', 'super_admin')
+  @Roles(...ADMIN_ROLES)
   @ApiOperation({ summary: 'Eliminar un descuento de usuario por ID' })
   @ApiResponse({ status: 200, description: 'Descuento eliminado' })
-  async deleteDiscount(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
-    return this.discountService.deleteUserDiscount(id);
+  async deleteUserDiscount(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<DataResponse<void>> {
+    await this.discountService.deleteUserDiscount(id);
+    return { data: undefined };
   }
+}

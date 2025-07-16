@@ -1,6 +1,4 @@
-
 import {
-  Injectable,
   NotFoundException,
   ForbiddenException,
   BadRequestException,
@@ -16,6 +14,9 @@ import {
 } from './dto/filter-user-discounts.dto';
 import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
 import { CreateDiscountCodeDto } from './dto/create-discount-code.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
 export class DiscountService {
   constructor(
     @InjectRepository(DiscountCode)
@@ -27,11 +28,11 @@ export class DiscountService {
     @InjectRepository(Transaction)
     private readonly transactionRepo: Repository<Transaction>,
   ) {}
+
   /**
    * Crea un código de descuento global
    */
   async createDiscountCode(dto: CreateDiscountCodeDto): Promise<string> {
-    // Verificamos unicidad
     const exists = await this.discountCodeRepo.findOne({
       where: { code: dto.code },
     });
@@ -44,7 +45,6 @@ export class DiscountService {
       currencyCode: dto.currencyCode,
       validFrom: new Date(dto.validFrom),
     });
-
     await this.discountCodeRepo.save(discountCode);
     return discountCode.id;
   }
@@ -53,35 +53,18 @@ export class DiscountService {
    * Crea un nuevo descuento de usuario basado en un código existente
    */
   async createUserDiscount(dto: CreateUserDiscountDto): Promise<string> {
-    // 1. Usuario
-    const user = await this.userRepo.findOne({ where: { id: dto.userId } });
-    if (!user) throw new NotFoundException('Usuario no encontrado');
-
-    // 2. Código de descuento
-    const code = await this.discountCodeRepo.findOne({
-      where: { id: dto.discountCodeId },
-    });
-    if (!code) throw new NotFoundException('Código de descuento no válido');
-
-    // 3. Transacción opcional
-    let transaction: Transaction | null = null;
-    if (dto.transactionId) {
-      transaction = await this.transactionRepo.findOne({
-        where: { id: dto.transactionId },
-      });
-      if (!transaction)
-        throw new NotFoundException('Transacción no encontrada');
-    }
-
-    // 4. Creación de la entidad
-    const userDiscount = this.userDiscountRepo.create({
+    const user = await this.findUserByIdOrThrow(dto.userId);
+    const discountCode = await this.findDiscountCodeByIdOrThrow(
+      dto.discountCodeId,
+    );
+    const transaction = dto.transactionId
+      ? await this.findTransactionByIdOrThrow(dto.transactionId)
+      : null;
+    const userDiscount = this.createUserDiscountEntity(
       user,
-      discountCode: code,
-      transaction: transaction ?? undefined,
-      isUsed: !!transaction,
-      usedAt: transaction ? new Date() : undefined,
-    });
-
+      discountCode,
+      transaction,
+    );
     await this.userDiscountRepo.save(userDiscount);
     return userDiscount.id;
   }
@@ -97,9 +80,7 @@ export class DiscountService {
    * Obtiene un código de descuento global por su ID
    */
   async getDiscountByCodeId(id: string): Promise<DiscountCode> {
-    const code = await this.discountCodeRepo.findOne({ where: { id } });
-    if (!code) throw new NotFoundException('Código de descuento no encontrado');
-    return code;
+    return this.findDiscountCodeByIdOrThrow(id);
   }
 
   /**
@@ -114,14 +95,7 @@ export class DiscountService {
       .leftJoinAndSelect('ud.discountCode', 'code')
       .leftJoinAndSelect('ud.transaction', 'transaction');
 
-    if (filterDto.filterType && filterDto.filterType !== FilterTypeEnum.ALL) {
-      if (filterDto.filterType === FilterTypeEnum.USED) {
-        qb.andWhere('ud.isUsed = :used', { used: true });
-      } else if (filterDto.filterType === FilterTypeEnum.AVAILABLE) {
-        qb.andWhere('ud.isUsed = :used', { used: false });
-      }
-      // Si es ALL, no se aplica filtro
-    }
+    this.applyUserDiscountsFilter(qb, filterDto);
 
     return qb.getMany();
   }
@@ -140,14 +114,7 @@ export class DiscountService {
       .leftJoinAndSelect('ud.transaction', 'transaction')
       .where('user.id = :userId', { userId });
 
-    if (filterDto.filterType && filterDto.filterType !== FilterTypeEnum.ALL) {
-      if (filterDto.filterType === FilterTypeEnum.USED) {
-        qb.andWhere('ud.isUsed = :used', { used: true });
-      } else if (filterDto.filterType === FilterTypeEnum.AVAILABLE) {
-        qb.andWhere('ud.isUsed = :used', { used: false });
-      }
-      // Si es ALL, no se aplica filtro
-    }
+    this.applyUserDiscountsFilter(qb, filterDto);
 
     return qb.getMany();
   }
@@ -177,16 +144,12 @@ export class DiscountService {
     userId: string,
   ): Promise<void> {
     const ud = await this.getUserDiscountById(id, userId);
-
-    const transaction = await this.transactionRepo.findOne({
-      where: { id: dto.transactionId },
-    });
-    if (!transaction) throw new NotFoundException('Transacción no encontrada');
-
+    const transaction = await this.findTransactionByIdOrThrow(
+      dto.transactionId,
+    );
     ud.isUsed = true;
     ud.transaction = transaction;
     ud.usedAt = new Date();
-
     await this.userDiscountRepo.save(ud);
   }
 
@@ -198,3 +161,60 @@ export class DiscountService {
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
     await this.userDiscountRepo.remove(ud);
   }
+
+  /** Métodos auxiliares privados para mejorar legibilidad/reutilización **/
+
+  private async findUserByIdOrThrow(userId: string): Promise<User> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    return user;
+  }
+
+  private async findDiscountCodeByIdOrThrow(
+    discountCodeId: string,
+  ): Promise<DiscountCode> {
+    const discountCode = await this.discountCodeRepo.findOne({
+      where: { id: discountCodeId },
+    });
+    if (!discountCode)
+      throw new NotFoundException('Código de descuento no válido');
+    return discountCode;
+  }
+
+  private async findTransactionByIdOrThrow(
+    transactionId: string,
+  ): Promise<Transaction> {
+    const transaction = await this.transactionRepo.findOne({
+      where: { id: transactionId },
+    });
+    if (!transaction) throw new NotFoundException('Transacción no encontrada');
+    return transaction;
+  }
+
+  private createUserDiscountEntity(
+    user: User,
+    discountCode: DiscountCode,
+    transaction: Transaction | null,
+  ): UserDiscount {
+    return this.userDiscountRepo.create({
+      user,
+      discountCode,
+      transaction: transaction ?? undefined,
+      isUsed: !!transaction,
+      usedAt: transaction ? new Date() : undefined,
+    });
+  }
+
+  private applyUserDiscountsFilter(
+    qb: import('typeorm').SelectQueryBuilder<UserDiscount>,
+    filterDto: FilterUserDiscountsDto,
+  ): void {
+    if (filterDto.filterType && filterDto.filterType !== FilterTypeEnum.ALL) {
+      if (filterDto.filterType === FilterTypeEnum.USED) {
+        qb.andWhere('ud.isUsed = :used', { used: true });
+      } else if (filterDto.filterType === FilterTypeEnum.AVAILABLE) {
+        qb.andWhere('ud.isUsed = :used', { used: false });
+      }
+    }
+  }
+}

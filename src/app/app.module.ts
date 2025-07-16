@@ -22,6 +22,7 @@ import { UserVerificationModule } from '@users/verification/user-verification.mo
 import { QuestionsModule } from '../modules/questions/questions.module';
 
 import { ContactModule } from 'src/modules/contacts/contacts.module';
+import { DiscountModule } from '@discounts/discounts.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ContactModule } from 'src/modules/contacts/contacts.module';
     PassportModule,
     QuestionsModule,
     ContactModule,
+    DiscountModule,
     UserVerificationModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',

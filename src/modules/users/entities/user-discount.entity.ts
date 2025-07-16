@@ -1,14 +1,15 @@
 import {
+  Entity,
+  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  Entity,
-  JoinColumn,
+  UpdateDateColumn,
   ManyToOne,
   OneToOne,
-  PrimaryGeneratedColumn,
+  JoinColumn,
 } from 'typeorm';
 import { User } from '@users/entities/user.entity';
-import { DiscountCode } from '@users/entities/discount-code.entity';
+import { DiscountCode } from './discount-code.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
 
 @Entity('user_discounts')
@@ -20,22 +21,27 @@ export class UserDiscount {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToOne(() => Transaction, { onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'transaction_id' })
-  transaction: Transaction;
-
   @ManyToOne(() => DiscountCode, (discountCode) => discountCode.userDiscounts, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'discount_code_id' })
   discountCode: DiscountCode;
 
-  @Column({ name: 'is_used' })
+  @OneToOne(() => Transaction, (transaction) => transaction.userDiscount, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'transaction_id' })
+  transaction?: Transaction;
+
+  @Column({ name: 'is_used', default: false })
   isUsed: boolean;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
+  @CreateDateColumn({ type: 'timestamp with time zone', name: 'created_at' })
   createdAt: Date;
 
-  @Column({ name: 'used_at', type: 'timestamp with time zone' })
-  usedAt: Date;
+  @Column({ type: 'timestamp with time zone', name: 'used_at', nullable: true })
+  usedAt?: Date;
+
+  @UpdateDateColumn({ type: 'timestamp with time zone', name: 'updated_at' })
+  updatedAt: Date;
 }

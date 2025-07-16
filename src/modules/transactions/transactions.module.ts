@@ -12,6 +12,7 @@ import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/pr
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
+import { UserDiscount } from '@users/entities/user-discount.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
       SenderFinancialAccount,
       ReceiverFinancialAccount,
       Amount,
+      UserDiscount,
       ProofOfPayment,
     ]),
     FinancialAccountsModule,

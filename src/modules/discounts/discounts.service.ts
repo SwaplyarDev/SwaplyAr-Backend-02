@@ -9,12 +9,12 @@ import {CreateDiscountDto} from "./dto/create-discount.dto";
 
 @Injectable()
 export class DiscountsService {
-  constructor(
-      @InjectRepository(Discounts) private readonly discountRepository: Repository<Discounts>,
-  ) {
-      async create(createDisscountDto: CreateDiscountDto):{
+  // constructor(
+  //     @InjectRepository(Discounts) private readonly discountRepository: Repository<Discounts>,
+  // ) {
+  //     async create(createDisscountDto: CreateDiscountDto):{
 
-          }
+  //         }
 
-  }
+  // }
 }

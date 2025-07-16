@@ -1,3 +1,4 @@
+
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DiscountCode } from '@users/entities/discount-code.entity';
@@ -7,7 +8,6 @@ import { Transaction } from '@transactions/entities/transaction.entity';
 import { DiscountService } from './discounts.service';
 import { DiscountsController } from './discounts.controller';
 import { AuthModule } from '@auth/auth.module';
-
 @Module({
   imports: [
     TypeOrmModule.forFeature([

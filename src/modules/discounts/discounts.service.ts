@@ -1,11 +1,10 @@
+
 import {
   Injectable,
   NotFoundException,
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { DiscountCode } from '@users/entities/discount-code.entity';
 import { UserDiscount } from '@users/entities/user-discount.entity';
 import { User } from '@users/entities/user.entity';
@@ -17,8 +16,6 @@ import {
 } from './dto/filter-user-discounts.dto';
 import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
 import { CreateDiscountCodeDto } from './dto/create-discount-code.dto';
-
-@Injectable()
 export class DiscountService {
   constructor(
     @InjectRepository(DiscountCode)
@@ -30,7 +27,6 @@ export class DiscountService {
     @InjectRepository(Transaction)
     private readonly transactionRepo: Repository<Transaction>,
   ) {}
-
   /**
    * Crea un código de descuento global
    */
@@ -42,7 +38,6 @@ export class DiscountService {
     if (exists) {
       throw new BadRequestException(`El código '${dto.code}' ya existe`);
     }
-
     const discountCode = this.discountCodeRepo.create({
       code: dto.code,
       value: dto.value,
@@ -203,4 +198,3 @@ export class DiscountService {
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
     await this.userDiscountRepo.remove(ud);
   }
-}

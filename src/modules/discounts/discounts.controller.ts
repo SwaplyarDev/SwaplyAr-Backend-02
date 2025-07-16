@@ -1,3 +1,4 @@
+
 import {
   Controller,
   Post,
@@ -28,12 +29,8 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { User } from '@common/user.decorator';
 import { User as UserEntity } from '@users/entities/user.entity';
 import { CreateDiscountCodeDto } from '@discounts/dto/create-discount-code.dto';
-
-@ApiTags('Descuentos')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('discounts')
-export class DiscountsController {
   constructor(private readonly discountService: DiscountService) {}
 
   @Post('codes')
@@ -47,7 +44,6 @@ export class DiscountsController {
     const id = await this.discountService.createDiscountCode(dto);
     return { data: id };
   }
-
   @Post('create')
   @Roles('admin', 'super_admin')
   @ApiOperation({ summary: 'Crear nuevo descuento de usuario' })
@@ -134,4 +130,3 @@ export class DiscountsController {
   async deleteDiscount(@Param('id', ParseUUIDPipe) id: string): Promise<any> {
     return this.discountService.deleteUserDiscount(id);
   }
-}

@@ -38,8 +38,6 @@ import { StatusHistoryResponse } from 'src/common/interfaces/status-history.inte
 import { MailerService } from '../mailer/mailer.service';
 import { Transaction } from 'typeorm';
 
-
-
 @ApiTags('Admin')
 @ApiBearerAuth()
 @Controller('admin')
@@ -258,7 +256,7 @@ export class AdminController {
 
     // Enviar correos electrónicos según el estado
     if (transaction && transaction.createdBy) {
-      await this.mailerService.sendStatusEmail(transaction.createdBy, status);
+      await this.mailerService.sendStatusEmail(transaction, status);
     }
 
     return result;

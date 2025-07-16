@@ -8,7 +8,7 @@ const stringField = (typeMsg: string, emptyMsg: string) =>
 export const createQuestionSchema = z.object({
   title: stringField("El valor de 'title' es incorrecto, debe ser un string", "El título es requerido"),
   description: stringField("El valor de 'description' es incorrecto, debe ser un string", "La descripción es requerida"),
-});
+}).strict();
 
 
 

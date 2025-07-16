@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, Logger } from '@nestjs/common';
 import { createTransport, Transporter } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
@@ -5,7 +6,9 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AdminStatus } from 'src/enum/admin-status.enum';
-
+import Handlebars from 'handlebars';
+import { existsSync, readdirSync } from 'fs';
+import { dirname } from 'path';
 @Injectable()
 export class MailerService {
   private readonly mailer: Transporter;
@@ -32,9 +35,10 @@ export class MailerService {
     return { message: `The code has been sent to the email ${to}` };
   }
 
-  async sendStatusEmail(to: string, status: AdminStatus) {
+  async sendStatusEmail(transaction: any, status: AdminStatus) {
     try {
       // Verificar configuración
+
       const config = this.configService.get('nodemailer');
       this.logger.log('Nodemailer config:', config);
 
@@ -46,10 +50,10 @@ export class MailerService {
       }
 
       this.logger.log(`Mailer verification: ${await this.mailer.verify()}`);
-      this.logger.log(`Sending mail from ${from} to ${to}`);
+      this.logger.log(`Sending mail from ${from} to ${transaction.createdBy}`);
 
       let subject = '';
-      let html = '';
+      let hbs = '';
       let templatePath = '';
 
       switch (status) {
@@ -57,56 +61,81 @@ export class MailerService {
           subject = 'Transacción Aprobada';
           templatePath = join(
             __dirname,
-            'templates/email/transaction/operations_transactions/approved.html',
+            'templates/email/transaction/operations_transactions/approved.hbs',
           );
           break;
         case AdminStatus.Canceled:
           subject = 'Transacción Cancelada';
           templatePath = join(
             __dirname,
-            'templates/email/transaction/operations_transactions/canceled.html',
+            'templates/email/transaction/operations_transactions/canceled.hbs',
           );
           break;
         case AdminStatus.Completed:
           subject = 'Transacción Completada';
           templatePath = join(
             __dirname,
-            'templates/email/transaction/operations_transactions/completed.html',
+            'templates/email/transaction/operations_transactions/completed.hbs',
           );
           break;
         case AdminStatus.Discrepancy:
           subject = 'Discrepancia en la Transacción';
           templatePath = join(
             __dirname,
-            'templates/email/transaction/operations_transactions/discrepancy.html',
+            'templates/email/transaction/operations_transactions/discrepancy.hbs',
           );
           break;
         case AdminStatus.Modified:
           subject = 'Transacción Modificada';
           templatePath = join(
             __dirname,
-            'templates/email/transaction/operations_transactions/modified.html',
+            'templates/email/transaction/operations_transactions/modified.hbs',
           );
           break;
         case AdminStatus.Refunded:
           subject = 'Transacción Reembolsada';
           templatePath = join(
             __dirname,
-            'templates/email/transaction/operations_transactions/refunded.html',
+            'templates/email/transaction/operations_transactions/refunded.hbs',
           );
           break;
         case AdminStatus.Rejected:
           subject = 'Transacción Rechazada';
           templatePath = join(
             __dirname,
-            'templates/email/transaction/operations_transactions/reject.html',
+            'templates/email/transaction/operations_transactions/reject.hbs',
           );
           break;
       }
 
+      // Agrega este log antes de readFileSync
+
       this.logger.log(`Loading template from: ${templatePath}`);
       try {
-        html = readFileSync(templatePath, 'utf8');
+        const rawTemplate = readFileSync(templatePath, 'utf8');
+        const compiledTemplate = Handlebars.compile(rawTemplate);
+        hbs = compiledTemplate({
+          REFERENCE_NUMBER: transaction.id.slice(0, 8).toUpperCase(),
+          MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
+          NAME: transaction.senderAccount?.firstName ?? '',
+          LAST_NAME: transaction.senderAccount?.lastName ?? '',
+          TRANSACTION_ID: transaction.id,
+          BASE_URL:
+            this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
+          DATE_HOUR: new Date().toLocaleString('es-AR'),
+          PHONE_NUMBER:
+            transaction.senderAccount?.phoneNumber ??
+            transaction.receiverAccount?.phoneNumber ??
+            '',
+          AMOUNT_SENT: transaction.amount?.amountSent ?? 0,
+          SENT_CURRENCY: transaction.amount?.currencySent ?? '',
+          AMOUNT_RECEIVED: transaction.amount?.amountReceived ?? 0,
+          RECEIVED_CURRENCY: transaction.amount?.currencyReceived ?? '',
+          PAYMENT_METHOD:
+            transaction.receiverAccount?.paymentMethod?.bankName ?? 'N/A',
+          RECEIVED_NAME: `${transaction.receiverAccount?.firstName ?? ''} ${transaction.receiverAccount?.lastName ?? ''}`,
+        });
+
         this.logger.log('Template loaded successfully');
       } catch (error) {
         this.logger.error(`Error loading template: ${error.message}`);
@@ -115,19 +144,21 @@ export class MailerService {
 
       const mailOptions = {
         from,
-        to,
+        to: transaction.createdBy,
         subject,
-        html,
+        html: hbs,
       };
 
       this.logger.log('Sending mail with options:', {
         ...mailOptions,
-        html: 'HTML content hidden for brevity',
+        hbs: 'hbs content hidden for brevity',
       });
       const result = await this.mailer.sendMail(mailOptions);
       this.logger.log('Mail sent successfully:', result);
 
-      return { message: `The status email has been sent to ${to}` };
+      return {
+        message: `The status email has been sent to ${transaction.createdBy}`,
+      };
     } catch (error) {
       this.logger.error(`Error sending status email: ${error.message}`);
       this.logger.error('Stack trace:', error.stack);

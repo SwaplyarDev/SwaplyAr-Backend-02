@@ -253,7 +253,6 @@ export class AdminController {
 
     // Obtener la transacción actualizada para tener acceso al createdBy
     const transaction = await this.adminService.getTransactionById(id);
-    console.log('esta es la transacción', transaction);
 
     // Enviar correos electrónicos según el estado
     if (transaction && transaction.createdBy) {

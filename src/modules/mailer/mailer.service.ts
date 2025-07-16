@@ -7,7 +7,8 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AdminStatus } from 'src/enum/admin-status.enum';
 import Handlebars from 'handlebars';
-
+import { existsSync, readdirSync } from 'fs';
+import { dirname } from 'path';
 @Injectable()
 export class MailerService {
   private readonly mailer: Transporter;
@@ -37,6 +38,7 @@ export class MailerService {
   async sendStatusEmail(transaction: any, status: AdminStatus) {
     try {
       // Verificar configuración
+
       const config = this.configService.get('nodemailer');
       this.logger.log('Nodemailer config:', config);
 
@@ -105,6 +107,8 @@ export class MailerService {
           );
           break;
       }
+
+      // Agrega este log antes de readFileSync
 
       this.logger.log(`Loading template from: ${templatePath}`);
       try {

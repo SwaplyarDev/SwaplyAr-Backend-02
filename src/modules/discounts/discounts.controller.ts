@@ -174,7 +174,9 @@ export class DiscountsController {
   async updateStar(
     @Body() dto: UpdateStarDto,
     @User() user: UserEntity,
-  ): Promise<{ data: boolean }> {
+  ): Promise<{
+    data: { cycleCompleted: boolean; quantity: number; stars: number };
+  }> {
     const result = await this.discountService.updateStars(dto, user.id);
     return { data: result };
   }

@@ -228,16 +228,20 @@ export class DiscountService {
 
   /**
    * Suma `quantity` al acumulado del usuario.
-   * Devuelve `true` si al sumar se completa un ciclo (>=500 y 5 transacciones), y reinicia contadores.
+   * Devuelve objeto con si completó ciclo, y la cantidad y estrellas actuales.
    */
-  async updateStars(dto: UpdateStarDto, userId: string): Promise<boolean> {
+  async updateStars(
+    dto: UpdateStarDto,
+    userId: string
+  ): Promise<{ cycleCompleted: boolean; quantity: number; stars: number }> {
     const ledger = await this.getOrCreateUserLedger(userId);
 
-    ledger.quantity += dto.quantity;
+    const actualQuantity = Number(ledger.quantity);
+    ledger.quantity = Number(ledger.quantity) + Number(dto.quantity);
     ledger.stars += 1;
 
     const cycleCompleted =
-      ledger.quantity >= DiscountService.CYCLE_QUANTITY &&
+      actualQuantity >= DiscountService.CYCLE_QUANTITY &&
       ledger.stars >= DiscountService.CYCLE_STARS;
 
     if (cycleCompleted) {
@@ -246,7 +250,12 @@ export class DiscountService {
     }
 
     await this.rewardsLedgerRepo.save(ledger);
-    return cycleCompleted;
+
+    return {
+      cycleCompleted,
+      quantity: ledger.quantity,
+      stars: ledger.stars,
+    };
   }
 
   async getStars(userId: string): Promise<{ quantity: number; stars: number }> {

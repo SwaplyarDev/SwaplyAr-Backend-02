@@ -34,9 +34,9 @@ export class DiscountService {
   ) {}
 
   /**
-   * Crea un código de descuento global
+   * Crea un código de descuento global y devuelve el código completo.
    */
-  async createDiscountCode(dto: CreateDiscountCodeDto): Promise<string> {
+  async createDiscountCode(dto: CreateDiscountCodeDto): Promise<DiscountCode> {
     const exists = await this.discountCodeRepo.findOne({
       where: { code: dto.code },
     });
@@ -50,13 +50,14 @@ export class DiscountService {
       validFrom: new Date(dto.validFrom),
     });
     await this.discountCodeRepo.save(discountCode);
-    return discountCode.id;
+    return discountCode;
   }
 
   /**
    * Crea un nuevo descuento de usuario basado en un código existente
+   * Devuelve el descuento creado junto a los detalles relevantes.
    */
-  async createUserDiscount(dto: CreateUserDiscountDto): Promise<string> {
+  async createUserDiscount(dto: CreateUserDiscountDto): Promise<UserDiscount> {
     const user = await this.findUserByIdOrThrow(dto.userId);
     const discountCode = await this.findDiscountCodeByIdOrThrow(
       dto.discountCodeId,
@@ -70,25 +71,36 @@ export class DiscountService {
       transaction,
     );
     await this.userDiscountRepo.save(userDiscount);
-    return userDiscount.id;
+    // Incluye info de las relaciones
+    const result = await this.userDiscountRepo.findOne({
+      where: { id: userDiscount.id },
+      relations: ['user', 'discountCode', 'transaction'],
+    });
+    if (!result)
+      throw new NotFoundException(
+        'Descuento de usuario no encontrado tras la creación',
+      );
+    return result;
   }
 
   /**
-   * Obtiene todos los códigos de descuento globales
+   * Obtiene todos los códigos de descuento globales, incluyendo detalles.
    */
   async getAllDiscountCodes(): Promise<DiscountCode[]> {
-    return this.discountCodeRepo.find();
+    return await this.discountCodeRepo.find();
   }
 
   /**
-   * Obtiene un código de descuento global por su ID
+   * Obtiene un código de descuento global por su ID, incluyendo mensaje adicional si no se encuentra.
    */
   async getDiscountByCodeId(id: string): Promise<DiscountCode> {
-    return this.findDiscountCodeByIdOrThrow(id);
+    const code = await this.findDiscountCodeByIdOrThrow(id);
+    // Puedes agregar lógica extra si necesitas aún más detalle
+    return code;
   }
 
   /**
-   * Obtiene todos los descuentos de usuarios con filtro opcional
+   * Obtiene todos los descuentos de usuarios con filtro opcional y sus datos relacionados.
    */
   async getAllUserDiscounts(
     filterDto: FilterUserDiscountsDto,
@@ -98,14 +110,12 @@ export class DiscountService {
       .leftJoinAndSelect('ud.user', 'user')
       .leftJoinAndSelect('ud.discountCode', 'code')
       .leftJoinAndSelect('ud.transaction', 'transaction');
-
     this.applyUserDiscountsFilter(qb, filterDto);
-
     return qb.getMany();
   }
 
   /**
-   * Obtiene descuentos de un usuario específico
+   * Obtiene descuentos de un usuario específico con el detalle completo de las relaciones.
    */
   async getUserDiscounts(
     filterDto: FilterUserDiscountsDto,
@@ -117,14 +127,12 @@ export class DiscountService {
       .leftJoinAndSelect('ud.discountCode', 'code')
       .leftJoinAndSelect('ud.transaction', 'transaction')
       .where('user.id = :userId', { userId });
-
     this.applyUserDiscountsFilter(qb, filterDto);
-
     return qb.getMany();
   }
 
   /**
-   * Obtiene un descuento de usuario por ID y verifica propiedad
+   * Obtiene un descuento de usuario por ID, verifica propiedad y devuelve toda la información relevante.
    */
   async getUserDiscountById(id: string, userId: string): Promise<UserDiscount> {
     const ud = await this.userDiscountRepo.findOne({
@@ -140,13 +148,13 @@ export class DiscountService {
   }
 
   /**
-   * Marca un descuento como usado y asocia transacción
+   * Marca un descuento como usado, asocia la transacción y devuelve el descuento actualizado.
    */
   async updateUserDiscount(
     id: string,
     dto: UpdateUserDiscountDto,
     userId: string,
-  ): Promise<void> {
+  ): Promise<UserDiscount> {
     const ud = await this.getUserDiscountById(id, userId);
     const transaction = await this.findTransactionByIdOrThrow(
       dto.transactionId,
@@ -155,15 +163,98 @@ export class DiscountService {
     ud.transaction = transaction;
     ud.usedAt = new Date();
     await this.userDiscountRepo.save(ud);
+    // Devuelve el descuento actualizado, incluyendo detalles de las relaciones.
+    const updatedUd = await this.userDiscountRepo.findOne({
+      where: { id: ud.id },
+      relations: ['user', 'discountCode', 'transaction'],
+    });
+    if (!updatedUd)
+      throw new NotFoundException(
+        'Descuento de usuario no encontrado tras actualizar',
+      );
+    return updatedUd;
   }
 
   /**
-   * Elimina un descuento de usuario
+   * Elimina un descuento de usuario y devuelve un mensaje de confirmación.
    */
-  async deleteUserDiscount(id: string): Promise<void> {
+  async deleteUserDiscount(
+    id: string,
+  ): Promise<{ success: boolean; message: string }> {
     const ud = await this.userDiscountRepo.findOne({ where: { id } });
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
     await this.userDiscountRepo.remove(ud);
+    return {
+      success: true,
+      message: `El descuento con id '${id}' fue eliminado correctamente.`,
+    };
+  }
+
+  // ... El resto de métodos privados y de recompensas igual
+
+  /**
+   * Suma `quantity` al acumulado del usuario.
+   * Devuelve información detallada: si completó el ciclo, el ledger actualizado y un mensaje.
+   */
+  async updateStars(
+    dto: UpdateStarDto,
+    userId: string,
+  ): Promise<{
+    cycleCompleted: boolean;
+    ledger: UserRewardsLedger;
+    message?: string;
+  }> {
+    const ledger = await this.getOrCreateUserLedger(userId);
+
+    const actualQuantity = Number(ledger.quantity);
+    ledger.quantity = Number(ledger.quantity) + Number(dto.quantity);
+    ledger.stars += 1;
+
+    const cycleCompleted =
+      actualQuantity >= DiscountService.CYCLE_QUANTITY &&
+      ledger.stars >= DiscountService.CYCLE_STARS;
+
+    let message: string | undefined = undefined;
+
+    if (cycleCompleted) {
+      ledger.quantity = 0;
+      ledger.stars = 0;
+      message = '¡Felicidades! Has completado un ciclo de recompensas.';
+    }
+
+    await this.rewardsLedgerRepo.save(ledger);
+
+    return {
+      cycleCompleted,
+      ledger,
+      message,
+    };
+  }
+
+  async getStars(userId: string): Promise<{ quantity: number; stars: number }> {
+    const ledger = await this.rewardsLedgerRepo.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+    return {
+      quantity: ledger?.quantity ?? 0,
+      stars: ledger?.stars ?? 0,
+    };
+  }
+
+  private async getOrCreateUserLedger(userId: string) {
+    let ledger = await this.rewardsLedgerRepo.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+
+    if (!ledger) {
+      const user = await this.userRepo.findOne({ where: { id: userId } });
+      if (!user) throw new NotFoundException('Usuario no encontrado');
+      ledger = this.rewardsLedgerRepo.create({ user, quantity: 0, stars: 0 });
+    }
+
+    return ledger;
   }
 
   /** Métodos auxiliares privados para mejorar legibilidad/reutilización **/
@@ -225,62 +316,4 @@ export class DiscountService {
 
   private static readonly CYCLE_QUANTITY = 500;
   private static readonly CYCLE_STARS = 5;
-
-  /**
-   * Suma `quantity` al acumulado del usuario.
-   * Devuelve objeto con si completó ciclo, y la cantidad y estrellas actuales.
-   */
-  async updateStars(
-    dto: UpdateStarDto,
-    userId: string
-  ): Promise<{ cycleCompleted: boolean; quantity: number; stars: number }> {
-    const ledger = await this.getOrCreateUserLedger(userId);
-
-    const actualQuantity = Number(ledger.quantity);
-    ledger.quantity = Number(ledger.quantity) + Number(dto.quantity);
-    ledger.stars += 1;
-
-    const cycleCompleted =
-      actualQuantity >= DiscountService.CYCLE_QUANTITY &&
-      ledger.stars >= DiscountService.CYCLE_STARS;
-
-    if (cycleCompleted) {
-      ledger.quantity = 0;
-      ledger.stars = 0;
-    }
-
-    await this.rewardsLedgerRepo.save(ledger);
-
-    return {
-      cycleCompleted,
-      quantity: ledger.quantity,
-      stars: ledger.stars,
-    };
-  }
-
-  async getStars(userId: string): Promise<{ quantity: number; stars: number }> {
-    const ledger = await this.rewardsLedgerRepo.findOne({
-      where: { user: { id: userId } },
-      relations: ['user'],
-    });
-    return {
-      quantity: ledger?.quantity ?? 0,
-      stars: ledger?.stars ?? 0,
-    };
-  }
-
-  private async getOrCreateUserLedger(userId: string) {
-    let ledger = await this.rewardsLedgerRepo.findOne({
-      where: { user: { id: userId } },
-      relations: ['user'],
-    });
-
-    if (!ledger) {
-      const user = await this.userRepo.findOne({ where: { id: userId } });
-      if (!user) throw new NotFoundException('Usuario no encontrado');
-      ledger = this.rewardsLedgerRepo.create({ user, quantity: 0, stars: 0 });
-    }
-
-    return ledger;
-  }
 }

@@ -29,6 +29,9 @@ import { User } from '@common/user.decorator';
 import { User as UserEntity } from '@users/entities/user.entity';
 import { CreateDiscountCodeDto } from '@discounts/dto/create-discount-code.dto';
 import { UpdateStarDto } from '@discounts/dto/update-star.dto';
+import { DiscountCode } from '@users/entities/discount-code.entity';
+import { UserDiscount } from '@users/entities/user-discount.entity';
+import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
 
 const ADMIN_ROLES = ['admin', 'super_admin'] as const;
 const ALL_USER_ROLES = ['user', 'admin', 'super_admin'] as const;
@@ -51,7 +54,7 @@ export class DiscountsController {
   @HttpCode(HttpStatus.CREATED)
   async createDiscountCode(
     @Body() dto: CreateDiscountCodeDto,
-  ): Promise<DataResponse<string>> {
+  ): Promise<{ data: DiscountCode }> {
     const id = await this.discountService.createDiscountCode(dto);
     return { data: id };
   }
@@ -63,7 +66,7 @@ export class DiscountsController {
   @HttpCode(HttpStatus.CREATED)
   async createUserDiscountForUser(
     @Body() dto: CreateUserDiscountDto,
-  ): Promise<DataResponse<string>> {
+  ): Promise<{ data: UserDiscount }> {
     const id = await this.discountService.createUserDiscount(dto);
     return { data: id };
   }
@@ -161,7 +164,7 @@ export class DiscountsController {
     return { data: undefined };
   }
   /*
-  *  RECOMPENSAS
+   *  RECOMPENSAS
    */
   @Put('update-star')
   @Roles('user', 'admin', 'super_admin')
@@ -175,7 +178,11 @@ export class DiscountsController {
     @Body() dto: UpdateStarDto,
     @User() user: UserEntity,
   ): Promise<{
-    data: { cycleCompleted: boolean; quantity: number; stars: number };
+    data: {
+      cycleCompleted: boolean;
+      ledger: UserRewardsLedger;
+      message?: string;
+    };
   }> {
     const result = await this.discountService.updateStars(dto, user.id);
     return { data: result };

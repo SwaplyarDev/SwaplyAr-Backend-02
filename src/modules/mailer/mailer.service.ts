@@ -7,8 +7,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AdminStatus } from 'src/enum/admin-status.enum';
 import Handlebars from 'handlebars';
-import { existsSync, readdirSync } from 'fs';
-import { dirname } from 'path';
+
 @Injectable()
 export class MailerService {
   private readonly mailer: Transporter;
@@ -34,125 +33,80 @@ export class MailerService {
 
     return { message: `The code has been sent to the email ${to}` };
   }
-
+  /**
+   * Envía un correo al usuario cuando el estado de la transacción cambia.
+   */
   async sendStatusEmail(transaction: any, status: AdminStatus) {
     try {
-      // Verificar configuración
-
       const config = this.configService.get('nodemailer');
-      this.logger.log('Nodemailer config:', config);
+      const from = config?.auth?.user;
 
-      const from = config.auth.user;
       if (!from || !config.auth.pass) {
         throw new Error(
           'Missing email configuration. Please check EMAIL_USER and EMAIL_PASS environment variables.',
         );
       }
 
-      this.logger.log(`Mailer verification: ${await this.mailer.verify()}`);
-      this.logger.log(`Sending mail from ${from} to ${transaction.createdBy}`);
+      await this.mailer.verify();
 
-      let subject = '';
-      let hbs = '';
-      let templatePath = '';
+      const statusTemplates: Partial<
+        Record<AdminStatus, { subject: string; path: string }>
+      > = {
+        [AdminStatus.Approved]: {
+          subject: 'Transacción Aprobada',
+          path: 'approved.hbs',
+        },
+        [AdminStatus.Canceled]: {
+          subject: 'Transacción Cancelada',
+          path: 'canceled.hbs',
+        },
+        [AdminStatus.Completed]: {
+          subject: 'Transacción Completada',
+          path: 'completed.hbs',
+        },
+        [AdminStatus.Discrepancy]: {
+          subject: 'Discrepancia en la Transacción',
+          path: 'discrepancy.hbs',
+        },
+        [AdminStatus.Modified]: {
+          subject: 'Transacción Modificada',
+          path: 'modified.hbs',
+        },
+        [AdminStatus.Refunded]: {
+          subject: 'Transacción Reembolsada',
+          path: 'refunded.hbs',
+        },
+        [AdminStatus.Rejected]: {
+          subject: 'Transacción Rechazada',
+          path: 'reject.hbs',
+        },
+      };
 
-      switch (status) {
-        case AdminStatus.Approved:
-          subject = 'Transacción Aprobada';
-          templatePath = join(
-            __dirname,
-            'templates/email/transaction/operations_transactions/approved.hbs',
-          );
-          break;
-        case AdminStatus.Canceled:
-          subject = 'Transacción Cancelada';
-          templatePath = join(
-            __dirname,
-            'templates/email/transaction/operations_transactions/canceled.hbs',
-          );
-          break;
-        case AdminStatus.Completed:
-          subject = 'Transacción Completada';
-          templatePath = join(
-            __dirname,
-            'templates/email/transaction/operations_transactions/completed.hbs',
-          );
-          break;
-        case AdminStatus.Discrepancy:
-          subject = 'Discrepancia en la Transacción';
-          templatePath = join(
-            __dirname,
-            'templates/email/transaction/operations_transactions/discrepancy.hbs',
-          );
-          break;
-        case AdminStatus.Modified:
-          subject = 'Transacción Modificada';
-          templatePath = join(
-            __dirname,
-            'templates/email/transaction/operations_transactions/modified.hbs',
-          );
-          break;
-        case AdminStatus.Refunded:
-          subject = 'Transacción Reembolsada';
-          templatePath = join(
-            __dirname,
-            'templates/email/transaction/operations_transactions/refunded.hbs',
-          );
-          break;
-        case AdminStatus.Rejected:
-          subject = 'Transacción Rechazada';
-          templatePath = join(
-            __dirname,
-            'templates/email/transaction/operations_transactions/reject.hbs',
-          );
-          break;
+      const selected = statusTemplates[status];
+      if (!selected) {
+        throw new Error(`No email template defined for status: ${status}`);
       }
 
-      // Agrega este log antes de readFileSync
-
+      const templatePath = join(
+        __dirname,
+        'templates/email/transaction/operations_transactions',
+        selected.path,
+      );
       this.logger.log(`Loading template from: ${templatePath}`);
-      try {
-        const rawTemplate = readFileSync(templatePath, 'utf8');
-        const compiledTemplate = Handlebars.compile(rawTemplate);
-        hbs = compiledTemplate({
-          REFERENCE_NUMBER: transaction.id.slice(0, 8).toUpperCase(),
-          MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
-          NAME: transaction.senderAccount?.firstName ?? '',
-          LAST_NAME: transaction.senderAccount?.lastName ?? '',
-          TRANSACTION_ID: transaction.id,
-          BASE_URL:
-            this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
-          DATE_HOUR: new Date().toLocaleString('es-AR'),
-          PHONE_NUMBER:
-            transaction.senderAccount?.phoneNumber ??
-            transaction.receiverAccount?.phoneNumber ??
-            '',
-          AMOUNT_SENT: transaction.amount?.amountSent ?? 0,
-          SENT_CURRENCY: transaction.amount?.currencySent ?? '',
-          AMOUNT_RECEIVED: transaction.amount?.amountReceived ?? 0,
-          RECEIVED_CURRENCY: transaction.amount?.currencyReceived ?? '',
-          PAYMENT_METHOD:
-            transaction.receiverAccount?.paymentMethod?.bankName ?? 'N/A',
-          RECEIVED_NAME: `${transaction.receiverAccount?.firstName ?? ''} ${transaction.receiverAccount?.lastName ?? ''}`,
-        });
 
-        this.logger.log('Template loaded successfully');
-      } catch (error) {
-        this.logger.error(`Error loading template: ${error.message}`);
-        throw error;
-      }
+      const html = this.compileTemplate(
+        templatePath,
+        this.buildTemplateData(transaction),
+      );
 
       const mailOptions = {
         from,
         to: transaction.createdBy,
-        subject,
-        html: hbs,
+        subject: selected.subject,
+        html,
       };
 
-      this.logger.log('Sending mail with options:', {
-        ...mailOptions,
-        hbs: 'hbs content hidden for brevity',
-      });
+      this.logger.log(`Sending email from ${from} to ${transaction.createdBy}`);
       const result = await this.mailer.sendMail(mailOptions);
       this.logger.log('Mail sent successfully:', result);
 
@@ -164,5 +118,47 @@ export class MailerService {
       this.logger.error('Stack trace:', error.stack);
       throw error;
     }
+  }
+  /**
+   * Carga y compila un template Handlebars desde el archivo especificado.
+   */
+  private compileTemplate(
+    templatePath: string,
+    data: Record<string, any>,
+  ): string {
+    try {
+      const rawTemplate = readFileSync(templatePath, 'utf8');
+      const compiled = Handlebars.compile(rawTemplate);
+      return compiled(data);
+    } catch (error) {
+      this.logger.error(`Error compiling template: ${error.message}`);
+      throw error;
+    }
+  }
+  /**
+   * Construye los datos necesarios para renderizar el template de email.
+   */
+  private buildTemplateData(transaction: any): Record<string, any> {
+    const sender = transaction.senderAccount ?? {};
+    const receiver = transaction.receiverAccount ?? {};
+    const amount = transaction.amount ?? {};
+
+    return {
+      REFERENCE_NUMBER: transaction.id?.slice(0, 8)?.toUpperCase() ?? '',
+      MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
+      NAME: sender.firstName ?? '',
+      LAST_NAME: sender.lastName ?? '',
+      TRANSACTION_ID: transaction.id,
+      BASE_URL:
+        this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
+      DATE_HOUR: new Date().toLocaleString('es-AR'),
+      PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
+      AMOUNT_SENT: amount.amountSent ?? 0,
+      SENT_CURRENCY: amount.currencySent ?? '',
+      AMOUNT_RECEIVED: amount.amountReceived ?? 0,
+      RECEIVED_CURRENCY: amount.currencyReceived ?? '',
+      PAYMENT_METHOD: receiver.paymentMethod?.bankName ?? 'N/A',
+      RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`,
+    };
   }
 }

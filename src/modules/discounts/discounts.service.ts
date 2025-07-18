@@ -206,23 +206,23 @@ export class DiscountService {
   }> {
     const ledger = await this.getOrCreateUserLedger(userId);
 
-    const actualQuantity = Number(ledger.quantity);
     ledger.quantity = Number(ledger.quantity) + Number(dto.quantity);
     ledger.stars += 1;
 
-    const cycleCompleted =
-      actualQuantity >= DiscountService.CYCLE_QUANTITY &&
-      ledger.stars >= DiscountService.CYCLE_STARS;
-
     let message: string | undefined = undefined;
+
+    await this.rewardsLedgerRepo.save(ledger);
+
+    const cycleCompleted =
+      ledger.quantity >= DiscountService.CYCLE_QUANTITY &&
+      ledger.stars >= DiscountService.CYCLE_STARS;
 
     if (cycleCompleted) {
       ledger.quantity = 0;
       ledger.stars = 0;
       message = '¡Felicidades! Has completado un ciclo de recompensas.';
-    }
 
-    await this.rewardsLedgerRepo.save(ledger);
+    }
 
     return {
       cycleCompleted,

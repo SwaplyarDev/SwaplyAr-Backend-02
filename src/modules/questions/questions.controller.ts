@@ -6,34 +6,50 @@ import {
   Param,
   Post,
   UseGuards,
-
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { NotFoundException } from '@nestjs/common';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBody,
+} from '@nestjs/swagger';
 import { Question } from './entities/question.entity';
 import { JwtAuthGuard } from '../../common/jwt-auth.guard';
-import { createQuestionSchema, deleteQuestionSchema } from './validation/question.schema';
+import {
+  createQuestionSchema,
+  deleteQuestionSchema,
+} from './validation/question.schema';
 import { BadRequestException } from '@nestjs/common';
 
 @ApiTags('Questions')
 @Controller('questions')
 @ApiBearerAuth()
 export class QuestionsController {
-  constructor(private readonly questionsService: QuestionsService) { }
+  constructor(private readonly questionsService: QuestionsService) {}
 
   @ApiOperation({ summary: 'Obtener todas las preguntas' })
-  @ApiResponse({ status: 200, description: 'Preguntas obtenidas correctamente', type: [Question] })
+  @ApiResponse({
+    status: 200,
+    description: 'Preguntas obtenidas correctamente',
+    type: [Question],
+  })
   @Get()
   async getAllQuestions(): Promise<Question[]> {
     return this.questionsService.findAll();
   }
 
   @ApiOperation({ summary: 'Obtener una pregunta por ID' })
-  @ApiResponse({ status: 200, description: 'Pregunta encontrada', type: Question })
+  @ApiResponse({
+    status: 200,
+    description: 'Pregunta encontrada',
+    type: Question,
+  })
   @ApiResponse({ status: 404, description: 'Pregunta no encontrada' })
   @Get(':id')
   async getQuestionById(@Param('id') id: string): Promise<Question> {
@@ -45,7 +61,11 @@ export class QuestionsController {
   }
 
   @ApiOperation({ summary: 'Crear una nueva pregunta (admin solo)' })
-  @ApiResponse({ status: 201, description: 'Pregunta creada correctamente', type: Question })
+  @ApiResponse({
+    status: 201,
+    description: 'Pregunta creada correctamente',
+    type: Question,
+  })
   @ApiBody({ type: CreateQuestionDto })
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Post()
@@ -53,13 +73,13 @@ export class QuestionsController {
     const result = createQuestionSchema.safeParse(body);
 
     if (!result.success) {
-      const isStrictError = result.error.issues.some(issue =>
-        issue.code === 'unrecognized_keys'
+      const isStrictError = result.error.issues.some(
+        (issue) => issue.code === 'unrecognized_keys',
       );
 
       const message = isStrictError
         ? "Solo se aceptan los campos 'title' y 'description'"
-        : result.error.issues.map(err => err.message).join(', ');
+        : result.error.issues.map((err) => err.message).join(', ');
 
       throw new BadRequestException(message);
     }
@@ -77,8 +97,6 @@ export class QuestionsController {
 
   //   return this.questionsService.create(result.data);
   // }
-
-
 
   @ApiOperation({ summary: 'Eliminar una pregunta (admin solo)' })
   @ApiResponse({ status: 204, description: 'Pregunta eliminada correctamente' })
@@ -109,5 +127,4 @@ export class QuestionsController {
   //   }
   //   await this.questionsService.delete(id);
   // }
-
 }

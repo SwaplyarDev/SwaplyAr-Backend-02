@@ -9,7 +9,9 @@ import { FileUploadModule } from '../file-upload/file-upload.module';
 import { ProofOfPaymentsModule } from '@financial-accounts/proof-of-payments/proof-of-payments.module';
 import { BankModule } from '@financial-accounts/payment-methods/bank/bank.module';
 import { UsersModule } from '@users/users.module';
-import { MailerModule } from '../mailer/mailer.module';
+import { MailerModule } from '@mailer/mailer.module';
+import { DiscountModule } from '@discounts/discounts.module';
+import { User } from '@users/entities/user.entity';
 
 @Module({
   imports: [
@@ -17,12 +19,14 @@ import { MailerModule } from '../mailer/mailer.module';
       Transaction,
       AdministracionStatusLog,
       AdministracionMaster,
+      User,
     ]),
     FileUploadModule,
     ProofOfPaymentsModule,
     BankModule,
     UsersModule,
     MailerModule,
+    DiscountModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

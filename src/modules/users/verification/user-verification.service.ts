@@ -12,6 +12,7 @@ import {
 } from '../entities/user-verification.entity';
 import { User } from '../entities/user.entity';
 import { CloudinaryService } from '../../../service/cloudinary/cloudinary.service';
+import { DiscountService } from '@discounts/discounts.service';
 
 @Injectable()
 export class UserVerificationService {
@@ -21,6 +22,7 @@ export class UserVerificationService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly discountService: DiscountService,
   ) {}
 
   async create(
@@ -132,6 +134,16 @@ export class UserVerificationService {
     }
     if (status === VerificationStatus.VERIFIED) {
       verification.verified_at = new Date();
+      const user = await this.userRepository.findOne({
+        where: { id: verification.users_id },
+      });
+      if (user) {
+        await this.discountService.assignVerifyDiscount(user);
+      } else {
+        throw new NotFoundException(
+          'Usuario no encontrado. No se aplico el descuento',
+        );
+      }
     }
 
     return this.userVerificationRepository.save(verification);

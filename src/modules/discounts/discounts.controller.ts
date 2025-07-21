@@ -167,7 +167,7 @@ export class DiscountsController {
    *  RECOMPENSAS
    */
   @Put('update-star')
-  @Roles('user', 'admin', 'super_admin')
+  @Roles(...ADMIN_ROLES)
   @ApiOperation({ summary: 'Actualizar recompensas de usuario (estrellas)' })
   @ApiResponse({
     status: 200,
@@ -189,7 +189,7 @@ export class DiscountsController {
   }
 
   @Get('stars')
-  @Roles('user', 'admin', 'super_admin')
+  @Roles(...ALL_USER_ROLES)
   @ApiOperation({
     summary: 'Obtener recompensas del usuario (cantidad y estrellas)',
   })
@@ -204,5 +204,21 @@ export class DiscountsController {
     @User() user: UserEntity,
   ): Promise<{ quantity: number; stars: number }> {
     return this.discountService.getStars(user.id);
+  }
+
+  @Get('stars/:userId')
+  @Roles(...ADMIN_ROLES)
+  @ApiOperation({
+    summary: 'Obtener recompensas del usuario (cantidad y estrellas) por ID de usuario',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Datos de recompensa',
+    schema: {
+      example: { data: { quantity: 500, stars: 2 } },
+    },
+  })
+  getStarsByUserId(@Param('userId') userId: string) {
+    return this.discountService.getStars(userId);
   }
 }

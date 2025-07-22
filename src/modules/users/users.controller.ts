@@ -58,7 +58,7 @@ export class UsersController {
   async register(@Body() userDto: RegisterUserDto): Promise<User> {
     const user = await this.usersService.register(userDto);
     await this.otpService.generateAndSendOtp(user);
-    await this.discountService.assignWelcomeDiscount(user);
+    await this.discountService.assignSystemDiscount(user, 'WELCOME', 3);
     return user;
   }
 

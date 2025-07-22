@@ -17,6 +17,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 import { DiscountService } from './discounts.service';
 import { CreateUserDiscountDto } from './dto/create-user-discount.dto';
@@ -50,32 +51,53 @@ export class DiscountsController {
   @Post('codes')
   @Roles(...ADMIN_ROLES)
   @ApiOperation({ summary: 'Crear un nuevo código de descuento global' })
-  @ApiResponse({ status: 201, description: 'Código creado correctamente' })
+  @ApiResponse({
+    status: 201,
+    description: 'Código creado correctamente',
+    type: DiscountCode,
+  })
+  @ApiResponse({ status: 400, description: 'Parámetros inválidos' })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
   @HttpCode(HttpStatus.CREATED)
   async createDiscountCode(
     @Body() dto: CreateDiscountCodeDto,
-  ): Promise<{ data: DiscountCode }> {
-    const id = await this.discountService.createDiscountCode(dto);
-    return { data: id };
+  ): Promise<DataResponse<DiscountCode>> {
+    const code = await this.discountService.createDiscountCode(dto);
+    return { data: code };
   }
 
-  @Post('create')
+  @Post('user-discounts')
   @Roles(...ADMIN_ROLES)
   @ApiOperation({ summary: 'Crear nuevo descuento de usuario' })
-  @ApiResponse({ status: 201, description: 'Descuento creado exitosamente' })
+  @ApiResponse({
+    status: 201,
+    description: 'Descuento creado exitosamente',
+    type: UserDiscount,
+  })
+  @ApiResponse({ status: 400, description: 'Parámetros inválidos' })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
   @HttpCode(HttpStatus.CREATED)
   async createUserDiscountForUser(
     @Body() dto: CreateUserDiscountDto,
-  ): Promise<{ data: UserDiscount }> {
-    const id = await this.discountService.createUserDiscount(dto);
-    return { data: id };
+  ): Promise<DataResponse<UserDiscount>> {
+    const discount = await this.discountService.createUserDiscount(dto);
+    return { data: discount };
   }
 
   @Get('existing-codes')
   @Roles(...ALL_USER_ROLES)
   @ApiOperation({ summary: 'Obtener todos los códigos de descuento globales' })
-  @ApiResponse({ status: 200, description: 'Listado de códigos' })
-  async getAllDiscountCodes(): Promise<DataResponse<any[]>> {
+  @ApiResponse({
+    status: 200,
+    description: 'Listado de códigos',
+    type: [DiscountCode],
+  })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @HttpCode(HttpStatus.OK)
+  async getAllDiscountCodes(): Promise<DataResponse<DiscountCode[]>> {
     const codes = await this.discountService.getAllDiscountCodes();
     return { data: codes };
   }
@@ -83,10 +105,18 @@ export class DiscountsController {
   @Get('existing-codes/:id')
   @Roles(...ALL_USER_ROLES)
   @ApiOperation({ summary: 'Obtener un código de descuento global por ID' })
-  @ApiResponse({ status: 200, description: 'Código encontrado' })
+  @ApiResponse({
+    status: 200,
+    description: 'Código encontrado',
+    type: DiscountCode,
+  })
+  @ApiResponse({ status: 404, description: 'Código no encontrado' })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @HttpCode(HttpStatus.OK)
   async getDiscountCodeById(
     @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<DataResponse<any>> {
+  ): Promise<DataResponse<DiscountCode>> {
     const code = await this.discountService.getDiscountByCodeId(id);
     return { data: code };
   }
@@ -99,10 +129,14 @@ export class DiscountsController {
   @ApiResponse({
     status: 200,
     description: 'Listado de descuentos de usuarios',
+    type: [UserDiscount],
   })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @HttpCode(HttpStatus.OK)
   async getAllUserDiscounts(
     @Query() filterDto: FilterUserDiscountsDto,
-  ): Promise<DataResponse<any[]>> {
+  ): Promise<DataResponse<UserDiscount[]>> {
     const discounts = await this.discountService.getAllUserDiscounts(filterDto);
     return { data: discounts };
   }
@@ -113,11 +147,14 @@ export class DiscountsController {
   @ApiResponse({
     status: 200,
     description: 'Listado de descuentos del usuario',
+    type: [UserDiscount],
   })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @HttpCode(HttpStatus.OK)
   async getMyUserDiscounts(
     @Query() filterDto: FilterUserDiscountsDto,
     @User() user: UserEntity,
-  ): Promise<DataResponse<any[]>> {
+  ): Promise<DataResponse<UserDiscount[]>> {
     const discounts = await this.discountService.getUserDiscounts(
       filterDto,
       user.id,
@@ -128,11 +165,19 @@ export class DiscountsController {
   @Get('user-discounts/:id')
   @Roles(...ALL_USER_ROLES)
   @ApiOperation({ summary: 'Obtener un descuento de usuario por su ID' })
-  @ApiResponse({ status: 200, description: 'Descuento encontrado' })
+  @ApiResponse({
+    status: 200,
+    description: 'Descuento encontrado',
+    type: UserDiscount,
+  })
+  @ApiResponse({ status: 404, description: 'Descuento no encontrado' })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @HttpCode(HttpStatus.OK)
   async getUserDiscountById(
     @Param('id', ParseUUIDPipe) id: string,
     @User() user: UserEntity,
-  ): Promise<DataResponse<any>> {
+  ): Promise<DataResponse<UserDiscount>> {
     const discount = await this.discountService.getUserDiscountById(
       id,
       user.id,
@@ -144,6 +189,11 @@ export class DiscountsController {
   @Roles(...ALL_USER_ROLES)
   @ApiOperation({ summary: 'Actualizar un descuento de usuario por ID' })
   @ApiResponse({ status: 200, description: 'Descuento actualizado' })
+  @ApiResponse({ status: 404, description: 'Descuento no encontrado' })
+  @ApiResponse({ status: 400, description: 'Parámetro inválido' })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @HttpCode(HttpStatus.OK)
   async updateUserDiscount(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateUserDiscountDto,
@@ -157,33 +207,61 @@ export class DiscountsController {
   @Roles(...ADMIN_ROLES)
   @ApiOperation({ summary: 'Eliminar un descuento de usuario por ID' })
   @ApiResponse({ status: 200, description: 'Descuento eliminado' })
+  @ApiResponse({ status: 404, description: 'Descuento no encontrado' })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @HttpCode(HttpStatus.OK)
   async deleteUserDiscount(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<DataResponse<void>> {
     await this.discountService.deleteUserDiscount(id);
     return { data: undefined };
   }
+
   /*
    *  RECOMPENSAS
    */
   @Put('update-star')
   @Roles(...ADMIN_ROLES)
   @ApiOperation({ summary: 'Actualizar recompensas de usuario (estrellas)' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description:
       'Recompensa actualizada, devuelve true si se completó un ciclo',
+    schema: {
+      example: {
+        data: {
+          cycleCompleted: true,
+          ledger: {
+            /* estructura del ledger */
+          },
+          message: 'Has completado un ciclo',
+        },
+      },
+      properties: {
+        data: {
+          type: 'object',
+          properties: {
+            cycleCompleted: { type: 'boolean' },
+            ledger: { type: 'object' },
+            message: { type: 'string' },
+          },
+        },
+      },
+    },
   })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @HttpCode(HttpStatus.OK)
   async updateStar(
     @Body() dto: UpdateStarDto,
     @User() user: UserEntity,
-  ): Promise<{
-    data: {
+  ): Promise<
+    DataResponse<{
       cycleCompleted: boolean;
       ledger: UserRewardsLedger;
       message?: string;
-    };
-  }> {
+    }>
+  > {
     const result = await this.discountService.updateStars(dto, user.id);
     return { data: result };
   }
@@ -193,32 +271,60 @@ export class DiscountsController {
   @ApiOperation({
     summary: 'Obtener recompensas del usuario (cantidad y estrellas)',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Datos de recompensa',
     schema: {
       example: { data: { quantity: 500, stars: 2 } },
+      properties: {
+        data: {
+          type: 'object',
+          properties: {
+            quantity: { type: 'number' },
+            stars: { type: 'number' },
+          },
+        },
+      },
     },
   })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @HttpCode(HttpStatus.OK)
   async getStars(
     @User() user: UserEntity,
-  ): Promise<{ quantity: number; stars: number }> {
-    return this.discountService.getStars(user.id);
+  ): Promise<DataResponse<{ quantity: number; stars: number }>> {
+    const stars = await this.discountService.getStars(user.id);
+    return { data: stars };
   }
 
   @Get('stars/:userId')
   @Roles(...ADMIN_ROLES)
   @ApiOperation({
-    summary: 'Obtener recompensas del usuario (cantidad y estrellas) por ID de usuario',
+    summary:
+      'Obtener recompensas del usuario (cantidad y estrellas) por ID de usuario',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Datos de recompensa',
     schema: {
       example: { data: { quantity: 500, stars: 2 } },
+      properties: {
+        data: {
+          type: 'object',
+          properties: {
+            quantity: { type: 'number' },
+            stars: { type: 'number' },
+          },
+        },
+      },
     },
   })
-  getStarsByUserId(@Param('userId') userId: string) {
-    return this.discountService.getStars(userId);
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @HttpCode(HttpStatus.OK)
+  async getStarsByUserId(
+    @Param('userId', ParseUUIDPipe) userId: string,
+  ): Promise<DataResponse<{ quantity: number; stars: number }>> {
+    const stars = await this.discountService.getStars(userId);
+    return { data: stars };
   }
 }

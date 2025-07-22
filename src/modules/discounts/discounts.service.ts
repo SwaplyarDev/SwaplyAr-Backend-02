@@ -53,47 +53,33 @@ export class DiscountService {
     return discountCode;
   }
   /**
-   * Crea el nuevo descuento de usuario de bienvenida para un usuario nuevo.
+   * Crea y asigna un descuento de sistema (bienvenida, verificación, etc.) para un usuario.
+   * @param user Usuario destinatario.
+   * @param prefix Prefijo para el código (e.g., "WELCOME", "VERIFIED").
+   * @param value Valor del descuento.
+   * @returns El id del descuento de usuario creado.
    */
-  async assignWelcomeDiscount(user: User): Promise<string> {
-    // Creamos el código global (o lo obtenemos si ya existe uno fijo):
-    const code = this.discountCodeRepo.create({
-      code: `WELCOME-${Math.random().toString(36).substr(2, 6)}`.toUpperCase(),
-      value: 3,
+  async assignSystemDiscount(
+    user: User,
+    prefix: string,
+    value: number,
+  ): Promise<string> {
+    const codeEntity = this.discountCodeRepo.create({
+      code: `${prefix}-${Math.random().toString(36).substr(2, 6)}`.toUpperCase(),
+      value,
       currencyCode: 'USD',
       validFrom: new Date(),
     });
-    await this.discountCodeRepo.save(code);
-    const ud = this.userDiscountRepo.create({
+    await this.discountCodeRepo.save(codeEntity);
+
+    const userDiscount = this.userDiscountRepo.create({
       user,
-      discountCode: code,
+      discountCode: codeEntity,
       isUsed: false,
     });
-    await this.userDiscountRepo.save(ud);
+    await this.userDiscountRepo.save(userDiscount);
 
-    return ud.id;
-  }
-
-  /**
-   * Crea el nuevo descuento de usuario de verificación para un usuario nuevo.
-   */
-  async assignVerifyDiscount(user: User): Promise<string> {
-    // Creamos el código global (o lo obtenemos si ya existe uno fijo):
-    const code = this.discountCodeRepo.create({
-      code: `VERIFIED-${Math.random().toString(36).substr(2, 6)}`.toUpperCase(),
-      value: 5,
-      currencyCode: 'USD',
-      validFrom: new Date(),
-    });
-    await this.discountCodeRepo.save(code);
-    const ud = this.userDiscountRepo.create({
-      user,
-      discountCode: code,
-      isUsed: false,
-    });
-    await this.userDiscountRepo.save(ud);
-
-    return ud.id;
+    return userDiscount.id;
   }
 
   /**

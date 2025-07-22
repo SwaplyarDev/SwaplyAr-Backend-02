@@ -138,7 +138,7 @@ export class UserVerificationService {
         where: { id: verification.users_id },
       });
       if (user) {
-        await this.discountService.assignVerifyDiscount(user);
+        await this.discountService.assignSystemDiscount(user, 'VERIFY', 5);
       } else {
         throw new NotFoundException(
           'Usuario no encontrado. No se aplico el descuento',

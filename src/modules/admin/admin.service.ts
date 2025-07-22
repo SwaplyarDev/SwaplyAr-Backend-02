@@ -171,6 +171,7 @@ export class AdminService {
 
     const transaction = await this.transactionsRepository.findOne({
       where: { id: transactionId },
+      relations: ['amount'],
     });
 
     if (!transaction) {

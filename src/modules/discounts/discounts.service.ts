@@ -265,7 +265,10 @@ export class DiscountService {
     const ledger = await this.getOrCreateUserLedger(userId);
 
     ledger.quantity = Number(ledger.quantity) + Number(dto.quantity);
-    ledger.stars += 1;
+    //límite de 5 estrellas
+    if (ledger.stars < 5) {
+      ledger.stars += 1;
+    }
     await this.rewardsLedgerRepo.save(ledger);
 
     const cycleCompleted =

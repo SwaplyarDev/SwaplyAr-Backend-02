@@ -1,4 +1,3 @@
-
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateQuestionDto {
@@ -24,5 +23,4 @@ export class CreateQuestionDto {
   //@IsString()
   //@IsNotEmpty()
   description: string;
-
 }

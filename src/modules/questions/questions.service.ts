@@ -12,7 +12,7 @@ export class QuestionsService {
   }
 
   findById(id: string): Question | undefined {
-    return this.questions.find(question => question.id === id);
+    return this.questions.find((question) => question.id === id);
   }
 
   create(createQuestionDto: CreateQuestionDto): Question {
@@ -25,7 +25,7 @@ export class QuestionsService {
   }
 
   delete(id: string): boolean {
-    const index = this.questions.findIndex(question => question.id === id);
+    const index = this.questions.findIndex((question) => question.id === id);
     if (index > -1) {
       this.questions.splice(index, 1);
       return true;

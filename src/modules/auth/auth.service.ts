@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '@users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
+import { UnauthorizedException } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
@@ -42,16 +43,29 @@ export class AuthService {
     return { access_token: accessToken, refresh_token: refreshToken };
   }
 
-  async refreshAccessToken(userId: string) {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
-    if (!user || !user.refreshToken) {
-      throw new BadRequestException('Invalid user or refresh token');
+ async refreshAccessToken(userId: string, refreshToken: string) {
+  try {
+    const user = await this.userRepo.findOneBy({ id: userId });
+
+    if (!user || user.refreshToken !== refreshToken) {
+      throw new UnauthorizedException('Refresh token inválido');
     }
-    this.jwtService.verify(user.refreshToken, {
+
+    // Verificar que el refreshToken sea válido (JWT)
+    const payload = await this.jwtService.verifyAsync(refreshToken, {
       secret: process.env.JWT_REFRESH_SECRET,
     });
-    const payload = this.buildPayload(user);
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
-    return { access_token: accessToken };
+
+    const accessToken = this.jwtService.sign(
+      { sub: user.id,  },
+      { expiresIn: '1h' },
+    );
+
+    return {
+      access_token: accessToken,
+      // Opcional: devolver refresh_token si querés rotarlo
+    };
+  } catch (err) {
+    throw new UnauthorizedException('Refresh token inválido o expirado');
   }
-}
+}}

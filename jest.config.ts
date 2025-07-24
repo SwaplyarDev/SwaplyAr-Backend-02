@@ -1,5 +1,16 @@
 
 
+/**
+ * Configuración de Jest para ejecutar tests en un proyecto NestJS con TypeScript.
+ * Incluye:
+ * - Integración con ts-jest como preset.
+ * - Entorno de test configurado como 'node'.
+ * - Alias de rutas personalizados definidos en moduleNameMapper para facilitar las importaciones.
+ * - Reconocimiento de archivos .ts, .js y .json.
+ * - Patrón de nombres para reconocer archivos de pruebas (testRegex).
+ * - Transformación de archivos TS/JS usando ts-jest.
+ */
+
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   preset: 'ts-jest',

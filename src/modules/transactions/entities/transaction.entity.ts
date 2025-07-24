@@ -11,11 +11,13 @@ import {
   ManyToOne,
   JoinColumn,
   OneToOne,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   OneToMany,
 } from 'typeorm';
 
 import { Note } from '@transactions/notes/entities/note.entity';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';
+import { UserDiscount } from '@users/entities/user-discount.entity';
 
 @Entity('transactions')
 export class Transaction {
@@ -74,6 +76,9 @@ export class Transaction {
   @OneToOne(() => Amount)
   @JoinColumn({ name: 'amount_id' })
   amount: Amount;
+
+  @OneToOne(() => UserDiscount, (userDiscount) => userDiscount.transaction)
+  userDiscount: UserDiscount;
 }
 
 // Relaciones de Transacciones y Pagos

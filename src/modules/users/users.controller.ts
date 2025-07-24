@@ -21,9 +21,10 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { OtpService } from '@otp/otp.service';
-import { JwtAuthGuard } from '../../common/jwt-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
+import { JwtAuthGuard } from '@common/jwt-auth.guard';
+import { RolesGuard } from '@common/guards/roles.guard';
+import { Roles } from '@common/decorators/roles.decorator';
+import { DiscountService } from '@discounts/discounts.service';
 
 @ApiTags('Usuarios')
 @Controller('users')
@@ -31,6 +32,7 @@ export class UsersController {
   constructor(
     private usersService: UsersService,
     private otpService: OtpService,
+    private discountService: DiscountService,
   ) {}
 
   @UseInterceptors(ClassSerializerInterceptor)
@@ -56,6 +58,7 @@ export class UsersController {
   async register(@Body() userDto: RegisterUserDto): Promise<User> {
     const user = await this.usersService.register(userDto);
     await this.otpService.generateAndSendOtp(user);
+    await this.discountService.assignSystemDiscount(user, 'WELCOME', 3);
     return user;
   }
 

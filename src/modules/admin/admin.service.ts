@@ -18,6 +18,8 @@ import { AdminStatus } from '../../enum/admin-status.enum';
 import { User } from '@users/entities/user.entity';
 import { TransactionStatus } from '../../enum/trasanction-status.enum';
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
+import { DiscountService } from '@discounts/discounts.service';
+import { UpdateStarDto } from '@discounts/dto/update-star.dto';
 
 @Injectable()
 export class AdminService {
@@ -33,6 +35,9 @@ export class AdminService {
     private readonly fileUploadService: FileUploadService,
     private readonly proofOfPaymentService: ProofOfPaymentsService,
     private readonly bankService: BankService,
+    private readonly discountService: DiscountService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   private convertAdminStatusToTransactionStatus(
@@ -166,6 +171,7 @@ export class AdminService {
 
     const transaction = await this.transactionsRepository.findOne({
       where: { id: transactionId },
+      relations: ['amount'],
     });
 
     if (!transaction) {
@@ -224,6 +230,36 @@ export class AdminService {
       `Estado de transacción ${transactionId} actualizado a ${status} por admin ${adminUser.id}`,
     );
 
+    if (status === AdminStatus.Approved) {
+      console.log(transaction);
+      const quantityToAdd = Number(transaction.amount.amountSent);
+
+      const starDto: UpdateStarDto = { quantity: quantityToAdd };
+
+      const user = await this.userRepository.findOne({
+        where: { profile: { email: transaction.createdBy } },
+        relations: ['profile'],
+      });
+
+      if (!user) {
+        throw new NotFoundException(
+          'No se encontró el usuario asociado a la transacción.',
+        );
+      }
+      const userId = user.id;
+      const { cycleCompleted, message: starMessage } =
+        await this.discountService.updateStars(
+          starDto,
+          userId,
+        );
+
+      this.logger.log(
+        `Recompensas actualizadas para usuario ${userId}: +${quantityToAdd}. Ciclo completo: ${cycleCompleted}`
+      );
+      if (starMessage) {
+        this.logger.log(`Mensaje de recompensa: ${starMessage}`);
+      }
+    }
     return {
       message: 'Estado actualizado',
       status,

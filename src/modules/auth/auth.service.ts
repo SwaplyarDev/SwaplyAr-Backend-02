@@ -42,10 +42,11 @@ export class AuthService {
     return { access_token: accessToken, refresh_token: refreshToken };
   }
 
-  async refreshAccessToken(userId: string) {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
+  async refreshAccessToken(refreshToken: string) {
+    const user = await this.userRepo.findOne({ where: { refreshToken },
+    relations: ['profile'], });
     if (!user || !user.refreshToken) {
-      throw new BadRequestException('Invalid user or refresh token');
+      throw new BadRequestException('Invalid refresh token');
     }
     this.jwtService.verify(user.refreshToken, {
       secret: process.env.JWT_REFRESH_SECRET,

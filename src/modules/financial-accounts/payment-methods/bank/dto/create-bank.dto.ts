@@ -1,13 +1,25 @@
 import { IsOptional, IsString } from 'class-validator';
 
 export class CreateBankDto {
+  @IsString()
   currency: string;
+
+  @IsString()
   bankName: string;
+
+  @IsString()
   sendMethodKey: string;
+
+  @IsString()
   sendMethodValue: string;
+
+  @IsString()
   documentType: string;
+
+  @IsString()
   documentValue: string;
 }
+
 
 export class UpdateBankDto {
   @IsOptional()

@@ -7,9 +7,9 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 
-//@ApiBearerAuth()
-//@UseGuards(JwtAuthGuard, RolesGuard)
-//@Roles('user')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('user')
 @ApiTags('Financial Accounts')
 @Controller('financial-accounts')
 export class FinancialAccountController {

@@ -1,19 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsEmpty, IsString } from 'class-validator';
 
 export class CreateVirtualBankDto {
-  @IsString()
   @ApiProperty({ description: 'Moneda', example: 'ARS' })
+  @IsString()
+  @IsEmpty()
   currency: string;
   
+  @ApiProperty({ description: 'Email de la cuenta', example: 'nahuel@gmail.com',})
   @IsString()
-  @ApiProperty({
-    description: 'Email de la cuenta',
-    example: 'nahuel@gmail.com',
-  })
+  @IsEmpty()
   emailAccount: string;
 
-  @IsString()
   @ApiProperty({ description: 'Codigo de transferencia', example: '123' })
+  @IsString()
+  @IsEmpty()
   transferCode: string;
 }

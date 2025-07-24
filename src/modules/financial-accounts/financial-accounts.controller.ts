@@ -7,9 +7,9 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('user')
+//@ApiBearerAuth()
+//@UseGuards(JwtAuthGuard, RolesGuard)
+//@Roles('user')
 @ApiTags('Financial Accounts')
 @Controller('financial-accounts')
 export class FinancialAccountController {
@@ -180,7 +180,7 @@ export class FinancialAccountController {
 @ApiForbiddenResponse({ description: 'Autorización no permitida, solo para usuarios',})
 @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })  
 @ApiBadRequestResponse({
-  description: 'Datos inválidos: método de pago, plataforma o formato de email incorrecto.',
+  description: 'Datos inválidos: campos vacíos requeridos, método de pago, plataforma o email incorrectos.',
 })
 @Post()
   async create(@Body() createFinancialAccountDto: CreateFinancialAccountDto) {

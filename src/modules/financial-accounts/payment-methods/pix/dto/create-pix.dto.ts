@@ -1,20 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsEmpty, IsString } from 'class-validator';
 
 export class CreatePixDto {
   @ApiProperty({ description: 'ID del banco virtual', example: '123' })
   @IsString()
+  @IsEmpty()
   virtualBankId: string;
   
-  @IsString()
   @ApiProperty({ description: 'Clave del pix', example: '123' })
+  @IsString()
+  @IsEmpty()
   pixKey: string;
   
-  @IsString()
   @ApiProperty({ description: 'Valor del pix', example: '123' })
+  @IsString()
+  @IsEmpty()
   pixValue: string;
   
-  @IsString()
   @ApiProperty({ description: 'CPF', example: '123' })
+  @IsString()
+  @IsEmpty()
   cpf: string;
 }

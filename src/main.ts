@@ -31,6 +31,7 @@ async function bootstrap() {
     'https://www.swaplyar.com',
     'https://swaplyar-swaplyar.vercel.app',
     'http://localhost:3000',
+    'http://localhost:3001',
   ];
   app.enableCors({
     credentials: true,
@@ -49,7 +50,6 @@ async function bootstrap() {
     .setDescription('Documentación generada automáticamente')
     .setVersion('1.0')
     .addBearerAuth()
-    .addServer('/api/v2')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

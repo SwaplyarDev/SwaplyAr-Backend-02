@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { FinancialAccountsService } from './financial-accounts.service';
 import { CreateFinancialAccountDto } from './dto/create-financial-accounts.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiForbiddenResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiForbiddenResponse, ApiUnauthorizedResponse, ApiBadRequestResponse } from '@nestjs/swagger';
 import { FinancialAccountResponseDto, ReceiverResponseDto, SenderResponseDto } from './dto/financial-accounts-response.dto';
 import { Roles } from '@common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
@@ -177,10 +177,12 @@ export class FinancialAccountController {
     },
   },
 })
-@ApiForbiddenResponse({
-  description: 'Autorización no permitida, solo para usuarios',
+@ApiForbiddenResponse({ description: 'Autorización no permitida, solo para usuarios',})
+@ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })  
+@ApiBadRequestResponse({
+  description: 'Datos inválidos: método de pago, plataforma o formato de email incorrecto.',
 })
-  @Post()
+@Post()
   async create(@Body() createFinancialAccountDto: CreateFinancialAccountDto) {
     return this.financialAccountsService.create(createFinancialAccountDto);
   }
@@ -192,10 +194,9 @@ export class FinancialAccountController {
     description: 'Lista de cuentas emisoras',
     type: [SenderResponseDto],
   })
-  @ApiForbiddenResponse({
-  description: 'Autorización no permitida, solo para usuarios',
-})
-  @Get('/sender')
+  @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
+  @ApiForbiddenResponse({ description: 'Autorización no permitida, solo para usuarios',})
+  @Get('/sender') 
   async findAllSender() {
     return await this.financialAccountsService.findAllSender();
   }
@@ -206,9 +207,8 @@ export class FinancialAccountController {
     description: 'Lista de cuentas receptoras',
     type: [ReceiverResponseDto],
   })
-  @ApiForbiddenResponse({
-  description: 'Autorización no permitida, solo para usuarios',
-})
+  @ApiForbiddenResponse({ description: 'Autorización no permitida, solo para usuarios',})
+  @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
   @Get('/receiver')
   async findAllReceiver() {
     return await this.financialAccountsService.findAllReceiver();

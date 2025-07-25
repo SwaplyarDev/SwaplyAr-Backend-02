@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateReceiverFinancialAccountDto } from './dto/create-receiver-financial-account.dto';
 import { ReceiverFinancialAccount } from './entities/receiver-financial-account.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaymentMethodService } from '@financial-accounts/payment-methods/payment-method.service';
+import { UpdateReceiverFinancialAccountDto } from './dto/update-receiver-financial-account.dto';
 
 @Injectable()
 export class ReceiverFinancialAccountsService {
@@ -37,6 +38,33 @@ export class ReceiverFinancialAccountsService {
   async findOne(id: string) {
     return await this.receiverRepository.findOne({ where: { id } }); // lo guarda en la tabla financial accounts
   }
+
+  async update(id: string, dto: UpdateReceiverFinancialAccountDto) {
+    const senderAccount = await this.receiverRepository.findOne({ where: { id }, relations: ['paymentMethod'] });
+  
+    if (!senderAccount) {
+      throw new NotFoundException(`Sender account with ID ${id} not found`);
+  }
+  
+    // Actualiza campos básicos
+    if (dto.firstName) senderAccount.firstName = dto.firstName;
+    if (dto.lastName) senderAccount.lastName = dto.lastName;
+  
+    // Actualiza el paymentMethod (si se envía)
+    if (dto.paymentMethod) {
+      Object.assign(senderAccount.paymentMethod, dto.paymentMethod);
+  }
+  
+    return await this.receiverRepository.save(senderAccount);
+  }
+
+  async delete(id: string): Promise<boolean> {
+  const account = await this.receiverRepository.findOne({ where: { id } });
+  if (!account) return false;
+
+  await this.receiverRepository.delete(id);
+  return true;
+}
 
   async addBankToReceiver(receiverId: string, bankDto: any, platformId: any) {
     const receiver = await this.receiverRepository.findOne({

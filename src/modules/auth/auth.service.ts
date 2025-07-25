@@ -57,7 +57,7 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
     const newRefreshToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: '7d',
+      expiresIn: '1d',
     });
     user.refreshToken = newRefreshToken;
     await this.userRepo.save(user);

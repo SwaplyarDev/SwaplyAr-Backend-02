@@ -300,14 +300,15 @@ export class FinancialAccountController {
   @ApiBadRequestResponse({
   description:
     'Datos inválidos. El objeto `paymentMethod` es opcional, pero si desea modificar debe incluir todos sus campos requeridos según el método de pago especificado (`bank`, `pix`, `receiver-crypto`, `virtual-bank`). ' +
-    'Los campos `firstName` y `lastName` son opcionales, pero si se envían, deben ser cadenas de texto.',
+    'Campos como `firstName`, `lastName`, `document_value`, `email`, `phoneNumber` y `bank_name` son opcionales, pero si se envían, deben ser cadenas válidas.' +
+    'Formato de ID inválido. Debe ser un UUID válido.',
   })
   @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
   @ApiForbiddenResponse({ description: 'Autorización no permitida, solo para usuarios' })
   @ApiParam({ name: 'id', description: 'ID de la cuenta emisora a actualizar' })
   @Patch('/sender/:id')
   async updateSenderAccount(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateSenderDto: UpdateSenderFinancialAccountDto,
   ) {
     return this.financialAccountsService.updateSender(id, updateSenderDto);
@@ -413,28 +414,29 @@ export class FinancialAccountController {
   @ApiBadRequestResponse({
   description:
     'Datos inválidos. El objeto `paymentMethod` es opcional, pero si desea modificar debe incluir todos sus campos requeridos según el método de pago especificado (`bank`, `pix`, `receiver-crypto`, `virtual-bank`). ' +
-    'Campos como `firstName`, `lastName`, `document_value`, `email`, `phoneNumber` y `bank_name` son opcionales, pero si se envían, deben ser cadenas válidas.',
+    'Campos como `firstName`, `lastName`, `document_value`, `email`, `phoneNumber` y `bank_name` son opcionales, pero si se envían, deben ser cadenas válidas.' +
+    'Formato de ID inválido. Debe ser un UUID válido.',
   })
   @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
   @ApiForbiddenResponse({ description: 'Autorización no permitida, solo para usuarios' })
   @ApiParam({ name: 'id', description: 'ID de la cuenta receptora a actualizar' })
   @Patch('/receiver/:id')
   async updateReceiverAccount(
-  @Param('id') id: string,
+  @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   @Body() updateReceiverDto: UpdateReceiverFinancialAccountDto,
   ) {
   return this.financialAccountsService.updateReceiver(id, updateReceiverDto);
 }
 
-@ApiOperation({ summary: 'Eliminar una cuenta financiera por ID' })
-@ApiParam({ name: 'id', description: 'ID de la cuenta financiera a eliminar' })
-@ApiResponse({ status: 200, description: 'Cuenta eliminada correctamente' })
-@ApiNotFoundResponse({ description: 'Cuenta no encontrada' })
-@ApiBadRequestResponse({ description: 'Formato de ID inválido. Debe ser un UUID válido.' })
-@ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
-@ApiForbiddenResponse({ description: 'Autorización no permitida, solo para usuarios' })
-@Delete(':id')
-async deleteAccount(
+  @ApiOperation({ summary: 'Eliminar una cuenta financiera por ID' })
+  @ApiParam({ name: 'id', description: 'ID de la cuenta financiera a eliminar' })
+  @ApiResponse({ status: 200, description: 'Cuenta eliminada correctamente' })
+  @ApiNotFoundResponse({ description: 'Cuenta no encontrada' })
+  @ApiBadRequestResponse({ description: 'Formato de ID inválido. Debe ser un UUID válido.' })
+  @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
+  @ApiForbiddenResponse({ description: 'Autorización no permitida, solo para usuarios' })
+  @Delete(':id')
+  async deleteAccount(
   @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ) {
   await this.financialAccountsService.deleteById(id);

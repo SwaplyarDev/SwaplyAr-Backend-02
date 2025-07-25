@@ -11,7 +11,7 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>, // ← inyecta User repo
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   private buildPayload(user: User) {
     return {
@@ -42,16 +42,27 @@ export class AuthService {
     return { access_token: accessToken, refresh_token: refreshToken };
   }
 
-  async refreshAccessToken(userId: string) {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
+  async refreshAccessToken(refreshToken: string) {
+    const user = await this.userRepo.findOne({
+      where: { refreshToken },
+      relations: ['profile'],
+    });
     if (!user || !user.refreshToken) {
-      throw new BadRequestException('Invalid user or refresh token');
+      throw new BadRequestException('Invalid refresh token');
     }
     this.jwtService.verify(user.refreshToken, {
       secret: process.env.JWT_REFRESH_SECRET,
     });
     const payload = this.buildPayload(user);
     const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
-    return { access_token: accessToken };
+    const newRefreshToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: '1d',
+    });
+    user.refreshToken = newRefreshToken;
+    await this.userRepo.save(user);
+    return { access_token: accessToken, refresh_token: newRefreshToken };
+
+
   }
 }

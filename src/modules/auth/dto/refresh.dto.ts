@@ -7,5 +7,5 @@ export class RefreshDto {
     example: 'jwt.refresh.token.aqui',
   })
   @IsString()
-  refreshToken: string;
+  refresh_token: string;
 }

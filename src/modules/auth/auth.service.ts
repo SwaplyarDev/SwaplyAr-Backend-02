@@ -53,6 +53,14 @@ export class AuthService {
     });
     const payload = this.buildPayload(user);
     const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
-    return { access_token: accessToken };
+    const newRefreshToken = this.jwtService.sign(payload, {
+    secret: process.env.JWT_REFRESH_SECRET,
+    expiresIn: '7d',
+  });
+  user.refreshToken = newRefreshToken;
+  await this.userRepo.save(user);
+  return { access_token: accessToken, refresh_token: newRefreshToken };
+
+    //return { access_token: accessToken };
   }
 }

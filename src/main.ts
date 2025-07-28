@@ -17,9 +17,13 @@ async function bootstrap() {
   // 0. Global ValidationPipe
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // elimina propiedades no definidas en los DTOs
-      forbidNonWhitelisted: true, // lanza error si llegan propiedades extra
-      transform: true, // convierte payloads a instancias de clases DTO
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      exceptionFactory: (errors) => {
+        console.log('❌ Errores de validación:', errors); // <-- DEBUG ACÁ
+        return new Error(`Errores de validación:`);
+      },
     }),
   );
 

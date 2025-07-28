@@ -1,20 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmpty, IsString } from 'class-validator';
+import { IsEmpty, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateReceiverCryptoDto {
   @ApiProperty({ description: 'Moneda', example: 'ARS' })
   @IsString()
-  @IsEmpty()
+  @IsNotEmpty()
   currency: string;
 
   @ApiProperty({ description: 'Red', example: 'ARS' })
   @IsString()
-  @IsEmpty()
+  @IsNotEmpty()
   network: string;
 
   @ApiProperty({ description: 'Wallet', example: 'ARS' })
   @IsString()
-  @IsEmpty()
+  @IsNotEmpty()
   wallet: string;
 
 }

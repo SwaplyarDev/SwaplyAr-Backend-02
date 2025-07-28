@@ -13,6 +13,7 @@ export enum VerificationStatus {
   PENDING = 'pending',
   VERIFIED = 'verified',
   REJECTED = 'rejected',
+  RESEND_DATA = 'resend-data', // nuevo estado para reenviar documentos o info
 }
 
 @Entity('user_verification')

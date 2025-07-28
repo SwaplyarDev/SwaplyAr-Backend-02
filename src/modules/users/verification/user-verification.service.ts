@@ -111,6 +111,23 @@ export class UserVerificationService {
     return verification;
   }
 
+  async findVerificationsByStatus(
+  status?: VerificationStatus,
+): Promise<UserVerification[]> {
+  const whereCondition = status
+    ? { verification_status: status }
+    : {}; // si no se pasa, trae todas
+
+  return this.userVerificationRepository.find({
+    where: whereCondition,
+    order: { created_at: 'DESC' },
+  });
+}
+
+
+
+
+
   async updateStatus(
     verificationId: string,
     status: VerificationStatus,
@@ -124,13 +141,18 @@ export class UserVerificationService {
       throw new NotFoundException('Verificación no encontrada');
     }
 
-    if (verification.verification_status !== VerificationStatus.PENDING) {
-      throw new ConflictException('Esta verificación ya ha sido procesada');
-    }
+    const puedeActualizar =
+      [VerificationStatus.PENDING, VerificationStatus.RESEND_DATA].includes(
+      verification.verification_status,
+    );
+
+  if (!puedeActualizar) {
+  throw new ConflictException('Esta verificación ya ha sido procesada');
+  }
 
     verification.verification_status = status;
-    if (status === VerificationStatus.REJECTED && noteRejection) {
-      verification.note_rejection = noteRejection;
+    if ((status === VerificationStatus.REJECTED || status === VerificationStatus.RESEND_DATA) && noteRejection) {
+  verification.note_rejection = noteRejection;
     }
     if (status === VerificationStatus.VERIFIED) {
       verification.verified_at = new Date();

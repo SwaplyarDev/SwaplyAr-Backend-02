@@ -51,11 +51,11 @@ describe ('AuthController', () => {
 
   it ('Debe renovar el accsess token usando refresh token', async () => {
 
-    const dto = { userId: '550e8400-e29b-41d4-a716-446655440000' };
-    const expectedtoken = { access_token: 'nuevo-token'};
+    const dto = { refresh_token: 'refresh123' };
+    const expectedtoken = { access_token: 'refresh123'};
     authService.refreshAccessToken.mockResolvedValue (expectedtoken); 
     const result = await controller.refresh (dto);  
-    expect (authService.refreshAccessToken).toHaveBeenCalledWith (dto.userId);
+    expect (authService.refreshAccessToken).toHaveBeenCalledWith (dto.refresh_token);
     expect (result).toEqual (expectedtoken);
 
   })

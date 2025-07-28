@@ -295,17 +295,25 @@ export class FinancialAccountController {
   @ApiResponse({
   status: 200,
   description: 'Cuenta emisora actualizada correctamente',
-  type: SenderResponseDto,
-  })
-  @ApiBadRequestResponse({
+  type: ReceiverResponseDto,
+})
+@ApiBadRequestResponse({
   description:
-    'Datos inválidos. El objeto `paymentMethod` es opcional, pero si desea modificar debe incluir todos sus campos requeridos según el método de pago especificado (`bank`, `pix`, `receiver-crypto`, `virtual-bank`). ' +
-    'Campos como `firstName`, `lastName`, `document_value`, `email`, `phoneNumber` y `bank_name` son opcionales, pero si se envían, deben ser cadenas válidas.' +
-    'Formato de ID inválido. Debe ser un UUID válido.',
-  })
-  @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
-  @ApiForbiddenResponse({ description: 'Autorización no permitida, solo para usuarios' })
-  @ApiParam({ name: 'id', description: 'ID de la cuenta emisora a actualizar' })
+    '400.1 - Datos inválidos. El objeto `paymentMethod` es opcional, pero si desea modificar debe incluir todos sus campos requeridos según el método de pago especificado (`bank`, `pix`, `receiver-crypto`, `virtual-bank`). ' +
+    '400.2 -Campos como `firstName`, `lastName`, `document_value`, `email`, `phoneNumber` y `bank_name` son opcionales, pero si se envían, deben ser cadenas válidas.' +
+    '400.3 -Formato de ID inválido. Debe ser un UUID válido.\n\n' +
+    '400.4 - Método de pago inválido. No puede cambiar el método de pago registrado. Por ejemplo: ' +
+    '`Método de pago inválido. Esta cuenta tiene registrado platformId: \'bank\' y method: \'bank\', no puede cambiarse a \'pix\' / \'pix\'.`',
+})
+@ApiNotFoundResponse({
+  description: '404 - Cuenta emisora con el ID especificado no encontrada.',
+})
+@ApiUnauthorizedResponse({
+  description: '401 - No autorizado. Token no válido o no enviado.',
+})
+@ApiForbiddenResponse({
+  description: '403 - Autorización no permitida, solo para usuarios.',
+})
   @Patch('/sender/:id')
   async updateSenderAccount(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -406,27 +414,37 @@ export class FinancialAccountController {
     },
   },
   })
-  @ApiResponse({
+ @ApiResponse({
   status: 200,
   description: 'Cuenta receptora actualizada correctamente',
   type: ReceiverResponseDto,
-  })
-  @ApiBadRequestResponse({
+})
+@ApiBadRequestResponse({
   description:
-    'Datos inválidos. El objeto `paymentMethod` es opcional, pero si desea modificar debe incluir todos sus campos requeridos según el método de pago especificado (`bank`, `pix`, `receiver-crypto`, `virtual-bank`). ' +
-    'Campos como `firstName`, `lastName`, `document_value`, `email`, `phoneNumber` y `bank_name` son opcionales, pero si se envían, deben ser cadenas válidas.' +
-    'Formato de ID inválido. Debe ser un UUID válido.',
-  })
-  @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
-  @ApiForbiddenResponse({ description: 'Autorización no permitida, solo para usuarios' })
-  @ApiParam({ name: 'id', description: 'ID de la cuenta receptora a actualizar' })
-  @Patch('/receiver/:id')
-  async updateReceiverAccount(
+    '400.1 - Datos inválidos. El objeto `paymentMethod` es opcional, pero si desea modificar debe incluir todos sus campos requeridos según el método de pago especificado (`bank`, `pix`, `receiver-crypto`, `virtual-bank`). ' +
+    '400.2 -Campos como `firstName`, `lastName`, `document_value`, `email`, `phoneNumber` y `bank_name` son opcionales, pero si se envían, deben ser cadenas válidas.' +
+    '400.3 -Formato de ID inválido. Debe ser un UUID válido.\n\n' +
+    '400.4 - Método de pago inválido. No puede cambiar el método de pago registrado. Por ejemplo: ' +
+    '`Método de pago inválido. Esta cuenta tiene registrado platformId: \'bank\' y method: \'bank\', no puede cambiarse a \'pix\' / \'pix\'.`',
+})
+@ApiNotFoundResponse({
+  description: '404 - Cuenta receptora con el ID especificado no encontrada.',
+})
+@ApiUnauthorizedResponse({
+  description: '401 - No autorizado. Token no válido o no enviado.',
+})
+@ApiForbiddenResponse({
+  description: '403 - Autorización no permitida, solo para usuarios.',
+})
+@ApiParam({ name: 'id', description: 'ID de la cuenta receptora a actualizar (UUID v4)' })
+@Patch('/receiver/:id')
+async updateReceiverAccount(
   @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   @Body() updateReceiverDto: UpdateReceiverFinancialAccountDto,
-  ) {
+) {
   return this.financialAccountsService.updateReceiver(id, updateReceiverDto);
 }
+
 
   @ApiOperation({ summary: 'Eliminar una cuenta financiera por ID' })
   @ApiParam({ name: 'id', description: 'ID de la cuenta financiera a eliminar' })

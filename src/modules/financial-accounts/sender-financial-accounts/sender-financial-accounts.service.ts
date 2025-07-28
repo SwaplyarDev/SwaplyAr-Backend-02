@@ -41,6 +41,13 @@ export class SenderFinancialAccountsService {
     return await this.senderRepository.findOne({ where: { id } });
   }
 
+  async findById(id: string) {
+  return this.senderRepository.findOne({
+    where: { id },
+    relations: ['paymentMethod'], // si estás usando relaciones
+  });
+}
+
 
   async update(id: string, dto: UpdateSenderFinancialAccountDto) {
   const senderAccount = await this.senderRepository.findOne({ where: { id }, relations: ['paymentMethod'] });

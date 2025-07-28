@@ -39,6 +39,13 @@ export class ReceiverFinancialAccountsService {
     return await this.receiverRepository.findOne({ where: { id } }); // lo guarda en la tabla financial accounts
   }
 
+  async findById(id: string) {
+  return this.receiverRepository.findOne({
+    where: { id },
+    relations: ['paymentMethod'], // si estás usando relaciones
+  });
+}
+
   async update(id: string, dto: UpdateReceiverFinancialAccountDto) {
     const senderAccount = await this.receiverRepository.findOne({ where: { id }, relations: ['paymentMethod'] });
   

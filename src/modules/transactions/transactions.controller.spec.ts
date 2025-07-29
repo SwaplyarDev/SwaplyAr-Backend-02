@@ -230,4 +230,39 @@ describe('TransactionsController', () => {
       expect(result).toEqual(mockResponse);
     },
   );
+
+  //obtener todas las transacciones
+  it('should return all transactions', async () => {
+    const mockTransactions = [
+      { id: '1', countryTransaction: 'Argentina' },
+      { id: '2', countryTransaction: 'Brasil' },
+    ];
+
+    mockTransactionsService.findAll.mockResolvedValue(mockTransactions);
+
+    const result = await controller.findAll();
+
+    expect(result).toEqual(mockTransactions);
+    expect(mockTransactionsService.findAll).toHaveBeenCalled();
+  });
+  // obtiene transacción por ID y email de usuario
+  it('should return transaction by ID and user email', async () => {
+    const transactionId = 'transaction-123';
+    const mockUser = { email: 'test@example.com' };
+    const mockTransaction = { id: transactionId, createdBy: mockUser.email };
+
+    mockTransactionsService.getTransactionByEmail.mockResolvedValue(
+      mockTransaction,
+    );
+
+    const result = await controller.getTransactionByEmail(transactionId, {
+      user: mockUser,
+    });
+
+    expect(mockTransactionsService.getTransactionByEmail).toHaveBeenCalledWith(
+      transactionId,
+      mockUser.email,
+    );
+    expect(result).toEqual(mockTransaction);
+  });
 });

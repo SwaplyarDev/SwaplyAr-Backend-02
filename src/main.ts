@@ -1,10 +1,10 @@
-// /src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@app/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { ConfigService } from '@nestjs/config';
+import { Response, Request } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -64,7 +64,12 @@ async function bootstrap() {
     SwaggerModule.setup(apiPrefix, app, document);
   }
 
-  // 7. Lectura del puerto y host según entorno
+  // 7. Endpoint de health check básico
+  app.getHttpAdapter().get('/health', (req: Request, res: Response) => {
+    res.status(200).send('OK');
+  });
+
+  // 8. Puerto y host según entorno
   const port = parseInt(configService.get<string>('PORT', '3001'), 10);
   const host = nodeEnv === 'production' ? '0.0.0.0' : 'localhost';
 

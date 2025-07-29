@@ -13,6 +13,9 @@ import {
   BadRequestException,
   Query,
   ParseUUIDPipe,
+  Put,
+  Delete,
+  NotFoundException,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import {
@@ -38,6 +41,7 @@ import { VerificationStatus } from '../entities/user-verification.entity';
 import { memoryStorage } from 'multer';
 import { UserVerificationService } from './user-verification.service';
 import { GetVerificationsQueryDto } from '@users/dto/create-user-verification.dto';
+import { VerificationFilesInterceptor } from '@users/interceptors/verification-files.interceptor';
 
 @ApiTags('User Verification')
 @Controller('verification')
@@ -46,129 +50,98 @@ import { GetVerificationsQueryDto } from '@users/dto/create-user-verification.dt
 export class UserVerificationController {
   constructor(private readonly verificationService: UserVerificationService) {}
 
-  //TODO : FALTA PUT (verification/upload), FALTA GET ( verification/user-validation) ,PUT (verification/verification-status),
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
-  @Post('upload')
-  @ApiOperation({
-    summary: 'Subir documentos para verificación',
-    description:
-      'Permite a un usuario subir las imágenes necesarias para su verificación de identidad.',
-  })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['document_front', 'document_back', 'selfie_image'],
-      properties: {
-        document_front: {
-          type: 'string',
-          format: 'binary',
-          description:
-            'Imagen del frente del documento de identidad (jpg, jpeg, png)',
-        },
-        document_back: {
-          type: 'string',
-          format: 'binary',
-          description:
-            'Imagen del reverso del documento de identidad (jpg, jpeg, png)',
-        },
-        selfie_image: {
-          type: 'string',
-          format: 'binary',
-          description: 'Selfie sosteniendo el documento (jpg, jpeg, png)',
-        },
+@UseGuards(RolesGuard)
+@Roles('user')
+@Post('upload')
+@ApiOperation({
+  summary: 'Subir documentos para verificación',
+  description: 'Permite a un usuario subir las imágenes necesarias para su verificación de identidad.',
+})
+@ApiConsumes('multipart/form-data')
+@ApiBody({
+  schema: {
+    type: 'object',
+    required: ['document_front', 'document_back', 'selfie_image'],
+    properties: {
+      document_front: {
+        type: 'string',
+        format: 'binary',
+        description: 'Imagen del frente del documento de identidad (jpg, jpeg, png)',
+      },
+      document_back: {
+        type: 'string',
+        format: 'binary',
+        description: 'Imagen del reverso del documento de identidad (jpg, jpeg, png)',
+      },
+      selfie_image: {
+        type: 'string',
+        format: 'binary',
+        description: 'Selfie sosteniendo el documento (jpg, jpeg, png)',
       },
     },
-  })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Documentos subidos exitosamente',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: {
-          type: 'string',
-          example:
-            'Imágenes de verificación subidas correctamente. Su verificación está pendiente de revisión.',
-        },
-        data: {
-          type: 'object',
-          properties: {
-            verification_id: { type: 'string', example: 'abc123' },
-            status: { type: 'string', example: 'pending' },
-          },
-        },
+  },
+})
+@ApiResponse({
+  status: HttpStatus.CREATED,
+  description: 'Documentos subidos exitosamente',
+  schema: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: {
+        type: 'string',
+        example: 'Imágenes de verificación subidas correctamente. Su verificación está pendiente de revisión.',
       },
-    },
-  })
-  @ApiNotFoundResponse({ description: 'Usuario no encontrado.',})
-  @ApiConflictResponse({ description:'Ya existe una solicitud de verificación pendiente para este usuario.',})
-  @ApiUnauthorizedResponse({ description: 'Autorización no permitida, solo para usuarios' })
-  @ApiForbiddenResponse({ description: 'No autorizado. Token no válido o no enviado.' })
-  @ApiBadRequestResponse({
-  description: 'Faltan imágenes o Archivo inválido: solo se permiten imágenes en formato jpg, jpeg o png.',
-  })
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'document_front', maxCount: 1 },
-        { name: 'document_back', maxCount: 1 },
-        { name: 'selfie_image', maxCount: 1 },
-      ],
-      {
-        storage: memoryStorage(),
-        fileFilter: (req, file, callback) => {
-          if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-            return callback(
-              new BadRequestException(
-                'Solo se permiten archivos de imagen (jpg, jpeg, png)',
-              ),
-              false,
-            );
-          }
-          callback(null, true);
-        },
-        limits: {
-          fileSize: 5 * 1024 * 1024, // 5MB
-        },
-      },
-    ),
-  )
-  async uploadVerification(
-    @Request() req,
-    @UploadedFiles()
-    files: {
-      document_front?: Express.Multer.File[];
-      document_back?: Express.Multer.File[];
-      selfie_image?: Express.Multer.File[];
-    },
-  ) {
-    const userId = req.user.id;
-    const verification = await this.verificationService.create(userId, files);
-
-    return {
-      success: true,
-      message:
-        'Imágenes de verificación subidas correctamente. Su verificación está pendiente de revisión.',
       data: {
-        verification_id: verification.verification_id,
-        status: verification.verification_status,
+        type: 'object',
+        properties: {
+          verification_id: { type: 'string', example: 'abc123' },
+          status: { type: 'string', example: 'pending' },
+        },
       },
-    };
-  }
+    },
+  },
+})
+@ApiNotFoundResponse({ description: 'Usuario no encontrado.' })
+@ApiConflictResponse({ description: 'Ya existe una solicitud de verificación pendiente para este usuario.' })
+@ApiUnauthorizedResponse({ description: 'Autorización no permitida, solo para usuarios' })
+@ApiForbiddenResponse({ description: 'No autorizado. Token no válido o no enviado.' })
+@ApiBadRequestResponse({
+  description: 'Faltan imágenes o Archivo inválido: solo se permiten imágenes en formato jpg, jpeg o png.',
+})
+@UseInterceptors(VerificationFilesInterceptor) 
+async uploadVerification(
+  @Request() req,
+  @UploadedFiles()
+  files: {
+    document_front?: Express.Multer.File[];
+    document_back?: Express.Multer.File[];
+    selfie_image?: Express.Multer.File[];
+  },
+) {
+  const userId = req.user.id;
+  const verification = await this.verificationService.create(userId, files);
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
-  @Get('status')
-  @ApiOperation({
+  return {
+    success: true,
+    message: 'Imágenes de verificación subidas correctamente. Su verificación está pendiente de revisión.',
+    data: {
+      verification_id: verification.verification_id,
+      status: verification.verification_status,
+    },
+  };
+}
+
+
+@UseGuards(RolesGuard)
+@Roles('user')
+@Get('status')
+@ApiOperation({
   summary: 'Consultar estado de verificación',
   description:
     'Permite a un usuario consultar el estado actual de su verificación.',
-  })
-  @ApiResponse({
+})
+@ApiResponse({
   status: HttpStatus.OK,
   description: 'Estado de verificación obtenido correctamente',
   schema: {
@@ -185,13 +158,13 @@ export class UserVerificationController {
       },
     },
   },
-  })
-  @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
-  @ApiForbiddenResponse({ description: 'Autorización no permitida, solo para usuarios' })
-  @ApiNotFoundResponse({
+})
+@ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
+@ApiForbiddenResponse({ description: 'Autorización no permitida, solo para usuarios' })
+@ApiNotFoundResponse({
   description:
     'No se encontró verificación para este usuario',
-  })
+})
   async checkStatus(@Request() req) {
   const userId = req.user.id;
   const verification = await this.verificationService.findByUserId(userId);
@@ -207,8 +180,100 @@ export class UserVerificationController {
 }
 
 
+@UseGuards(RolesGuard)
+@Roles('user')
+@Put('reupload')
+@ApiOperation({
+  summary: 'Re-subir documentos de verificación',
+  description: 'Permite a un usuario volver a subir los documentos requeridos solo si la verificación está en estado REENVIAR DATOS.',
+})
+@ApiConsumes('multipart/form-data')
+@ApiBody({
+  schema: {
+    type: 'object',
+    required: ['document_front', 'document_back', 'selfie_image'],
+    properties: {
+      document_front: {
+        type: 'string',
+        format: 'binary',
+        description: 'Imagen del frente del documento de identidad (jpg, jpeg, png)',
+      },
+      document_back: {
+        type: 'string',
+        format: 'binary',
+        description: 'Imagen del reverso del documento de identidad (jpg, jpeg, png)',
+      },
+      selfie_image: {
+        type: 'string',
+        format: 'binary',
+        description: 'Selfie sosteniendo el documento (jpg, jpeg, png)',
+      },
+    },
+  },
+})
+@ApiOkResponse({
+  description: 'Documentos re-subidos exitosamente',
+  schema: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: {
+        type: 'string',
+        example: 'Imágenes de verificación re-subidas correctamente. Su verificación está nuevamente pendiente de revisión.',
+      },
+      data: {
+        type: 'object',
+        properties: {
+          verification_id: { type: 'string', example: 'abc123' },
+          status: { type: 'string', example: 'pending' },
+        },
+      },
+    },
+  },
+})
+@ApiNotFoundResponse({ description: 'No se encontró una verificación existente para este usuario.' })
+@ApiBadRequestResponse({
+  description: 'Solo es posible re-subir documentos si la verificación está en estado REENVIAR DATOS o faltan imágenes.',
+})
+@ApiUnauthorizedResponse({ description: 'Autorización no permitida, solo para usuarios' })
+@ApiForbiddenResponse({ description: 'No autorizado. Token no válido o no enviado.' })
+@UseInterceptors(VerificationFilesInterceptor)
+async reuploadVerification(
+  @Request() req,
+  @UploadedFiles()
+  files: {
+    document_front?: Express.Multer.File[];
+    document_back?: Express.Multer.File[];
+    selfie_image?: Express.Multer.File[];
+  },
+) {
+  // Validar que los tres archivos estén presentes
+  if (!files.document_front?.[0] || !files.document_back?.[0] || !files.selfie_image?.[0]) {
+    throw new BadRequestException(
+      'Se requieren tres imágenes: frente y reverso del documento, y selfie',
+    );
+  }
+
+  const userId = req.user.id;
+  const verification = await this.verificationService.reupload(userId, files);
+
+  return {
+    success: true,
+    message: 'Imágenes de verificación re-subidas correctamente. Su verificación está nuevamente pendiente de revisión.',
+    data: {
+      verification_id: verification.verification_id,
+      status: verification.verification_status,
+    },
+  };
+}
+
+
+
+
+
+
   @Get('admin/list')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @ApiOperation({
   summary: 'Listar verificaciones por estado',
@@ -234,76 +299,174 @@ export class UserVerificationController {
       success: { type: 'boolean', example: true },
       message: {
         type: 'string',
-        example:
-          'Verificaciones con el estado solicitado obtenidas correctamente',
+        example: 'Verificaciones con el estado solicitado obtenidas correctamente',
       },
-      count: { type: 'number', example: 2 },
+      count: { type: 'number', example: 3 },
       data: {
         type: 'array',
         items: {
           type: 'object',
           properties: {
-            verification_id: { type: 'string', example: 'uuid' },
-            users_id: { type: 'string', example: 'uuid' },
-            document_front: { type: 'string', example: 'https://...' },
-            document_back: { type: 'string', example: 'https://...' },
-            selfie_image: { type: 'string', example: 'https://...' },
+            verification_id: { type: 'string', example: 'a1729f98-9987-4799-93b1-79012c6ba885' },
+            users_id: { type: 'string', example: '6c2b180f-6ffe-4f0f-a275-c0a644b2eb50' },
             verification_status: {
               type: 'string',
               enum: ['pending', 'verified', 'rejected', 'resend-data'],
-              example: 'pending',
-            },
-            note_rejection: {
-              type: 'string',
-              nullable: true,
-              example: null,
-            },
-            verified_at: {
-              type: 'string',
-              format: 'date-time',
-              nullable: true,
-              example: null,
+              example: 'verified',
             },
             created_at: {
               type: 'string',
               format: 'date-time',
-              example: '2025-07-28T15:01:01.497Z',
+              example: '2025-07-28T15:49:56.108Z',
             },
-            updated_at: {
-              type: 'string',
-              format: 'date-time',
-              example: '2025-07-28T15:01:01.497Z',
+            user: {
+              type: 'object',
+              nullable: true,
+              properties: {
+                firstName: { type: 'string', example: 'Nahuel' },
+                email: { type: 'string', example: 'coronajonhatan@gmail.com' },
+              },
             },
           },
         },
       },
     },
   },
-  })
-
+})
   @ApiBadRequestResponse({
   description:
     'Parámetro inválido: el valor de "status" no es uno permitido. Debe ser uno de: pending, verified, rejected, resend-data',
   })
-  @ApiUnauthorizedResponse({ description: 'Autorización no permitida, solo para Administradores' })
-  @ApiForbiddenResponse({ description: 'No autorizado. Token no válido o no enviado.' })
-  async listPending(@Query() query: GetVerificationsQueryDto) {
-  const verifications =
-    await this.verificationService.findVerificationsByStatus(query.status);
+  @ApiUnauthorizedResponse({ description: ' No autorizado. Token no válido o no enviado' })
+  @ApiForbiddenResponse({ description: 'Autorización no permitida, solo para Administradores.' })
+  @Get('admin/list')
+async listPending(@Query() query: GetVerificationsQueryDto) {
+  const verifications = await this.verificationService.findVerificationsByStatus(query.status);
+
+  const data = verifications.map(v => ({
+    verification_id: v.verification_id,
+    users_id: v.users_id,
+    verification_status: v.verification_status,
+    created_at: v.created_at,
+    user: v.user && v.user.profile
+      ? {
+          firstName: v.user.profile.firstName,
+          email: v.user.profile.email,
+        }
+      : null,
+  }));
 
   return {
     success: true,
-    message: `Verificaciones${
-      query.status ? ` con estado ${query.status}` : ''
-    } obtenidas correctamente`,
-    count: verifications.length,
-    data: verifications,
+    message: `Verificaciones${query.status ? ` con estado ${query.status}` : ''} obtenidas correctamente`,
+    count: data.length,
+    data,
+  };
+
+}
+
+
+
+@UseGuards(RolesGuard)
+@Roles('admin')
+@ApiOperation({
+  summary: 'Obtener una verificación por ID',
+  description: 'Permite a los administradores obtener el detalle completo de una verificación por su ID.',
+})
+@ApiResponse({
+  status: HttpStatus.OK,
+  description: 'Verificación obtenida correctamente',
+  schema: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: { type: 'string', example: 'Verificación obtenida correctamente' },
+      data: {
+        type: 'object',
+        properties: {
+          verification_id: { type: 'string', example: 'a1729f98-9987-4799-93b1-79012c6ba885' },
+          users_id: { type: 'string', example: '6c2b180f-6ffe-4f0f-a275-c0a644b2eb50' },
+          document_front: { type: 'string', example: 'https://...' },
+          document_back: { type: 'string', example: 'https://...' },
+          selfie_image: { type: 'string', example: 'https://...' },
+          verification_status: {
+            type: 'string',
+            enum: ['pending', 'verified', 'rejected', 'resend-data'],
+            example: 'verified',
+          },
+          note_rejection: { type: 'string', nullable: true, example: 'Documento ilegible o dañado' },
+          verified_at: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+            example: '2025-07-28T15:58:23.252Z',
+          },
+          created_at: {
+            type: 'string',
+            format: 'date-time',
+            example: '2025-07-28T15:49:56.108Z',
+          },
+          updated_at: {
+            type: 'string',
+            format: 'date-time',
+            example: '2025-07-28T15:58:23.285Z',
+          },
+          user: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              'profile.name': { type: 'string', example: 'Nahuel Davila' },
+              'profile.email': { type: 'string', example: 'coronajonhatan@gmail.com' },
+              'profile.dni': { type: 'string', example: '12345678' },
+            },
+          },
+        },
+      },
+    },
+  },
+})
+@ApiNotFoundResponse({ description: 'Verificación no encontrada para el ID proporcionado' })
+@ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado' })
+@ApiForbiddenResponse({ description: 'Autorización no permitida, solo para administradores' })
+@Get('admin/:verificationId')
+async getVerificationById(@Param('verificationId') verificationId: string) {
+  const verification = await this.verificationService.findVerificationById(verificationId);
+
+  if (!verification) {
+    throw new NotFoundException(`Verification with id ${verificationId} not found`);
+  }
+
+  const profile = verification.user?.profile;
+
+  return {
+    success: true,
+    message: 'Verificación obtenida correctamente',
+    data: {
+      verification_id: verification.verification_id,
+      users_id: verification.users_id,
+      document_front: verification.document_front,
+      document_back: verification.document_back,
+      selfie_image: verification.selfie_image,
+      verification_status: verification.verification_status,
+      note_rejection: verification.note_rejection,
+      verified_at: verification.verified_at,
+      created_at: verification.created_at,
+      updated_at: verification.updated_at,
+      user: profile
+        ? {
+            'name': `${profile.firstName} ${profile.lastName}`,
+            'email': profile.email,
+          }
+        : null,
+    },
   };
 }
 
 
+
+
 @Patch('admin/:verificationId')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Roles('admin')
 @ApiOperation({
   summary: 'Actualizar estado de verificación',
@@ -357,10 +520,10 @@ export class UserVerificationController {
   },
 })
 @ApiBadRequestResponse({
-  description: 'ID de verificación inválido: debe ser un UUID v4 válido',
+  description: 'Estado Invalido: Valores permitidos pending, verified, rejected, resend-data o ID de verificación inválido: debe ser un UUID v4 válido',
 })
-@ApiUnauthorizedResponse({ description: 'Autorización no permitida, solo para Administradores' })
-@ApiForbiddenResponse({ description: 'No autorizado. Token no válido o no enviado.' })
+@ApiUnauthorizedResponse({ description: ' No autorizado. Token no válido o no enviado' })
+@ApiForbiddenResponse({ description: 'Autorización no permitida, solo para Administradores.' })
 @ApiNotFoundResponse({ description: 'Verificación no encontrada' })
 @ApiConflictResponse({ description: 'Esta verificación ya ha sido procesada' })
 async updateStatus(
@@ -395,5 +558,51 @@ async updateStatus(
     },
   };
 }
+
+
+@Delete('admin/:verificationId')
+@UseGuards(RolesGuard)
+@Roles('admin')
+@ApiOperation({
+  summary: 'Eliminar una verificación',
+  description: 'Permite a los administradores eliminar una verificación existente por su ID.',
+})
+@ApiParam({
+  name: 'verificationId',
+  description: 'ID de la verificación a eliminar (UUID)',
+  type: 'string',
+})
+@ApiUnauthorizedResponse({ description: ' No autorizado. Token no válido o no enviado' })
+@ApiForbiddenResponse({ description: 'Autorización no permitida, solo para Administradores.' })
+@ApiOkResponse({
+  description: 'Verificación eliminada correctamente',
+  schema: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: { type: 'string', example: 'Verificación eliminada correctamente' },
+    },
+  },
+})
+@ApiNotFoundResponse({
+  description: 'No se encontró la verificación con el ID especificado',
+})
+@ApiBadRequestResponse({
+  description: 'ID de verificación inválido: debe ser un UUID v4 válido',
+})
+async deleteVerification(
+  @Param('verificationId', new ParseUUIDPipe({ version: '4' })) verificationId: string,
+) {
+  await this.verificationService.deleteVerification(verificationId);
+
+  return {
+    success: true,
+    message: 'Verificación eliminada correctamente',
+  };
+}
+
+
+
+
 
 }

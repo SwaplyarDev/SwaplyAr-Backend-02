@@ -17,7 +17,6 @@ import {
   Delete,
   NotFoundException,
 } from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
@@ -38,10 +37,11 @@ import { JwtAuthGuard } from '../../../common/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { VerificationStatus } from '../entities/user-verification.entity';
-import { memoryStorage } from 'multer';
 import { UserVerificationService } from './user-verification.service';
 import { GetVerificationsQueryDto } from '@users/dto/create-user-verification.dto';
 import { VerificationFilesInterceptor } from '@users/interceptors/verification-files.interceptor';
+import { UploadFilesDto } from './dto/verification-schema.dto';
+import { GetVerificationResponseDto } from './dto/verification-response.dto';
 
 @ApiTags('User Verification')
 @Controller('verification')
@@ -58,29 +58,7 @@ export class UserVerificationController {
   description: 'Permite a un usuario subir las imágenes necesarias para su verificación de identidad.',
 })
 @ApiConsumes('multipart/form-data')
-@ApiBody({
-  schema: {
-    type: 'object',
-    required: ['document_front', 'document_back', 'selfie_image'],
-    properties: {
-      document_front: {
-        type: 'string',
-        format: 'binary',
-        description: 'Imagen del frente del documento de identidad (jpg, jpeg, png)',
-      },
-      document_back: {
-        type: 'string',
-        format: 'binary',
-        description: 'Imagen del reverso del documento de identidad (jpg, jpeg, png)',
-      },
-      selfie_image: {
-        type: 'string',
-        format: 'binary',
-        description: 'Selfie sosteniendo el documento (jpg, jpeg, png)',
-      },
-    },
-  },
-})
+@ApiBody({type: UploadFilesDto})
 @ApiResponse({
   status: HttpStatus.CREATED,
   description: 'Documentos subidos exitosamente',
@@ -188,29 +166,7 @@ async uploadVerification(
   description: 'Permite a un usuario volver a subir los documentos requeridos solo si la verificación está en estado REENVIAR DATOS.',
 })
 @ApiConsumes('multipart/form-data')
-@ApiBody({
-  schema: {
-    type: 'object',
-    required: ['document_front', 'document_back', 'selfie_image'],
-    properties: {
-      document_front: {
-        type: 'string',
-        format: 'binary',
-        description: 'Imagen del frente del documento de identidad (jpg, jpeg, png)',
-      },
-      document_back: {
-        type: 'string',
-        format: 'binary',
-        description: 'Imagen del reverso del documento de identidad (jpg, jpeg, png)',
-      },
-      selfie_image: {
-        type: 'string',
-        format: 'binary',
-        description: 'Selfie sosteniendo el documento (jpg, jpeg, png)',
-      },
-    },
-  },
-})
+@ApiBody({type: UploadFilesDto})
 @ApiOkResponse({
   description: 'Documentos re-subidos exitosamente',
   schema: {
@@ -373,58 +329,7 @@ async listPending(@Query() query: GetVerificationsQueryDto) {
   summary: 'Obtener una verificación por ID',
   description: 'Permite a los administradores obtener el detalle completo de una verificación por su ID.',
 })
-@ApiResponse({
-  status: HttpStatus.OK,
-  description: 'Verificación obtenida correctamente',
-  schema: {
-    type: 'object',
-    properties: {
-      success: { type: 'boolean', example: true },
-      message: { type: 'string', example: 'Verificación obtenida correctamente' },
-      data: {
-        type: 'object',
-        properties: {
-          verification_id: { type: 'string', example: 'a1729f98-9987-4799-93b1-79012c6ba885' },
-          users_id: { type: 'string', example: '6c2b180f-6ffe-4f0f-a275-c0a644b2eb50' },
-          document_front: { type: 'string', example: 'https://...' },
-          document_back: { type: 'string', example: 'https://...' },
-          selfie_image: { type: 'string', example: 'https://...' },
-          verification_status: {
-            type: 'string',
-            enum: ['pending', 'verified', 'rejected', 'resend-data'],
-            example: 'verified',
-          },
-          note_rejection: { type: 'string', nullable: true, example: 'Documento ilegible o dañado' },
-          verified_at: {
-            type: 'string',
-            format: 'date-time',
-            nullable: true,
-            example: '2025-07-28T15:58:23.252Z',
-          },
-          created_at: {
-            type: 'string',
-            format: 'date-time',
-            example: '2025-07-28T15:49:56.108Z',
-          },
-          updated_at: {
-            type: 'string',
-            format: 'date-time',
-            example: '2025-07-28T15:58:23.285Z',
-          },
-          user: {
-            type: 'object',
-            nullable: true,
-            properties: {
-              'profile.name': { type: 'string', example: 'Nahuel Davila' },
-              'profile.email': { type: 'string', example: 'coronajonhatan@gmail.com' },
-              'profile.dni': { type: 'string', example: '12345678' },
-            },
-          },
-        },
-      },
-    },
-  },
-})
+@ApiResponse({ type: GetVerificationResponseDto })
 @ApiNotFoundResponse({ description: 'Verificación no encontrada para el ID proporcionado' })
 @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado' })
 @ApiForbiddenResponse({ description: 'Autorización no permitida, solo para administradores' })
@@ -600,9 +505,5 @@ async deleteVerification(
     message: 'Verificación eliminada correctamente',
   };
 }
-
-
-
-
 
 }

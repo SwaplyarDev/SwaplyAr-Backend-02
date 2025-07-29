@@ -3,29 +3,37 @@ import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial
 import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
 import { Amount } from '@transactions/amounts/entities/amount.entity';
 import { TransactionStatus } from 'src/enum/trasanction-status.enum';
+
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
   OneToOne,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  OneToMany,
+  BeforeInsert,
+  PrimaryColumn,
 } from 'typeorm';
 
+import { customAlphabet } from 'nanoid';
 import { Note } from '@transactions/notes/entities/note.entity';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';
 import { UserDiscount } from '@users/entities/user-discount.entity';
 
+const nanoidCustom = customAlphabet(
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+  8,
+);
+
 @Entity('transactions')
 export class Transaction {
-  @PrimaryGeneratedColumn('uuid', { name: 'transaction_id' })
+  @PrimaryColumn({ name: 'transaction_id', type: 'varchar', length: 8 })
   id: string;
 
-  // @Column({ name: 'payments_id' })
-  // paymentsId: string; //para el recibo proof of payments
+  @BeforeInsert()
+  generateId() {
+    this.id = nanoidCustom(); // genera un string de 8 caracteres sin "-" ni "_"
+  }
 
   @Column({ name: 'country_transaction' })
   countryTransaction: string;

@@ -38,10 +38,9 @@ import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { VerificationStatus } from '../entities/user-verification.entity';
 import { UserVerificationService } from './user-verification.service';
-import { GetVerificationsQueryDto } from '@users/dto/create-user-verification.dto';
+import { CreateUserVerificationDto, GetVerificationsQueryDto, UploadFilesDto } from '@users/dto/create-user-verification.dto';
 import { VerificationFilesInterceptor } from '@users/interceptors/verification-files.interceptor';
-import { UploadFilesDto } from './dto/verification-schema.dto';
-import { GetVerificationResponseDto } from './dto/verification-response.dto';
+import { GetVerificationResponseDto } from '@users/dto/verification-response.dto';
 
 @ApiTags('User Verification')
 @Controller('verification')

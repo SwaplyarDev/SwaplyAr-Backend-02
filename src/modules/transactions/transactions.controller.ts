@@ -194,6 +194,7 @@ export class TransactionsController {
       ],
     },
   })
+  // buscar todos
   @Get()
   findAll() {
     return this.transactionsService.findAll();

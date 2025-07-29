@@ -1,4 +1,11 @@
-import { IsEnum, IsObject, ValidateNested } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsObject,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum AccountType {
@@ -12,11 +19,28 @@ export enum AccountType {
 }
 
 export class UserAccValuesDto {
+  @IsString()
+  @IsNotEmpty()
   first_name: string;
+
+  @IsString()
+  @IsNotEmpty()
   last_name: string;
+
+  @IsString()
+  @IsNotEmpty()
   identification: string;
+
+  @IsString()
+  @IsNotEmpty()
   currency: string;
+
+  @IsString()
+  @IsNotEmpty()
   account_name: string;
+
+  @IsNumber()
+  @Type(() => Number)
   account_type: number;
 }
 

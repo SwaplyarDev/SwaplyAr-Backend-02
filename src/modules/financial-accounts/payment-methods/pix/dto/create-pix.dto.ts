@@ -6,17 +6,17 @@ export class CreatePixDto {
   @IsString()
   @IsNotEmpty()
   virtualBankId: string;
-  
+
   @ApiProperty({ description: 'Clave del pix', example: '123' })
   @IsString()
   @IsNotEmpty()
   pixKey: string;
-  
+
   @ApiProperty({ description: 'Valor del pix', example: '123' })
   @IsString()
   @IsNotEmpty()
   pixValue: string;
-  
+
   @ApiProperty({ description: 'CPF', example: '123' })
   @IsString()
   @IsNotEmpty()

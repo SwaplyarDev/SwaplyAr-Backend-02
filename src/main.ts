@@ -23,7 +23,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       exceptionFactory: (errors) => {
-        console.log('❌ Errores de validación:', errors); // <-- DEBUG ACÁ
+        console.log('❌ Errores de validación:', errors);
         return new Error(`Errores de validación:`);
       },
     }),
@@ -51,24 +51,25 @@ async function bootstrap() {
         : callback(new Error('CORS origin no permitido'), false),
   });
 
-  // 6. Documentación Swagger en la misma ruta que el API
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('SwaplyArApi')
-    .setDescription('Documentación automática de la API')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup(apiPrefix, app, document);
+  // 6. Documentación Swagger (solo en desarrollo o staging)
+  const nodeEnv = configService.get<string>('NODE_ENV', 'development');
+  if (nodeEnv !== 'production') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('SwaplyArApi')
+      .setDescription('Documentación automática de la API')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup(apiPrefix, app, document);
+  }
 
-  // 7. Lectura del puerto de entorno, con puerto por defecto
+  // 7. Lectura del puerto y host según entorno
   const port = parseInt(configService.get<string>('PORT', '3001'), 10);
-  const host = '0.0.0.0'; // necesario para que Render exponga tu app correctamente :contentReference[oaicite:1]{index=1}
+  const host = nodeEnv === 'production' ? '0.0.0.0' : 'localhost';
 
   await app.listen(port, host);
-  console.log(
-    `🚀 Server corriendo en http://${host}:${port}/${apiPrefix}`,
-  );
+  console.log(`🚀 [${nodeEnv}] Server corriendo en http://${host}:${port}/${apiPrefix}`);
 }
 
 void bootstrap();

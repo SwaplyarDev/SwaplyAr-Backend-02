@@ -23,9 +23,9 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@nestjs/cli": "^11.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
-    "@nestjs/cli": "^11.0.0",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/mapped-types": "*",
@@ -40,6 +40,7 @@
     "handlebars": "^4.7.8",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "nanoid": "^5.1.5",
     "nodemailer": "^7.0.3",
     "otp-generator": "^4.0.1",
     "passport": "^0.7.0",
@@ -81,5 +82,4 @@
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   }
-  
 }

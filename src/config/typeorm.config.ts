@@ -1,3 +1,4 @@
+// /src/config/database.config.ts
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
@@ -15,7 +16,7 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
       ? {
           rejectUnauthorized: false,
         }
-      : false,
+      : true,
     synchronize: !isProduction,
     entities: ['dist/**/*.entity.{ts,js}'],
   };

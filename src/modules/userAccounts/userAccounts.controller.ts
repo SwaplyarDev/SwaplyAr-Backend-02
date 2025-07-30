@@ -102,7 +102,7 @@ export class AccountsController {
       userId,
     );
 
-    return { message: 'bank created', bank: newBank };
+    return { message: 'Banco creado correctamente', bank: newBank };
   }
 
   //no lelva documentacion de swagger

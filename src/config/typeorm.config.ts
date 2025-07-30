@@ -1,4 +1,3 @@
-// /src/config/database.config.ts
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
@@ -13,10 +12,8 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
     type: 'postgres',
     url: process.env.DATABASE_URL,
     ssl: isProduction
-      ? {
-          rejectUnauthorized: false,
-        }
-      : true,
+      ? { rejectUnauthorized: false }  // SSL activado en producción
+      : false,                        // SSL desactivado en desarrollo
     synchronize: !isProduction,
     entities: ['dist/**/*.entity.{ts,js}'],
   };

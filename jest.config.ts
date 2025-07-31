@@ -21,6 +21,7 @@ module.exports = {
   '^@transactions/(.*)$': '<rootDir>/src/modules/transactions/$1',
   '^@mailer/(.*)$': '<rootDir>/src/modules/mailer/$1',
   '^@financial-accounts/(.*)$': '<rootDir>/src/modules/financial-accounts/$1',
+  '^@common/(.*)$': '<rootDir>/src/common/$1',
   '^src/(.*)$': '<rootDir>/src/$1',
 },
   moduleFileExtensions: ['ts', 'js', 'json'],

@@ -1,3 +1,4 @@
+// /src/app/app.module.ts
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -24,7 +25,6 @@ import { QuestionsModule } from '../modules/questions/questions.module';
 import { ContactModule } from 'src/modules/contacts/contacts.module';
 import { DiscountModule } from '@discounts/discounts.module';
 import { QualificationModule } from 'src/modules/qualifications/qualifications.module';
-
 
 @Module({
   imports: [

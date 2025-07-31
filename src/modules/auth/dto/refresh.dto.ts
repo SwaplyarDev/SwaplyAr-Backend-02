@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class RefreshDto {
   @ApiProperty({
-    description: 'ID del usuario cuyo refresh token vamos a usar',
-    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: 'Refresh token para renovar el access token',
+    example: 'jwt.refresh.token.aqui',
   })
-  @IsUUID()
-  userId: string;
+  @IsString()
+  refresh_token: string;
 }

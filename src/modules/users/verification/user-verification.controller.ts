@@ -306,7 +306,9 @@ async listPending(@Query() query: GetVerificationsQueryDto) {
     user: v.user && v.user.profile
       ? {
           firstName: v.user.profile.firstName,
+          lastName: v.user.profile.lastName,
           email: v.user.profile.email,
+          phone: v.user.profile.phone,
         }
       : null,
   }));
@@ -358,8 +360,12 @@ async getVerificationById(@Param('verificationId') verificationId: string) {
       updated_at: verification.updated_at,
       user: profile
         ? {
-            'name': `${profile.firstName} ${profile.lastName}`,
+            'firstName': profile.firstName,
+            'lastName':profile.lastName,
             'email': profile.email,
+            'phone': profile.phone,
+            'identification': profile.identification,  
+            'birthdate': profile.birthday
           }
         : null,
     },

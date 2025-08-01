@@ -279,7 +279,9 @@ async reuploadVerification(
               nullable: true,
               properties: {
                 firstName: { type: 'string', example: 'Nahuel' },
+                lasttName: { type: 'string', example: 'corona' },
                 email: { type: 'string', example: 'coronajonhatan@gmail.com' },
+                phone: { type: 'string', example: '+5491123456789' },
               },
             },
           },

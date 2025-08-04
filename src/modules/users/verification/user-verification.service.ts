@@ -111,19 +111,24 @@ export class UserVerificationService {
     return verification;
   }
 
-  async findVerificationsByStatus(
+async findVerificationsByStatus(
   status?: VerificationStatus,
-): Promise<UserVerification[]> {
-  const whereCondition = status
-    ? { verification_status: status }
-    : {}; // si no se pasa, trae todas
+  page: number = 1,
+  limit: number = 10,
+): Promise<{ data: UserVerification[]; total: number }> {
+  const whereCondition = status ? { verification_status: status } : {};
 
-  return this.userVerificationRepository.find({
+  const [data, total] = await this.userVerificationRepository.findAndCount({
     where: whereCondition,
-     relations: ['user', 'user.profile'], // Aquí asumes que en la entidad UserVerification tienes: @ManyToOne(() => User, user => user.verifications) user;
+    relations: ['user', 'user.profile'],
     order: { created_at: 'DESC' },
+    skip: (page - 1) * limit,
+    take: limit,
   });
+
+  return { data, total };
 }
+
 
 async findVerificationById(verificationId: string): Promise<UserVerification | null> {
   return this.userVerificationRepository.findOne({

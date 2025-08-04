@@ -1,6 +1,7 @@
-import { IsString, IsOptional, IsEnum, IsNotEmpty } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsOptional, IsEnum, IsNotEmpty, IsInt, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { VerificationStatus } from '@users/entities/user-verification.entity';
+import { Type } from 'class-transformer';
 
 
 
@@ -55,4 +56,18 @@ export class GetVerificationsQueryDto {
       'El status debe ser uno de: pending, verified, rejected, resend-data',
   })
   status?: VerificationStatus;
+
+  @ApiPropertyOptional({ description: 'Número de página', example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @ApiPropertyOptional({ description: 'Cantidad de resultados por página', example: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit?: number = 10;
 }

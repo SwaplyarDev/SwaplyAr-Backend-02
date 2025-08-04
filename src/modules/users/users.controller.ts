@@ -94,7 +94,7 @@ export class UsersController {
   // EDITAR INFORMACION DE USUARIO
   @Patch('/edit/:userId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
+  /*   @Roles('admin') */
   @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ summary: 'Editar información del usuario' })

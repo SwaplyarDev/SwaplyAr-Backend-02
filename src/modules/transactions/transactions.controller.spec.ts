@@ -13,7 +13,7 @@ describe('TransactionsController (integración real)', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TransactionsController],
-      providers: [TransactionsService], // ¡sin mocks!
+      providers: [TransactionsService],
     }).compile();
 
     controller = module.get<TransactionsController>(TransactionsController);

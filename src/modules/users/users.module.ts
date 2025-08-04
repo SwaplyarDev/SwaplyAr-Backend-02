@@ -10,12 +10,14 @@ import { UserCategory } from './entities/user-category.entity';
 
 import { OtpModule } from '@otp/otp.module';
 import { DiscountModule } from '@discounts/discounts.module';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, UserProfile, UserSocials, UserCategory]),
     OtpModule,
     DiscountModule,
+    ProfileModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

@@ -4,6 +4,14 @@ import {
   UseGuards,
   UseInterceptors,
   ClassSerializerInterceptor,
+  Query,
+  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
+  Put,
+  Req,
+  Body,
+  Delete,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
@@ -16,12 +24,21 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { User } from '@users/entities/user.entity';
+import { UserProfile } from '@users/entities/user-profile.entity';
+
+import { UpdateEmailDto } from './dto/email.profile.dto';
+import { UpdatePhoneDto } from './dto/phone.profile.dto';
+import { UpdateUserLocationDto } from './dto/location.profile.dto';
 
 @ApiTags('Perfiles')
 @Controller('users/profiles')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
-
+  /**
+   * GET /profile/
+   * Obtiene todos los perfiles de usuarios existentes.
+   * Solo rol 'admin'o 'super_admin' pueden solicitar ver todos los perfiles de usuarios existentes.
+   */
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'super_admin')
@@ -35,5 +52,183 @@ export class ProfileController {
   })
   async findAll() {
     return this.profileService.findAll();
+  }
+  /**
+   * GET /users/profile/my-profile
+   * Obtiene el perfil del usuario autenticado mediante el JWT.
+   * Requiere autenticación.
+   */
+  @Get('/my-profile')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener perfil de usuario por ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil de usuario',
+    type: User,
+  })
+  async getUserProfileByIdController(
+    @Query('userId') userId: string,
+  ): Promise<UserProfile> {
+    if (!userId || userId.trim() === '') {
+      throw new BadRequestException('El ID del usuario es requerido');
+    }
+
+    try {
+      const profile = await this.profileService.findById(userId);
+      if (!profile) {
+        throw new NotFoundException(`User with ID ${userId} not found`);
+      }
+      return profile;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  /**
+   * GET /profile/my-profile/email
+   * Obtiene el perfil de un usuario específico según su email.
+   * Requiere autenticación.
+   */
+  @Get('my-profile/email')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener perfil de usuario por email' })
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil de usuario',
+    type: UserProfile,
+  })
+  async getUserProfileByEmailController(
+    @Query('email') email: string,
+  ): Promise<UserProfile> {
+    if (!email || email.trim() === '') {
+      throw new BadRequestException('Email is required');
+    }
+    try {
+      const user = await this.profileService.findByEmail(email);
+      if (!user) {
+        throw new NotFoundException(`User with email ${email} not found`);
+      }
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  /**
+   * PUT /profile/my-profile/nickname
+   * Actualiza el apodo del perfil del usuario autenticado.
+   * Requiere autenticación.
+   */
+  /*   @Put('nickname')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar nickname del perfil autenticado' })
+  @ApiResponse({
+    status: 200,
+    description: 'Nickname actualizado correctamente',
+  })
+  async updateUserProfileNicknameController(
+    @Req() req,
+    @Body() updateNicknameDto: UpdateNicknameDto,
+  ) {
+    const userId = req.user.id;
+    if (
+      !updateNicknameDto.nickname ||
+      updateNicknameDto.nickname.trim() === ''
+    ) {
+      throw new BadRequestException('El nickname es requerido');
+    }
+
+    return this.profileService.updateNickname(
+      userId,
+      updateNicknameDto.nickname,
+    );
+  } */
+
+  /**
+   * UPDATE /profile/my-profile/email
+   * Actualiza el email del perfil del usuario autenticado.
+   * Requiere autenticación de un usuario.
+   */
+  @Put('my-profile/email')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar email del perfil autenticado' })
+  @ApiResponse({ status: 200, description: 'Email actualizado correctamente' })
+  async updateUserProfileEmailController(
+    @Req() req,
+    @Body() updateEmailDto: UpdateEmailDto,
+  ) {
+    const userId = req.user.id;
+
+    return this.profileService.updateEmail(userId, updateEmailDto.email);
+  }
+
+  /**
+   * UPDATE /profile/my-profile/phone
+   * Actualiza el numero telefónico del perfil del usuario autenticado.
+   * Requiere autenticación de un usuario.
+   */
+  @Put('my-profile/phone')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar email del perfil autenticado' })
+  @ApiResponse({ status: 200, description: 'Email actualizado correctamente' })
+  async updateUserProfilePhoneController(
+    @Req() req,
+    @Body() updatePhoneDto: UpdatePhoneDto,
+  ) {
+    const userId = req.user.id;
+    console.log(userId);
+
+    return this.profileService.updatePhone(userId, updatePhoneDto.phone);
+  }
+  /**
+   * UPDATE /profile/my-profile/location
+   * Actualiza el ID de la ubicacion de un usuario autenticado.
+   * Requiere autenticación de un usuario.
+   */
+  @Put('my-profile/location')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar ubicación del perfil autenticado' })
+  @ApiResponse({
+    status: 200,
+    description: 'Ubicación actualizada correctamente',
+  })
+  async updateUserProfileLocationController(
+    @Req() req: any,
+    @Body() updateUserLocationDto: UpdateUserLocationDto,
+  ) {
+    const userId = req.user.id;
+
+    return this.profileService.updateLocation(userId, updateUserLocationDto);
+  }
+
+  /**
+   * DELETE /
+   * Elimina el perfil de un usuario por su id.
+   */
+  @Delete('/')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Eliminar perfil' })
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil eliminado correctamente',
+  })
+  async deleteProfileController(@Req() req: any, @Query('id') id: string) {
+    return this.profileService.deleteUserById(id);
   }
 }

@@ -36,7 +36,7 @@ export class ProfileService {
 
     return perfiles.map((profile) => {
       const { role, createdAt, termsAccepted, isValidated } = profile.user;
-
+      //filtro
       return {
         id: profile.id,
         firstName: profile.firstName,

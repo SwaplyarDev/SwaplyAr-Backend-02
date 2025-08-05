@@ -1,9 +1,25 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryColumn,
+  BeforeInsert,
+} from 'typeorm';
+import { customAlphabet } from 'nanoid';
+
+const nanoidCustom = customAlphabet(
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+  10,
+);
 
 @Entity('abandoned_transactions')
 export class AbandonedTransaction {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({ type: 'varchar', length: 10 })
   abandoned_transaction_id: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.abandoned_transaction_id = nanoidCustom();
+  }
 
   @Column({ type: 'varchar' })
   first_name: string;

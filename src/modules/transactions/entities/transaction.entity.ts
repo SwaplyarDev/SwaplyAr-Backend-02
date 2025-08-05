@@ -20,19 +20,19 @@ import { Note } from '@transactions/notes/entities/note.entity';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';
 import { UserDiscount } from '@users/entities/user-discount.entity';
 
-const nanoidCustom = customAlphabet(
+export const nanoidCustom = customAlphabet(
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-  8,
+  10,
 );
 
 @Entity('transactions')
 export class Transaction {
-  @PrimaryColumn({ name: 'transaction_id', type: 'varchar', length: 8 })
+  @PrimaryColumn({ name: 'transaction_id', type: 'varchar', length: 10 })
   id: string;
 
   @BeforeInsert()
   generateId() {
-    this.id = nanoidCustom(); // genera un string de 8 caracteres sin "-" ni "_"
+    this.id = nanoidCustom(); // genera un string de 10 caracteres sin "-" ni "_"
   }
 
   @Column({ name: 'country_transaction' })

@@ -124,6 +124,55 @@ JWT_REFRESH_SECRET=
 
 ---
 
+Perfecto, te agrego la sección de documentación sobre **migraciones con TypeORM** para que quede coherente con el estilo actual del `README.md`. Esto incluye:
+
+* Cómo generar una migración
+* Cómo correr las migraciones
+* Recomendaciones
+
+---
+
+### 📦 README actualizado (agregando sección de migraciones)
+
+````md
+---
+
+## 🧬 Migraciones con TypeORM
+
+En producción, el esquema de la base de datos **no se sincroniza automáticamente**. En su lugar, se generan y ejecutan migraciones usando TypeORM.
+
+### 🔨 Generar una nueva migración
+
+Usá el siguiente comando para generar una migración a partir de los cambios en las entidades:
+
+```bash
+npm run migration:generate -- src/database/migrations/NombreDeLaMigracion
+````
+
+> Reemplazá `NombreDeLaMigracion` por un nombre descriptivo, como `InitSchema` o `AddUserStatusField`.
+
+Esto generará un archivo en `src/database/migrations/` con las instrucciones necesarias para actualizar la base de datos.
+
+### 🚀 Ejecutar migraciones
+
+Para aplicar las migraciones pendientes en la base de datos, ejecutá:
+
+```bash
+npm run migration:run
+```
+
+Este comando aplicará todas las migraciones aún no ejecutadas en la base de datos apuntada por `DATABASE_URL`.
+
+### ⏪ Revertir la última migración (opcional)
+
+Si necesitás deshacer la última migración ejecutada:
+
+```bash
+npm run migration:revert
+```
+
+
+
 ## 📝 Notas
 
 * El proyecto usa `ValidationPipe` global para validar DTOs.

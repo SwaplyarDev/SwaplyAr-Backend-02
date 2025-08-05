@@ -1,35 +1,71 @@
+
+
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { Question } from './entities/question.entity';
 
-@Injectable()
+@Injectable ()
+
 export class QuestionsService {
-  private questions: Question[] = [];
 
-  findAll(): Question[] {
-    return this.questions;
+  constructor (
+
+    @InjectRepository (Question)
+    private readonly questionRepository: Repository<Question>,
+
+  ) {}
+
+  findAll (): Promise <Question []> {
+
+    return this.questionRepository.find ();
+
   }
 
-  findById(id: string): Question | undefined {
-    return this.questions.find((question) => question.id === id);
+  async findAllPaginated (
+
+    page: number,
+    limit: number,
+
+  ): Promise <{ data: Question []; total: number; page: number; limit: number } > {
+
+    const [data, total] = await this.questionRepository.findAndCount ({
+
+    skip: (page - 1) * limit,
+    take: limit,
+
+    })
+    
+    return { data, total, page, limit };
+    
   }
 
-  create(createQuestionDto: CreateQuestionDto): Question {
-    const newQuestion: Question = {
-      id: (this.questions.length + 1).toString(),
-      ...createQuestionDto,
-    };
-    this.questions.push(newQuestion);
-    return newQuestion;
+  findById (id: string): Promise <Question | null> {
+
+    return this.questionRepository.findOne ({ where: {id}});
+
   }
 
-  delete(id: string): boolean {
-    const index = this.questions.findIndex((question) => question.id === id);
-    if (index > -1) {
-      this.questions.splice(index, 1);
-      return true;
-    }
-    return false;
+  async create (createQuestionDto: CreateQuestionDto): Promise <Question> {
+
+    const newQuestion = this.questionRepository.create (createQuestionDto);  
+    return this.questionRepository.save (newQuestion);
+  
   }
+
+  async delete (id: string): Promise <boolean> {
+
+    const index = await this.questionRepository.delete (id);
+    
+    return (index.affected ?? 0)  > 0;
+
+  }
+
 }
+
+ 
+
+
+

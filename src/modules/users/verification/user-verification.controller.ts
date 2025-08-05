@@ -90,10 +90,10 @@ export class UserVerificationController {
     description:
       'Ya existe una solicitud de verificación pendiente para este usuario.',
   })
-  @ApiUnauthorizedResponse({
+  @ApiForbiddenResponse({
     description: 'Autorización no permitida, solo para usuarios',
   })
-  @ApiForbiddenResponse({
+  @ApiUnauthorizedResponse({
     description: 'No autorizado. Token no válido o no enviado.',
   })
   @ApiBadRequestResponse({
@@ -211,10 +211,10 @@ export class UserVerificationController {
     description:
       'Solo es posible re-subir documentos si la verificación está en estado REENVIAR DATOS o faltan imágenes.',
   })
-  @ApiUnauthorizedResponse({
+  @ApiForbiddenResponse({
     description: 'Autorización no permitida, solo para usuarios',
   })
-  @ApiForbiddenResponse({
+  @ApiUnauthorizedResponse({
     description: 'No autorizado. Token no válido o no enviado.',
   })
   @UseInterceptors(VerificationFilesInterceptor)
@@ -270,9 +270,21 @@ export class UserVerificationController {
       enum: ['pending', 'verified', 'rejected', 'resend-data'],
     },
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Número de página (por defecto: 1)',
+    schema: { type: 'number', example: 1 },
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Cantidad de registros por página (por defecto: 10)',
+    schema: { type: 'number', example: 10 },
+  })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Lista de verificaciones filtradas por estado',
+    description: 'Lista de verificaciones filtradas y paginadas por estado',
     schema: {
       type: 'object',
       properties: {
@@ -282,7 +294,10 @@ export class UserVerificationController {
           example:
             'Verificaciones con el estado solicitado obtenidas correctamente',
         },
-        count: { type: 'number', example: 3 },
+        page: { type: 'number', example: 1 },
+        limit: { type: 'number', example: 10 },
+        total: { type: 'number', example: 20 },
+        totalPages: { type: 'number', example: 2 },
         data: {
           type: 'array',
           items: {
@@ -311,10 +326,12 @@ export class UserVerificationController {
                 nullable: true,
                 properties: {
                   firstName: { type: 'string', example: 'Nahuel' },
+                  lasttName: { type: 'string', example: 'corona' },
                   email: {
                     type: 'string',
                     example: 'coronajonhatan@gmail.com',
                   },
+                  phone: { type: 'string', example: '+5491123456789' },
                 },
               },
             },
@@ -335,8 +352,14 @@ export class UserVerificationController {
   })
   @Get('admin/list')
   async listPending(@Query() query: GetVerificationsQueryDto) {
-    const verifications =
-      await this.verificationService.findVerificationsByStatus(query.status);
+    const { status, page = 1, limit = 10 } = query;
+
+    const { data: verifications, total } =
+      await this.verificationService.findVerificationsByStatus(
+        status,
+        page,
+        limit,
+      );
 
     const data = verifications.map((v) => ({
       verification_id: v.verification_id,
@@ -347,15 +370,20 @@ export class UserVerificationController {
         v.user && v.user.profile
           ? {
               firstName: v.user.profile.firstName,
+              lastName: v.user.profile.lastName,
               email: v.user.profile.email,
+              phone: v.user.profile.phone,
             }
           : null,
     }));
 
     return {
       success: true,
-      message: `Verificaciones${query.status ? ` con estado ${query.status}` : ''} obtenidas correctamente`,
-      count: data.length,
+      message: `Verificaciones${status ? ` con estado ${status}` : ''} obtenidas correctamente`,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
       data,
     };
   }
@@ -406,8 +434,12 @@ export class UserVerificationController {
         updated_at: verification.updated_at,
         user: profile
           ? {
-              name: `${profile.firstName} ${profile.lastName}`,
+              firstName: profile.firstName,
+              lastName: profile.lastName,
               email: profile.email,
+              phone: profile.phone,
+              identification: profile.identification,
+              birthdate: profile.birthday,
             }
           : null,
       },

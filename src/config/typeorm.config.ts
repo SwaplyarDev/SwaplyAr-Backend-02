@@ -12,8 +12,8 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
     type: 'postgres',
     url: process.env.DATABASE_URL,
     ssl: isProduction
-      ? { rejectUnauthorized: false }  // SSL activado en producción
-      : false,                        // SSL desactivado en desarrollo
+      ? { rejectUnauthorized: false } // SSL activado en producción
+      : false, // SSL desactivado en desarrollo
     synchronize: !isProduction,
     entities: ['dist/**/*.entity.{ts,js}'],
   };

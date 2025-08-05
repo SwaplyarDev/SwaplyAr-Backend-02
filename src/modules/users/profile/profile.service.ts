@@ -25,12 +25,34 @@ export class ProfileService {
   ) {}
 
   // Obtener todos los usuarios registrado siendo ADMIN
-  async findAll(): Promise<UserProfile[]> {
-    const usuarios = await this.profileRepository.find({ relations: ['user'] });
-    if (!usuarios) {
+  async findAll(): Promise<any[]> {
+    const perfiles = await this.profileRepository.find({
+      relations: ['user'],
+    });
+
+    if (!perfiles || perfiles.length === 0) {
       throw new NotFoundException(`No se encontraron usuarios`);
     }
-    return usuarios;
+
+    return perfiles.map((profile) => {
+      const { role, createdAt, termsAccepted, isValidated } = profile.user;
+
+      return {
+        id: profile.id,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        email: profile.email,
+        phone: profile.phone,
+        gender: profile.gender,
+        profilePictureUrl: profile.profilePictureUrl,
+        user: {
+          role,
+          createdAt,
+          termsAccepted,
+          isValidated,
+        },
+      };
+    });
   }
 
   //Obtener un usuario mediante su ID ADMIN

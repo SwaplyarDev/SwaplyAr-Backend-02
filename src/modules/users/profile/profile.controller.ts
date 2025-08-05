@@ -12,6 +12,7 @@ import {
   Req,
   Body,
   Delete,
+  UploadedFile,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
@@ -30,6 +31,7 @@ import { UpdateEmailDto } from './dto/email.profile.dto';
 import { UpdatePhoneDto } from './dto/phone.profile.dto';
 import { UpdateUserLocationDto } from './dto/location.profile.dto';
 import { UpdateNicknameDto } from './dto/nickname.profile.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Perfiles')
 @Controller('users/profiles')
@@ -261,4 +263,34 @@ export class ProfileController {
       throw new InternalServerErrorException('Error al subir la imagen');
     }
   } */
+
+  @Put('my-profile/picture')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async updateProfilePicture(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: any, // esto debe venir después de @UploadedFile
+  ) {
+    const userId = req.user?.id;
+    console.log('este es el id ddddddddddddddd', userId);
+
+    if (!userId) {
+      throw new BadRequestException('Usuario no autenticado');
+    }
+
+    if (!file || !file.buffer) {
+      throw new BadRequestException('Se requiere una imagen en la solicitud');
+    }
+
+    try {
+      const result = await this.profileService.updateUserPictureById(
+        userId,
+        file,
+      );
+      return { message: 'Imagen actualizada correctamente', result };
+    } catch (error) {
+      console.log('error', error);
+      throw new InternalServerErrorException('Error al subir la imagen');
+    }
+  }
 }

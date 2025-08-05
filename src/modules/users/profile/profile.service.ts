@@ -10,6 +10,9 @@ import { Repository } from 'typeorm';
 import { UpdateUserLocationDto } from './dto/location.profile.dto';
 import { UserLocation } from '@users/entities/user-location.entity';
 
+import { FileUploadService } from 'src/modules/file-upload/file-upload.service';
+import { FileUploadDTO } from 'src/modules/file-upload/dto/file-upload.dto';
+
 @Injectable()
 export class ProfileService {
   constructor(
@@ -17,6 +20,8 @@ export class ProfileService {
     private readonly profileRepository: Repository<UserProfile>,
     @InjectRepository(UserLocation)
     private readonly locationRepository: Repository<UserLocation>,
+
+    private readonly fileUploadService: FileUploadService,
   ) {}
 
   // Obtener todos los usuarios registrado siendo ADMIN
@@ -169,23 +174,40 @@ export class ProfileService {
   }
 
   // acrtualizar imagen
-  /* async updateUserPictureById(userId: string, imgBuffer: Buffer) {
-    const fileName = `profilePicture_${userId}_${Date.now()}`;
-    const folder = 'SwaplyAr/user/profile';
-
-    try {
-      const cloudinaryUrl = await uploadImageUserProfile(
-        imgBuffer,
-        fileName,
-        folder,
-      );
-      this.logger.log(`Archivo subido a Cloudinary: ${cloudinaryUrl}`);
-
-      // Aquí podrías guardar la URL en la base de datos si querés
-      return { cloudinaryUrl };
-    } catch (error) {
-      this.logger.error('Error al subir archivo a Cloudinary:', error);
-      throw error;
+  async updateUserPictureById(userId: string, file: Express.Multer.File) {
+    const profile = await this.profileRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+    if (!profile) {
+      throw new NotFoundException(`Perfil con ID ${userId} no encontrado`);
     }
-  } */
+
+    const folder = 'profile-pictures';
+    const fileName = `profile_${userId}_${Date.now()}`;
+
+    // ✅ Convertimos Express.Multer.File a FileUploadDTO
+    const fileDTO: FileUploadDTO = {
+      fieldName: file.fieldname,
+      originalName: file.originalname,
+      mimeType: file.mimetype,
+      size: file.size,
+      buffer: file.buffer,
+    };
+
+    const imgUrl = await this.fileUploadService.uploadFile(
+      fileDTO,
+      folder,
+      fileName,
+    );
+    if (!imgUrl) {
+      throw new Error('Error al subir la imagen');
+    }
+
+    profile.profilePictureUrl = imgUrl;
+    await this.profileRepository.save(profile);
+    console.log('el perfi', profile);
+
+    return { imgUrl };
+  }
 }

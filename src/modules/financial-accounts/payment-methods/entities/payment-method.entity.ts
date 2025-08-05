@@ -2,19 +2,21 @@ import { Platform } from 'src/enum/platform.enum';
 import {
   Column,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   TableInheritance,
 } from 'typeorm';
 
 @Entity()
 @TableInheritance({ column: { type: 'varchar', name: 'method' } })
+@Index(['platformId', 'method'])
 export class PaymentMethod {
   @PrimaryGeneratedColumn('uuid', { name: 'payment_method_id' })
   id: string;
 
-  @Column({ name: 'platform_id', type: 'enum', enum: Platform })
-  platformId: Platform; // fk de la tabla platform falta hacer la relación
+  @Column({ name: 'platform', type: 'enum', enum: Platform })
+  platformId: Platform;
 
   @Column()
-  method: string; // Exponer el campo discriminador
+  method: string;
 }

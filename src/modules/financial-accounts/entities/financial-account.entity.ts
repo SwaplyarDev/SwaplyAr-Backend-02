@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -10,6 +11,7 @@ import { PaymentMethod } from '@financial-accounts/payment-methods/entities/paym
 
 @Entity('financial_accounts')
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
+@Index(['paymentMethod'])
 export class FinancialAccount {
   @PrimaryGeneratedColumn('uuid', { name: 'financial_account_id' })
   id: string;
@@ -20,7 +22,9 @@ export class FinancialAccount {
   @Column({ name: 'last_name' })
   lastName: string;
 
-  @OneToOne(() => PaymentMethod)
+  @OneToOne(() => PaymentMethod, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'payment_method_id' })
   paymentMethod: PaymentMethod;
 }
+
+

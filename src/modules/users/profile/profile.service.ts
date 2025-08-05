@@ -45,16 +45,19 @@ export class ProfileService {
     }
     return profile;
   }
-
-  /* async updateNickname(userId: string, nickname: string): Promise<UserProfile> {
-    const profile = await this.profileRepository.findOneBy({ id: userId });
+  //Controlador para actualizar el nickname de un perfil de usuario
+  async updateNickname(userId: string, nickName: string): Promise<UserProfile> {
+    const profile = await this.profileRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
     if (!profile) {
       throw new NotFoundException(`Perfil con ID ${userId} no encontrado`);
     }
 
-    profile.nickname = nickname;
+    profile.nickName = nickName;
     return this.profileRepository.save(profile);
-  } */
+  }
 
   //Cambiar el email del usuario registrado ADMIN
   async updateEmail(userId: string, newEmail: string): Promise<UserProfile> {
@@ -115,7 +118,6 @@ export class ProfileService {
       where: { user: { id: userId } },
       relations: ['user', 'user.locations'],
     });
-    console.log('profile', profile);
 
     if (!profile) {
       throw new NotFoundException(
@@ -165,4 +167,25 @@ export class ProfileService {
 
     return { message: 'User profile deleted successfully!' };
   }
+
+  // acrtualizar imagen
+  /* async updateUserPictureById(userId: string, imgBuffer: Buffer) {
+    const fileName = `profilePicture_${userId}_${Date.now()}`;
+    const folder = 'SwaplyAr/user/profile';
+
+    try {
+      const cloudinaryUrl = await uploadImageUserProfile(
+        imgBuffer,
+        fileName,
+        folder,
+      );
+      this.logger.log(`Archivo subido a Cloudinary: ${cloudinaryUrl}`);
+
+      // Aquí podrías guardar la URL en la base de datos si querés
+      return { cloudinaryUrl };
+    } catch (error) {
+      this.logger.error('Error al subir archivo a Cloudinary:', error);
+      throw error;
+    }
+  } */
 }

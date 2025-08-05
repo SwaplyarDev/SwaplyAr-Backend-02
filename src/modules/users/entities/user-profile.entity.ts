@@ -27,6 +27,9 @@ export class UserProfile {
   @Column({ name: 'last_name' })
   lastName: string;
 
+  @Column({ name: 'nickName', nullable: true })
+  nickName: string;
+
   @Column({ name: 'email' })
   email: string;
 

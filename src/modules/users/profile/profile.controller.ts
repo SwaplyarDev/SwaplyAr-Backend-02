@@ -29,6 +29,7 @@ import { UserProfile } from '@users/entities/user-profile.entity';
 import { UpdateEmailDto } from './dto/email.profile.dto';
 import { UpdatePhoneDto } from './dto/phone.profile.dto';
 import { UpdateUserLocationDto } from './dto/location.profile.dto';
+import { UpdateNicknameDto } from './dto/nickname.profile.dto';
 
 @ApiTags('Perfiles')
 @Controller('users/profiles')
@@ -124,7 +125,7 @@ export class ProfileController {
    * Actualiza el apodo del perfil del usuario autenticado.
    * Requiere autenticación.
    */
-  /*   @Put('nickname')
+  @Put('my-profile/nickname')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiBearerAuth()
@@ -138,18 +139,12 @@ export class ProfileController {
     @Body() updateNicknameDto: UpdateNicknameDto,
   ) {
     const userId = req.user.id;
-    if (
-      !updateNicknameDto.nickname ||
-      updateNicknameDto.nickname.trim() === ''
-    ) {
-      throw new BadRequestException('El nickname es requerido');
-    }
 
     return this.profileService.updateNickname(
       userId,
-      updateNicknameDto.nickname,
+      updateNicknameDto.nickName,
     );
-  } */
+  }
 
   /**
    * UPDATE /profile/my-profile/email
@@ -168,7 +163,6 @@ export class ProfileController {
     @Body() updateEmailDto: UpdateEmailDto,
   ) {
     const userId = req.user.id;
-
     return this.profileService.updateEmail(userId, updateEmailDto.email);
   }
 
@@ -220,7 +214,8 @@ export class ProfileController {
    * Elimina el perfil de un usuario por su id.
    */
   @Delete('/')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Eliminar perfil' })
@@ -231,4 +226,39 @@ export class ProfileController {
   async deleteProfileController(@Req() req: any, @Query('id') id: string) {
     return this.profileService.deleteUserById(id);
   }
+
+  /// foto
+
+  /* @Put('my-profile/picture')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('imgUrl'))
+  async updateMyProfilePicture(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
+  ) {
+    const userId = req.user?.['id']; // o usa un decorador @CurrentUser() si lo tenés
+
+    this.logger.debug('Archivo recibido: ' + (file ? 'Sí' : 'No'));
+
+    if (!userId) {
+      this.logger.error('Usuario no autenticado.');
+      throw new BadRequestException('Usuario no autenticado');
+    }
+
+    if (!file || !file.buffer) {
+      this.logger.error('No se cargó una imagen válida en el formulario.');
+      throw new BadRequestException('Se requiere una imagen en la solicitud');
+    }
+
+    try {
+      const result = await this.profileService.updateUserPictureById(
+        userId,
+        file.buffer,
+      );
+      return { message: 'Imagen actualizada correctamente', result };
+    } catch (error) {
+      this.logger.error('Error al actualizar la imagen de perfil:', error);
+      throw new InternalServerErrorException('Error al subir la imagen');
+    }
+  } */
 }

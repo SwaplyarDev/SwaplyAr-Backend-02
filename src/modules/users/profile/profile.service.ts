@@ -102,7 +102,7 @@ export class ProfileService {
         `Perfil con ID de usuario ${userId} no encontrado`,
       );
     }
-    // Si el número ya es el mismo, no permitir actualizar
+
     if (profile.phone === phone) {
       throw new BadRequestException(
         'Este número ya está registrado en tu perfil.',
@@ -168,12 +168,12 @@ export class ProfileService {
       );
     }
 
-    await this.profileRepository.remove(profile); // elimina solo el perfil, no el user
+    await this.profileRepository.remove(profile);
 
     return { message: 'User profile deleted successfully!' };
   }
 
-  // acrtualizar imagen
+  // actualizar imagen del perfil
   async updateUserPictureById(userId: string, file: Express.Multer.File) {
     const profile = await this.profileRepository.findOne({
       where: { user: { id: userId } },
@@ -186,7 +186,6 @@ export class ProfileService {
     const folder = 'profile-pictures';
     const fileName = `profile_${userId}_${Date.now()}`;
 
-    // ✅ Convertimos Express.Multer.File a FileUploadDTO
     const fileDTO: FileUploadDTO = {
       fieldName: file.fieldname,
       originalName: file.originalname,

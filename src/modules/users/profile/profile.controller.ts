@@ -229,50 +229,14 @@ export class ProfileController {
     return this.profileService.deleteUserById(id);
   }
 
-  /// foto
-
-  /* @Put('my-profile/picture')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('imgUrl'))
-  async updateMyProfilePicture(
-    @UploadedFile() file: Express.Multer.File,
-    @Req() req: Request,
-  ) {
-    const userId = req.user?.['id']; // o usa un decorador @CurrentUser() si lo tenés
-
-    this.logger.debug('Archivo recibido: ' + (file ? 'Sí' : 'No'));
-
-    if (!userId) {
-      this.logger.error('Usuario no autenticado.');
-      throw new BadRequestException('Usuario no autenticado');
-    }
-
-    if (!file || !file.buffer) {
-      this.logger.error('No se cargó una imagen válida en el formulario.');
-      throw new BadRequestException('Se requiere una imagen en la solicitud');
-    }
-
-    try {
-      const result = await this.profileService.updateUserPictureById(
-        userId,
-        file.buffer,
-      );
-      return { message: 'Imagen actualizada correctamente', result };
-    } catch (error) {
-      this.logger.error('Error al actualizar la imagen de perfil:', error);
-      throw new InternalServerErrorException('Error al subir la imagen');
-    }
-  } */
-
   @Put('my-profile/picture')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async updateProfilePicture(
     @UploadedFile() file: Express.Multer.File,
-    @Req() req: any, // esto debe venir después de @UploadedFile
+    @Req() req: any,
   ) {
     const userId = req.user?.id;
-    console.log('este es el id ddddddddddddddd', userId);
 
     if (!userId) {
       throw new BadRequestException('Usuario no autenticado');

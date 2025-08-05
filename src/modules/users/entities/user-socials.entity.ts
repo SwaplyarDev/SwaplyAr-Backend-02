@@ -18,30 +18,30 @@ export class UserSocials {
   @JoinColumn({ name: 'user_profile_id' })
   userProfile: UserProfile;
 
-  @Column({ name: 'whatsapp_number' })
+  @Column({ name: 'whatsapp_number', nullable: true })
   whatsappNumber: string;
 
-  @Column({ name: 'facebook' })
+  @Column({ name: 'facebook', nullable: true })
   facebook: string;
 
-  @Column({ name: 'instagram' })
+  @Column({ name: 'instagram', nullable: true })
   instagram: string;
 
-  @Column({ name: 'tiktok' })
+  @Column({ name: 'tiktok', nullable: true })
   tiktok: string;
 
-  @Column({ name: 'twitter_x' })
+  @Column({ name: 'twitter_x', nullable: true })
   twitterX: string;
 
-  @Column({ name: 'snapchat' })
+  @Column({ name: 'snapchat', nullable: true })
   snapchat: string;
 
-  @Column({ name: 'linkedin' })
+  @Column({ name: 'linkedin', nullable: true })
   linkedin: string;
 
-  @Column({ name: 'youtube' })
+  @Column({ name: 'youtube', nullable: true })
   youtube: string;
 
-  @Column({ name: 'pinterest' })
+  @Column({ name: 'pinterest', nullable: true })
   pinterest: string;
 }

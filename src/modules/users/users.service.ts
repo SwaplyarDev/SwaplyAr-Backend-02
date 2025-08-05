@@ -6,10 +6,16 @@ import { RegisterUserDto } from '@users/dto/register-user.dto';
 import { UserProfile } from '@users/entities/user-profile.entity';
 import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
 
+import { UserSocials } from './entities/user-socials.entity';
+
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(UserProfile)
+    private profileRepository: Repository<UserProfile>,
+    @InjectRepository(UserSocials)
+    private socialsRepository: Repository<UserSocials>,
   ) {}
 
   async register(userDto: RegisterUserDto): Promise<User> {

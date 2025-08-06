@@ -452,7 +452,7 @@ export class AdminController {
         value: {
           countryTransaction: 'Argentina',
           message: 'Transferencia de prueba',
-          createdBy: 'nahu.davila@gmail.com',
+          createdBy: 'brasil@swaplyar.com',
           financialAccounts: {
             senderAccount: {
               firstName: 'Juan',

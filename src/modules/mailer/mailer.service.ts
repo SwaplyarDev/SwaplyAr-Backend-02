@@ -87,11 +87,19 @@ export class MailerService {
         throw new Error(`No email template defined for status: ${status}`);
       }
 
-      const templatePath = join(
-        __dirname,
-        'templates/email/transaction/operations_transactions',
-        selected.path,
-      );
+  const templatePath = join(
+  __dirname,
+  '..', // sube a dist/src/modules
+  '..', // sube a dist/src
+  '..', // sube a dist
+  'modules',
+  'mailer',
+  'templates',
+  'email',
+  'transaction',
+  'operations_transactions',
+  selected.path,
+);
       this.logger.log(`Loading template from: ${templatePath}`);
 
       const html = this.compileTemplate(

@@ -155,117 +155,122 @@ export class AdminService {
   /* -------------------------------------------------------------------------- */
   /*                    UPDATE TRANSACTION STATUS BY TYPE                       */
   /* -------------------------------------------------------------------------- */
-  async updateTransactionStatusByType(
-    transactionId: string,
-    status: AdminStatus,
-    adminUser: User,
-    message?: string,
-    additionalData?: Record<string, any>,
-  ) {
-    // Verificar que el usuario sea admin o super_admin
-    if (!['admin', 'super_admin'].includes(adminUser.role)) {
-      throw new UnauthorizedException(
-        'Solo los administradores pueden actualizar el estado de las transacciones',
-      );
-    }
+async updateTransactionStatusByType(
+  transactionId: string,
+  status: AdminStatus,
+  adminUser: User,
+  message?: string,
+  additionalData?: Record<string, any>,
+) {
+  // Verificar que el usuario sea admin o super_admin
+  if (!['admin', 'super_admin'].includes(adminUser.role)) {
+    throw new UnauthorizedException(
+      'Solo los administradores pueden actualizar el estado de las transacciones',
+    );
+  }
 
-    const transaction = await this.transactionsRepository.findOne({
-      where: { id: transactionId },
-      relations: ['amount'],
+  const transaction = await this.transactionsRepository.findOne({
+    where: { id: transactionId },
+    relations: ['amount'],
+  });
+
+  if (!transaction) {
+    throw new NotFoundException('Transacción no encontrada.');
+  }
+
+  // Buscar o crear el registro en administracion_master
+  let adminMaster = await this.adminMasterRepository.findOne({
+    where: { transactionId },
+  });
+
+  if (!adminMaster) {
+    adminMaster = this.adminMasterRepository.create({
+      transactionId,
+      status,
+      adminUserId: adminUser.id,
     });
-
-    if (!transaction) {
-      throw new NotFoundException('Transacción no encontrada.');
-    }
-
-    // Buscar o crear el registro en administracion_master
-    let adminMaster = await this.adminMasterRepository.findOne({
-      where: { transactionId },
-    });
-
-    if (!adminMaster) {
-      adminMaster = this.adminMasterRepository.create({
-        transactionId,
+    await this.adminMasterRepository.save(adminMaster);
+  } else {
+    // Actualizar el estado en administracion_master
+    await this.adminMasterRepository.update(
+      { transactionId },
+      {
         status,
         adminUserId: adminUser.id,
-      });
-      await this.adminMasterRepository.save(adminMaster);
-    } else {
-      // Actualizar el estado en administracion_master
-      await this.adminMasterRepository.update(
-        { transactionId },
-        {
-          status,
-          adminUserId: adminUser.id,
-        },
-      );
-    }
+      },
+    );
+  }
 
-    // Crear nuevo registro en el historial
-    const statusLog = this.statusLogRepository.create({
-      transaction: adminMaster,
-      status,
-      message,
-      changedByAdminId: adminUser.id,
-      additionalData,
+  // Crear nuevo registro en el historial
+  const statusLog = this.statusLogRepository.create({
+    transaction: adminMaster,
+    status,
+    message,
+    changedByAdminId: adminUser.id,
+    additionalData,
+  });
+
+  await this.statusLogRepository.save(statusLog);
+
+  // Convertir el estado de admin a estado de transacción
+  const transactionStatus = this.convertAdminStatusToTransactionStatus(status);
+
+  // Actualizar el estado en la transacción
+  await this.transactionsRepository.update(
+    { id: transactionId },
+    { finalStatus: transactionStatus },
+  );
+
+  const updatedTransaction = await this.transactionsRepository.findOne({
+    where: { id: transactionId },
+  });
+
+  this.logger.log(
+    `Estado de transacción ${transactionId} actualizado a ${status} por admin ${adminUser.id}`,
+  );
+
+  if (status === AdminStatus.Approved) {
+    console.log(transaction);
+    const quantityToAdd = Number(transaction.amount.amountSent);
+
+    const starDto: UpdateStarDto = { quantity: quantityToAdd };
+
+    const user = await this.userRepository.findOne({
+      where: { profile: { email: transaction.createdBy } },
+      relations: ['profile'],
     });
 
-    await this.statusLogRepository.save(statusLog);
-
-    // Convertir el estado de admin a estado de transacción
-    const transactionStatus =
-      this.convertAdminStatusToTransactionStatus(status);
-
-    // Actualizar el estado en la transacción
-    await this.transactionsRepository.update(
-      { id: transactionId },
-      { finalStatus: transactionStatus },
-    );
-
-    const updatedTransaction = await this.transactionsRepository.findOne({
-      where: { id: transactionId },
-    });
-
-    this.logger.log(
-      `Estado de transacción ${transactionId} actualizado a ${status} por admin ${adminUser.id}`,
-    );
-
-    if (status === AdminStatus.Approved) {
-      console.log(transaction);
-      const quantityToAdd = Number(transaction.amount.amountSent);
-
-      const starDto: UpdateStarDto = { quantity: quantityToAdd };
-
-      const user = await this.userRepository.findOne({
-        where: { profile: { email: transaction.createdBy } },
-        relations: ['profile'],
-      });
-
-      if (!user) {
-        throw new NotFoundException(
-          'No se encontró el usuario asociado a la transacción.',
-        );
-      }
+    if (user) {
       const userId = user.id;
       const { cycleCompleted, message: starMessage } =
-        await this.discountService.updateStars(
-          starDto,
-          userId,
-        );
+        await this.discountService.updateStars(starDto, userId);
 
       this.logger.log(
-        `Recompensas actualizadas para usuario ${userId}: +${quantityToAdd}. Ciclo completo: ${cycleCompleted}`
+        `Recompensas actualizadas para usuario ${userId}: +${quantityToAdd}. Ciclo completo: ${cycleCompleted}`,
       );
+
       if (starMessage) {
         this.logger.log(`Mensaje de recompensa: ${starMessage}`);
       }
+    } else {
+      // Opcional: loggear que no se encontró usuario pero continuar sin error
+      this.logger.warn(
+        `No se encontró usuario para la transacción ${transactionId}. No se actualizaron estrellas.`,
+      );
     }
-    return {
-      message: 'Estado actualizado',
-      status,
-      transaction: updatedTransaction,
-    };
   }
+
+  if (updatedTransaction) {
+    delete (updatedTransaction as any).userId; // Eliminar userId manualmente
+  }
+
+  return {
+    message: 'Estado actualizado',
+    status,
+    transaction: updatedTransaction,
+  };
+}
+
 
   /* -------------------------------------------------------------------------- */
   /*                       ADD TRANSACTION RECEIPT (FILE)                       */

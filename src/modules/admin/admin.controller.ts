@@ -236,6 +236,31 @@ export class AdminController {
     status: 200,
     description: 'Estado actualizado correctamente',
   })
+  @ApiBody({
+  schema: {
+    type: 'object',
+    properties: {
+      status: {
+        type: 'string',
+        enum: Object.values(AdminStatus),
+        example: AdminStatus.Approved,
+        description: 'Estado administrativo de la transacción',
+      },
+      message: {
+        type: 'string',
+        example: 'Aprobación automática tras revisión',
+        description: 'Mensaje opcional relacionado al cambio de estado',
+      },
+      additionalData: {
+        type: 'object',
+        example: { motivo: 'Verificación completa', notas: 'Sin observaciones' },
+        description: 'Datos adicionales que pueden acompañar el cambio de estado',
+      },
+    },
+    required: ['status'],
+  },
+})
+
   async updateTransactionStatus(
     @Param('id') id: string,
     @Body('status') status: AdminStatus,

@@ -280,9 +280,9 @@ export class AdminController {
     const transaction = await this.adminService.getTransactionById(id);
 
     // Enviar correos electrónicos según el estado
-    //if (transaction && transaction.createdBy) {
-      //await this.mailerService.sendStatusEmail(transaction, status);
-    //}
+    if (transaction && transaction.createdBy) {
+      await this.mailerService.sendStatusEmail(transaction, status);
+    }
 
     return result;
   }

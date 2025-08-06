@@ -1,7 +1,7 @@
 
 
 /**
- * Test unitarios para el controlador QuestionsController.
+ * Test unitarios para el controlador QuestionsController (getAllQuestionsPaginated y createQuestions).
  *
  * Este archivo valida dos funcionalidades principales:
  * 1. Obtención de preguntas paginadas mediante query param.

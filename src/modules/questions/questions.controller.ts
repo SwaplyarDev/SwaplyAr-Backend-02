@@ -70,7 +70,7 @@ export class QuestionsController {
   @ApiResponse ({
 
     status: 400,
-    description: 'El parámetro "page" debe ser un número entero positivo mayor a 0',
+    description: 'El parámetro "page" debe ser un número',
 
   })
 
@@ -92,19 +92,20 @@ export class QuestionsController {
 
         const pageNumber = parseInt (page, 10);
 
-        if (isNaN (pageNumber) || pageNumber <= 0 ) {
+        if (isNaN (pageNumber)) {
 
           throw new BadRequestException (
 
-            'El parámetro "page" debe ser un número entero positivo mayor a 0.',
+            'El parámetro "page" debe ser un número válido',
 
-          );
+          );          
 
         }
 
+        const currentPage = pageNumber <= 0 ? 1 : pageNumber;
         const limit = 9;
-        const result = await this.questionsService.findAllPaginated (pageNumber, limit);
-        return Promise.resolve (result);
+        return await this.questionsService.findAllPaginated(currentPage, limit);
+
 
       } catch (error) {
 

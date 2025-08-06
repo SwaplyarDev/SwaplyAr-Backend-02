@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -30,6 +31,18 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Transaction } from './entities/transaction.entity';
 
+interface CreateTransactionBody {
+  createTransactionDto: string;
+  file?: Express.Multer.File;
+}
+
+interface RequestWithUser extends Request {
+  user: {
+    email: string;
+    [key: string]: unknown;
+  };
+}
+
 //TODO: GET (transactionStatus) ,
 @ApiTags('Transacciones')
 @Controller('transactions')
@@ -50,7 +63,7 @@ export class TransactionsController {
             paymentsId: '123',
             countryTransaction: 'Argentina',
             message: 'Transferencia de prueba',
-            createdBy: 'nahu.davila@gmail.com',
+            createdBy: 'fernandeezalan20@gmail.com',
             financialAccounts: {
               senderAccount: {
                 firstName: 'Juan',
@@ -73,7 +86,7 @@ export class TransactionsController {
                 lastName: 'García',
                 document_value: '12345678',
                 phoneNumber: '1122334455',
-                email: 'ana@example.com',
+                email: 'brasil@swaplyar.com',
                 bank_name: 'Banco Galicia',
                 paymentMethod: {
                   platformId: 'bank',
@@ -114,7 +127,7 @@ export class TransactionsController {
         id: 'uuid',
         countryTransaction: 'Argentina',
         message: 'Transferencia de prueba',
-        createdBy: 'nahu.davila@gmail.com',
+        createdBy: 'fernandeezalan20@gmail.com',
         senderAccount: {
           /* ... */
         },
@@ -134,8 +147,34 @@ export class TransactionsController {
   })
   @Post()
   @UseInterceptors(FileInterceptor('file'))
-  async create(@Body() body: any, @UploadedFile() file: Express.Multer.File) {
-    const parsedDto = JSON.parse(body.createTransactionDto);
+  async create(
+    @Body() body: CreateTransactionBody,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    console.log('Body recibido:', body);
+    console.log('File recibido:', file);
+
+    if (!body || Object.keys(body).length === 0) {
+      throw new BadRequestException('El body está vacío');
+    }
+
+    if (!body.createTransactionDto) {
+      throw new BadRequestException(
+        'El campo createTransactionDto es requerido. Body recibido: ' +
+          JSON.stringify(body),
+      );
+    }
+
+    let parsedDto: Partial<CreateTransactionDto>;
+    try {
+      parsedDto = JSON.parse(
+        body.createTransactionDto,
+      ) as Partial<CreateTransactionDto>;
+    } catch {
+      throw new BadRequestException(
+        'El campo createTransactionDto debe ser un JSON válido',
+      );
+    }
 
     const createTransactionDto = plainToInstance(
       CreateTransactionDto,
@@ -175,7 +214,7 @@ export class TransactionsController {
           id: 'uuid',
           countryTransaction: 'Argentina',
           message: 'Transferencia de prueba',
-          createdBy: 'nahu.davila@gmail.com',
+          createdBy: 'fernandeezalan20@gmail.com',
           senderAccount: {
             /* ... */
           },
@@ -220,7 +259,7 @@ export class TransactionsController {
   @ApiResponse({ status: 404, description: 'Transacción no encontrada' })
   async getTransactionByEmail(
     @Param('transaction_id') transactionId: string,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     const userEmail = req.user.email;
     return this.transactionsService.getTransactionByEmail(

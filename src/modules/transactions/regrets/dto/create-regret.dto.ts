@@ -37,5 +37,5 @@ export class CreateRegretDto {
   })
   @IsOptional()
   @IsString()
-  note?: string;
+  description: string;
 }

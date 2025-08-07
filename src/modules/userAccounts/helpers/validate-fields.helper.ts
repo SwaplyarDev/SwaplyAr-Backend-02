@@ -20,6 +20,7 @@ export function validateFields(
     paypal: ['email_account', 'transfer_code'],
     payoneer: ['email_account'],
     wise: ['iban', 'bic', 'email_account', 'transfer_code'],
+    receiver_crypto: ['currency', 'network', 'wallet'],
   };
 
   const updateFields = {
@@ -29,6 +30,7 @@ export function validateFields(
     paypal: ['paypal_id', 'account_id'],
     payoneer: ['payoneer_id', 'account_id'],
     wise: ['wise_id', 'account_id'],
+    receiver_crypto: ['receiver_crypto_id', 'account_id'],
   };
 
   if (!requiredFields[typeAccount]) {

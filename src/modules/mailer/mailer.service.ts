@@ -18,6 +18,14 @@ export class MailerService {
       configService.get<SMTPTransport.Options>('nodemailer'),
     );
   }
+  // constructor(private readonly configService: ConfigService) {
+  //   this.mailer = createTransport({
+  //     service: 'gmail', // Puedes cambiarlo si usas otro proveedor
+  //     auth: {
+  //       user: this.configService.get<string>('EMAIL_USER'),
+  //       pass: this.configService.get<string>('EMAIL_PASS'),
+  //     },
+  //   });
 
   async sendAuthCodeMail(to: string, code: string) {
     const from = this.configService.get<string>('nodemailer.auth.user');
@@ -173,4 +181,38 @@ export class MailerService {
       RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`,
     };
   }
+
+
+
+
+  async sendLoginCodeTemplateMail(to: string, code: string, baseUrl: string, location: string) {
+  const from = this.configService.get<string>('nodemailer.auth.user');
+  const templatePath = join(__dirname,'..', '..', 'templates', 'login', 'loginCodeSent.template.hbs');
+  const rawTemplate = readFileSync(templatePath, 'utf8');
+  const compiled = Handlebars.compile(rawTemplate);
+  const html = compiled({
+    EMAIL: to,
+    CODE: code,
+    BASE_URL: baseUrl,
+    LOCATION: location,
+    MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
+  });
+
+  console.log('HTML generado:', html);
+
+  await this.mailer.sendMail({
+    from,
+    to,
+    subject: 'Código de verificación para iniciar sesión',
+
+    html,
+  });
+
+
+
+  //return { message: `El código ha sido enviado a ${to}` };
+
+
+
+}
 }

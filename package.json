@@ -27,7 +27,11 @@
     "migration:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d src/database/data-source.ts"
   },
   "dependencies": {
+<<<<<<< Updated upstream
     "@nestjs/cli": "^11.0.0",
+=======
+    "@nestjs-modules/mailer": "^2.0.2",
+>>>>>>> Stashed changes
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -44,8 +48,12 @@
     "handlebars": "^4.7.8",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+<<<<<<< Updated upstream
     "nanoid": "^3.3.11",
     "nodemailer": "^7.0.3",
+=======
+    "nodemailer": "^7.0.5",
+>>>>>>> Stashed changes
     "otp-generator": "^4.0.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

@@ -2,6 +2,11 @@
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+//import { MailerService } from '@nestjs-modules/mailer';
+import { MailerService } from 'src/modules/mailer/mailer.service';
+import * as fs from 'fs';
+import * as path from 'path';
+import { MailerModule } from 'src/modules/mailer/mailer.module';
 import { User } from '@users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 
@@ -11,6 +16,7 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>, 
     private readonly jwtService: JwtService,
+    private readonly mailerService: MailerService,
   ) { }
 
   private buildPayload(user: User) {
@@ -81,5 +87,16 @@ export class AuthService {
     return { access_token: accessToken, refresh_token: newRefreshToken };
 
 
+  }
+
+
+  async sendLoginCodeEmail(user: User, code: string, location: string) {
+    await this.mailerService.sendLoginCodeTemplateMail(
+      user.profile.email,
+      code,
+      process.env.BASE_URL || 'http://localhost:3001',
+      location 
+    );
+    
   }
 }

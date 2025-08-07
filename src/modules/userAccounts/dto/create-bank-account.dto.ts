@@ -7,16 +7,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-
-export enum AccountType {
-  BANK = 'bank',
-  CRYPTO = 'crypto',
-  VIRTUAL_BANK = 'virtualBank',
-  PIX = 'pix',
-  PAYPAL = 'paypal',
-  PAYONEER = 'payoneer',
-  WISE = 'wise',
-}
+import { Platform } from 'src/enum/platform.enum';
 
 export class UserAccValuesDto {
   @IsString()
@@ -39,14 +30,13 @@ export class UserAccValuesDto {
   @IsNotEmpty()
   account_name: string;
 
-  @IsNumber()
-  @Type(() => Number)
-  account_type: number;
+  @IsEnum(Platform)
+  account_type: Platform;
 }
 
 export class CreateBankAccountDto {
-  @IsEnum(AccountType)
-  typeAccount: AccountType;
+  @IsEnum(Platform)
+  typeAccount: Platform;
 
   @IsObject()
   formData: Record<string, any>;

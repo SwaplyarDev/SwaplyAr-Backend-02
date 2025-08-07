@@ -11,6 +11,7 @@ import { UserPayPal } from './entities/user-paypal.entity';
 import { UserWise } from './entities/user-wise.entity';
 import { UserPayoneer } from './entities/user-payoneer.entity';
 import { UserPix } from './entities/user-pix.entity';
+import { Platform } from 'src/enum/platform.enum';
 
 @Injectable()
 export class AccountsService {
@@ -75,13 +76,6 @@ export class AccountsService {
           userAccount: savedUserAccount,
         });
         await this.receiverCryptoRepo.save(specificAccount);
-      } else if (typeAccount === 'crypto') {
-        specificAccount = this.receiverCryptoRepo.create({
-          ...formData,
-          account_id: savedUserAccount.account_id,
-          userAccount: savedUserAccount,
-        });
-        await this.receiverCryptoRepo.save(specificAccount);
       } else if (typeAccount === 'paypal') {
         specificAccount = this.payPalRepo.create({
           ...formData,
@@ -137,25 +131,25 @@ export class AccountsService {
 
     // Elimina solo en la tabla específica según el tipo de cuenta
     switch (userAccount.typeId) {
-      case 1: // Bank
+      case 'bank': // Bank
         await this.bankAccountRepo.delete({ account_id: bankAccountId });
         break;
-      case 2: // PayPal
+      case 'paypal': // PayPal
         await this.payPalRepo.delete({ account_id: bankAccountId });
         break;
-      case 3: // Wise
+      case 'wise': // Wise
         await this.wiseRepo.delete({ account_id: bankAccountId });
         break;
-      case 4: // Payoneer
+      case 'payoneer': // Payoneer
         await this.payoneerRepo.delete({ account_id: bankAccountId });
         break;
-      case 5: // Pix
+      case 'pix': // Pix
         await this.pixRepo.delete({ account_id: bankAccountId });
         break;
-      case 6: // Virtual Bank
+      case 'virtual_bank': // Virtual Bank
         await this.virtualBankRepo.delete({ account_id: bankAccountId });
         break;
-      case 7: // Receiver Crypto
+      case 'receiver_crypto': // Receiver Crypto
         await this.receiverCryptoRepo.delete({ account_id: bankAccountId });
         break;
       default:
@@ -169,11 +163,71 @@ export class AccountsService {
   }
 
   async findAllByUser(user: any) {
-    // Busca todas las cuentas del usuario
     const accounts = await this.userAccountRepo.find({
       where: { userId: user.id },
     });
 
-    return accounts;
+    const enrichedAccounts = await Promise.all(
+      accounts.map(async (account) => {
+        const typeId = account.typeId as Platform;
+        const { account_id } = account;
+
+        let details: any[] = [];
+
+        switch (typeId) {
+          case Platform.Bank:
+            details = await this.bankAccountRepo.find({
+              where: { account_id },
+            });
+            break;
+          case Platform.PayPal:
+            details = await this.payPalRepo.find({ where: { account_id } });
+            break;
+          case Platform.Wise:
+            details = await this.wiseRepo.find({ where: { account_id } });
+            break;
+          case Platform.Payoneer:
+            details = await this.payoneerRepo.find({ where: { account_id } });
+            break;
+          case Platform.Pix:
+            details = await this.pixRepo.find({ where: { account_id } });
+            break;
+          case Platform.Virtual_Bank:
+            details = await this.virtualBankRepo.find({
+              where: { account_id },
+            });
+            break;
+          case Platform.Receiver_Crypto:
+            details = await this.receiverCryptoRepo.find({
+              where: { account_id },
+            });
+            break;
+          default:
+            details = [{ message: 'Tipo no soportado' }];
+        }
+
+        // Seleccioná solo los campos que vas a devolver
+        return {
+          accountName: account.accountName,
+          currency: account.currency,
+          status: account.status,
+          createdAt: account.createdAt,
+          updatedAt: account.updatedAt,
+          typeId: account.typeId,
+          details: details.map((d) => ({
+            pix_key: d.pix_key,
+            pix_value: d.pix_value,
+            cpf: d.cpf,
+            bank_name: d.bank_name,
+            send_method_key: d.send_method_key,
+            send_method_value: d.send_method_value,
+            document_type: d.document_type,
+            document_value: d.document_value,
+          })),
+        };
+      }),
+    );
+
+    return enrichedAccounts;
   }
 }

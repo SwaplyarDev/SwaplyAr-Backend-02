@@ -1,12 +1,11 @@
+import { Platform } from 'src/enum/platform.enum';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '@users/entities/user.entity';
 
 @Entity('user_account')
 export class UserAccount {
@@ -28,8 +27,8 @@ export class UserAccount {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
   updatedAt: Date;
 
-  @Column({ name: 'type_id', type: 'int' })
-  typeId: number;
+  @Column({ name: 'type_id' })
+  typeId: Platform;
 
   @Column({ name: 'user_id' })
   userId: string;

@@ -62,14 +62,14 @@ export class AccountsService {
           userAccount: savedUserAccount,
         });
         await this.bankAccountRepo.save(specificAccount);
-      } else if (typeAccount === 'virtualBank') {
+      } else if (typeAccount === 'virtual_bank') {
         specificAccount = this.virtualBankRepo.create({
           ...formData,
           account_id: savedUserAccount.account_id,
           userAccount: savedUserAccount,
         });
         await this.virtualBankRepo.save(specificAccount);
-      } else if (typeAccount === 'crypto') {
+      } else if (typeAccount === 'receiver_crypto') {
         specificAccount = this.receiverCryptoRepo.create({
           ...formData,
           account_id: savedUserAccount.account_id,
@@ -201,28 +201,48 @@ export class AccountsService {
             details = await this.receiverCryptoRepo.find({
               where: { account_id },
             });
+
             break;
           default:
             details = [{ message: 'Tipo no soportado' }];
         }
+
+        console.log('detalles', details);
+        console.log('accounts', account);
 
         // Seleccioná solo los campos que vas a devolver
         return {
           accountName: account.accountName,
           currency: account.currency,
           status: account.status,
-          createdAt: account.createdAt,
-          updatedAt: account.updatedAt,
-          typeId: account.typeId,
+          payment_type: account.typeId,
           details: details.map((d) => ({
+            //Detalles de pix
             pix_key: d.pix_key,
             pix_value: d.pix_value,
             cpf: d.cpf,
+            //Detalles de Bank
             bank_name: d.bank_name,
             send_method_key: d.send_method_key,
             send_method_value: d.send_method_value,
             document_type: d.document_type,
             document_value: d.document_value,
+            //Detalles de Wise
+            wise_id: d.wise_id,
+            account_id: d.account_id,
+            iban: d.iban,
+            bic: d.bic,
+            email_account: d.email_account,
+            transfer_code: d.transfer_code,
+            userAccount: d.transfer_code,
+
+            // Detalles receiver_acount
+            /*  receiver_crypto: d.receiver_crypto,
+            account_id: d.account_id,
+            currency: d.currency,
+            network: d.network,
+            wallet: d.wallet,
+            userAccount: d.userAccount, */
           })),
         };
       }),

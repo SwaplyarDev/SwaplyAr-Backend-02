@@ -9,8 +9,8 @@ import { UserAccount } from './user-account.entity';
 
 @Entity('user_wise')
 export class UserWise {
-  @PrimaryGeneratedColumn({ name: 'wise_id' })
-  wise_id: number;
+  @PrimaryGeneratedColumn('uuid', { name: 'wise_id' })
+  wise_id: string;
 
   @Column({ name: 'account_id', type: 'uuid' })
   account_id: string;

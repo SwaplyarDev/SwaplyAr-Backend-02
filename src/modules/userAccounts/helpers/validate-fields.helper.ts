@@ -14,8 +14,8 @@ export function validateFields(
       'document_type',
       'document_value',
     ],
-    crypto: ['currency', 'network', 'wallet'],
-    virtualBank: ['currency', 'email_account', 'transfer_code'],
+
+    virtual_bank: ['currency', 'email_account', 'transfer_code'],
     pix: ['virtual_bank_id', 'pix_key', 'cpf', 'pix_value'],
     paypal: ['email_account', 'transfer_code'],
     payoneer: ['email_account'],
@@ -25,12 +25,11 @@ export function validateFields(
 
   const updateFields = {
     bank: ['bank_id', 'account_id'],
-    crypto: ['crypto_id', 'account_id'],
     pix: ['pix_id', 'account_id'],
     paypal: ['paypal_id', 'account_id'],
     payoneer: ['payoneer_id', 'account_id'],
     wise: ['wise_id', 'account_id'],
-    receiver_crypto: ['receiver_crypto_id', 'account_id'],
+    receiver_crypto: ['crypto_id', 'account_id'],
   };
 
   if (!requiredFields[typeAccount]) {

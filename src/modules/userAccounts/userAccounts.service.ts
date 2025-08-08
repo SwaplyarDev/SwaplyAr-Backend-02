@@ -173,7 +173,7 @@ export class AccountsService {
         const { account_id } = account;
 
         let details: any[] = [];
-
+        // Dependiendo el typeId busca los detalles de la cuenta de banco
         switch (typeId) {
           case Platform.Bank:
             details = await this.bankAccountRepo.find({
@@ -206,10 +206,6 @@ export class AccountsService {
           default:
             details = [{ message: 'Tipo no soportado' }];
         }
-
-        console.log('detalles', details);
-        console.log('accounts', account);
-
         // Seleccioná solo los campos que vas a devolver
         return {
           accountName: account.accountName,
@@ -217,32 +213,37 @@ export class AccountsService {
           status: account.status,
           payment_type: account.typeId,
           details: details.map((d) => ({
-            //Detalles de pix
+            /** ---------------------- CAMPOS GENERALES ---------------------- **/
+            account_id: d.account_id, // Usado por: Wise, Receiver, Virtual Bank, PayPal
+            iban: d.iban, // Usado por: Wise, Payoneer
+            bic: d.bic, // Usado por: Wise, Payoneer
+            email_account: d.email_account, // Usado por: Wise, Virtual Bank, PayPal, Payoneer
+            transfer_code: d.transfer_code, // Usado por: Wise, Receiver, Virtual Bank, PayPal, Payoneer
+            userAccount: d.userAccount, // Usado por: Wise, Receiver, Virtual Bank, PayPal
+            currency: d.currency, // Usado por: Receiver Crypto, Virtual Bank
+
+            /** ---------------------- PIX ---------------------- **/
             pix_key: d.pix_key,
             pix_value: d.pix_value,
             cpf: d.cpf,
-            //Detalles de Bank
+
+            /** ---------------------- BANK ---------------------- **/
             bank_name: d.bank_name,
             send_method_key: d.send_method_key,
             send_method_value: d.send_method_value,
             document_type: d.document_type,
             document_value: d.document_value,
-            //Detalles de Wise
-            wise_id: d.wise_id,
-            account_id: d.account_id,
-            iban: d.iban,
-            bic: d.bic,
-            email_account: d.email_account,
-            transfer_code: d.transfer_code,
-            userAccount: d.transfer_code,
 
-            // Detalles receiver_acount
-            /*  receiver_crypto: d.receiver_crypto,
-            account_id: d.account_id,
-            currency: d.currency,
+            /** ---------------------- WISE ---------------------- **/
+            wise_id: d.wise_id,
+
+            /** ----------------- RECEIVER CRYPTO ---------------- **/
+            receiver_crypto: d.receiver_crypto,
             network: d.network,
             wallet: d.wallet,
-            userAccount: d.userAccount, */
+
+            /** ------------------- VIRTUAL BANK ----------------- **/
+            virtual_bank_id: d.virtual_bank,
           })),
         };
       }),

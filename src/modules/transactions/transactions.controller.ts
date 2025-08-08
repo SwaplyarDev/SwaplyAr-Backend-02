@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
@@ -30,7 +29,7 @@ import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Transaction } from './entities/transaction.entity';
-import { StatusHistoryResponse, UserStatusHistoryResponse } from '@common/interfaces/status-history.interface';
+import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
 
 interface CreateTransactionBody {
   createTransactionDto: string;
@@ -157,19 +156,12 @@ export class TransactionsController {
 
     let parsedDto: Partial<CreateTransactionDto>;
     try {
-      parsedDto = JSON.parse(
-        body.createTransactionDto,
-      ) as Partial<CreateTransactionDto>;
+      parsedDto = JSON.parse(body.createTransactionDto) as Partial<CreateTransactionDto>;
     } catch {
-      throw new BadRequestException(
-        'El campo createTransactionDto debe ser un JSON válido',
-      );
+      throw new BadRequestException('El campo createTransactionDto debe ser un JSON válido');
     }
 
-    const createTransactionDto = plainToInstance(
-      CreateTransactionDto,
-      parsedDto,
-    );
+    const createTransactionDto = plainToInstance(CreateTransactionDto, parsedDto);
 
     const fileData: FileUploadDTO = file
       ? {
@@ -197,48 +189,20 @@ export class TransactionsController {
   @ApiResponse({
     status: 200,
     description: 'Historial de estados obtenido correctamente',
-    schema: {
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string' },
-        data: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              status: { type: 'string' },
-              changedAt: { type: 'string', format: 'date-time' },
-              message: { type: 'string' },
-              changedByAdmin: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  name: { type: 'string' },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
+    type: UserStatusHistoryResponseDto,
   })
   @ApiResponse({
-  status: 401,
-  description: 'El correo no coincide con el creador de la transacción.',
-})
-@ApiResponse({
-  status: 404,
-  description: 'Transacción no encontrada o aún pendiente sin actualizaciones.',
-})
+    status: 401,
+    description: 'El apellido no coincide con el remitente de la transacción.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Transacción no encontrada o sin historial disponible.',
+  })
   async getPublicStatusHistory(
     @Param('id') id: string,
     @Query('lastName') lastName: string,
-  ): Promise<{
-    success: boolean;
-    message: string;
-    data: UserStatusHistoryResponse[];
-  }> {
+  ): Promise<UserStatusHistoryResponseDto> {
     const history = await this.transactionsService.getPublicStatusHistory(id, lastName);
     return {
       success: true,

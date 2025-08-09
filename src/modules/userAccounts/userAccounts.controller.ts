@@ -95,6 +95,8 @@ export class AccountsController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Request() req, @Body() dto: CreateBankAccountDto) {
     const userId = req.user.id;
+    console.log('este es el dtp', dto);
+
     const newBank = await this.accountsService.createUserBank(
       dto.formData,
       dto.typeAccount,
@@ -142,7 +144,7 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
+  /*   @Roles('user') */
   @Get()
   async findAll(@Request() req) {
     return this.accountsService.findAllByUser(req.user);

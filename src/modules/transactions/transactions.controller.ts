@@ -2,19 +2,17 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Delete,
   Get,
   Param,
-  Patch,
   Post,
   UploadedFile,
   UseInterceptors,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
@@ -25,11 +23,13 @@ import {
   ApiBody,
   ApiConsumes,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Transaction } from './entities/transaction.entity';
+import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
 
 interface CreateTransactionBody {
   createTransactionDto: string;
@@ -43,12 +43,12 @@ interface RequestWithUser extends Request {
   };
 }
 
-//TODO: GET (transactionStatus) ,
 @ApiTags('Transacciones')
 @Controller('transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
+  // Crear transacción
   @ApiOperation({ summary: 'Crear una transacción con comprobante (opcional)' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -128,18 +128,10 @@ export class TransactionsController {
         countryTransaction: 'Argentina',
         message: 'Transferencia de prueba',
         createdBy: 'fernandeezalan20@gmail.com',
-        senderAccount: {
-          /* ... */
-        },
-        receiverAccount: {
-          /* ... */
-        },
-        amount: {
-          /* ... */
-        },
-        proofOfPayment: {
-          /* ... */
-        },
+        senderAccount: {},
+        receiverAccount: {},
+        amount: {},
+        proofOfPayment: {},
         createdAt: '2024-01-01T00:00:00Z',
         finalStatus: 'pending',
       },
@@ -151,9 +143,6 @@ export class TransactionsController {
     @Body() body: CreateTransactionBody,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    console.log('Body recibido:', body);
-    console.log('File recibido:', file);
-
     if (!body || Object.keys(body).length === 0) {
       throw new BadRequestException('El body está vacío');
     }
@@ -167,21 +156,13 @@ export class TransactionsController {
 
     let parsedDto: Partial<CreateTransactionDto>;
     try {
-      parsedDto = JSON.parse(
-        body.createTransactionDto,
-      ) as Partial<CreateTransactionDto>;
+      parsedDto = JSON.parse(body.createTransactionDto) as Partial<CreateTransactionDto>;
     } catch {
-      throw new BadRequestException(
-        'El campo createTransactionDto debe ser un JSON válido',
-      );
+      throw new BadRequestException('El campo createTransactionDto debe ser un JSON válido');
     }
 
-    const createTransactionDto = plainToInstance(
-      CreateTransactionDto,
-      parsedDto,
-    );
+    const createTransactionDto = plainToInstance(CreateTransactionDto, parsedDto);
 
-    // Si no se envía archivo, file será undefined
     const fileData: FileUploadDTO = file
       ? {
           buffer: file.buffer,
@@ -198,12 +179,40 @@ export class TransactionsController {
           size: 0,
         };
 
-    return await this.transactionsService.create(
-      createTransactionDto,
-      fileData,
-    );
+    return await this.transactionsService.create(createTransactionDto, fileData);
   }
 
+  // Obtener historial de estados (público)
+  @Get('status/:id')
+  @ApiOperation({ summary: 'Obtener historial público de una transacción' })
+  @ApiQuery({ name: 'lastName', required: true, type: String })
+  @ApiResponse({
+    status: 200,
+    description: 'Historial de estados obtenido correctamente',
+    type: UserStatusHistoryResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'El apellido no coincide con el remitente de la transacción.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Transacción no encontrada o sin historial disponible.',
+  })
+  async getPublicStatusHistory(
+    @Param('id') id: string,
+    @Query('lastName') lastName: string,
+  ): Promise<UserStatusHistoryResponseDto> {
+    const history = await this.transactionsService.getPublicStatusHistory(id, lastName);
+    return {
+      success: true,
+      message: 'Historial obtenido correctamente',
+      data: history,
+    };
+  }
+
+  // Obtener todas las transacciones (uso interno/admin)
+  @Get()
   @ApiOperation({ summary: 'Obtener todas las transacciones' })
   @ApiResponse({
     status: 200,
@@ -215,37 +224,27 @@ export class TransactionsController {
           countryTransaction: 'Argentina',
           message: 'Transferencia de prueba',
           createdBy: 'fernandeezalan20@gmail.com',
-          senderAccount: {
-            /* ... */
-          },
-          receiverAccount: {
-            /* ... */
-          },
-          amount: {
-            /* ... */
-          },
-          proofOfPayment: {
-            /* ... */
-          },
+          senderAccount: {},
+          receiverAccount: {},
+          amount: {},
+          proofOfPayment: {},
           createdAt: '2024-01-01T00:00:00Z',
           finalStatus: 'pending',
         },
       ],
     },
   })
-  // buscar todos
-  @Get()
   findAll() {
     return this.transactionsService.findAll();
   }
 
+  // Obtener transacción por ID con autorización
   @Get(':transaction_id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @ApiOperation({
-    summary:
-      'Obtiene una transacción específica por su ID verificando el email del usuario',
+    summary: 'Obtiene una transacción específica por su ID verificando el email del usuario',
   })
   @ApiResponse({
     status: 200,
@@ -262,9 +261,6 @@ export class TransactionsController {
     @Request() req: RequestWithUser,
   ) {
     const userEmail = req.user.email;
-    return this.transactionsService.getTransactionByEmail(
-      transactionId,
-      userEmail,
-    );
+    return this.transactionsService.getTransactionByEmail(transactionId, userEmail);
   }
 }

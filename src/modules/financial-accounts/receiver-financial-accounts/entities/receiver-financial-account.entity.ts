@@ -13,6 +13,6 @@ export class ReceiverFinancialAccount extends FinancialAccount {
   @Column({ name: 'email' })
   email: string;
 
-  @OneToMany(() => Transaction, (transaction) => transaction.senderAccount)
+  @OneToMany(() => Transaction, (transaction) => transaction.receiverAccount)
   transactions: Transaction[];
 }

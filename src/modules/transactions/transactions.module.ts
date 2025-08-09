@@ -13,6 +13,7 @@ import { FileUploadService } from '../file-upload/file-upload.service';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
 import { UserDiscount } from '@users/entities/user-discount.entity';
+import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { UserDiscount } from '@users/entities/user-discount.entity';
       Amount,
       UserDiscount,
       ProofOfPayment,
+      AdministracionStatusLog,
     ]),
     FinancialAccountsModule,
   ],

@@ -2,17 +2,22 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Transaction } from './entities/transaction.entity';
 import { Repository } from 'typeorm';
-import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
+
+import { Transaction } from './entities/transaction.entity';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import { Amount } from './amounts/entities/amount.entity';
+import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
+import { UserStatusHistoryResponse } from '@common/interfaces/status-history.interface';
+
+import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
 import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
-import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
+
 import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
@@ -20,41 +25,101 @@ export class TransactionsService {
   constructor(
     @InjectRepository(Transaction)
     private readonly transactionsRepository: Repository<Transaction>,
+
+    @InjectRepository(AdministracionStatusLog)
+    private readonly statusLogRepository: Repository<AdministracionStatusLog>,
+
     private readonly financialAccountService: FinancialAccountsService,
     private readonly amountService: AmountsService,
     private readonly proofOfPaymentService: ProofOfPaymentsService,
   ) {}
 
-async create(
-  createTransactionDto: CreateTransactionDto,
-  file: FileUploadDTO,
-) {
-  const createAt = new Date();
+  /**
+   * Obtener historial público de una transacción validando por apellido
+   */
+  async getPublicStatusHistory(id: string, lastName: string): Promise<UserStatusHistoryResponse[]> {
+    console.log(`Buscando historial para transaction_id: ${id} y lastName: ${lastName}`);
 
-  const financialAccount = await this.financialAccountService.create(
-    createTransactionDto.financialAccounts,
-  );
+    try {
+      const transaction = await this.transactionsRepository.findOne({
+        where: { id },
+        relations: ['senderAccount'],
+      });
 
-  const amount = await this.amountService.create(createTransactionDto.amount);
+      if (!transaction) {
+        console.log('Transacción no encontrada.');
+        throw new NotFoundException('Transacción no encontrada.');
+      }
 
-  const proofOfPayment = await this.proofOfPaymentService.create(file);
+      if (!transaction.senderAccount) {
+        console.log('Cuenta del remitente no encontrada.');
+        throw new NotFoundException('Cuenta del remitente no encontrada.');
+      }
 
-  const transaction = this.transactionsRepository.create({
-    ...createTransactionDto,
-    senderAccount: financialAccount.sender,
-    receiverAccount: financialAccount.receiver,
-    createdAt: createAt,
-    amount,
-    proofOfPayment,
-  });
+      const normalizeString = (str: string) =>
+        str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-  const savedTransaction = await this.transactionsRepository.save(transaction);
+      const senderLastNameNormalized = normalizeString(transaction.senderAccount.lastName);
+      const lastNameNormalized = normalizeString(lastName);
 
-  // Ocultar userId antes de devolver la respuesta
-  return instanceToPlain(savedTransaction);
-}
+      if (senderLastNameNormalized !== lastNameNormalized) {
+        console.log('El apellido no coincide con el del remitente de la transacción.');
+        throw new UnauthorizedException('Apellido inválido.');
+   }
 
+      const statusHistory = await this.statusLogRepository
+        .createQueryBuilder('statusLog')
+        .leftJoin('statusLog.transaction', 'transaction')
+        .where('transaction.transaction_id = :id', { id })
+        .orderBy('statusLog.changedAt', 'DESC')
+        .getMany();
 
+      if (!statusHistory.length) {
+        console.log('La transacción aún sigue pendiente, no se ha realizado actualización o cambio.');
+        throw new NotFoundException('La transacción aún sigue pendiente, no se ha realizado actualización o cambio.');
+      }
+
+      return statusHistory.map((log) => ({
+        id: log.id,
+        status: log.status,
+        changedAt: log.changedAt,
+        message: log.message,
+      }));
+    } catch (error) {
+      console.error('Error en getPublicStatusHistory:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Crear una nueva transacción con cuentas, monto y comprobante
+   */
+  async create(createTransactionDto: CreateTransactionDto, file: FileUploadDTO) {
+    const createAt = new Date();
+
+    const financialAccount = await this.financialAccountService.create(
+      createTransactionDto.financialAccounts,
+    );
+
+    const amount = await this.amountService.create(createTransactionDto.amount);
+    const proofOfPayment = await this.proofOfPaymentService.create(file);
+
+    const transaction = this.transactionsRepository.create({
+      ...createTransactionDto,
+      senderAccount: financialAccount.sender,
+      receiverAccount: financialAccount.receiver,
+      createdAt: createAt,
+      amount,
+      proofOfPayment,
+    });
+
+    const savedTransaction = await this.transactionsRepository.save(transaction);
+    return instanceToPlain(savedTransaction); // Oculta userId en la respuesta
+  }
+
+  /**
+   * Obtener todas las transacciones con relaciones
+   */
   async findAll() {
     return await this.transactionsRepository.find({
       relations: {
@@ -66,10 +131,10 @@ async create(
     });
   }
 
-  async getTransactionByEmail(
-    transactionId: string,
-    userEmail: string,
-  ): Promise<Transaction> {
+  /**
+   * Obtener una transacción por ID validando el email
+   */
+  async getTransactionByEmail(transactionId: string, userEmail: string): Promise<Transaction> {
     if (!userEmail) {
       throw new ForbiddenException('Email is required');
     }
@@ -77,12 +142,8 @@ async create(
     const transaction = await this.transactionsRepository.findOne({
       where: { id: transactionId },
       relations: {
-        senderAccount: {
-          paymentMethod: true,
-        },
-        receiverAccount: {
-          paymentMethod: true,
-        },
+        senderAccount: { paymentMethod: true },
+        receiverAccount: { paymentMethod: true },
         amount: true,
         proofOfPayment: true,
       },

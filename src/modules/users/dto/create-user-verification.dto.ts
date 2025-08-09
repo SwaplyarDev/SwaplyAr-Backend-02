@@ -1,11 +1,14 @@
-import { IsString, IsOptional, IsEnum, IsNotEmpty, IsInt, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsNotEmpty,
+  IsInt,
+  Min,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { VerificationStatus } from '@users/entities/user-verification.entity';
 import { Type } from 'class-transformer';
-
-
-
-
 
 export class CreateUserVerificationDto {
   @ApiProperty({
@@ -14,14 +17,14 @@ export class CreateUserVerificationDto {
   @IsString()
   @IsNotEmpty()
   document_front: string;
-  
+
   @ApiProperty({
     description: 'URL de la imagen del reverso del documento de identidad',
   })
   @IsString()
   @IsNotEmpty()
   document_back: string;
-  
+
   @ApiProperty({
     description: 'URL de la selfie del usuario para verificación',
   })
@@ -29,7 +32,7 @@ export class CreateUserVerificationDto {
   @IsNotEmpty()
   selfie_image: string;
 
-    @ApiProperty({
+  @ApiProperty({
     description: 'Nota de rechazo opcional',
     required: false,
   })
@@ -39,13 +42,25 @@ export class CreateUserVerificationDto {
 }
 
 export class UploadFilesDto {
-  @ApiProperty({ type: 'string', format: 'binary', description: 'Imagen del frente del documento' })
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Imagen del frente del documento',
+  })
   document_front: any;
 
-  @ApiProperty({ type: 'string', format: 'binary', description: 'Imagen del reverso del documento' })
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Imagen del reverso del documento',
+  })
   document_back: any;
 
-  @ApiProperty({ type: 'string', format: 'binary', description: 'Selfie sosteniendo el documento' })
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Selfie sosteniendo el documento',
+  })
   selfie_image: any;
 }
 
@@ -64,7 +79,10 @@ export class GetVerificationsQueryDto {
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Cantidad de resultados por página', example: 10 })
+  @ApiPropertyOptional({
+    description: 'Cantidad de resultados por página',
+    example: 10,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()

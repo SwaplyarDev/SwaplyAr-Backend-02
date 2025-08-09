@@ -156,12 +156,19 @@ export class TransactionsController {
 
     let parsedDto: Partial<CreateTransactionDto>;
     try {
-      parsedDto = JSON.parse(body.createTransactionDto) as Partial<CreateTransactionDto>;
+      parsedDto = JSON.parse(
+        body.createTransactionDto,
+      ) as Partial<CreateTransactionDto>;
     } catch {
-      throw new BadRequestException('El campo createTransactionDto debe ser un JSON válido');
+      throw new BadRequestException(
+        'El campo createTransactionDto debe ser un JSON válido',
+      );
     }
 
-    const createTransactionDto = plainToInstance(CreateTransactionDto, parsedDto);
+    const createTransactionDto = plainToInstance(
+      CreateTransactionDto,
+      parsedDto,
+    );
 
     const fileData: FileUploadDTO = file
       ? {
@@ -179,7 +186,10 @@ export class TransactionsController {
           size: 0,
         };
 
-    return await this.transactionsService.create(createTransactionDto, fileData);
+    return await this.transactionsService.create(
+      createTransactionDto,
+      fileData,
+    );
   }
 
   // Obtener historial de estados (público)
@@ -203,7 +213,10 @@ export class TransactionsController {
     @Param('id') id: string,
     @Query('lastName') lastName: string,
   ): Promise<UserStatusHistoryResponseDto> {
-    const history = await this.transactionsService.getPublicStatusHistory(id, lastName);
+    const history = await this.transactionsService.getPublicStatusHistory(
+      id,
+      lastName,
+    );
     return {
       success: true,
       message: 'Historial obtenido correctamente',
@@ -244,7 +257,8 @@ export class TransactionsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @ApiOperation({
-    summary: 'Obtiene una transacción específica por su ID verificando el email del usuario',
+    summary:
+      'Obtiene una transacción específica por su ID verificando el email del usuario',
   })
   @ApiResponse({
     status: 200,
@@ -261,6 +275,9 @@ export class TransactionsController {
     @Request() req: RequestWithUser,
   ) {
     const userEmail = req.user.email;
-    return this.transactionsService.getTransactionByEmail(transactionId, userEmail);
+    return this.transactionsService.getTransactionByEmail(
+      transactionId,
+      userEmail,
+    );
   }
 }

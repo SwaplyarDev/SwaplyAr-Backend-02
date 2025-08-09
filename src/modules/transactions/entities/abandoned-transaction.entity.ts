@@ -1,9 +1,4 @@
-import {
-  Column,
-  Entity,
-  PrimaryColumn,
-  BeforeInsert,
-} from 'typeorm';
+import { Column, Entity, PrimaryColumn, BeforeInsert } from 'typeorm';
 import { customAlphabet } from 'nanoid';
 
 const nanoidCustom = customAlphabet(

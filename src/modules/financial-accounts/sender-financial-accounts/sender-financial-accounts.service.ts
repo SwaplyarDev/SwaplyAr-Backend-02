@@ -42,38 +42,39 @@ export class SenderFinancialAccountsService {
   }
 
   async findById(id: string) {
-  return this.senderRepository.findOne({
-    where: { id },
-    relations: ['paymentMethod'], // si estás usando relaciones
-  });
-}
-
+    return this.senderRepository.findOne({
+      where: { id },
+      relations: ['paymentMethod'], // si estás usando relaciones
+    });
+  }
 
   async update(id: string, dto: UpdateSenderFinancialAccountDto) {
-  const senderAccount = await this.senderRepository.findOne({ where: { id }, relations: ['paymentMethod'] });
+    const senderAccount = await this.senderRepository.findOne({
+      where: { id },
+      relations: ['paymentMethod'],
+    });
 
-  if (!senderAccount) {
-    throw new NotFoundException(`Sender account with ID ${id} not found`);
+    if (!senderAccount) {
+      throw new NotFoundException(`Sender account with ID ${id} not found`);
+    }
+
+    // Actualiza campos básicos
+    if (dto.firstName) senderAccount.firstName = dto.firstName;
+    if (dto.lastName) senderAccount.lastName = dto.lastName;
+
+    // Actualiza el paymentMethod (si se envía)
+    if (dto.paymentMethod) {
+      Object.assign(senderAccount.paymentMethod, dto.paymentMethod);
+    }
+
+    return await this.senderRepository.save(senderAccount);
   }
 
-  // Actualiza campos básicos
-  if (dto.firstName) senderAccount.firstName = dto.firstName;
-  if (dto.lastName) senderAccount.lastName = dto.lastName;
+  async delete(id: string): Promise<boolean> {
+    const account = await this.senderRepository.findOne({ where: { id } });
+    if (!account) return false;
 
-  // Actualiza el paymentMethod (si se envía)
-  if (dto.paymentMethod) {
-    Object.assign(senderAccount.paymentMethod, dto.paymentMethod);
+    await this.senderRepository.delete(id);
+    return true;
   }
-
-  return await this.senderRepository.save(senderAccount);
-}
-
-async delete(id: string): Promise<boolean> {
-  const account = await this.senderRepository.findOne({ where: { id } });
-  if (!account) return false;
-
-  await this.senderRepository.delete(id);
-  return true;
-}
-
 }

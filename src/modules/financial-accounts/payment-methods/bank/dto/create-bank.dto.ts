@@ -17,7 +17,10 @@ export class CreateBankDto {
   @IsNotEmpty()
   sendMethodKey: string;
 
-  @ApiProperty({ description: 'Valor del método de envío', example: '1234567890123456789012' })
+  @ApiProperty({
+    description: 'Valor del método de envío',
+    example: '1234567890123456789012',
+  })
   @IsString()
   @IsNotEmpty()
   sendMethodValue: string;
@@ -27,13 +30,14 @@ export class CreateBankDto {
   @IsNotEmpty()
   documentType: string;
 
-  @ApiProperty({ description: 'Número de documento del titular', example: '87654321' })
+  @ApiProperty({
+    description: 'Número de documento del titular',
+    example: '87654321',
+  })
   @IsString()
   @IsNotEmpty()
   documentValue: string;
 }
-
-
 
 export class UpdateBankDto {
   @IsOptional()

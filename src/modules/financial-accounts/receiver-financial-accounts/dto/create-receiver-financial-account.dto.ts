@@ -1,12 +1,7 @@
 import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  ValidateNested,
-  IsString,
-  IsEmail,
-  IsNotEmpty,
-} from 'class-validator';
+import { ValidateNested, IsString, IsEmail, IsNotEmpty } from 'class-validator';
 
 export class CreateReceiverFinancialAccountDto {
   @ApiProperty({ description: 'Nombre del usuario', example: 'Nahuel' })
@@ -29,7 +24,10 @@ export class CreateReceiverFinancialAccountDto {
   @IsNotEmpty()
   phoneNumber: string;
 
-  @ApiProperty({ description: 'Email del usuario', example: 'nahuel@gmail.com',})
+  @ApiProperty({
+    description: 'Email del usuario',
+    example: 'nahuel@gmail.com',
+  })
   @IsEmail()
   email: string;
 

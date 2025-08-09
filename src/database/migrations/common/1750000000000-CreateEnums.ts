@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateEnums1750000001000 implements MigrationInterface {
   name = 'CreateEnums1750000001000';

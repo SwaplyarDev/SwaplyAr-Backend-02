@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateNotes1750000004000 implements MigrationInterface {
   name = 'CreateNotes1750000004000';

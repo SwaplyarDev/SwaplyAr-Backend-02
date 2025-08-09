@@ -6,8 +6,11 @@ export class CreateVirtualBankDto {
   @IsString()
   @IsNotEmpty()
   currency: string;
-  
-  @ApiProperty({ description: 'Email de la cuenta', example: 'nahuel@gmail.com',})
+
+  @ApiProperty({
+    description: 'Email de la cuenta',
+    example: 'nahuel@gmail.com',
+  })
   @IsString()
   @IsNotEmpty()
   emailAccount: string;

@@ -253,8 +253,12 @@ export class AdminController {
         },
         additionalData: {
           type: 'object',
-          example: { motivo: 'Verificación completa', notas: 'Sin observaciones' },
-          description: 'Datos adicionales que pueden acompañar el cambio de estado',
+          example: {
+            motivo: 'Verificación completa',
+            notas: 'Sin observaciones',
+          },
+          description:
+            'Datos adicionales que pueden acompañar el cambio de estado',
         },
       },
       required: ['status'],

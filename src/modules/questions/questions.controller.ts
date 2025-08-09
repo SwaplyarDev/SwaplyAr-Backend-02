@@ -1,5 +1,3 @@
-
-
 import {
   Body,
   Controller,
@@ -31,164 +29,107 @@ import {
 } from './validation/question.schema';
 import { BadRequestException } from '@nestjs/common';
 
-@ApiTags ('Questions')
-@Controller ('questions')
-@ApiBearerAuth ()
-
+@ApiTags('Questions')
+@Controller('questions')
+@ApiBearerAuth()
 export class QuestionsController {
+  constructor(private readonly questionsService: QuestionsService) {}
 
-  constructor (private readonly questionsService: QuestionsService) {}
-
-  @ApiOperation ({ summary: 'Obtener todas las preguntas' })
-
-  @ApiResponse ({
-
+  @ApiOperation({ summary: 'Obtener todas las preguntas' })
+  @ApiResponse({
     status: 200,
     description: 'Preguntas obtenidas correctamente',
     type: [Question],
-
   })
-
-  @Get ()
-
-  async getAllQuestions (): Promise<Question[]> {
-
-    return this.questionsService.findAll ();
-
+  @Get()
+  async getAllQuestions(): Promise<Question[]> {
+    return this.questionsService.findAll();
   }
 
-  @ApiOperation ({ summary: 'Obtener todas las preguntas por página' })
-
-  @ApiResponse ({
-
+  @ApiOperation({ summary: 'Obtener todas las preguntas por página' })
+  @ApiResponse({
     status: 200,
     description: 'Preguntas obtenidas correctamente por página',
     type: [Question],
-
   })
-
-  @ApiResponse ({
-
+  @ApiResponse({
     status: 400,
     description: 'El parámetro "page" debe ser un número',
-
   })
-
-  @ApiResponse ({
-
-   status: 500,
-   description: 'Error al obtener las preguntas paginadas',
-
+  @ApiResponse({
+    status: 500,
+    description: 'Error al obtener las preguntas paginadas',
   })
-
   @Get('paginated')
-  async getAllQuestionsPaginated (
+  async getAllQuestionsPaginated(
+    @Query('page') page: string = '1',
+  ): Promise<{ data: Question[]; total: number; page: number; limit: number }> {
+    try {
+      const pageNumber = parseInt(page, 10);
 
-    @Query ('page') page: string = '1',
-
-  ): Promise <{ data: Question []; total: number; page: number; limit: number }> {
-
-      try {
-
-        const pageNumber = parseInt (page, 10);
-
-        if (isNaN (pageNumber)) {
-
-          throw new BadRequestException (
-
-            'El parámetro "page" debe ser un número válido',
-
-          );          
-
-        }
-
-        const currentPage = pageNumber <= 0 ? 1 : pageNumber;
-        const limit = 9;
-        return await this.questionsService.findAllPaginated(currentPage, limit);
-
-
-      } catch (error) {
-
-        if (error instanceof BadRequestException) {
-
-         throw error;
-
-        }
-
-        throw new InternalServerErrorException (
-
-          'Error al obtener las preguntas paginadas',
-
-        ); 
-
+      if (isNaN(pageNumber)) {
+        throw new BadRequestException(
+          'El parámetro "page" debe ser un número válido',
+        );
       }
 
+      const currentPage = pageNumber <= 0 ? 1 : pageNumber;
+      const limit = 9;
+      return await this.questionsService.findAllPaginated(currentPage, limit);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Error al obtener las preguntas paginadas',
+      );
     }
+  }
 
-  @ApiOperation ({ summary: 'Obtener una pregunta por ID' })
-
-  @ApiResponse ({
-
+  @ApiOperation({ summary: 'Obtener una pregunta por ID' })
+  @ApiResponse({
     status: 200,
     description: 'Pregunta encontrada',
     type: Question,
-
   })
-
-  @ApiResponse ({ status: 404, description: 'Pregunta no encontrada' })
-
+  @ApiResponse({ status: 404, description: 'Pregunta no encontrada' })
   @Get(':id')
-
-  async getQuestionById (@Param('id') id: string): Promise<Question> {
-
-    const question = await this.questionsService.findById (id);
+  async getQuestionById(@Param('id') id: string): Promise<Question> {
+    const question = await this.questionsService.findById(id);
 
     if (!question) {
-
-      throw new NotFoundException (`Pregunta con ID ${id} no encontrada`);
-
+      throw new NotFoundException(`Pregunta con ID ${id} no encontrada`);
     }
 
     return question;
-
   }
 
-  @ApiOperation ({ summary: 'Crear una nueva pregunta (admin solo)' })
-
-  @ApiResponse ({
-
+  @ApiOperation({ summary: 'Crear una nueva pregunta (admin solo)' })
+  @ApiResponse({
     status: 201,
     description: 'Pregunta creada correctamente',
     type: Question,
-
   })
-
-  @ApiBody ({ type: CreateQuestionDto })
-  @UseGuards (JwtAuthGuard, AdminRoleGuard)
-  @Post ()
-
-  async createQuestion (@Body () body: CreateQuestionDto): Promise<Question> {
-
-    const result = createQuestionSchema.safeParse (body);
+  @ApiBody({ type: CreateQuestionDto })
+  @UseGuards(JwtAuthGuard, AdminRoleGuard)
+  @Post()
+  async createQuestion(@Body() body: CreateQuestionDto): Promise<Question> {
+    const result = createQuestionSchema.safeParse(body);
 
     if (!result.success) {
-
-      const isStrictError = result.error.issues.some (
-
+      const isStrictError = result.error.issues.some(
         (issue) => issue.code === 'unrecognized_keys',
-
       );
 
       const message = isStrictError
         ? "Solo se aceptan los campos 'title' y 'description'"
-        : result.error.issues.map ((err) => err.message).join (', ');
+        : result.error.issues.map((err) => err.message).join(', ');
 
-      throw new BadRequestException (message);
-
+      throw new BadRequestException(message);
     }
 
-    return this.questionsService.create (result.data);
-
+    return this.questionsService.create(result.data);
   }
 
   // @Post()
@@ -206,29 +147,22 @@ export class QuestionsController {
   @ApiResponse({ status: 204, description: 'Pregunta eliminada correctamente' })
   @ApiResponse({ status: 404, description: 'Pregunta no encontrada' })
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
-
   @Delete(':id')
-
-  async deleteQuestion (@Param ('id') id: string): Promise<void> {
-
-    const result = deleteQuestionSchema.safeParse ({ id });
+  async deleteQuestion(@Param('id') id: string): Promise<void> {
+    const result = deleteQuestionSchema.safeParse({ id });
 
     if (!result.success) {
-
-      const message = result.error.issues.map ((err) => err.message).join (', ');
-      throw new BadRequestException (message);
+      const message = result.error.issues.map((err) => err.message).join(', ');
+      throw new BadRequestException(message);
     }
 
-    const question = await this.questionsService.findById (id);
+    const question = await this.questionsService.findById(id);
 
     if (!question) {
-
       throw new NotFoundException(`Pregunta con ID ${id} no encontrada`);
-
     }
 
-    await this.questionsService.delete (id);
-
+    await this.questionsService.delete(id);
   }
 
   // @Delete(':id')
@@ -241,6 +175,3 @@ export class QuestionsController {
   //   await this.questionsService.delete(id);
   // }
 }
-
-
-

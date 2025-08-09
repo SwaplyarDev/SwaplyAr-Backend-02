@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UserProfileDto {
-   @ApiProperty({ example: 'Juan' })
+  @ApiProperty({ example: 'Juan' })
   firstName: string;
 
   @ApiProperty({ example: 'Pérez' })
@@ -36,22 +36,38 @@ export class VerificationDataDto {
   @ApiProperty({ example: 'https://...' })
   selfie_image: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     enum: ['pending', 'verified', 'rejected', 'resend-data'],
     example: 'verified',
   })
   verification_status: 'pending' | 'verified' | 'rejected' | 'resend-data';
 
-  @ApiPropertyOptional({ example: 'Documento ilegible o dañado', nullable: true })
+  @ApiPropertyOptional({
+    example: 'Documento ilegible o dañado',
+    nullable: true,
+  })
   note_rejection?: string | null;
 
-  @ApiPropertyOptional({ example: '2025-07-28T15:58:23.252Z', nullable: true, type: String, format: 'date-time' })
+  @ApiPropertyOptional({
+    example: '2025-07-28T15:58:23.252Z',
+    nullable: true,
+    type: String,
+    format: 'date-time',
+  })
   verified_at?: string | null;
 
-  @ApiProperty({ example: '2025-07-28T15:49:56.108Z', type: String, format: 'date-time' })
+  @ApiProperty({
+    example: '2025-07-28T15:49:56.108Z',
+    type: String,
+    format: 'date-time',
+  })
   created_at: string;
 
-  @ApiProperty({ example: '2025-07-28T15:58:23.285Z', type: String, format: 'date-time' })
+  @ApiProperty({
+    example: '2025-07-28T15:58:23.285Z',
+    type: String,
+    format: 'date-time',
+  })
   updated_at: string;
 
   @ApiPropertyOptional({ type: () => UserProfileDto, nullable: true })

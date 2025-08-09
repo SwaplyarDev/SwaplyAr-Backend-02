@@ -1,5 +1,3 @@
-
-
 /**
  * Test unitarios para el controlador QuestionsController (getAllQuestionsPaginated y createQuestions).
  *
@@ -14,209 +12,149 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuestionsController } from './questions.controller';
 import { QuestionsService } from './questions.service';
-import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Question } from './entities/question.entity';
 import { CreateQuestionDto } from './dto/create-question.dto';
 
-describe ('QuestionsController', () => {
-
+describe('QuestionsController', () => {
   let controller: QuestionsController;
 
   let questionsService: {
-
     findAllPaginated: jest.Mock;
     create: jest.Mock;
-
   };
 
-  beforeEach (async () => {
-
+  beforeEach(async () => {
     questionsService = {
-
-      findAllPaginated: jest.fn (),
-      create: jest.fn (),
-
+      findAllPaginated: jest.fn(),
+      create: jest.fn(),
     };
 
-    const module: TestingModule = await Test.createTestingModule ({
-
+    const module: TestingModule = await Test.createTestingModule({
       controllers: [QuestionsController],
 
-      providers: [
-
-        { provide: QuestionsService, useValue: questionsService },
-
-      ],
+      providers: [{ provide: QuestionsService, useValue: questionsService }],
     }).compile();
 
     controller = module.get<QuestionsController>(QuestionsController);
   });
 
-  describe ('getAllQuestionsPaginated', () => {
-
-    it ('Debe devolver preguntas paginadas con un "page" válido', async () => {
-
+  describe('getAllQuestionsPaginated', () => {
+    it('Debe devolver preguntas paginadas con un "page" válido', async () => {
       const mockResult = {
-
         data: [
-
           {
-
             id: '1',
             title: 'Pregunta demo',
             description: 'Descripción demo',
-
           },
-
         ],
 
         total: 1,
         page: 1,
         limit: 9,
-
       };
 
-      questionsService.findAllPaginated.mockResolvedValue (mockResult);
+      questionsService.findAllPaginated.mockResolvedValue(mockResult);
 
-      const result = await controller.getAllQuestionsPaginated ('1');
+      const result = await controller.getAllQuestionsPaginated('1');
 
-      expect (questionsService.findAllPaginated).toHaveBeenCalledWith (1, 9);
-      expect (result).toEqual (mockResult);
-
+      expect(questionsService.findAllPaginated).toHaveBeenCalledWith(1, 9);
+      expect(result).toEqual(mockResult);
     });
 
-    it ('Debe corregir el valor si "page" es 0 o negativo', async () => {
-
+    it('Debe corregir el valor si "page" es 0 o negativo', async () => {
       const mockResult = {
-
         data: [],
         total: 1,
         page: 1,
         limit: 9,
-
       };
 
-      questionsService.findAllPaginated.mockResolvedValue (mockResult);
+      questionsService.findAllPaginated.mockResolvedValue(mockResult);
 
       const result = await controller.getAllQuestionsPaginated('-3');
 
-      expect (questionsService.findAllPaginated).toHaveBeenCalledWith (1, 9);
-      expect (result.page).toBe(1);
-
+      expect(questionsService.findAllPaginated).toHaveBeenCalledWith(1, 9);
+      expect(result.page).toBe(1);
     });
 
-    it ('Debe lanzar BadRequestException si "page" no es un número', async () => {
-
-      await expect (controller.getAllQuestionsPaginated ('abc')).rejects.toThrow (
-
+    it('Debe lanzar BadRequestException si "page" no es un número', async () => {
+      await expect(controller.getAllQuestionsPaginated('abc')).rejects.toThrow(
         BadRequestException,
-
       );
-
     });
 
-    it ('Debe usar la página 1 si no se pasa el query param "page"', async () => {
-
-        const mockResult = {
-
+    it('Debe usar la página 1 si no se pasa el query param "page"', async () => {
+      const mockResult = {
         data: [],
         total: 1,
         page: 1,
         limit: 9,
+      };
 
-    };
-
-    questionsService.findAllPaginated.mockResolvedValue (mockResult);
-    const result = await controller.getAllQuestionsPaginated (undefined);
-    expect (questionsService.findAllPaginated).toHaveBeenCalledWith(1, 9);
-    expect (result.page).toBe(1);
-
+      questionsService.findAllPaginated.mockResolvedValue(mockResult);
+      const result = await controller.getAllQuestionsPaginated(undefined);
+      expect(questionsService.findAllPaginated).toHaveBeenCalledWith(1, 9);
+      expect(result.page).toBe(1);
     });
 
-    it ('Debe lanzar InternalServerErrorException si el servicio falla inesperadamente', async () => {
-
-      questionsService.findAllPaginated.mockImplementation (() => {
-
-        throw new Error ('Error inesperado');
-
+    it('Debe lanzar InternalServerErrorException si el servicio falla inesperadamente', async () => {
+      questionsService.findAllPaginated.mockImplementation(() => {
+        throw new Error('Error inesperado');
       });
 
-      await expect (controller.getAllQuestionsPaginated ('1')).rejects.toThrow (
-
+      await expect(controller.getAllQuestionsPaginated('1')).rejects.toThrow(
         InternalServerErrorException,
-
       );
-
     });
-
   });
 
-
-  describe ('createQuestion', () => {
-
-    it ('Debe crear una pregunta si el DTO es válido según Zod', async () => {
-
+  describe('createQuestion', () => {
+    it('Debe crear una pregunta si el DTO es válido según Zod', async () => {
       const dto: CreateQuestionDto = {
-
         title: '¿Prueba?',
         description: 'Prueba ...',
-
       };
 
       const createdQuestion: Question = {
-
         id: '1',
         title: dto.title,
         description: dto.description,
-
       };
 
-      questionsService.create.mockResolvedValue (createdQuestion);
+      questionsService.create.mockResolvedValue(createdQuestion);
 
-      const result = await controller.createQuestion (dto);
+      const result = await controller.createQuestion(dto);
 
-      expect (questionsService.create).toHaveBeenCalledWith (dto);
-      expect (result).toEqual(createdQuestion);
-
+      expect(questionsService.create).toHaveBeenCalledWith(dto);
+      expect(result).toEqual(createdQuestion);
     });
 
-    it ('Debe lanzar BadRequestException si el DTO tiene campos inválidos según Zod', async () => {
-
+    it('Debe lanzar BadRequestException si el DTO tiene campos inválidos según Zod', async () => {
       const invalidDto = {
-
         title: '',
         description: '',
-        
       };
 
-      await expect (controller.createQuestion (invalidDto as any)).rejects.toThrow (
-
-        BadRequestException,
-
-      );
-
+      await expect(
+        controller.createQuestion(invalidDto as any),
+      ).rejects.toThrow(BadRequestException);
     });
 
-    it ('Debe lanzar BadRequestException si el DTO contiene campos extra no permitidos', async () => {
-
+    it('Debe lanzar BadRequestException si el DTO contiene campos extra no permitidos', async () => {
       const invalidDto = {
-
         title: 'Título válido',
         description: 'Descripción válida',
         extra: 'campo no permitido',
-
       };
 
-      await expect (controller.createQuestion (invalidDto as any)).rejects.toThrow (
-
-        BadRequestException,
-
-      );
-
+      await expect(
+        controller.createQuestion(invalidDto as any),
+      ).rejects.toThrow(BadRequestException);
     });
-
   });
-  
 });
-
-

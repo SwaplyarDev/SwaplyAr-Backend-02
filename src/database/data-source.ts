@@ -1,4 +1,3 @@
-// src/database/data-source.ts
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
 
@@ -11,6 +10,6 @@ export const AppDataSource = new DataSource({
       : false,
   synchronize: false,
   entities: ['src/**/*.entity.ts'],
-  migrations: ['src/database/migrations/**/*.ts'], // ahora detecta subcarpetas
+  migrations: ['src/database/migrations/**/*.ts'],
   subscribers: [],
 });

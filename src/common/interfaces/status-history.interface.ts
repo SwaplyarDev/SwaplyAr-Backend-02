@@ -15,7 +15,6 @@ export interface StatusHistoryResponse {
   additionalData?: Record<string, any>;
 }
 
-
 export interface UserStatusHistoryResponse {
   id: string;
   status: AdminStatus;

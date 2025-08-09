@@ -26,5 +26,3 @@ export class FinancialAccount {
   @JoinColumn({ name: 'payment_method_id' })
   paymentMethod: PaymentMethod;
 }
-
-

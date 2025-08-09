@@ -40,38 +40,41 @@ export class ReceiverFinancialAccountsService {
   }
 
   async findById(id: string) {
-  return this.receiverRepository.findOne({
-    where: { id },
-    relations: ['paymentMethod'], // si estás usando relaciones
-  });
-}
+    return this.receiverRepository.findOne({
+      where: { id },
+      relations: ['paymentMethod'], // si estás usando relaciones
+    });
+  }
 
   async update(id: string, dto: UpdateReceiverFinancialAccountDto) {
-    const senderAccount = await this.receiverRepository.findOne({ where: { id }, relations: ['paymentMethod'] });
-  
+    const senderAccount = await this.receiverRepository.findOne({
+      where: { id },
+      relations: ['paymentMethod'],
+    });
+
     if (!senderAccount) {
       throw new NotFoundException(`Sender account with ID ${id} not found`);
-  }
-  
+    }
+
     // Actualiza campos básicos
     if (dto.firstName) senderAccount.firstName = dto.firstName;
     if (dto.lastName) senderAccount.lastName = dto.lastName;
-  
+
     // Actualiza el paymentMethod (si se envía)
     if (dto.paymentMethod) {
       Object.assign(senderAccount.paymentMethod, dto.paymentMethod);
-  }
-  
+    }
+
     return await this.receiverRepository.save(senderAccount);
   }
 
   async delete(id: string): Promise<boolean> {
-  const account = await this.receiverRepository.findOne({ where: { id } });
-  if (!account) return false;
+    const account = await this.receiverRepository.findOne({ where: { id } });
+    if (!account) return false;
 
-  await this.receiverRepository.delete(id);
-  return true;
-}
+    await this.receiverRepository.delete(id);
+    return true;
+  }
 
   async addBankToReceiver(receiverId: string, bankDto: any, platformId: any) {
     const receiver = await this.receiverRepository.findOne({

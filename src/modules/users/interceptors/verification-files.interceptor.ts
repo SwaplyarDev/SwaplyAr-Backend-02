@@ -12,7 +12,10 @@ export const VerificationFilesInterceptor = FileFieldsInterceptor(
     storage: memoryStorage(),
     fileFilter: (_, file, cb) => {
       if (!file.originalname.match(/\.(jpg|jpeg|png)$/i)) {
-        return cb(new BadRequestException('Solo se permiten imágenes (jpg, jpeg, png)'), false);
+        return cb(
+          new BadRequestException('Solo se permiten imágenes (jpg, jpeg, png)'),
+          false,
+        );
       }
       cb(null, true);
     },

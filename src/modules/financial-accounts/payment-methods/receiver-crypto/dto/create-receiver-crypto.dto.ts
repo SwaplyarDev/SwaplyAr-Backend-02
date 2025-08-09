@@ -16,5 +16,4 @@ export class CreateReceiverCryptoDto {
   @IsString()
   @IsNotEmpty()
   wallet: string;
-
 }

@@ -37,8 +37,13 @@ export class TransactionsService {
   /**
    * Obtener historial público de una transacción validando por apellido
    */
-  async getPublicStatusHistory(id: string, lastName: string): Promise<UserStatusHistoryResponse[]> {
-    console.log(`Buscando historial para transaction_id: ${id} y lastName: ${lastName}`);
+  async getPublicStatusHistory(
+    id: string,
+    lastName: string,
+  ): Promise<UserStatusHistoryResponse[]> {
+    console.log(
+      `Buscando historial para transaction_id: ${id} y lastName: ${lastName}`,
+    );
 
     try {
       const transaction = await this.transactionsRepository.findOne({
@@ -57,15 +62,22 @@ export class TransactionsService {
       }
 
       const normalizeString = (str: string) =>
-        str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        str
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
 
-      const senderLastNameNormalized = normalizeString(transaction.senderAccount.lastName);
+      const senderLastNameNormalized = normalizeString(
+        transaction.senderAccount.lastName,
+      );
       const lastNameNormalized = normalizeString(lastName);
 
       if (senderLastNameNormalized !== lastNameNormalized) {
-        console.log('El apellido no coincide con el del remitente de la transacción.');
+        console.log(
+          'El apellido no coincide con el del remitente de la transacción.',
+        );
         throw new UnauthorizedException('Apellido inválido.');
-   }
+      }
 
       const statusHistory = await this.statusLogRepository
         .createQueryBuilder('statusLog')
@@ -75,8 +87,12 @@ export class TransactionsService {
         .getMany();
 
       if (!statusHistory.length) {
-        console.log('La transacción aún sigue pendiente, no se ha realizado actualización o cambio.');
-        throw new NotFoundException('La transacción aún sigue pendiente, no se ha realizado actualización o cambio.');
+        console.log(
+          'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
+        );
+        throw new NotFoundException(
+          'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
+        );
       }
 
       return statusHistory.map((log) => ({
@@ -94,7 +110,10 @@ export class TransactionsService {
   /**
    * Crear una nueva transacción con cuentas, monto y comprobante
    */
-  async create(createTransactionDto: CreateTransactionDto, file: FileUploadDTO) {
+  async create(
+    createTransactionDto: CreateTransactionDto,
+    file: FileUploadDTO,
+  ) {
     const createAt = new Date();
 
     const financialAccount = await this.financialAccountService.create(
@@ -113,7 +132,8 @@ export class TransactionsService {
       proofOfPayment,
     });
 
-    const savedTransaction = await this.transactionsRepository.save(transaction);
+    const savedTransaction =
+      await this.transactionsRepository.save(transaction);
     return instanceToPlain(savedTransaction); // Oculta userId en la respuesta
   }
 
@@ -134,7 +154,10 @@ export class TransactionsService {
   /**
    * Obtener una transacción por ID validando el email
    */
-  async getTransactionByEmail(transactionId: string, userEmail: string): Promise<Transaction> {
+  async getTransactionByEmail(
+    transactionId: string,
+    userEmail: string,
+  ): Promise<Transaction> {
     if (!userEmail) {
       throw new ForbiddenException('Email is required');
     }

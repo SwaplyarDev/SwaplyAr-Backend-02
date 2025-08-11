@@ -18,29 +18,55 @@ export class MailerService {
       configService.get<SMTPTransport.Options>('nodemailer'),
     );
   }
-  // constructor(private readonly configService: ConfigService) {
-  //   this.mailer = createTransport({
-  //     service: 'gmail', // Puedes cambiarlo si usas otro proveedor
-  //     auth: {
-  //       user: this.configService.get<string>('EMAIL_USER'),
-  //       pass: this.configService.get<string>('EMAIL_PASS'),
-  //     },
-  //   });
+  
 
-  async sendAuthCodeMail(to: string, code: string) {
-    const from = this.configService.get<string>('nodemailer.auth.user');
-    this.logger.log(`Mailer verification: ${await this.mailer.verify()}`);
-    this.logger.log(`Sending mail from ${from} to ${to}`);
+  //* Modificación de codigo de autenticación con un template de respuesta */////
 
-    await this.mailer.sendMail({
-      from,
-      to,
-      subject: 'Código de autenticación',
-      text: code, // Email templates will be added later.
-    });
+  async sendAuthCodeMail(
+      to: string,
+      data: {
+        NAME: string;
+        VERIFICATION_CODE: string;
+        BASE_URL: string;
+        LOCATION?: string;
+        EXPIRATION_MINUTES: number;
+      },
+      subject: string = 'Código de verificación - SwaplyAr',
+    ) {
+      const from = this.configService.get<string>('EMAIL_USER');
+      const templatePath = join(
+        process.cwd(),
+        'src',
+        'modules',
+        'mailer',
+        'templates',
+        'email',
+        'auth',
+        'welcome_verification_code.hbs',
+      );
+      const rawTemplate = readFileSync(templatePath, 'utf8');
+      const compiled = Handlebars.compile(rawTemplate);
+  
+      const html = compiled(data);
+  
+      await this.mailer.sendMail({
+        from,
+        to,
+        subject,
+        html,
+      });
+  
+      return { message: `The code has been sent to the email ${to}` };
+    }
 
-    return { message: `The code has been sent to the email ${to}` };
-  }
+
+
+
+
+
+
+
+
   /**
    * Envía un correo al usuario cuando el estado de la transacción cambia.
    */
@@ -182,37 +208,31 @@ export class MailerService {
     };
   }
 
+  //////*********/////////// */
 
+  // async sendLoginCodeTemplateMail(to: string, data: { NAME: string; VERIFICATION_CODE: string; BASE_URL: string; LOCATION?: string; EXPIRATION_MINUTES: number }) {
+  //   const from = this.configService.get<string>('EMAIL_USER');
+  //   const templatePath = join(process.cwd(), 'src', 'modules', 'mailer', 'templates', 'email', 'auth', 'welcome_verification_code.hbs');
+  //   const rawTemplate = readFileSync(templatePath, 'utf8');
+  //   const compiled = Handlebars.compile(rawTemplate);
 
+  //   //const html = compiled(data);
 
-  async sendLoginCodeTemplateMail(to: string, code: string, baseUrl: string, location: string) {
-  const from = this.configService.get<string>('nodemailer.auth.user');
-  const templatePath = join(__dirname,'..', '..', 'templates', 'login', 'loginCodeSent.template.hbs');
-  const rawTemplate = readFileSync(templatePath, 'utf8');
-  const compiled = Handlebars.compile(rawTemplate);
-  const html = compiled({
-    EMAIL: to,
-    CODE: code,
-    BASE_URL: baseUrl,
-    LOCATION: location,
-    MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
-  });
+  //   const html = compiled({
+  //     NAME: data.NAME,
+  //     VERIFICATION_CODE: data.VERIFICATION_CODE,
+  //     BASE_URL: data.BASE_URL,
+  //     LOCATION: data.LOCATION,
+  //     EXPIRATION_MINUTES: data.EXPIRATION_MINUTES,
+  //   })
 
-  console.log('HTML generado:', html);
-
-  await this.mailer.sendMail({
-    from,
-    to,
-    subject: 'Código de verificación para iniciar sesión',
-
-    html,
-  });
-
-
-
-  //return { message: `El código ha sido enviado a ${to}` };
-
-
+  //   await this.mailer.sendMail({
+  //     from,
+  //     to,
+  //     subject: 'Código de verificación - SwaplyAr',
+  //     html,
+  //   });
+  // }
 
 }
-}
+

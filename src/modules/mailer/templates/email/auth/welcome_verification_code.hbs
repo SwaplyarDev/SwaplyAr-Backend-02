@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Código de verificación</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 20px;
+    }
+
+    .blue-border {
+      height: 7px;
+      background-color: #012d8a;
+      width: 95%;
+      margin: 0 auto;
+      border-radius: 20px;
+    }
+
+    .title {
+      color: #252526;
+      text-align: center;
+      font-size: 26px;
+      font-weight: 500;
+      margin-top: 20px;
+    }
+
+    .message {
+      color: #252526;
+      font-size: 16px;
+      line-height: 150%;
+      margin-top: 20px;
+      text-align: justify;
+    }
+
+    .code-box {
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      background-color: #f1f1f1;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 20px auto;
+      color: #012d8a;
+    }
+
+    .cta-button {
+      display: inline-block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #012d8a;
+      color: white;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    .footer {
+      font-size: 12px;
+      color: #777;
+      text-align: center;
+      margin-top: 30px;
+      line-height: 150%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <section class="blue-border"></section>
+    <div style="text-align:center">
+      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" alt="SwaplyAr Logotipo"
+        style="width: 180px; margin-top: 20px;" />
+    </div>
+    <div class="title">¡Bienvenido, {{NAME}}!</div>
+
+    <div class=" message">
+      Gracias por registrarte en <strong>SwaplyAr</strong>.
+      Para completar tu registro, utiliza el siguiente código de verificación:
+      <h4>Verifica tu correo electrónico para iniciar sesión</h4>
+    </div>
+    <div class="code-box">{{VERIFICATION_CODE}}</div>
+    <div style="text-align:center">
+      <a href="{{BASE_URL}}/auth/verify" class="cta-button">Verificar mi cuenta</a>
+    </div>
+    <div class="footer">
+      Este código expirará en {{EXPIRATION_MINUTES}} minutos.<br />
+      Si no solicitaste esta cuenta, puedes ignorar este mensaje.
+    </div>
+    <section class="blue-border" style="margin-top:20px;"></section>
+
+    <footer style="color: #666" class="footer">
+      <p style="color: #666">
+        Si no intentó iniciar sesión pero recibió este correo electrónico, o si la ubicación no coincide, ignore este
+        correo electrónico. No comparta ni reenvíe el código de 6 dígitos a nadie. Nuestro servicio de atención al
+        cliente
+        nunca lo solicitará. No lea este código en voz alta. Tenga cuidado con los intentos de phishing y siempre
+        verifique el remitente y el dominio <a style="font-weight: 600" href="{{BASE_URL}}"> (swaplyar.com)</a>antes de
+        actuar. Si le preocupa la seguridad de su cuenta, visite nuestra página <a href="{{BASE_URL}}/info/help-center"
+          style="font-weight: 600;">de Centro de Ayuda</a> para ponerse en contacto con nosotros.
+      </p>
+    </footer>
+    <div class="blue-border"></div>
+
+  </div>
+
+
+
+</body>
+
+</html>

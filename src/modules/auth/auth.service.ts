@@ -6,7 +6,6 @@ import { Repository } from 'typeorm';
 import { MailerService } from 'src/modules/mailer/mailer.service';
 import * as fs from 'fs';
 import * as path from 'path';
-import { MailerModule } from 'src/modules/mailer/mailer.module';
 import { User } from '@users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 
@@ -14,56 +13,56 @@ import { JwtService } from '@nestjs/jwt';
 export class AuthService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepo: Repository<User>, 
+    private readonly userRepo: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly mailerService: MailerService,
   ) { }
 
   private buildPayload(user: User) {
-  const profile = user.profile ?? {};
+    const profile = user.profile ?? {};
 
-  return {
-    sub: user.id,
-    email: profile.email ?? '', 
-    role: user.role,
-    fullName: `${profile.firstName ?? ''} ${profile.lastName ?? ''}`,
-    terms: user.termsAccepted,
-    isActive: user.isActive,
-    createdAt: user.createdAt,
-    profile: profile,
-    category: profile.category ?? null,
-    isValidated: user.isValidated,
-  };
-}
+    return {
+      sub: user.id,
+      email: profile.email ?? '',
+      role: user.role,
+      fullName: `${profile.firstName ?? ''} ${profile.lastName ?? ''}`,
+      terms: user.termsAccepted,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      profile: profile,
+      category: profile.category ?? null,
+      isValidated: user.isValidated,
+    };
+  }
 
 
   async generateTokens(user: User) {
-  const payload = this.buildPayload(user);
+    const payload = this.buildPayload(user);
 
-  const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
-  const refreshToken = this.jwtService.sign(payload, {
-    secret: process.env.JWT_REFRESH_SECRET,
-    expiresIn: '7d',
-  });
-
-  
-
-  await this.userRepo.update(user.id, { refreshToken });
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: '7d',
+    });
 
 
-  return {
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  };
-}
+
+    await this.userRepo.update(user.id, { refreshToken });
+
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
+  }
 
 
   async refreshAccessToken(refreshToken: string) {
     console.log('🧪 Buscando usuario con refreshToken:', refreshToken);
-  const user = await this.userRepo.findOne({
-    where: { refreshToken },
-    relations: ['profile'],
-  });
+    const user = await this.userRepo.findOne({
+      where: { refreshToken },
+      relations: ['profile'],
+    });
     if (!user || !user.refreshToken) {
       throw new BadRequestException('Invalid refresh token');
     }
@@ -90,13 +89,21 @@ export class AuthService {
   }
 
 
+  
+
   async sendLoginCodeEmail(user: User, code: string, location: string) {
-    await this.mailerService.sendLoginCodeTemplateMail(
-      user.profile.email,
-      code,
-      process.env.BASE_URL || 'http://localhost:3001',
-      location 
+    await this.mailerService.sendAuthCodeMail(
+      user.profile.email
+      , {
+        NAME: user.profile.firstName || user.profile.email,
+        VERIFICATION_CODE: code,
+        BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
+        LOCATION: location, // si querés mostrar desde dónde inició sesión
+        EXPIRATION_MINUTES: 15
+      }
     );
-    
   }
+
+
+
 }

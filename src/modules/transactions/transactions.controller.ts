@@ -31,6 +31,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { Transaction } from './entities/transaction.entity';
 import { string } from 'zod';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
+import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
 
 interface CreateTransactionBody {
   createTransactionDto: string;

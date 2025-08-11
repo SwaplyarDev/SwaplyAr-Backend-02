@@ -10,7 +10,6 @@ import { Repository } from 'typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
-import { Amount } from './amounts/entities/amount.entity';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { UserStatusHistoryResponse } from '@common/interfaces/status-history.interface';
 
@@ -18,7 +17,8 @@ import { FinancialAccountsService } from '@financial-accounts/financial-accounts
 import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 
-import { instanceToPlain } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
+import { TransactionResponseDto } from './dto/transaction-response.dto';
 
 @Injectable()
 export class TransactionsService {
@@ -110,32 +110,42 @@ export class TransactionsService {
   /**
    * Crear una nueva transacción con cuentas, monto y comprobante
    */
-  async create(
-    createTransactionDto: CreateTransactionDto,
-    file: FileUploadDTO,
-  ) {
-    const createAt = new Date();
 
-    const financialAccount = await this.financialAccountService.create(
-      createTransactionDto.financialAccounts,
-    );
 
-    const amount = await this.amountService.create(createTransactionDto.amount);
-    const proofOfPayment = await this.proofOfPaymentService.create(file);
+async create(
+  createTransactionDto: CreateTransactionDto,
+  file: FileUploadDTO,
+): Promise<TransactionResponseDto> {
+  const createdAt = new Date();
 
-    const transaction = this.transactionsRepository.create({
-      ...createTransactionDto,
-      senderAccount: financialAccount.sender,
-      receiverAccount: financialAccount.receiver,
-      createdAt: createAt,
-      amount,
-      proofOfPayment,
-    });
+  const financialAccounts = await this.financialAccountService.create(
+    createTransactionDto.financialAccounts,
+  );
 
-    const savedTransaction =
-      await this.transactionsRepository.save(transaction);
-    return instanceToPlain(savedTransaction); // Oculta userId en la respuesta
-  }
+  const amount = await this.amountService.create(createTransactionDto.amount);
+
+  const proofOfPayment = await this.proofOfPaymentService.create(file);
+
+  const transaction = this.transactionsRepository.create({
+    countryTransaction: createTransactionDto.countryTransaction,
+    message: createTransactionDto.message,
+    createdAt,
+    senderAccount: financialAccounts.sender,
+    receiverAccount: financialAccounts.receiver,
+    amount,
+    proofOfPayment,
+  });
+
+  const savedTransaction = await this.transactionsRepository.save(transaction);
+
+  const transactionDto = plainToInstance(TransactionResponseDto, savedTransaction, {
+  excludeExtraneousValues: true,
+
+  }); 
+
+  return transactionDto;
+}
+
 
   /**
    * Obtener todas las transacciones con relaciones

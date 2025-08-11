@@ -24,7 +24,9 @@ export class SenderFinancialAccountsService {
     paymentMethod: newPaymentMethod,
   });
 
-  return await this.senderRepository.save(data);
+  const savedSender = await this.senderRepository.save(data);
+
+  return savedSender;
 }
 
   async findAll() {

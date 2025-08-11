@@ -53,13 +53,6 @@ export class SenderResponseDto {
     description: 'Método de pago del emisor',
   })
   paymentMethod: PaymentMethodResponseDto;
-
-  @ApiProperty({
-    example: null,
-    description: 'Email del emisor',
-    nullable: true,
-  })
-  email: string | null;
 }
 
 export class ReceiverResponseDto {
@@ -80,22 +73,6 @@ export class ReceiverResponseDto {
     description: 'Método de pago del receptor',
   })
   paymentMethod: PaymentMethodResponseDto;
-
-  @ApiProperty({
-    example: null,
-    description: 'Número de identificación',
-    nullable: true,
-  })
-  identificationNumber: string | null;
-
-  @ApiProperty({ example: '1122334455', description: 'Número de teléfono' })
-  phoneNumber: string;
-
-  @ApiProperty({
-    example: 'ana@example.com',
-    description: 'Email del receptor',
-  })
-  email: string;
 }
 
 export class FinancialAccountResponseDto {

@@ -23,21 +23,21 @@ export class PaymentMethodService {
 async create(createPaymentMethodDto: CreatePaymentMethodDto, isSender = false) {
   const { bank, pix, receiverCrypto, virtualBank, method, platformId } = createPaymentMethodDto;
 
-  if (platformId) {
-    if (!Object.values(Platform).includes(platformId))
-      throw new BadRequestException('El platformId no es valido');
+  if (platformId && !Object.values(Platform).includes(platformId)) {
+    throw new BadRequestException('El platformId no es válido');
   }
 
-  // Si es sender omitir validación de detalles
-  if (isSender && (method === 'bank' || method === 'virtual-bank' || method === 'receiver-crypto' || method === 'pix'))  {
-    // Solo crear con platformId y method, sin detalles
+  const hasDetails = bank || pix || receiverCrypto || virtualBank;
+
+  // Para sender: si NO tiene detalles, crear solo platformId y method
+  if (isSender && !hasDetails) {
     return await this.paymentMethodRepository.save({
       platformId,
       method,
     });
   }
 
-  // Dependiendo el método de pago se llama al servicio correspondiente
+  // Si tiene detalles o no es sender, procesar normalmente según método
   switch (method) {
     case 'bank':
       if (!bank) throw new BadRequestException('bank es requerido');
@@ -48,25 +48,15 @@ async create(createPaymentMethodDto: CreatePaymentMethodDto, isSender = false) {
       return await this.pixService.create(pix, platformId, method);
 
     case 'receiver-crypto':
-      if (!receiverCrypto)
-        throw new BadRequestException('receiver-crypto es requerido');
-      return await this.receiverCryptoService.create(
-        receiverCrypto,
-        platformId,
-        method,
-      );
+      if (!receiverCrypto) throw new BadRequestException('receiver-crypto es requerido');
+      return await this.receiverCryptoService.create(receiverCrypto, platformId, method);
 
     case 'virtual-bank':
-      if (!virtualBank)
-        throw new BadRequestException('virtual-bank es requerido');
-      return await this.virtualBankService.create(
-        virtualBank,
-        platformId,
-        method,
-      );
+      if (!virtualBank) throw new BadRequestException('virtual-bank es requerido');
+      return await this.virtualBankService.create(virtualBank, platformId, method);
 
     default:
-      throw new BadRequestException('El metodo de pago no es valido');
+      throw new BadRequestException('El método de pago no es válido');
   }
 }
 

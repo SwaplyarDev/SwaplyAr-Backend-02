@@ -1,6 +1,7 @@
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { ChildEntity, Column, OneToMany } from 'typeorm';
 import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
+import { Expose } from 'class-transformer';
 
 @ChildEntity('sender')
 export class SenderFinancialAccount extends FinancialAccount {
@@ -9,4 +10,7 @@ export class SenderFinancialAccount extends FinancialAccount {
 
   @Column({ name: 'created_by' })
   createdBy: string;
+
+  @Column({ name: 'phone_number' })
+  phoneNumber: string;
 }

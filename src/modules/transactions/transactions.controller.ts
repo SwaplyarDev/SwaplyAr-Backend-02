@@ -29,7 +29,8 @@ import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Transaction } from './entities/transaction.entity';
-import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
+import { string } from 'zod';
+import { TransactionResponseDto } from './dto/transaction-response.dto';
 
 interface CreateTransactionBody {
   createTransactionDto: string;
@@ -48,96 +49,65 @@ interface RequestWithUser extends Request {
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
-  // Crear transacción
-  @ApiOperation({ summary: 'Crear una transacción con comprobante (opcional)' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description:
-      'Datos para crear una transacción. El campo createTransactionDto debe ser un string JSON con la estructura de CreateTransactionDto. El campo file es opcional.',
-    schema: {
-      type: 'object',
-      properties: {
-        createTransactionDto: {
-          type: 'string',
-          example: JSON.stringify({
-            paymentsId: '123',
-            countryTransaction: 'Argentina',
-            message: 'Transferencia de prueba',
-            createdBy: 'fernandeezalan20@gmail.com',
-            financialAccounts: {
-              senderAccount: {
-                firstName: 'Juan',
-                lastName: 'Pérez',
-                paymentMethod: {
-                  platformId: 'bank',
-                  method: 'bank',
-                  bank: {
-                    currency: 'ARS',
-                    bankName: 'Banco Nación',
-                    sendMethodKey: 'CBU',
-                    sendMethodValue: '1234567890123456789012',
-                    documentType: 'DNI',
-                    documentValue: '87654321',
-                  },
-                },
+@ApiOperation({ summary: 'Crear una transacción con comprobante (opcional)' })
+@ApiConsumes('multipart/form-data')
+@ApiBody({
+  schema: {
+    type: 'object',
+    properties: {
+      createTransactionDto: {
+        type: 'string',
+        description: 'JSON stringificado de CreateTransactionDto',
+        example: JSON.stringify({
+          paymentsId: '123',
+          countryTransaction: 'Argentina',
+          message: 'Transferencia de prueba',
+          financialAccounts: {
+            senderAccount: {
+              firstName: 'Juan',
+              lastName: 'Pérez',
+              phoneNumber: '12456789',
+              createdBy: 'fernandeezalan20@gmail.com',
+              paymentMethod: {
+                platformId: 'bank',
+                method: 'bank',
               },
-              receiverAccount: {
-                firstName: 'Ana',
-                lastName: 'García',
-                document_value: '12345678',
-                phoneNumber: '1122334455',
-                email: 'brasil@swaplyar.com',
-                bank_name: 'Banco Galicia',
-                paymentMethod: {
-                  platformId: 'bank',
-                  method: 'bank',
-                  bank: {
-                    currency: 'ARS',
-                    bankName: 'Banco Galicia',
-                    sendMethodKey: 'CBU',
-                    sendMethodValue: '1234567890123456789012',
-                    documentType: 'DNI',
-                    documentValue: '12345678',
-                  },
+            },
+            receiverAccount: {
+              paymentMethod: {
+                platformId: 'bank',
+                method: 'bank',
+                bank: {
+                  currency: 'ARS',
+                  bankName: 'Banco Galicia',
+                  sendMethodKey: 'CBU',
+                  sendMethodValue: '1234567890123456789012',
+                  documentType: 'DNI',
+                  documentValue: '12345678',
                 },
               },
             },
-            amount: {
-              amountSent: 1000,
-              currencySent: 'ARS',
-              amountReceived: 900,
-              currencyReceived: 'BRL',
-              received: false,
-            },
-          }),
-        },
-        file: {
-          type: 'string',
-          format: 'binary',
-          description: 'Comprobante de la transacción (opcional)',
-        },
+          },
+          amount: {
+            amountSent: 1000,
+            currencySent: 'ARS',
+            amountReceived: 900,
+            currencyReceived: 'BRL',
+            received: false,
+          },
+        }, null, 2), // stringify con indentación para mejor lectura
+      },
+      file: {
+        type: 'string',
+        format: 'binary',
+        description: 'Comprobante de la transacción',
       },
     },
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Transacción creada correctamente',
-    schema: {
-      example: {
-        id: 'uuid',
-        countryTransaction: 'Argentina',
-        message: 'Transferencia de prueba',
-        createdBy: 'fernandeezalan20@gmail.com',
-        senderAccount: {},
-        receiverAccount: {},
-        amount: {},
-        proofOfPayment: {},
-        createdAt: '2024-01-01T00:00:00Z',
-        finalStatus: 'pending',
-      },
-    },
-  })
-  @Post()
+    required: ['createTransactionDto'],
+  },
+})
+@ApiResponse({ status: 201, description: 'Transacción creada correctamente', type: TransactionResponseDto })
+@Post()
   @UseInterceptors(FileInterceptor('file'))
   async create(
     @Body() body: CreateTransactionBody,

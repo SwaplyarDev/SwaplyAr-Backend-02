@@ -44,9 +44,6 @@ export class Transaction {
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;
 
-  @Column({ name: 'created_by' })
-  createdBy: string;
-
   @Column({
     type: 'enum',
     enum: TransactionStatus,

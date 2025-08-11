@@ -7,9 +7,6 @@ export class SenderFinancialAccount extends FinancialAccount {
   @OneToMany(() => Transaction, (transaction) => transaction.senderAccount)
   transactions: Transaction[];
 
-  @Column({ nullable: true })
-  email?: string;
-
-  @Column({ nullable: true })
-  phoneNumber?: string;
+  @Column({ name: 'created_by' })
+  createdBy: string;
 }

@@ -1,7 +1,7 @@
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity('proof_of_payments')
 export class ProofOfPayment {
   @PrimaryGeneratedColumn('uuid', { name: 'payments_id' })
   id: string;

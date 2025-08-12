@@ -8,6 +8,7 @@ import {
   TableInheritance,
 } from 'typeorm';
 import { PaymentMethod } from '@financial-accounts/payment-methods/entities/payment-method.entity';
+import { IsOptional } from 'class-validator';
 
 @Entity('financial_accounts')
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
@@ -17,14 +18,14 @@ export class FinancialAccount {
   id: string;
 
   @Column({ name: 'first_name' })
+  @IsOptional()
   firstName: string;
 
   @Column({ name: 'last_name' })
+  @IsOptional()
   lastName: string;
 
   @OneToOne(() => PaymentMethod, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'payment_method_id' })
   paymentMethod: PaymentMethod;
 }
-
-

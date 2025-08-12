@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateFinancialAccountDto } from './dto/create-financial-accounts.dto';
 import { SenderFinancialAccountsService } from './sender-financial-accounts/sender-financial-accounts.service';
 import { ReceiverFinancialAccountsService } from './receiver-financial-accounts/receiver-financial-accounts.service';
@@ -13,13 +17,22 @@ export class FinancialAccountsService {
   ) {}
 
   async create(createFinancialAccountDto: CreateFinancialAccountDto) {
-    const { senderAccount, receiverAccount } = createFinancialAccountDto;
+  const { senderAccount, receiverAccount } = createFinancialAccountDto;
 
-    const receiver = await this.receiverService.create(receiverAccount); // lo guarda en la tabla financial accounts
-    const sender = await this.senderService.create(senderAccount); // lo guarda en la tabla financial accounts
+  // Crear el receiver (igual puedes incluir email y phone si quieres)
+  const receiver = await this.receiverService.create(receiverAccount);
 
-    return { sender, receiver }; //retorna un objeto con los dos accounts
-  }
+  // Crear el sender, asegurándote de que se guarden email y phoneNumber
+  const sender = await this.senderService.create(senderAccount);
+
+  const { createdBy, phoneNumber, ...senderClean } = sender;
+ 
+
+  return { sender: senderClean, receiver };
+
+
+}
+
 
   async findAllReceiver() {
     return await this.receiverService.findAll();
@@ -38,78 +51,80 @@ export class FinancialAccountsService {
   }
 
   async updateSender(id: string, dto: UpdateSenderFinancialAccountDto) {
-  const existingAccount = await this.senderService.findById(id);
+    const existingAccount = await this.senderService.findById(id);
 
-  if (!existingAccount) {
-    throw new NotFoundException(`Cuenta emisora con ID ${id} no encontrada`);
-  }
-
-  const currentPaymentMethod = existingAccount.paymentMethod;
-  const incomingPaymentMethod = dto.paymentMethod;
-
-  // Caso: se intenta cambiar el método actual por uno diferente
-  if (currentPaymentMethod && incomingPaymentMethod) {
-    const currentPlatformId = currentPaymentMethod.platformId?.toLowerCase();
-    const currentMethod = currentPaymentMethod.method?.toLowerCase();
-
-    const newPlatformId = incomingPaymentMethod.platformId?.toLowerCase();
-    const newMethod = incomingPaymentMethod.method?.toLowerCase();
-
-    const isDifferent =
-      currentPlatformId !== newPlatformId || currentMethod !== newMethod;
-
-    if (isDifferent) {
-      throw new BadRequestException(
-        `Método de pago inválido. Esta cuenta tiene registrado platformId: '${currentPlatformId}' y method: '${currentMethod}', no puede cambiarse a '${newPlatformId}' / '${newMethod}'.`
-      );
+    if (!existingAccount) {
+      throw new NotFoundException(`Cuenta emisora con ID ${id} no encontrada`);
     }
-  }
 
-  // Si no hay método actual, se permite agregar uno nuevo
-  return await this.senderService.update(id, dto);
- }
+    const currentPaymentMethod = existingAccount.paymentMethod;
+    const incomingPaymentMethod = dto.paymentMethod;
+
+    // Caso: se intenta cambiar el método actual por uno diferente
+    if (currentPaymentMethod && incomingPaymentMethod) {
+      const currentPlatformId = currentPaymentMethod.platformId?.toLowerCase();
+      const currentMethod = currentPaymentMethod.method?.toLowerCase();
+
+      const newPlatformId = incomingPaymentMethod.platformId?.toLowerCase();
+      const newMethod = incomingPaymentMethod.method?.toLowerCase();
+
+      const isDifferent =
+        currentPlatformId !== newPlatformId || currentMethod !== newMethod;
+
+      if (isDifferent) {
+        throw new BadRequestException(
+          `Método de pago inválido. Esta cuenta tiene registrado platformId: '${currentPlatformId}' y method: '${currentMethod}', no puede cambiarse a '${newPlatformId}' / '${newMethod}'.`,
+        );
+      }
+    }
+
+    // Si no hay método actual, se permite agregar uno nuevo
+    return await this.senderService.update(id, dto);
+  }
 
   async updateReceiver(id: string, dto: UpdateReceiverFinancialAccountDto) {
-  const existingAccount = await this.receiverService.findById(id);
+    const existingAccount = await this.receiverService.findById(id);
 
-  if (!existingAccount) {
-    throw new NotFoundException(`Cuenta receptora con ID ${id} no encontrada`);
-  }
-
-  const currentPaymentMethod = existingAccount.paymentMethod;
-  const incomingPaymentMethod = dto.paymentMethod;
-
-  // Caso: se intenta cambiar el método actual por uno diferente
-  if (currentPaymentMethod && incomingPaymentMethod) {
-    const currentPlatformId = currentPaymentMethod.platformId?.toLowerCase();
-    const currentMethod = currentPaymentMethod.method?.toLowerCase();
-
-    const newPlatformId = incomingPaymentMethod.platformId?.toLowerCase();
-    const newMethod = incomingPaymentMethod.method?.toLowerCase();
-
-    const isDifferent =
-      currentPlatformId !== newPlatformId || currentMethod !== newMethod;
-
-    if (isDifferent) {
-      throw new BadRequestException(
-        `Método de pago inválido. Esta cuenta tiene registrado platformId: '${currentPlatformId}' y method: '${currentMethod}', no puede cambiarse a '${newPlatformId}' / '${newMethod}'.`
+    if (!existingAccount) {
+      throw new NotFoundException(
+        `Cuenta receptora con ID ${id} no encontrada`,
       );
     }
+
+    const currentPaymentMethod = existingAccount.paymentMethod;
+    const incomingPaymentMethod = dto.paymentMethod;
+
+    // Caso: se intenta cambiar el método actual por uno diferente
+    if (currentPaymentMethod && incomingPaymentMethod) {
+      const currentPlatformId = currentPaymentMethod.platformId?.toLowerCase();
+      const currentMethod = currentPaymentMethod.method?.toLowerCase();
+
+      const newPlatformId = incomingPaymentMethod.platformId?.toLowerCase();
+      const newMethod = incomingPaymentMethod.method?.toLowerCase();
+
+      const isDifferent =
+        currentPlatformId !== newPlatformId || currentMethod !== newMethod;
+
+      if (isDifferent) {
+        throw new BadRequestException(
+          `Método de pago inválido. Esta cuenta tiene registrado platformId: '${currentPlatformId}' y method: '${currentMethod}', no puede cambiarse a '${newPlatformId}' / '${newMethod}'.`,
+        );
+      }
+    }
+
+    // Si no hay método actual, se permite agregar uno nuevo
+    return await this.receiverService.update(id, dto);
   }
 
-  // Si no hay método actual, se permite agregar uno nuevo
-  return await this.receiverService.update(id, dto);
-}
+  async deleteById(id: string): Promise<void> {
+    const senderDeleted = await this.senderService.delete(id);
+    if (senderDeleted) return;
 
+    const receiverDeleted = await this.receiverService.delete(id);
+    if (receiverDeleted) return;
 
-
-async deleteById(id: string): Promise<void> {
-  const senderDeleted = await this.senderService.delete(id);
-  if (senderDeleted) return;
-
-  const receiverDeleted = await this.receiverService.delete(id);
-  if (receiverDeleted) return;
-
-  throw new NotFoundException(`No se encontró ninguna cuenta con el ID: ${id}`);
-}
+    throw new NotFoundException(
+      `No se encontró ninguna cuenta con el ID: ${id}`,
+    );
+  }
 }

@@ -2,19 +2,17 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Delete,
   Get,
   Param,
-  Patch,
   Post,
   UploadedFile,
   UseInterceptors,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
@@ -25,11 +23,15 @@ import {
   ApiBody,
   ApiConsumes,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Transaction } from './entities/transaction.entity';
+import { string } from 'zod';
+import { TransactionResponseDto } from './dto/transaction-response.dto';
+import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
 
 interface CreateTransactionBody {
   createTransactionDto: string;
@@ -43,167 +45,192 @@ interface RequestWithUser extends Request {
   };
 }
 
-//TODO: GET (transactionStatus) ,
 @ApiTags('Transacciones')
 @Controller('transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
-  @ApiOperation({ summary: 'Crear una transacción con comprobante (opcional)' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description:
-      'Datos para crear una transacción. El campo createTransactionDto debe ser un string JSON con la estructura de CreateTransactionDto. El campo file es opcional.',
-    schema: {
-      type: 'object',
-      properties: {
-        createTransactionDto: {
-          type: 'string',
-          example: JSON.stringify({
-            paymentsId: '123',
-            countryTransaction: 'Argentina',
-            message: 'Transferencia de prueba',
-            createdBy: 'fernandeezalan20@gmail.com',
-            financialAccounts: {
-              senderAccount: {
-                firstName: 'Juan',
-                lastName: 'Pérez',
-                paymentMethod: {
-                  platformId: 'bank',
-                  method: 'bank',
-                  bank: {
-                    currency: 'ARS',
-                    bankName: 'Banco Nación',
-                    sendMethodKey: 'CBU',
-                    sendMethodValue: '1234567890123456789012',
-                    documentType: 'DNI',
-                    documentValue: '87654321',
-                  },
-                },
+@ApiOperation({
+  summary: 'Crear una transacción con comprobante de pago',
+  description: `
+    Este endpoint permite crear una nueva transacción con todos los datos requeridos y un comprobante de pago.
+    - El campo **createTransactionDto** debe enviarse como un **string JSON válido**.
+    - El campo mesagge es opcional, pero si se envía debe ser un texto.
+    - El comprobante de pago debe enviarse como archivo en el campo **file** (formato *multipart/form-data*).
+    - Todos los campos indicados como obligatorios en el DTO deben estar completos.
+    - Se validan y almacenan las cuentas financieras, montos y comprobante.
+    - Si alguna validación falla, se devuelve un error detallado.
+  `,
+})
+@ApiConsumes('multipart/form-data')
+@ApiBody({
+  schema: {
+    type: 'object',
+    properties: {
+      createTransactionDto: {
+        type: 'string',
+        description: 'JSON stringificado con la información de la transacción (CreateTransactionDto)',
+        example: JSON.stringify({
+          paymentsId: '123',
+          countryTransaction: 'Argentina',
+          message: 'Transferencia de prueba',
+          financialAccounts: {
+            senderAccount: {
+              firstName: 'Juan',
+              lastName: 'Pérez',
+              phoneNumber: '12456789',
+              createdBy: 'fernandeezalan20@gmail.com',
+              paymentMethod: {
+                platformId: 'bank',
+                method: 'bank',
               },
-              receiverAccount: {
-                firstName: 'Ana',
-                lastName: 'García',
-                document_value: '12345678',
-                phoneNumber: '1122334455',
-                email: 'brasil@swaplyar.com',
-                bank_name: 'Banco Galicia',
-                paymentMethod: {
-                  platformId: 'bank',
-                  method: 'bank',
-                  bank: {
-                    currency: 'ARS',
-                    bankName: 'Banco Galicia',
-                    sendMethodKey: 'CBU',
-                    sendMethodValue: '1234567890123456789012',
-                    documentType: 'DNI',
-                    documentValue: '12345678',
-                  },
+            },
+            receiverAccount: {
+              paymentMethod: {
+                platformId: 'bank',
+                method: 'bank',
+                bank: {
+                  currency: 'ARS',
+                  bankName: 'Banco Galicia',
+                  sendMethodKey: 'CBU',
+                  sendMethodValue: '1234567890123456789012',
+                  documentType: 'DNI',
+                  documentValue: '12345678',
                 },
               },
             },
-            amount: {
-              amountSent: 1000,
-              currencySent: 'ARS',
-              amountReceived: 900,
-              currencyReceived: 'BRL',
-              received: false,
-            },
-          }),
-        },
-        file: {
-          type: 'string',
-          format: 'binary',
-          description: 'Comprobante de la transacción (opcional)',
-        },
+          },
+          amount: {
+            amountSent: 1000,
+            currencySent: 'ARS',
+            amountReceived: 900,
+            currencyReceived: 'BRL',
+            received: false,
+          },
+        }, null, 2),
+      },
+      file: {
+        type: 'string',
+        format: 'binary',
+        description: 'Archivo del comprobante de pago (JPG, PNG o PDF)',
       },
     },
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Transacción creada correctamente',
-    schema: {
-      example: {
-        id: 'uuid',
-        countryTransaction: 'Argentina',
-        message: 'Transferencia de prueba',
-        createdBy: 'fernandeezalan20@gmail.com',
-        senderAccount: {
-          /* ... */
-        },
-        receiverAccount: {
-          /* ... */
-        },
-        amount: {
-          /* ... */
-        },
-        proofOfPayment: {
-          /* ... */
-        },
-        createdAt: '2024-01-01T00:00:00Z',
-        finalStatus: 'pending',
-      },
-    },
-  })
-  @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  async create(
-    @Body() body: CreateTransactionBody,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    console.log('Body recibido:', body);
-    console.log('File recibido:', file);
+    required: ['createTransactionDto'],
+  },
+})
+@ApiResponse({
+  status: 201,
+  description: '✅ Transacción creada correctamente',
+  type: TransactionResponseDto,
+})
+@ApiResponse({
+  status: 400,
+  description: `
+    ❌ Error en los datos enviados:
+    - El body está vacío.
+    - El campo createTransactionDto es requerido.
+    - El campo createTransactionDto no es un JSON válido.
+    - Faltan campos obligatorios en el DTO.
+    - Error en la creación de cuentas financieras, monto o comprobante de pago.
+  `,
+})
+@ApiResponse({
+  status: 404,
+  description: '❌ Recurso no encontrado (por ejemplo, cuenta o transacción relacionada no existe)',
+})
+@ApiResponse({
+  status: 500,
+  description: '❌ Error interno del servidor',
+})
+@Post()
+@UseInterceptors(FileInterceptor('file'))
+async create(
+  @Body() body: CreateTransactionBody,
+  @UploadedFile() file: Express.Multer.File,
+) {
+  if (!body || Object.keys(body).length === 0) {
+    throw new BadRequestException('El body está vacío');
+  }
 
-    if (!body || Object.keys(body).length === 0) {
-      throw new BadRequestException('El body está vacío');
-    }
-
-    if (!body.createTransactionDto) {
-      throw new BadRequestException(
-        'El campo createTransactionDto es requerido. Body recibido: ' +
-          JSON.stringify(body),
-      );
-    }
-
-    let parsedDto: Partial<CreateTransactionDto>;
-    try {
-      parsedDto = JSON.parse(
-        body.createTransactionDto,
-      ) as Partial<CreateTransactionDto>;
-    } catch {
-      throw new BadRequestException(
-        'El campo createTransactionDto debe ser un JSON válido',
-      );
-    }
-
-    const createTransactionDto = plainToInstance(
-      CreateTransactionDto,
-      parsedDto,
-    );
-
-    // Si no se envía archivo, file será undefined
-    const fileData: FileUploadDTO = file
-      ? {
-          buffer: file.buffer,
-          fieldName: file.fieldname,
-          mimeType: file.mimetype,
-          originalName: file.originalname,
-          size: file.size,
-        }
-      : {
-          buffer: Buffer.from(''),
-          fieldName: '',
-          mimeType: '',
-          originalName: '',
-          size: 0,
-        };
-
-    return await this.transactionsService.create(
-      createTransactionDto,
-      fileData,
+  if (!body.createTransactionDto) {
+    throw new BadRequestException(
+      'El campo createTransactionDto es requerido. Body recibido: ' +
+        JSON.stringify(body),
     );
   }
 
+  let parsedDto: Partial<CreateTransactionDto>;
+  try {
+    parsedDto = JSON.parse(
+      body.createTransactionDto,
+    ) as Partial<CreateTransactionDto>;
+  } catch {
+    throw new BadRequestException(
+      'El campo createTransactionDto debe ser un JSON válido',
+    );
+  }
+
+  const createTransactionDto = plainToInstance(
+    CreateTransactionDto,
+    parsedDto,
+  );
+
+  const fileData: FileUploadDTO = file
+    ? {
+        buffer: file.buffer,
+        fieldName: file.fieldname,
+        mimeType: file.mimetype,
+        originalName: file.originalname,
+        size: file.size,
+      }
+    : {
+        buffer: Buffer.from(''),
+        fieldName: '',
+        mimeType: '',
+        originalName: '',
+        size: 0,
+      };
+
+  return await this.transactionsService.create(
+    createTransactionDto,
+    fileData,
+  );
+}
+
+  // Obtener historial de estados (público)
+  @Get('status/:id')
+  @ApiOperation({ summary: 'Obtener historial público de una transacción' })
+  @ApiQuery({ name: 'lastName', required: true, type: String })
+  @ApiResponse({
+    status: 200,
+    description: 'Historial de estados obtenido correctamente',
+    type: UserStatusHistoryResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'El apellido no coincide con el remitente de la transacción.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Transacción no encontrada o sin historial disponible.',
+  })
+  async getPublicStatusHistory(
+    @Param('id') id: string,
+    @Query('lastName') lastName: string,
+  ): Promise<UserStatusHistoryResponseDto> {
+    const history = await this.transactionsService.getPublicStatusHistory(
+      id,
+      lastName,
+    );
+    return {
+      success: true,
+      message: 'Historial obtenido correctamente',
+      data: history,
+    };
+  }
+
+  // Obtener todas las transacciones (uso interno/admin)
+  @Get()
   @ApiOperation({ summary: 'Obtener todas las transacciones' })
   @ApiResponse({
     status: 200,
@@ -215,30 +242,21 @@ export class TransactionsController {
           countryTransaction: 'Argentina',
           message: 'Transferencia de prueba',
           createdBy: 'fernandeezalan20@gmail.com',
-          senderAccount: {
-            /* ... */
-          },
-          receiverAccount: {
-            /* ... */
-          },
-          amount: {
-            /* ... */
-          },
-          proofOfPayment: {
-            /* ... */
-          },
+          senderAccount: {},
+          receiverAccount: {},
+          amount: {},
+          proofOfPayment: {},
           createdAt: '2024-01-01T00:00:00Z',
           finalStatus: 'pending',
         },
       ],
     },
   })
-  // buscar todos
-  @Get()
   findAll() {
     return this.transactionsService.findAll();
   }
 
+  // Obtener transacción por ID con autorización
   @Get(':transaction_id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)

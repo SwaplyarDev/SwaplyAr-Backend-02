@@ -8,10 +8,7 @@ import { CloudinaryService } from '../../../service/cloudinary/cloudinary.servic
 import { DiscountModule } from '@discounts/discounts.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UserVerification, User]),
-    DiscountModule,
-  ],
+  imports: [TypeOrmModule.forFeature([UserVerification, User]), DiscountModule],
   controllers: [UserVerificationController],
   providers: [UserVerificationService, CloudinaryService],
   exports: [UserVerificationService],

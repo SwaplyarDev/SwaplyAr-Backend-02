@@ -14,3 +14,10 @@ export interface StatusHistoryResponse {
   changedByAdminId: string;
   additionalData?: Record<string, any>;
 }
+
+export interface UserStatusHistoryResponse {
+  id: string;
+  status: AdminStatus;
+  changedAt: Date;
+  message: string;
+}

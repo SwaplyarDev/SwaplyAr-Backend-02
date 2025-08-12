@@ -39,5 +39,3 @@ export class OtpController {
     return this.authService.generateTokens(user);
   }
 }
-
- 

@@ -1,11 +1,11 @@
-// src/modules/auth/auth.service.ts
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-//import { MailerService } from '@nestjs-modules/mailer';
 import { MailerService } from 'src/modules/mailer/mailer.service';
-import * as fs from 'fs';
-import * as path from 'path';
 import { User } from '@users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 
@@ -15,8 +15,8 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private readonly jwtService: JwtService,
-    private readonly mailerService: MailerService,
-  ) { }
+    private readonly mailerService: MailerService, // ✅ Inyectado
+  ) {}
 
   private buildPayload(user: User) {
     const profile = user.profile ?? {};
@@ -35,7 +35,6 @@ export class AuthService {
     };
   }
 
-
   async generateTokens(user: User) {
     const payload = this.buildPayload(user);
 
@@ -45,10 +44,7 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-
-
     await this.userRepo.update(user.id, { refreshToken });
-
 
     return {
       access_token: accessToken,
@@ -56,13 +52,13 @@ export class AuthService {
     };
   }
 
-
   async refreshAccessToken(refreshToken: string) {
     console.log('🧪 Buscando usuario con refreshToken:', refreshToken);
     const user = await this.userRepo.findOne({
       where: { refreshToken },
       relations: ['profile'],
     });
+
     if (!user || !user.refreshToken) {
       throw new BadRequestException('Invalid refresh token');
     }
@@ -72,7 +68,9 @@ export class AuthService {
         secret: process.env.JWT_REFRESH_SECRET,
       });
     } catch (error) {
-      throw new UnauthorizedException(`Invalid or expired refresh token. - ${error}`);
+      throw new UnauthorizedException(
+        `Invalid or expired refresh token. - ${error}`,
+      );
     }
 
     const payload = this.buildPayload(user);
@@ -81,26 +79,20 @@ export class AuthService {
       secret: process.env.JWT_REFRESH_SECRET,
       expiresIn: '1d',
     });
+
     user.refreshToken = newRefreshToken;
     await this.userRepo.save(user);
+
     return { access_token: accessToken, refresh_token: newRefreshToken };
-
-
   }
-  
+
   async sendLoginCodeEmail(user: User, code: string, location: string) {
-    await this.mailerService.sendAuthCodeMail(
-      user.profile.email
-      , {
-        NAME: user.profile.firstName || user.profile.email,
-        VERIFICATION_CODE: code,
-        BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
-        LOCATION: location, // si querés mostrar desde dónde inició sesión
-        EXPIRATION_MINUTES: 15
-      }
-    );
+    await this.mailerService.sendAuthCodeMail(user.profile.email, {
+      NAME: user.profile.firstName || user.profile.email,
+      VERIFICATION_CODE: code,
+      BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
+      LOCATION: location,
+      EXPIRATION_MINUTES: 15,
+    });
   }
-
-
-
 }

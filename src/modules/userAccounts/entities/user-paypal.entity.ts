@@ -9,8 +9,8 @@ import { UserAccount } from './user-account.entity';
 
 @Entity('user_paypal')
 export class UserPayPal {
-  @PrimaryGeneratedColumn({ name: 'paypal_id' })
-  paypal_id: number;
+  @PrimaryGeneratedColumn('uuid', { name: 'paypal_id' })
+  paypal_id: string;
 
   @Column({ name: 'account_id', type: 'uuid' })
   account_id: string;

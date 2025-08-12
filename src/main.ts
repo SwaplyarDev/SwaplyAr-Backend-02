@@ -85,7 +85,9 @@ async function bootstrap() {
   const host = nodeEnv === 'production' ? '0.0.0.0' : 'localhost';
 
   await app.listen(port, host);
-  console.log(`🚀 [${nodeEnv}] Server corriendo en http://${host}:${port}/${apiPrefix}`);
+  console.log(
+    `🚀 [${nodeEnv}] Server corriendo en http://${host}:${port}/${apiPrefix}`,
+  );
 }
 
 

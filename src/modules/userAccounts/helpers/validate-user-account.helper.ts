@@ -8,8 +8,7 @@ export function validateUserAccount(userAccValues: any) {
     !userAccValues.currency ||
     !userAccValues.account_name ||
     userAccValues.account_type === undefined ||
-    userAccValues.account_type === null ||
-    isNaN(userAccValues.account_type)
+    userAccValues.account_type === null
   ) {
     throw new BadRequestException('Missing required fields.');
   }

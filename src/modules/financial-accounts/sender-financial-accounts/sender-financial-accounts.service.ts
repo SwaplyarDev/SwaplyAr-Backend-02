@@ -14,22 +14,20 @@ export class SenderFinancialAccountsService {
     private readonly paymentMethodService: PaymentMethodService,
   ) {}
 
-  async create(
-    createSenderFinancialAccountDto: CreateSenderFinancialAccountDto,
-  ) {
-    const { paymentMethod } = createSenderFinancialAccountDto;
+  async create(createSenderFinancialAccountDto: CreateSenderFinancialAccountDto) {
+  const { paymentMethod } = createSenderFinancialAccountDto;
 
-    const newPaymentMethod =
-      await this.paymentMethodService.create(paymentMethod); // lo guarda en la tabla payment methods
+  const newPaymentMethod = await this.paymentMethodService.create(paymentMethod, true);
 
-    // Crear el objeto SenderFinancialAccount
-    const data = this.senderRepository.create({
-      ...createSenderFinancialAccountDto,
-      paymentMethod: newPaymentMethod, // Asigna el método de pago correctamente
-    });
+  const data = this.senderRepository.create({
+    ...createSenderFinancialAccountDto,
+    paymentMethod: newPaymentMethod,
+  });
 
-    return await this.senderRepository.save(data); // lo guarda en la tabla financial accounts
-  }
+  const savedSender = await this.senderRepository.save(data);
+
+  return savedSender;
+}
 
   async findAll() {
     return await this.senderRepository.find({
@@ -42,38 +40,39 @@ export class SenderFinancialAccountsService {
   }
 
   async findById(id: string) {
-  return this.senderRepository.findOne({
-    where: { id },
-    relations: ['paymentMethod'], // si estás usando relaciones
-  });
-}
-
+    return this.senderRepository.findOne({
+      where: { id },
+      relations: ['paymentMethod'], // si estás usando relaciones
+    });
+  }
 
   async update(id: string, dto: UpdateSenderFinancialAccountDto) {
-  const senderAccount = await this.senderRepository.findOne({ where: { id }, relations: ['paymentMethod'] });
+    const senderAccount = await this.senderRepository.findOne({
+      where: { id },
+      relations: ['paymentMethod'],
+    });
 
-  if (!senderAccount) {
-    throw new NotFoundException(`Sender account with ID ${id} not found`);
+    if (!senderAccount) {
+      throw new NotFoundException(`Sender account with ID ${id} not found`);
+    }
+
+    // Actualiza campos básicos
+    if (dto.firstName) senderAccount.firstName = dto.firstName;
+    if (dto.lastName) senderAccount.lastName = dto.lastName;
+
+    // Actualiza el paymentMethod (si se envía)
+    if (dto.paymentMethod) {
+      Object.assign(senderAccount.paymentMethod, dto.paymentMethod);
+    }
+
+    return await this.senderRepository.save(senderAccount);
   }
 
-  // Actualiza campos básicos
-  if (dto.firstName) senderAccount.firstName = dto.firstName;
-  if (dto.lastName) senderAccount.lastName = dto.lastName;
+  async delete(id: string): Promise<boolean> {
+    const account = await this.senderRepository.findOne({ where: { id } });
+    if (!account) return false;
 
-  // Actualiza el paymentMethod (si se envía)
-  if (dto.paymentMethod) {
-    Object.assign(senderAccount.paymentMethod, dto.paymentMethod);
+    await this.senderRepository.delete(id);
+    return true;
   }
-
-  return await this.senderRepository.save(senderAccount);
-}
-
-async delete(id: string): Promise<boolean> {
-  const account = await this.senderRepository.findOne({ where: { id } });
-  if (!account) return false;
-
-  await this.senderRepository.delete(id);
-  return true;
-}
-
 }

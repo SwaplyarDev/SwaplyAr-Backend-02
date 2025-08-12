@@ -9,8 +9,8 @@ import { UserAccount } from './user-account.entity';
 
 @Entity('user_payoneer')
 export class UserPayoneer {
-  @PrimaryGeneratedColumn({ name: 'payoneer_id' })
-  payoneer_id: number;
+  @PrimaryGeneratedColumn('uuid', { name: 'payoneer_id' })
+  payoneer_id: string;
 
   @Column({ name: 'account_id', type: 'uuid' })
   account_id: string;

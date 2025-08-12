@@ -2,59 +2,220 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  UnauthorizedException,
+  InternalServerErrorException,
+  HttpException,
+  BadRequestException,
 } from '@nestjs/common';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Transaction } from './entities/transaction.entity';
 import { Repository } from 'typeorm';
+
+import { Transaction } from './entities/transaction.entity';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
+import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
+import { UserStatusHistoryResponse } from '@common/interfaces/status-history.interface';
+
 import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
-import { Amount } from './amounts/entities/amount.entity';
 import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
-import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
-import { instanceToPlain } from 'class-transformer';
+
+import { plainToInstance } from 'class-transformer';
+import { TransactionResponseDto } from './dto/transaction-response.dto';
 
 @Injectable()
 export class TransactionsService {
   constructor(
     @InjectRepository(Transaction)
     private readonly transactionsRepository: Repository<Transaction>,
+
+    @InjectRepository(AdministracionStatusLog)
+    private readonly statusLogRepository: Repository<AdministracionStatusLog>,
+
     private readonly financialAccountService: FinancialAccountsService,
     private readonly amountService: AmountsService,
     private readonly proofOfPaymentService: ProofOfPaymentsService,
   ) {}
 
+  /**
+   * Obtener historial público de una transacción validando por apellido
+   */
+  async getPublicStatusHistory(
+    id: string,
+    lastName: string,
+  ): Promise<UserStatusHistoryResponse[]> {
+    console.log(
+      `Buscando historial para transaction_id: ${id} y lastName: ${lastName}`,
+    );
+
+    try {
+      const transaction = await this.transactionsRepository.findOne({
+        where: { id },
+        relations: ['senderAccount'],
+      });
+
+      if (!transaction) {
+        console.log('Transacción no encontrada.');
+        throw new NotFoundException('Transacción no encontrada.');
+      }
+
+      if (!transaction.senderAccount) {
+        console.log('Cuenta del remitente no encontrada.');
+        throw new NotFoundException('Cuenta del remitente no encontrada.');
+      }
+
+      const normalizeString = (str: string) =>
+        str
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
+
+      const senderLastNameNormalized = normalizeString(
+        transaction.senderAccount.lastName,
+      );
+      const lastNameNormalized = normalizeString(lastName);
+
+      if (senderLastNameNormalized !== lastNameNormalized) {
+        console.log(
+          'El apellido no coincide con el del remitente de la transacción.',
+        );
+        throw new UnauthorizedException('Apellido inválido.');
+      }
+
+      const statusHistory = await this.statusLogRepository
+        .createQueryBuilder('statusLog')
+        .leftJoin('statusLog.transaction', 'transaction')
+        .where('transaction.transaction_id = :id', { id })
+        .orderBy('statusLog.changedAt', 'DESC')
+        .getMany();
+
+      if (!statusHistory.length) {
+        console.log(
+          'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
+        );
+        throw new NotFoundException(
+          'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
+        );
+      }
+
+      return statusHistory.map((log) => ({
+        id: log.id,
+        status: log.status,
+        changedAt: log.changedAt,
+        message: log.message,
+      }));
+    } catch (error) {
+      console.error('Error en getPublicStatusHistory:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Crear una nueva transacción con cuentas, monto y comprobante
+   */
 async create(
   createTransactionDto: CreateTransactionDto,
   file: FileUploadDTO,
-) {
-  const createAt = new Date();
+): Promise<TransactionResponseDto> {
+  try {
+    const createdAt = new Date();
 
-  const financialAccount = await this.financialAccountService.create(
-    createTransactionDto.financialAccounts,
-  );
+    // 1️⃣ Validación de archivo obligatorio
+    if (!file) {
+      throw new BadRequestException('El comprobante de pago (archivo) es obligatorio.');
+    }
 
-  const amount = await this.amountService.create(createTransactionDto.amount);
+    // 2️⃣ Creación de cuentas financieras
+    let financialAccounts;
+    try {
+      financialAccounts = await this.financialAccountService.create(
+        createTransactionDto.financialAccounts,
+      );
+    } catch (err) {
+      throw new BadRequestException(
+        `Error al crear cuentas financieras: ${err.message || err}`,
+      );
+    }
 
-  const proofOfPayment = await this.proofOfPaymentService.create(file);
+    // 3️⃣ Creación de monto
+    let amount;
+    try {
+      amount = await this.amountService.create(createTransactionDto.amount);
+    } catch (err) {
+      throw new BadRequestException(`Error al crear el monto: ${err.message || err}`);
+    }
 
-  const transaction = this.transactionsRepository.create({
-    ...createTransactionDto,
-    senderAccount: financialAccount.sender,
-    receiverAccount: financialAccount.receiver,
-    createdAt: createAt,
-    amount,
-    proofOfPayment,
-  });
+    // 4️⃣ Creación de comprobante de pago
+    let proofOfPayment;
+    try {
+      proofOfPayment = await this.proofOfPaymentService.create(file);
+    } catch (err) {
+      throw new BadRequestException(
+        `Error al subir comprobante de pago: ${err.message || err}`,
+      );
+    }
 
-  const savedTransaction = await this.transactionsRepository.save(transaction);
+    // 5️⃣ Creación de transacción
+    let savedTransaction;
+    try {
+      const transaction = this.transactionsRepository.create({
+        countryTransaction: createTransactionDto.countryTransaction,
+        message: createTransactionDto.message,
+        createdAt,
+        senderAccount: financialAccounts.sender,
+        receiverAccount: financialAccounts.receiver,
+        amount,
+        proofOfPayment,
+      });
 
-  // Ocultar userId antes de devolver la respuesta
-  return instanceToPlain(savedTransaction);
+      savedTransaction = await this.transactionsRepository.save(transaction);
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Error al guardar la transacción: ${err.message || err}`,
+      );
+    }
+
+    // 6️⃣ Recuperar transacción con todas las relaciones
+    let fullTransaction;
+    try {
+      fullTransaction = await this.transactionsRepository.findOne({
+        where: { id: savedTransaction.id },
+        relations: [
+          'senderAccount',
+          'senderAccount.paymentMethod',
+          'receiverAccount',
+          'receiverAccount.paymentMethod',
+          'amount',
+          'proofOfPayment',
+        ],
+      });
+
+      if (!fullTransaction) {
+        throw new NotFoundException('La transacción no se encontró después de ser creada.');
+      }
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Error al recuperar la transacción completa: ${err.message || err}`,
+      );
+    }
+
+    // 7️⃣ Transformar a DTO de respuesta
+    return plainToInstance(TransactionResponseDto, fullTransaction, {
+      excludeExtraneousValues: true,
+    });
+  } catch (error) {
+    // Captura final para cualquier error no manejado
+    console.error('Error en TransactionsService.create:', error);
+    throw error instanceof HttpException
+      ? error
+      : new InternalServerErrorException('Error inesperado al crear la transacción.');
+  }
 }
 
 
+  /**
+   * Obtener todas las transacciones con relaciones
+   */
   async findAll() {
     return await this.transactionsRepository.find({
       relations: {
@@ -66,6 +227,9 @@ async create(
     });
   }
 
+  /**
+   * Obtener una transacción por ID validando el email
+   */
   async getTransactionByEmail(
     transactionId: string,
     userEmail: string,
@@ -77,12 +241,8 @@ async create(
     const transaction = await this.transactionsRepository.findOne({
       where: { id: transactionId },
       relations: {
-        senderAccount: {
-          paymentMethod: true,
-        },
-        receiverAccount: {
-          paymentMethod: true,
-        },
+        senderAccount: { paymentMethod: true },
+        receiverAccount: { paymentMethod: true },
         amount: true,
         proofOfPayment: true,
       },
@@ -92,11 +252,7 @@ async create(
       throw new NotFoundException('Transaction not found');
     }
 
-    if (
-      transaction.createdBy !== userEmail &&
-      transaction.receiverAccount?.email !== userEmail &&
-      transaction.senderAccount?.email !== userEmail
-    ) {
+    if (transaction.senderAccount?.createdBy !== userEmail) {
       throw new ForbiddenException('Unauthorized access to this transaction');
     }
 

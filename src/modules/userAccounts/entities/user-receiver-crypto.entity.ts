@@ -9,8 +9,8 @@ import { UserAccount } from './user-account.entity';
 
 @Entity('user_receiver_crypto')
 export class UserReceiverCrypto {
-  @PrimaryGeneratedColumn('uuid', { name: 'crypto_id' })
-  cryptoId: string;
+  @PrimaryGeneratedColumn('uuid', { name: 'receiver_crypto' })
+  receiver_crypto: string;
 
   @Column({ name: 'account_id', type: 'uuid' })
   account_id: string;

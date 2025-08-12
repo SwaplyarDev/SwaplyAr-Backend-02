@@ -38,7 +38,7 @@ export class Transaction {
   @Column({ name: 'country_transaction' })
   countryTransaction: string;
 
-  @Column({ name: 'message' })
+  @Column({ name: 'message', nullable: true })
   message: string;
 
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })

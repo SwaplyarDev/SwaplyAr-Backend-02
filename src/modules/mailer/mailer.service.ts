@@ -19,25 +19,123 @@ export class MailerService {
     );
   }
 
-  async sendAuthCodeMail(to: string, code: string) {
-    const from = this.configService.get<string>('nodemailer.auth.user');
-    this.logger.log(`Mailer verification: ${await this.mailer.verify()}`);
-    this.logger.log(`Sending mail from ${from} to ${to}`);
+  /**
+   * Envío retrocompatible de código de autenticación:
+   * - si `payload` es `string` => envía texto plano (legacy).
+   * - si `payload` es un objeto => renderiza plantilla Handlebars.
+   */
+  async sendAuthCodeMail(
+    to: string,
+    payload:
+      | string
+      | {
+          NAME: string;
+          VERIFICATION_CODE: string;
+          BASE_URL: string;
+          LOCATION?: string;
+          EXPIRATION_MINUTES: number;
+        },
+    subject = 'Código de verificación - SwaplyAr',
+  ) {
+    // Determinar "from" con varios fallbacks
+    const nodemailerConfig = this.configService.get<any>('nodemailer');
+    const from =
+      nodemailerConfig?.auth?.user ??
+      this.configService.get<string>('EMAIL_USER') ??
+      // por si se usaba la ruta con key anidada
+      this.configService.get<string>('nodemailer.auth.user');
 
-    await this.mailer.sendMail({
-      from,
-      to,
-      subject: 'Código de autenticación',
-      text: code, // Email templates will be added later.
-    });
+    if (!from) {
+      this.logger.error(
+        'Falta configuración del remitente. Verifica EMAIL_USER o la configuración nodemailer.auth.user.',
+      );
+      throw new Error(
+        'Missing email sender configuration. Please set EMAIL_USER or nodemailer.auth.user.',
+      );
+    }
 
-    return { message: `The code has been sent to the email ${to}` };
+    // Intentar verificar conexión (no abortamos si falla, solo logueamos)
+    try {
+      await this.mailer.verify();
+      this.logger.log('Mailer verification: OK');
+    } catch (err: any) {
+      this.logger.warn(`Mailer verification failed: ${err?.message ?? err}`);
+      // no throw; permitimos intentar el envío para ambientes donde verify no sea crítico
+    }
+
+    // Caso legacy: payload es string => enviar texto simple con el código
+    if (typeof payload === 'string') {
+      const code = payload;
+      const usedSubject = subject ?? 'Código de autenticación';
+
+      await this.mailer.sendMail({
+        from,
+        to,
+        subject: usedSubject,
+        text: code,
+      });
+
+      return { message: `The code has been sent to the email ${to}` };
+    }
+
+    // Caso template: payload es objeto
+    const templateRelativeParts = [
+      'modules',
+      'mailer',
+      'templates',
+      'email',
+      'auth',
+      'welcome_verification_code.hbs',
+    ];
+
+    // Intentamos 2 ubicaciones: carpeta src (dev) y ruta relativa desde __dirname (dist)
+    const templatePathDev = join(process.cwd(), 'src', ...templateRelativeParts);
+    const templatePathDist = join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      ...templateRelativeParts,
+    );
+
+    let templatePath = '';
+    if (existsSync(templatePathDev)) {
+      templatePath = templatePathDev;
+    } else if (existsSync(templatePathDist)) {
+      templatePath = templatePathDist;
+    } else {
+      this.logger.warn(
+        `No se encontró la plantilla de verificación en ninguna ruta (intentadas: ${templatePathDev}, ${templatePathDist}). Enviando fallback con texto.`,
+      );
+      // Fallback: enviar el código en texto si no existe plantilla
+      await this.mailer.sendMail({
+        from,
+        to,
+        subject,
+        text: `Tu código de verificación es: ${payload.VERIFICATION_CODE}`,
+      });
+      return { message: `The code has been sent to the email ${to} (fallback text)` };
+    }
+
+    // Compilar y enviar la plantilla
+    try {
+      const html = this.compileTemplate(templatePath, payload);
+      await this.mailer.sendMail({
+        from,
+        to,
+        subject,
+        html,
+      });
+      return { message: `The code has been sent to the email ${to}` };
+    } catch (error: any) {
+      this.logger.error(`Error sending templated auth mail: ${error.message}`);
+      throw error;
+    }
   }
 
   /**
    * Envía un correo al usuario cuando el estado de la transacción cambia.
    */
-
   async sendStatusEmail(transaction: any, status: AdminStatus) {
     try {
       const config = this.configService.get('nodemailer');
@@ -146,7 +244,7 @@ export class MailerService {
       return {
         message: `El correo de estado ha sido enviado a ${transaction.createdBy}`,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         `Error al enviar el correo de estado: ${error.message}`,
       );
@@ -166,11 +264,12 @@ export class MailerService {
       const rawTemplate = readFileSync(templatePath, 'utf8');
       const compiled = Handlebars.compile(rawTemplate);
       return compiled(data);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error compiling template: ${error.message}`);
       throw error;
     }
   }
+
   /**
    * Construye los datos necesarios para renderizar el template de email.
    */

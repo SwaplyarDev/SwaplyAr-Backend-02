@@ -92,7 +92,7 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  /* @Roles('user') */
+  @Roles('user')
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Request() req, @Body() dto: CreateBankAccountDto) {
@@ -157,7 +157,7 @@ export class AccountsController {
     summary: 'Obtener todas las cuentas del usuario autenticado',
   })
   @ApiQuery({
-    name: 'id',
+    name: 'userId',
     required: true,
     description: 'ID del usuario',
     type: String,
@@ -185,7 +185,7 @@ export class AccountsController {
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  @Get('/findId')
+  @Get('/admin/findId')
   async findOneById(@Query('userId') userId: string) {
     return this.accountsService.findAllBanks(userId);
   }
@@ -235,7 +235,7 @@ export class AccountsController {
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  @Get('/findUserBank')
+  @Get('/admin/findUserBank')
   async findOneUserBank(
     @Query('userId') userId: string,
     @Query('bankAccountId') bankAccountId: string,

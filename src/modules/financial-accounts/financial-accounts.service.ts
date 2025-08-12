@@ -25,7 +25,12 @@ export class FinancialAccountsService {
   // Crear el sender, asegurándote de que se guarden email y phoneNumber
   const sender = await this.senderService.create(senderAccount);
 
-  return { sender, receiver };
+  const { createdBy, phoneNumber, ...senderClean } = sender;
+ 
+
+  return { sender: senderClean, receiver };
+
+
 }
 
 

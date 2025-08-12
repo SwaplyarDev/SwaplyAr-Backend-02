@@ -3,6 +3,9 @@ import {
   NotFoundException,
   ForbiddenException,
   UnauthorizedException,
+  InternalServerErrorException,
+  HttpException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -110,40 +113,103 @@ export class TransactionsService {
   /**
    * Crear una nueva transacción con cuentas, monto y comprobante
    */
-
-
 async create(
   createTransactionDto: CreateTransactionDto,
   file: FileUploadDTO,
 ): Promise<TransactionResponseDto> {
-  const createdAt = new Date();
+  try {
+    const createdAt = new Date();
 
-  const financialAccounts = await this.financialAccountService.create(
-    createTransactionDto.financialAccounts,
-  );
+    // 1️⃣ Validación de archivo obligatorio
+    if (!file) {
+      throw new BadRequestException('El comprobante de pago (archivo) es obligatorio.');
+    }
 
-  const amount = await this.amountService.create(createTransactionDto.amount);
+    // 2️⃣ Creación de cuentas financieras
+    let financialAccounts;
+    try {
+      financialAccounts = await this.financialAccountService.create(
+        createTransactionDto.financialAccounts,
+      );
+    } catch (err) {
+      throw new BadRequestException(
+        `Error al crear cuentas financieras: ${err.message || err}`,
+      );
+    }
 
-  const proofOfPayment = await this.proofOfPaymentService.create(file);
+    // 3️⃣ Creación de monto
+    let amount;
+    try {
+      amount = await this.amountService.create(createTransactionDto.amount);
+    } catch (err) {
+      throw new BadRequestException(`Error al crear el monto: ${err.message || err}`);
+    }
 
-  const transaction = this.transactionsRepository.create({
-    countryTransaction: createTransactionDto.countryTransaction,
-    message: createTransactionDto.message,
-    createdAt,
-    senderAccount: financialAccounts.sender,
-    receiverAccount: financialAccounts.receiver,
-    amount,
-    proofOfPayment,
-  });
+    // 4️⃣ Creación de comprobante de pago
+    let proofOfPayment;
+    try {
+      proofOfPayment = await this.proofOfPaymentService.create(file);
+    } catch (err) {
+      throw new BadRequestException(
+        `Error al subir comprobante de pago: ${err.message || err}`,
+      );
+    }
 
-  const savedTransaction = await this.transactionsRepository.save(transaction);
+    // 5️⃣ Creación de transacción
+    let savedTransaction;
+    try {
+      const transaction = this.transactionsRepository.create({
+        countryTransaction: createTransactionDto.countryTransaction,
+        message: createTransactionDto.message,
+        createdAt,
+        senderAccount: financialAccounts.sender,
+        receiverAccount: financialAccounts.receiver,
+        amount,
+        proofOfPayment,
+      });
 
-  const transactionDto = plainToInstance(TransactionResponseDto, savedTransaction, {
-  excludeExtraneousValues: true,
+      savedTransaction = await this.transactionsRepository.save(transaction);
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Error al guardar la transacción: ${err.message || err}`,
+      );
+    }
 
-  }); 
+    // 6️⃣ Recuperar transacción con todas las relaciones
+    let fullTransaction;
+    try {
+      fullTransaction = await this.transactionsRepository.findOne({
+        where: { id: savedTransaction.id },
+        relations: [
+          'senderAccount',
+          'senderAccount.paymentMethod',
+          'receiverAccount',
+          'receiverAccount.paymentMethod',
+          'amount',
+          'proofOfPayment',
+        ],
+      });
 
-  return transactionDto;
+      if (!fullTransaction) {
+        throw new NotFoundException('La transacción no se encontró después de ser creada.');
+      }
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Error al recuperar la transacción completa: ${err.message || err}`,
+      );
+    }
+
+    // 7️⃣ Transformar a DTO de respuesta
+    return plainToInstance(TransactionResponseDto, fullTransaction, {
+      excludeExtraneousValues: true,
+    });
+  } catch (error) {
+    // Captura final para cualquier error no manejado
+    console.error('Error en TransactionsService.create:', error);
+    throw error instanceof HttpException
+      ? error
+      : new InternalServerErrorException('Error inesperado al crear la transacción.');
+  }
 }
 
 

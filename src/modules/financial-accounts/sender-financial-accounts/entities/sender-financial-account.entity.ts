@@ -9,8 +9,10 @@ export class SenderFinancialAccount extends FinancialAccount {
   transactions: Transaction[];
 
   @Column({ name: 'created_by' })
+  @Expose()
   createdBy: string;
 
   @Column({ name: 'phone_number' })
+  @Expose()
   phoneNumber: string;
 }

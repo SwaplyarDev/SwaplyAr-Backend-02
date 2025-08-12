@@ -57,9 +57,7 @@ export class Transaction {
   senderAccount: SenderFinancialAccount;
 
   @ManyToOne(
-    () => ReceiverFinancialAccount,
-    (receiver) => receiver.transactions,
-  )
+    () => ReceiverFinancialAccount,(receiver) => receiver.transactions,)
   @JoinColumn({ name: 'receiver_account_id' })
   receiverAccount: ReceiverFinancialAccount;
 

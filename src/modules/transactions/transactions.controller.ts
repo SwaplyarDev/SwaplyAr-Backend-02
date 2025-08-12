@@ -50,7 +50,18 @@ interface RequestWithUser extends Request {
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
-@ApiOperation({ summary: 'Crear una transacción con comprobante (opcional)' })
+@ApiOperation({
+  summary: 'Crear una transacción con comprobante de pago',
+  description: `
+    Este endpoint permite crear una nueva transacción con todos los datos requeridos y un comprobante de pago.
+    - El campo **createTransactionDto** debe enviarse como un **string JSON válido**.
+    - El campo mesagge es opcional, pero si se envía debe ser un texto.
+    - El comprobante de pago debe enviarse como archivo en el campo **file** (formato *multipart/form-data*).
+    - Todos los campos indicados como obligatorios en el DTO deben estar completos.
+    - Se validan y almacenan las cuentas financieras, montos y comprobante.
+    - Si alguna validación falla, se devuelve un error detallado.
+  `,
+})
 @ApiConsumes('multipart/form-data')
 @ApiBody({
   schema: {
@@ -58,7 +69,7 @@ export class TransactionsController {
     properties: {
       createTransactionDto: {
         type: 'string',
-        description: 'JSON stringificado de CreateTransactionDto',
+        description: 'JSON stringificado con la información de la transacción (CreateTransactionDto)',
         example: JSON.stringify({
           paymentsId: '123',
           countryTransaction: 'Argentina',
@@ -96,72 +107,95 @@ export class TransactionsController {
             currencyReceived: 'BRL',
             received: false,
           },
-        }, null, 2), // stringify con indentación para mejor lectura
+        }, null, 2),
       },
       file: {
         type: 'string',
         format: 'binary',
-        description: 'Comprobante de la transacción',
+        description: 'Archivo del comprobante de pago (JPG, PNG o PDF)',
       },
     },
     required: ['createTransactionDto'],
   },
 })
-@ApiResponse({ status: 201, description: 'Transacción creada correctamente', type: TransactionResponseDto })
+@ApiResponse({
+  status: 201,
+  description: '✅ Transacción creada correctamente',
+  type: TransactionResponseDto,
+})
+@ApiResponse({
+  status: 400,
+  description: `
+    ❌ Error en los datos enviados:
+    - El body está vacío.
+    - El campo createTransactionDto es requerido.
+    - El campo createTransactionDto no es un JSON válido.
+    - Faltan campos obligatorios en el DTO.
+    - Error en la creación de cuentas financieras, monto o comprobante de pago.
+  `,
+})
+@ApiResponse({
+  status: 404,
+  description: '❌ Recurso no encontrado (por ejemplo, cuenta o transacción relacionada no existe)',
+})
+@ApiResponse({
+  status: 500,
+  description: '❌ Error interno del servidor',
+})
 @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  async create(
-    @Body() body: CreateTransactionBody,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    if (!body || Object.keys(body).length === 0) {
-      throw new BadRequestException('El body está vacío');
-    }
+@UseInterceptors(FileInterceptor('file'))
+async create(
+  @Body() body: CreateTransactionBody,
+  @UploadedFile() file: Express.Multer.File,
+) {
+  if (!body || Object.keys(body).length === 0) {
+    throw new BadRequestException('El body está vacío');
+  }
 
-    if (!body.createTransactionDto) {
-      throw new BadRequestException(
-        'El campo createTransactionDto es requerido. Body recibido: ' +
-          JSON.stringify(body),
-      );
-    }
-
-    let parsedDto: Partial<CreateTransactionDto>;
-    try {
-      parsedDto = JSON.parse(
-        body.createTransactionDto,
-      ) as Partial<CreateTransactionDto>;
-    } catch {
-      throw new BadRequestException(
-        'El campo createTransactionDto debe ser un JSON válido',
-      );
-    }
-
-    const createTransactionDto = plainToInstance(
-      CreateTransactionDto,
-      parsedDto,
-    );
-
-    const fileData: FileUploadDTO = file
-      ? {
-          buffer: file.buffer,
-          fieldName: file.fieldname,
-          mimeType: file.mimetype,
-          originalName: file.originalname,
-          size: file.size,
-        }
-      : {
-          buffer: Buffer.from(''),
-          fieldName: '',
-          mimeType: '',
-          originalName: '',
-          size: 0,
-        };
-
-    return await this.transactionsService.create(
-      createTransactionDto,
-      fileData,
+  if (!body.createTransactionDto) {
+    throw new BadRequestException(
+      'El campo createTransactionDto es requerido. Body recibido: ' +
+        JSON.stringify(body),
     );
   }
+
+  let parsedDto: Partial<CreateTransactionDto>;
+  try {
+    parsedDto = JSON.parse(
+      body.createTransactionDto,
+    ) as Partial<CreateTransactionDto>;
+  } catch {
+    throw new BadRequestException(
+      'El campo createTransactionDto debe ser un JSON válido',
+    );
+  }
+
+  const createTransactionDto = plainToInstance(
+    CreateTransactionDto,
+    parsedDto,
+  );
+
+  const fileData: FileUploadDTO = file
+    ? {
+        buffer: file.buffer,
+        fieldName: file.fieldname,
+        mimeType: file.mimetype,
+        originalName: file.originalname,
+        size: file.size,
+      }
+    : {
+        buffer: Buffer.from(''),
+        fieldName: '',
+        mimeType: '',
+        originalName: '',
+        size: 0,
+      };
+
+  return await this.transactionsService.create(
+    createTransactionDto,
+    fileData,
+  );
+}
 
   // Obtener historial de estados (público)
   @Get('status/:id')

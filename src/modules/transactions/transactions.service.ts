@@ -3,6 +3,9 @@ import {
   NotFoundException,
   ForbiddenException,
   UnauthorizedException,
+  InternalServerErrorException,
+  HttpException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,7 +13,6 @@ import { Repository } from 'typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
-import { Amount } from './amounts/entities/amount.entity';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { UserStatusHistoryResponse } from '@common/interfaces/status-history.interface';
 
@@ -18,7 +20,8 @@ import { FinancialAccountsService } from '@financial-accounts/financial-accounts
 import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 
-import { instanceToPlain } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
+import { TransactionResponseDto } from './dto/transaction-response.dto';
 
 @Injectable()
 export class TransactionsService {
@@ -110,32 +113,105 @@ export class TransactionsService {
   /**
    * Crear una nueva transacción con cuentas, monto y comprobante
    */
-  async create(
-    createTransactionDto: CreateTransactionDto,
-    file: FileUploadDTO,
-  ) {
-    const createAt = new Date();
+async create(
+  createTransactionDto: CreateTransactionDto,
+  file: FileUploadDTO,
+): Promise<TransactionResponseDto> {
+  try {
+    const createdAt = new Date();
 
-    const financialAccount = await this.financialAccountService.create(
-      createTransactionDto.financialAccounts,
-    );
+    // 1️⃣ Validación de archivo obligatorio
+    if (!file) {
+      throw new BadRequestException('El comprobante de pago (archivo) es obligatorio.');
+    }
 
-    const amount = await this.amountService.create(createTransactionDto.amount);
-    const proofOfPayment = await this.proofOfPaymentService.create(file);
+    // 2️⃣ Creación de cuentas financieras
+    let financialAccounts;
+    try {
+      financialAccounts = await this.financialAccountService.create(
+        createTransactionDto.financialAccounts,
+      );
+    } catch (err) {
+      throw new BadRequestException(
+        `Error al crear cuentas financieras: ${err.message || err}`,
+      );
+    }
 
-    const transaction = this.transactionsRepository.create({
-      ...createTransactionDto,
-      senderAccount: financialAccount.sender,
-      receiverAccount: financialAccount.receiver,
-      createdAt: createAt,
-      amount,
-      proofOfPayment,
+    // 3️⃣ Creación de monto
+    let amount;
+    try {
+      amount = await this.amountService.create(createTransactionDto.amount);
+    } catch (err) {
+      throw new BadRequestException(`Error al crear el monto: ${err.message || err}`);
+    }
+
+    // 4️⃣ Creación de comprobante de pago
+    let proofOfPayment;
+    try {
+      proofOfPayment = await this.proofOfPaymentService.create(file);
+    } catch (err) {
+      throw new BadRequestException(
+        `Error al subir comprobante de pago: ${err.message || err}`,
+      );
+    }
+
+    // 5️⃣ Creación de transacción
+    let savedTransaction;
+    try {
+      const transaction = this.transactionsRepository.create({
+        countryTransaction: createTransactionDto.countryTransaction,
+        message: createTransactionDto.message,
+        createdAt,
+        senderAccount: financialAccounts.sender,
+        receiverAccount: financialAccounts.receiver,
+        amount,
+        proofOfPayment,
+      });
+
+      savedTransaction = await this.transactionsRepository.save(transaction);
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Error al guardar la transacción: ${err.message || err}`,
+      );
+    }
+
+    // 6️⃣ Recuperar transacción con todas las relaciones
+    let fullTransaction;
+    try {
+      fullTransaction = await this.transactionsRepository.findOne({
+        where: { id: savedTransaction.id },
+        relations: [
+          'senderAccount',
+          'senderAccount.paymentMethod',
+          'receiverAccount',
+          'receiverAccount.paymentMethod',
+          'amount',
+          'proofOfPayment',
+        ],
+      });
+
+      if (!fullTransaction) {
+        throw new NotFoundException('La transacción no se encontró después de ser creada.');
+      }
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Error al recuperar la transacción completa: ${err.message || err}`,
+      );
+    }
+
+    // 7️⃣ Transformar a DTO de respuesta
+    return plainToInstance(TransactionResponseDto, fullTransaction, {
+      excludeExtraneousValues: true,
     });
-
-    const savedTransaction =
-      await this.transactionsRepository.save(transaction);
-    return instanceToPlain(savedTransaction); // Oculta userId en la respuesta
+  } catch (error) {
+    // Captura final para cualquier error no manejado
+    console.error('Error en TransactionsService.create:', error);
+    throw error instanceof HttpException
+      ? error
+      : new InternalServerErrorException('Error inesperado al crear la transacción.');
   }
+}
+
 
   /**
    * Obtener todas las transacciones con relaciones
@@ -176,11 +252,7 @@ export class TransactionsService {
       throw new NotFoundException('Transaction not found');
     }
 
-    if (
-      transaction.createdBy !== userEmail &&
-      transaction.receiverAccount?.email !== userEmail &&
-      transaction.senderAccount?.email !== userEmail
-    ) {
+    if (transaction.senderAccount?.createdBy !== userEmail) {
       throw new ForbiddenException('Unauthorized access to this transaction');
     }
 

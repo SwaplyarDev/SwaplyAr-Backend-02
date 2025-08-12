@@ -38,14 +38,11 @@ export class Transaction {
   @Column({ name: 'country_transaction' })
   countryTransaction: string;
 
-  @Column({ name: 'message' })
+  @Column({ name: 'message', nullable: true })
   message: string;
 
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;
-
-  @Column({ name: 'created_by' })
-  createdBy: string;
 
   @Column({
     type: 'enum',
@@ -60,9 +57,7 @@ export class Transaction {
   senderAccount: SenderFinancialAccount;
 
   @ManyToOne(
-    () => ReceiverFinancialAccount,
-    (receiver) => receiver.transactions,
-  )
+    () => ReceiverFinancialAccount,(receiver) => receiver.transactions,)
   @JoinColumn({ name: 'receiver_account_id' })
   receiverAccount: ReceiverFinancialAccount;
 

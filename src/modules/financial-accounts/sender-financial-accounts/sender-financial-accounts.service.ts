@@ -14,22 +14,20 @@ export class SenderFinancialAccountsService {
     private readonly paymentMethodService: PaymentMethodService,
   ) {}
 
-  async create(
-    createSenderFinancialAccountDto: CreateSenderFinancialAccountDto,
-  ) {
-    const { paymentMethod } = createSenderFinancialAccountDto;
+  async create(createSenderFinancialAccountDto: CreateSenderFinancialAccountDto) {
+  const { paymentMethod } = createSenderFinancialAccountDto;
 
-    const newPaymentMethod =
-      await this.paymentMethodService.create(paymentMethod); // lo guarda en la tabla payment methods
+  const newPaymentMethod = await this.paymentMethodService.create(paymentMethod, true);
 
-    // Crear el objeto SenderFinancialAccount
-    const data = this.senderRepository.create({
-      ...createSenderFinancialAccountDto,
-      paymentMethod: newPaymentMethod, // Asigna el método de pago correctamente
-    });
+  const data = this.senderRepository.create({
+    ...createSenderFinancialAccountDto,
+    paymentMethod: newPaymentMethod,
+  });
 
-    return await this.senderRepository.save(data); // lo guarda en la tabla financial accounts
-  }
+  const savedSender = await this.senderRepository.save(data);
+
+  return savedSender;
+}
 
   async findAll() {
     return await this.senderRepository.find({

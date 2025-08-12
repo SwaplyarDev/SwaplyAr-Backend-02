@@ -87,10 +87,7 @@ export class AuthService {
 
 
   }
-
-
   
-
   async sendLoginCodeEmail(user: User, code: string, location: string) {
     await this.mailerService.sendAuthCodeMail(
       user.profile.email

@@ -19,7 +19,6 @@ export class MailerService {
     );
   }
   
-
   //* Modificación de codigo de autenticación con un template de respuesta */////
 
   async sendAuthCodeMail(
@@ -58,14 +57,6 @@ export class MailerService {
   
       return { message: `The code has been sent to the email ${to}` };
     }
-
-
-
-
-
-
-
-
 
   /**
    * Envía un correo al usuario cuando el estado de la transacción cambia.
@@ -207,32 +198,5 @@ export class MailerService {
       RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`,
     };
   }
-
-  //////*********/////////// */
-
-  // async sendLoginCodeTemplateMail(to: string, data: { NAME: string; VERIFICATION_CODE: string; BASE_URL: string; LOCATION?: string; EXPIRATION_MINUTES: number }) {
-  //   const from = this.configService.get<string>('EMAIL_USER');
-  //   const templatePath = join(process.cwd(), 'src', 'modules', 'mailer', 'templates', 'email', 'auth', 'welcome_verification_code.hbs');
-  //   const rawTemplate = readFileSync(templatePath, 'utf8');
-  //   const compiled = Handlebars.compile(rawTemplate);
-
-  //   //const html = compiled(data);
-
-  //   const html = compiled({
-  //     NAME: data.NAME,
-  //     VERIFICATION_CODE: data.VERIFICATION_CODE,
-  //     BASE_URL: data.BASE_URL,
-  //     LOCATION: data.LOCATION,
-  //     EXPIRATION_MINUTES: data.EXPIRATION_MINUTES,
-  //   })
-
-  //   await this.mailer.sendMail({
-  //     from,
-  //     to,
-  //     subject: 'Código de verificación - SwaplyAr',
-  //     html,
-  //   });
-  // }
-
 }
 

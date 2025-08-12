@@ -8,6 +8,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { AccountsService } from './userAccounts.service';
@@ -21,6 +22,7 @@ import {
   ApiResponse,
   ApiBody,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 
 //TODO: GET (user/accounts/:id) ,  GET (user/user:id/accounts) , GET (user/user:id/accounts/account:id),
@@ -144,11 +146,100 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  /*   @Roles('user') */
+  @Roles('user')
   @Get()
   async findAll(@Request() req) {
-    return this.accountsService.findAllByUser(req.user);
+    return this.accountsService.findAllBanks(req.user);
   }
 
-  //GET:ID
+  // Obtener todas las cuentas de banco de un user
+  @ApiOperation({
+    summary: 'Obtener todas las cuentas del usuario autenticado',
+  })
+  @ApiQuery({
+    name: 'userId',
+    required: true,
+    description: 'ID del usuario',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de cuentas del usuario',
+    schema: {
+      example: [
+        {
+          id: 'uuid',
+          typeAccount: 'bank',
+          formData: {},
+          userAccValues: {
+            first_name: 'Juan',
+            last_name: 'Pérez',
+            identification: '12345678',
+            currency: 'ARS',
+            account_name: 'Cuenta Principal',
+            account_type: 1,
+          },
+        },
+      ],
+    },
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Get('/admin/findId')
+  async findOneById(@Query('userId') userId: string) {
+    return this.accountsService.findAllBanks(userId);
+  }
+
+  // obtener una cuenta
+
+  @ApiOperation({
+    summary: 'Obtener una cuenta bancaria específica de un usuario autenticado',
+  })
+  @ApiQuery({
+    name: 'userId',
+    required: true,
+    description: 'ID del usuario',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'bankAccountId',
+    required: true,
+    description: 'ID específico de la cuenta bancaria',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Cuenta bancaria específica encontrada',
+    schema: {
+      example: {
+        accountName: 'Dylan',
+        currency: 'USD',
+        status: true,
+        payment_type: 'paypal',
+        details: [
+          {
+            account_id: 'f4338078-8c08-468c-ad92-134d37e0b405',
+            email_account: 'dylan.rojo@paypal.com',
+            transfer_code: 987654,
+          },
+        ],
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Cuenta bancaria no encontrada o no pertenece al usuario',
+    schema: {
+      example: { message: 'Cuenta no encontrada para este usuario' },
+    },
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Get('/admin/findUserBank')
+  async findOneUserBank(
+    @Query('userId') userId: string,
+    @Query('bankAccountId') bankAccountId: string,
+  ) {
+    return this.accountsService.findOneUserBank(userId, bankAccountId);
+  }
 }

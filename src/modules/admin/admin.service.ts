@@ -236,10 +236,10 @@ export class AdminService {
 
       const starDto: UpdateStarDto = { quantity: quantityToAdd };
 
-      const user = await this.userRepository.findOne({
-        where: { profile: { email: transaction.createdBy } },
-        relations: ['profile'],
-      });
+    const user = await this.userRepository.findOne({
+      where: { profile: { email: transaction.senderAccount.createdBy } },
+      relations: ['profile'],
+    });
 
       if (user) {
         const userId = user.id;

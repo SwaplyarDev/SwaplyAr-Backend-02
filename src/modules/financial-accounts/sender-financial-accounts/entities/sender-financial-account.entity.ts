@@ -1,15 +1,18 @@
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { ChildEntity, Column, OneToMany } from 'typeorm';
 import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
+import { Expose } from 'class-transformer';
 
 @ChildEntity('sender')
 export class SenderFinancialAccount extends FinancialAccount {
   @OneToMany(() => Transaction, (transaction) => transaction.senderAccount)
   transactions: Transaction[];
 
-  @Column({ nullable: true })
-  email?: string;
+  @Column({ name: 'created_by' })
+  @Expose()
+  createdBy: string;
 
-  @Column({ nullable: true })
-  phoneNumber?: string;
+  @Column({ name: 'phone_number' })
+  @Expose()
+  phoneNumber: string;
 }

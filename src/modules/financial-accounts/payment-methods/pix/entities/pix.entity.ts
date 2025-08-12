@@ -4,7 +4,7 @@ import { PaymentMethod } from '@financial-accounts/payment-methods/entities/paym
 @ChildEntity('pix')
 export class Pix extends PaymentMethod {
   @Column({ name: 'virtual_bank_id' })
-  virtualBankId: string;
+  pixId: string;
 
   @Column({ name: 'pix_key' })
   pixKey: string;

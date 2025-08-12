@@ -283,7 +283,7 @@ export class AdminController {
     const transaction = await this.adminService.getTransactionById(id);
 
     // Enviar correos electrónicos según el estado
-    if (transaction && transaction.createdBy) {
+    if (transaction && transaction.senderAccount.createdBy) {
       await this.mailerService.sendStatusEmail(transaction, status);
     }
 
@@ -316,7 +316,7 @@ export class AdminController {
     const userEmail = user.email;
     const userRole = user.role;
     const isAdmin = userRole === 'admin' || userRole === 'super_admin';
-    const senderEmail = transaction.senderAccount?.email;
+    const senderEmail = transaction.senderAccount?.createdBy;
     const receiverEmail = (transaction.receiverAccount as any)?.email;
     const isOwner = senderEmail === userEmail || receiverEmail === userEmail;
     if (!isAdmin && !isOwner) {

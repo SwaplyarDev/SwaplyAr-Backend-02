@@ -16,7 +16,7 @@ export class OtpService {
     private readonly otpRepo: Repository<OtpCode>,
 
     private readonly mailer: MailerService,
-  ) {}
+  ) { }
 
   async sendOtpToEmail(email: string): Promise<void> {
     // ahora buscás el usuario tú mismo:
@@ -27,7 +27,14 @@ export class OtpService {
     if (!user) throw new BadRequestException('Email not associated');
 
     const otp = await this.createOtpFor(user);
-    await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
+    //await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
+    await this.mailer.sendAuthCodeMail(
+      user.profile.email,{
+      NAME: user.profile.firstName || user.profile.email,
+      VERIFICATION_CODE: otp.code,
+      BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
+      EXPIRATION_MINUTES: 15, // o el valor que uses
+    });
   }
 
   async validateOtpAndGetUser(email: string, code: string): Promise<User> {
@@ -67,6 +74,14 @@ export class OtpService {
 
   async generateAndSendOtp(user: User): Promise<void> {
     const otp = await this.createOtpFor(user);
-    await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
+    //await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
+    await this.mailer.sendAuthCodeMail(
+      user.profile.email, {
+      NAME: user.profile.firstName || user.profile.email,
+      VERIFICATION_CODE: otp.code,
+      BASE_URL: process.env.BASE_URL || 'http://localhost:3001',
+      EXPIRATION_MINUTES: 10 
+    });
+
   }
 }

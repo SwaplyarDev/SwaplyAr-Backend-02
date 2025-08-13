@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { validateFields } from './helpers/validate-fields.helper';
 import { validateUserAccount } from './helpers/validate-user-account.helper';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -162,9 +167,9 @@ export class AccountsService {
     return { message: 'Cuenta eliminada correctamente' };
   }
 
-  async findAllByUser(user: any) {
+  async findAllBanks(user: any) {
     const accounts = await this.userAccountRepo.find({
-      where: { userId: user.id },
+      where: { userId: user },
     });
 
     const enrichedAccounts = await Promise.all(
@@ -206,6 +211,7 @@ export class AccountsService {
           default:
             details = [{ message: 'Tipo no soportado' }];
         }
+
         // Seleccioná solo los campos que vas a devolver
         return {
           accountName: account.accountName,
@@ -250,5 +256,34 @@ export class AccountsService {
     );
 
     return enrichedAccounts;
+  }
+
+  // filtrar cuenta de banco especifica mediante id del usuario e id del banco
+  async findOneUserBank(userId: string, bankAccountId?: string) {
+    // Traemos todas las cuentas del usuario
+    const allBanks = await this.findAllBanks(userId);
+
+    if (!bankAccountId) {
+      return allBanks;
+    }
+
+    //  Si pasamos bankAccountId, filtramos
+    const found = allBanks.find((bank) =>
+      bank.details.some((d) => d.account_id === bankAccountId),
+    );
+
+    if (!found) {
+      throw new NotFoundException('Cuenta no encontrada para este usuario');
+    }
+
+    //  Filtramos los detalles para devolver solo el que coincide
+    const filteredDetails = found.details.filter(
+      (d) => d.account_id === bankAccountId,
+    );
+
+    return {
+      ...found,
+      details: filteredDetails,
+    };
   }
 }

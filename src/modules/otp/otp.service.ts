@@ -1,13 +1,22 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+
+
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OtpCode } from '../auth/entities/otp-code.entity';
 import { User } from '@users/entities/user.entity';
 import { MailerService } from '@mailer/mailer.service';
 import { generate } from 'otp-generator';
+import * as jwt from 'jsonwebtoken';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
+
 export class OtpService {
+
+  private readonly secret: string;
+  private readonly ttlSeconds: number;
+
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
@@ -16,7 +25,15 @@ export class OtpService {
     private readonly otpRepo: Repository<OtpCode>,
 
     private readonly mailer: MailerService,
-  ) { }
+
+    private readonly configService: ConfigService,
+
+  ) { 
+    
+    this.secret = this.configService.get<string>('otp.jwtSecret', 'supersecret');
+    this.ttlSeconds = this.configService.get<number>('otp.ttl', 300);    
+
+  }
 
   async sendOtpToEmail(email: string): Promise<void> {
     // ahora buscás el usuario tú mismo:
@@ -84,4 +101,25 @@ export class OtpService {
     });
 
   }
+
+  generateOtpToken (transactionId: string): string {
+
+    return jwt.sign ({ transactionId }, this.secret, { expiresIn: `${this.ttlSeconds}s` });
+
+  }
+
+  verifyOtpToken (token: string): { transactionId: string; iat?: number; exp?: number } {
+
+    try {
+
+      return jwt.verify(token, this.secret) as { transactionId: string; iat?: number; exp?: number };
+
+    } catch {
+
+      throw new UnauthorizedException('OTP inválido o expirado');
+
+    }
+
+  }
+
 }

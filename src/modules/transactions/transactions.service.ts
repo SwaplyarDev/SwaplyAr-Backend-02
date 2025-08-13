@@ -1,3 +1,5 @@
+
+
 import {
   Injectable,
   NotFoundException,
@@ -6,22 +8,21 @@ import {
   InternalServerErrorException,
   HttpException,
   BadRequestException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
-import { Transaction } from './entities/transaction.entity';
+} from '@nestjs/common';
+
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Transaction } from './entities/transaction.entity';
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { UserStatusHistoryResponse } from '@common/interfaces/status-history.interface';
-
 import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
 import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
-
 import { plainToInstance } from 'class-transformer';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
+import { FindOneOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class TransactionsService {
@@ -37,9 +38,6 @@ export class TransactionsService {
     private readonly proofOfPaymentService: ProofOfPaymentsService,
   ) {}
 
-  /**
-   * Obtener historial público de una transacción validando por apellido
-   */
   async getPublicStatusHistory(
     id: string,
     lastName: string,
@@ -131,6 +129,7 @@ async create(
       financialAccounts = await this.financialAccountService.create(
         createTransactionDto.financialAccounts,
       );
+
     } catch (err) {
       throw new BadRequestException(
         `Error al crear cuentas financieras: ${err.message || err}`,
@@ -193,6 +192,11 @@ async create(
       if (!fullTransaction) {
         throw new NotFoundException('La transacción no se encontró después de ser creada.');
       }
+
+       if (fullTransaction.senderAccount?.createdBy) {
+        fullTransaction.senderAccount.createdBy = String(fullTransaction.senderAccount.createdBy).trim();      
+      }
+
     } catch (err) {
       throw new InternalServerErrorException(
         `Error al recuperar la transacción completa: ${err.message || err}`,
@@ -210,12 +214,9 @@ async create(
       ? error
       : new InternalServerErrorException('Error inesperado al crear la transacción.');
   }
+
 }
 
-
-  /**
-   * Obtener todas las transacciones con relaciones
-   */
   async findAll() {
     return await this.transactionsRepository.find({
       relations: {
@@ -227,9 +228,6 @@ async create(
     });
   }
 
-  /**
-   * Obtener una transacción por ID validando el email
-   */
   async getTransactionByEmail(
     transactionId: string,
     userEmail: string,
@@ -241,8 +239,12 @@ async create(
     const transaction = await this.transactionsRepository.findOne({
       where: { id: transactionId },
       relations: {
-        senderAccount: { paymentMethod: true },
-        receiverAccount: { paymentMethod: true },
+        senderAccount: {
+          paymentMethod: true,
+        },
+        receiverAccount: {
+          paymentMethod: true,
+        },
         amount: true,
         proofOfPayment: true,
       },
@@ -258,4 +260,24 @@ async create(
 
     return transaction;
   }
+
+  async findOne (id: string, options?: FindOneOptions<Transaction>): Promise<Transaction> {
+
+    const transaction = await this.transactionsRepository.findOne ({
+
+    where: { id },
+    ...options,
+
+    });
+
+    if (!transaction) {
+
+      throw new NotFoundException (`Transacción con ID ${id} no encontrada`);
+
+    }
+
+    return transaction;
+
+  }
+
 }

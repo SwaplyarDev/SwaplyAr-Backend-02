@@ -21,10 +21,10 @@ import { AbandonedTransactionsModule } from '@transactions/abandoned-transaction
 import { OtpModule } from '@otp/otp.module';
 import { UserVerificationModule } from '@users/verification/user-verification.module';
 import { QuestionsModule } from '../modules/questions/questions.module';
-
 import { ContactModule } from 'src/modules/contacts/contacts.module';
 import { DiscountModule } from '@discounts/discounts.module';
 import { QualificationModule } from 'src/modules/qualifications/qualifications.module';
+import { PaymentMethodModule } from '@financial-accounts/payment-methods/payment-method.module';
 
 @Module({
   imports: [
@@ -48,6 +48,7 @@ import { QualificationModule } from 'src/modules/qualifications/qualifications.m
     DiscountModule,
     UserVerificationModule,
     QualificationModule,
+    PaymentMethodModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',
       signOptions: { expiresIn: '1d' },

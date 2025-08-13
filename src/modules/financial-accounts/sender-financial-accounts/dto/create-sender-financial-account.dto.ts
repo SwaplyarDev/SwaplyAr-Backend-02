@@ -16,6 +16,7 @@ export class CreateSenderFinancialAccountDto {
 
   @ApiProperty({ description: 'Correo electrónico', example: 'nahuel@example.com', required: false })
   @IsEmail()
+  @IsString()
   @IsOptional()
   createdBy: string;
 

@@ -25,6 +25,12 @@ export class FinancialAccount {
   @IsOptional()
   lastName: string;
 
+  @Column ({ name: 'email', nullable: true })
+  email?: string;
+
+  @Column ({ name: 'phone_number', nullable: true })
+  phoneNumber?: string;
+
   @OneToOne(() => PaymentMethod, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'payment_method_id' })
   paymentMethod: PaymentMethod;

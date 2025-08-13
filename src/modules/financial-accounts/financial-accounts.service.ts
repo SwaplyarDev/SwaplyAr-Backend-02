@@ -27,9 +27,7 @@ export class FinancialAccountsService {
 
   const { createdBy, phoneNumber, ...senderClean } = sender;
  
-
   return { sender: senderClean, receiver };
-
 
 }
 

@@ -5,7 +5,7 @@ export class Amount {
   @PrimaryGeneratedColumn('uuid', { name: 'amount_id' })
   id: string;
 
-  @Column('numeric', { precision: 15, scale: 2 })
+  @Column('numeric', { precision: 15, scale: 2, default: 0, nullable: false })
   amountSent: number; // cantidad enviada
 
   @Column()

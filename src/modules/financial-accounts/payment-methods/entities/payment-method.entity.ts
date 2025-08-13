@@ -7,7 +7,7 @@ import {
   TableInheritance,
 } from 'typeorm';
 
-@Entity('payment_methods')
+@Entity('payment_method')
 @TableInheritance({ column: { type: 'varchar', name: 'method' } })
 @Index(['platformId', 'method'])
 export class PaymentMethod {

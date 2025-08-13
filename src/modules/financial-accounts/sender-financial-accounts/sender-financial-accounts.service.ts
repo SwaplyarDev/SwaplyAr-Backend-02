@@ -15,6 +15,7 @@ export class SenderFinancialAccountsService {
   ) {}
 
   async create(createSenderFinancialAccountDto: CreateSenderFinancialAccountDto) {
+
   const { paymentMethod } = createSenderFinancialAccountDto;
 
   const newPaymentMethod = await this.paymentMethodService.create(paymentMethod, true);
@@ -27,7 +28,7 @@ export class SenderFinancialAccountsService {
   const savedSender = await this.senderRepository.save(data);
 
   return savedSender;
-}
+  }
 
   async findAll() {
     return await this.senderRepository.find({

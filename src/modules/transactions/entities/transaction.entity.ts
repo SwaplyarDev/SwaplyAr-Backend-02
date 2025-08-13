@@ -82,6 +82,13 @@ export class Transaction {
 
   @OneToOne(() => UserDiscount, (userDiscount) => userDiscount.transaction)
   userDiscount: UserDiscount;
+
+  @Column ({ default: false })
+  isNoteVerified: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  noteVerificationExpiresAt?: Date;
+
 }
 
 // Relaciones de Transacciones y Pagos

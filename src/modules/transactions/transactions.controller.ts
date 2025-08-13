@@ -8,8 +8,9 @@ import {
   UploadedFile,
   UseInterceptors,
   UseGuards,
-  Request,
   Query,
+  Req,
+  Request,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -29,9 +30,9 @@ import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Transaction } from './entities/transaction.entity';
-import { string } from 'zod';
-import { TransactionResponseDto } from './dto/transaction-response.dto';
+import { TransactionGetResponseDto, TransactionResponseDto } from './dto/transaction-response.dto';
 import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
+import { JwtService } from '@nestjs/jwt';
 
 interface CreateTransactionBody {
   createTransactionDto: string;
@@ -48,7 +49,9 @@ interface RequestWithUser extends Request {
 @ApiTags('Transacciones')
 @Controller('transactions')
 export class TransactionsController {
-  constructor(private readonly transactionsService: TransactionsService) {}
+  constructor(private readonly transactionsService: TransactionsService,
+              private readonly jwtService: JwtService, 
+  ) {}
 
 @ApiOperation({
   summary: 'Crear una transacción con comprobante de pago',
@@ -71,41 +74,137 @@ export class TransactionsController {
         type: 'string',
         description: 'JSON stringificado con la información de la transacción (CreateTransactionDto)',
         example: JSON.stringify({
-          paymentsId: '123',
-          countryTransaction: 'Argentina',
-          message: 'Transferencia de prueba',
-          financialAccounts: {
-            senderAccount: {
-              firstName: 'Juan',
-              lastName: 'Pérez',
-              phoneNumber: '12456789',
-              createdBy: 'fernandeezalan20@gmail.com',
-              paymentMethod: {
-                platformId: 'bank',
-                method: 'bank',
+          bankExample: {
+            paymentsId: '123',
+            countryTransaction: 'Argentina',
+            message: 'Transferencia de prueba',
+            financialAccounts: {
+              senderAccount: {
+                firstName: 'Juan',
+                lastName: 'Pérez',
+                phoneNumber: '12456789',
+                createdBy: 'fernandeezalan20@gmail.com',
+                paymentMethod: { platformId: 'bank', method: 'bank' },
               },
-            },
-            receiverAccount: {
-              paymentMethod: {
-                platformId: 'bank',
-                method: 'bank',
-                bank: {
-                  currency: 'ARS',
-                  bankName: 'Banco Galicia',
-                  sendMethodKey: 'CBU',
-                  sendMethodValue: '1234567890123456789012',
-                  documentType: 'DNI',
-                  documentValue: '12345678',
+              receiverAccount: {
+                paymentMethod: {
+                  platformId: 'bank',
+                  method: 'bank',
+                  bank: {
+                    currency: 'ARS',
+                    bankName: 'Banco Galicia',
+                    sendMethodKey: 'CBU',
+                    sendMethodValue: '1234567890123456789012',
+                    documentType: 'DNI',
+                    documentValue: '12345678',
+                  },
                 },
               },
             },
+            amount: {
+              amountSent: 1000,
+              currencySent: 'ARS',
+              amountReceived: 900,
+              currencyReceived: 'BRL',
+              received: false,
+            },
           },
-          amount: {
-            amountSent: 1000,
-            currencySent: 'ARS',
-            amountReceived: 900,
-            currencyReceived: 'BRL',
-            received: false,
+          pixExample: {
+            paymentsId: '124',
+            countryTransaction: 'Argentina',
+            message: 'Transferencia PIX',
+            financialAccounts: {
+              senderAccount: {
+                firstName: 'Carlos',
+                lastName: 'Lopez',
+                phoneNumber: '12456789',
+                createdBy: 'fernandeezalan20@gmail.com',
+                paymentMethod: { platformId: 'pix', method: 'pix' },
+              },
+              receiverAccount: {
+                paymentMethod: {
+                  platformId: 'pix',
+                  method: 'pix',
+                  pix: {
+                    pixId: 'vb456',
+                    pixKey: 'email',
+                    pixValue: 'lucia@example.com',
+                    cpf: '10987654321',
+                  },
+                },
+              },
+            },
+            amount: {
+              amountSent: 500,
+              currencySent: 'ARS',
+              amountReceived: 500,
+              currencyReceived: 'ARS',
+              received: true,
+            },
+          },
+          virtualBankExample: {
+            paymentsId: '125',
+            countryTransaction: 'Argentina',
+            message: 'Transferencia Virtual Bank',
+            financialAccounts: {
+              senderAccount: {
+                firstName: 'Sofía',
+                lastName: 'Ruiz',
+                phoneNumber: '12456789',
+                createdBy: 'fernandeezalan20@gmail.com',
+                paymentMethod: { platformId: 'virtual_bank', method: 'virtual-bank' },
+              },
+              receiverAccount: {
+                paymentMethod: {
+                  platformId: 'virtual_bank',
+                  method: 'virtual-bank',
+                  virtualBank: {
+                    currency: 'ARS',
+                    emailAccount: 'pedro@example.com',
+                    transferCode: 'TC654321',
+                  },
+                },
+              },
+            },
+            amount: {
+              amountSent: 1200,
+              currencySent: 'ARS',
+              amountReceived: 1200,
+              currencyReceived: 'ARS',
+              received: false,
+            },
+          },
+          receiverCryptoExample: {
+            paymentsId: '126',
+            countryTransaction: 'Argentina',
+            message: 'Transferencia Crypto',
+            financialAccounts: {
+              senderAccount: {
+                firstName: 'Diego',
+                lastName: 'Fernández',
+                phoneNumber: '12456789',
+                createdBy: 'fernandeezalan20@gmail.com',
+                paymentMethod: { platformId: 'receiver_crypto', method: 'receiver-crypto' },
+              },
+              receiverAccount: {
+                paymentMethod: {
+                  platformId: 'receiver_crypto',
+                  method: 'receiver-crypto',
+                  receiverCrypto: {
+                    currency: 'ETH',
+                    network: 'Ethereum',
+                    wallet: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+                  },
+                },
+              },
+            },
+            amount: {
+              amountSent: 0.5,
+              currencySent: 'ETH',
+              amountReceived: 0.5,
+              currencyReceived: 'ETH',
+              received: true,
+            },
           },
         }, null, 2),
       },
@@ -118,6 +217,7 @@ export class TransactionsController {
     required: ['createTransactionDto'],
   },
 })
+
 @ApiResponse({
   status: 201,
   description: '✅ Transacción creada correctamente',
@@ -203,16 +303,16 @@ async create(
   @ApiQuery({ name: 'lastName', required: true, type: String })
   @ApiResponse({
     status: 200,
-    description: 'Historial de estados obtenido correctamente',
+    description: '✅ Historial de estados obtenido correctamente',
     type: UserStatusHistoryResponseDto,
   })
   @ApiResponse({
     status: 401,
-    description: 'El apellido no coincide con el remitente de la transacción.',
+    description: '❌ El apellido no coincide con el remitente de la transacción.',
   })
   @ApiResponse({
     status: 404,
-    description: 'Transacción no encontrada o sin historial disponible.',
+    description: '❌ Transacción no encontrada o sin historial disponible.',
   })
   async getPublicStatusHistory(
     @Param('id') id: string,
@@ -229,32 +329,35 @@ async create(
     };
   }
 
-  // Obtener todas las transacciones (uso interno/admin)
-  @Get()
-  @ApiOperation({ summary: 'Obtener todas las transacciones' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de transacciones',
-    schema: {
-      example: [
-        {
-          id: 'uuid',
-          countryTransaction: 'Argentina',
-          message: 'Transferencia de prueba',
-          createdBy: 'fernandeezalan20@gmail.com',
-          senderAccount: {},
-          receiverAccount: {},
-          amount: {},
-          proofOfPayment: {},
-          createdAt: '2024-01-01T00:00:00Z',
-          finalStatus: 'pending',
-        },
-      ],
-    },
-  })
-  findAll() {
-    return this.transactionsService.findAll();
-  }
+  // Obtener todas las transacciones (Usuario Autenticado)
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('user')
+@Get()
+@ApiOperation({ summary: 'Obtener todas las transacciones del usuario autenticado' })
+@ApiResponse({
+  type: [TransactionGetResponseDto],
+  status: 200,
+  description: '✅ Lista de transacciones o mensaje indicando que no hay transacciones',
+})
+@ApiResponse({
+  status: 401,
+  description: '❌ Token no proporcionado o inválido. El usuario debe autenticarse para acceder a las transacciones.',})
+@ApiResponse({
+  status: 403,
+  description: '❌ Acceso prohibido. El acceso es solo para Usuarios.',})
+async findAll(
+  @Req() req: RequestWithUser,
+  @Query('page') page: string = '1',
+  @Query('pageSize') pageSize: string = '10'
+): Promise<{ data: TransactionGetResponseDto[]; pagination: { page: number; pageSize: number; totalItems: number; totalPages: number } }> {
+
+  const pageNumber = parseInt(page, 10);
+  const pageSizeNumber = parseInt(pageSize, 10);
+  const email = req.user.email;
+
+  return await this.transactionsService.findAllUserEmail(email, pageNumber, pageSizeNumber);
+}
 
   // Obtener transacción por ID con autorización
   @Get(':transaction_id')
@@ -267,7 +370,7 @@ async create(
   })
   @ApiResponse({
     status: 200,
-    description: 'La transacción fue encontrada y el usuario tiene acceso',
+    description: '✅ La transacción fue encontrada y el usuario tiene acceso',
     type: Transaction,
   })
   @ApiResponse({

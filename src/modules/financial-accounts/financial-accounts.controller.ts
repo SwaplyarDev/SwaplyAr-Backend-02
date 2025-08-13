@@ -106,7 +106,7 @@ export class FinancialAccountController {
               platformId: 'pix',
               method: 'pix',
               pix: {
-                virtualBankId: 'vb123',
+                pixId: 'vb123',
                 pixKey: 'email',
                 pixValue: 'carlos@example.com',
                 cpf: '12345678901',
@@ -124,7 +124,7 @@ export class FinancialAccountController {
               platformId: 'pix',
               method: 'pix',
               pix: {
-                virtualBankId: 'vb456',
+                pixId: 'vb456',
                 pixKey: 'phone',
                 pixValue: '1199887766',
                 cpf: '10987654321',

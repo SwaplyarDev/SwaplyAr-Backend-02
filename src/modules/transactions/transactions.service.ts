@@ -21,7 +21,7 @@ import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 
 import { plainToInstance } from 'class-transformer';
-import { TransactionResponseDto } from './dto/transaction-response.dto';
+import { TransactionGetResponseDto, TransactionResponseDto } from './dto/transaction-response.dto';
 
 @Injectable()
 export class TransactionsService {
@@ -120,24 +120,19 @@ async create(
   try {
     const createdAt = new Date();
 
-    // 1️⃣ Validación de archivo obligatorio
     if (!file) {
       throw new BadRequestException('El comprobante de pago (archivo) es obligatorio.');
     }
 
-    // 2️⃣ Creación de cuentas financieras
     let financialAccounts;
     try {
       financialAccounts = await this.financialAccountService.create(
         createTransactionDto.financialAccounts,
       );
     } catch (err) {
-      throw new BadRequestException(
-        `Error al crear cuentas financieras: ${err.message || err}`,
-      );
+      throw new BadRequestException(`Error al crear cuentas financieras: ${err.message || err}`);
     }
 
-    // 3️⃣ Creación de monto
     let amount;
     try {
       amount = await this.amountService.create(createTransactionDto.amount);
@@ -145,66 +140,57 @@ async create(
       throw new BadRequestException(`Error al crear el monto: ${err.message || err}`);
     }
 
-    // 4️⃣ Creación de comprobante de pago
     let proofOfPayment;
     try {
       proofOfPayment = await this.proofOfPaymentService.create(file);
     } catch (err) {
-      throw new BadRequestException(
-        `Error al subir comprobante de pago: ${err.message || err}`,
-      );
+      throw new BadRequestException(`Error al subir comprobante de pago: ${err.message || err}`);
     }
 
-    // 5️⃣ Creación de transacción
     let savedTransaction;
     try {
       const transaction = this.transactionsRepository.create({
         countryTransaction: createTransactionDto.countryTransaction,
         message: createTransactionDto.message,
-        createdAt,
+        createdAt, // verifica si en la entidad es createdAt o created_at
         senderAccount: financialAccounts.sender,
         receiverAccount: financialAccounts.receiver,
         amount,
         proofOfPayment,
       });
-
+      console.log('Transacción a guardar:', transaction);
       savedTransaction = await this.transactionsRepository.save(transaction);
     } catch (err) {
-      throw new InternalServerErrorException(
-        `Error al guardar la transacción: ${err.message || err}`,
-      );
+      throw new InternalServerErrorException(`Error al guardar la transacción: ${err.message || err}`);
     }
+    console.log('Resultado guardado:', savedTransaction);
 
-    // 6️⃣ Recuperar transacción con todas las relaciones
     let fullTransaction;
     try {
-      fullTransaction = await this.transactionsRepository.findOne({
-        where: { id: savedTransaction.id },
-        relations: [
-          'senderAccount',
-          'senderAccount.paymentMethod',
-          'receiverAccount',
-          'receiverAccount.paymentMethod',
-          'amount',
-          'proofOfPayment',
-        ],
-      });
+    fullTransaction = await this.transactionsRepository.findOne({
+  where: { id: savedTransaction.id },
+  relations: [
+  'senderAccount',
+  'senderAccount.paymentMethod',
+  'receiverAccount',
+  'receiverAccount.paymentMethod',
+  'amount',
+  'proofOfPayment',
+]
+});
+
 
       if (!fullTransaction) {
         throw new NotFoundException('La transacción no se encontró después de ser creada.');
       }
     } catch (err) {
-      throw new InternalServerErrorException(
-        `Error al recuperar la transacción completa: ${err.message || err}`,
-      );
+      throw new InternalServerErrorException(`Error al recuperar la transacción completa: ${err.message || err}`);
     }
 
-    // 7️⃣ Transformar a DTO de respuesta
     return plainToInstance(TransactionResponseDto, fullTransaction, {
       excludeExtraneousValues: true,
     });
   } catch (error) {
-    // Captura final para cualquier error no manejado
     console.error('Error en TransactionsService.create:', error);
     throw error instanceof HttpException
       ? error
@@ -226,6 +212,123 @@ async create(
       },
     });
   }
+
+/**
+   * Obtener transacciónes de usuario Autenticado
+   */
+async findAllUserEmail(
+  createdBy: string,
+  page: number = 1,
+  pageSize: number = 10
+): Promise<{ data: TransactionGetResponseDto[]; pagination: { page: number; pageSize: number; totalItems: number; totalPages: number } }> {
+
+  if (!createdBy || typeof createdBy !== 'string' || createdBy.trim() === '') {
+    throw new Error('Email inválido o no proporcionado');
+  }
+
+  const skip = (page - 1) * pageSize;
+  const take = pageSize;
+
+  const [transactions, totalItems] = await this.transactionsRepository.findAndCount({
+    relations: {
+      senderAccount: { paymentMethod: true },
+      receiverAccount: { paymentMethod: true },
+      proofOfPayment: true,
+      amount: true,
+    },
+    where: { senderAccount: { createdBy } },
+    skip,
+    take,
+    order: { createdAt: 'DESC' },
+  });
+
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  if (!transactions || transactions.length === 0) {
+    return {
+      data: [],
+      pagination: { page, pageSize, totalItems, totalPages },
+    };
+  }
+
+  // Función auxiliar para mostrar método del destinatario
+  function getReceiverMethodDisplay(paymentMethod: any) {
+    if (!paymentMethod) return { tipo: 'Desconocido' };
+    if (paymentMethod.pixKey !== undefined) {
+      return {
+        tipo: 'Pix',
+        clave: paymentMethod.pixKey,
+        valor: paymentMethod.pixValue,
+        cpf: paymentMethod.cpf,
+      };
+    } else if (paymentMethod.wallet !== undefined && paymentMethod.currency && paymentMethod.network) {
+      return {
+        tipo: 'Cripto',
+        moneda: paymentMethod.currency,
+        red: paymentMethod.network,
+        wallet: paymentMethod.wallet,
+      };
+    } else if (paymentMethod.emailAccount !== undefined && paymentMethod.transferCode !== undefined) {
+      return {
+        tipo: 'Banco Virtual',
+        moneda: paymentMethod.currency,
+        email: paymentMethod.emailAccount,
+        codigoTransferencia: paymentMethod.transferCode,
+      };
+    } else if (paymentMethod.bankName !== undefined) {
+      return {
+        tipo: 'Banco',
+        banco: paymentMethod.bankName,
+        moneda: paymentMethod.currency,
+        claveEnvio: paymentMethod.sendMethodKey,
+        cuenta: paymentMethod.sendMethodValue,
+        documento: paymentMethod.documentValue,
+      };
+    } else {
+      return { tipo: 'Desconocido' };
+    }
+  }
+
+  const data = transactions.map(tx => {
+    const senderPaymentMethod = {
+      id: tx.senderAccount.paymentMethod.id,
+      platformId: tx.senderAccount.paymentMethod.platformId,
+      method: tx.senderAccount.paymentMethod.method,
+    };
+
+    return {
+      id: tx.id,
+      createdAt: tx.createdAt.toISOString(),
+      finalStatus: tx.finalStatus,
+      senderAccount: {
+        id: tx.senderAccount.id,
+        firstName: tx.senderAccount.firstName,
+        lastName: tx.senderAccount.lastName,
+        paymentMethod: senderPaymentMethod,
+      },
+      receiverAccount: {
+        id: tx.receiverAccount.id,
+        paymentMethod: getReceiverMethodDisplay(tx.receiverAccount.paymentMethod),
+      },
+      proofOfPayment: tx.proofOfPayment
+        ? { id: tx.proofOfPayment.id, imgUrl: tx.proofOfPayment.imgUrl }
+        : undefined,
+      amount: {
+        id: tx.amount.id,
+        amountSent: tx.amount.amountSent,
+        currencySent: tx.amount.currencySent,
+        currencyReceived: tx.amount.currencyReceived,
+        amountReceived: tx.amount.amountReceived,
+      },
+    };
+  });
+
+  return {
+    pagination: { page, pageSize, totalItems, totalPages },
+    data,
+  };
+}
+
 
   /**
    * Obtener una transacción por ID validando el email

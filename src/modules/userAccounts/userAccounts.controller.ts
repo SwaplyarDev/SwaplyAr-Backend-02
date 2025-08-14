@@ -92,12 +92,11 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
+  /*  @Roles('user') */
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Request() req, @Body() dto: CreateBankAccountDto) {
     const userId = req.user.id;
-    console.log('este es el dtp', dto);
 
     const newBank = await this.accountsService.createUserBank(
       dto.formData,
@@ -146,10 +145,10 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
+  /*  @Roles('user') */
   @Get()
   async findAll(@Request() req) {
-    return this.accountsService.findAllBanks(req.user);
+    return this.accountsService.findAllBanks(req.user.id);
   }
 
   // Obtener todas las cuentas de banco de un user

@@ -25,7 +25,8 @@ export class FinancialAccount {
   @IsOptional()
   lastName: string;
 
-  @OneToOne(() => PaymentMethod, { nullable: false, onDelete: 'CASCADE' })
+  @OneToOne(() => PaymentMethod, { nullable: false, onDelete: 'CASCADE', cascade: true })
   @JoinColumn({ name: 'payment_method_id' })
   paymentMethod: PaymentMethod;
+
 }

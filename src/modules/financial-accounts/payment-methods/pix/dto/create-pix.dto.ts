@@ -5,7 +5,7 @@ export class CreatePixDto {
   @ApiProperty({ description: 'ID del banco virtual', example: '123' })
   @IsOptional()
   @IsString()
-  virtualBankId: string;
+  pixId: string;
 
   @ApiProperty({ description: 'Clave del pix', example: '123' })
   @IsOptional()

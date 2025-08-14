@@ -18,6 +18,7 @@ export class ReceiverFinancialAccountsService {
   const { paymentMethod } = createReceiverFinancialAccountDto;
 
   const newPaymentMethod = await this.paymentMethodService.create(paymentMethod);
+  console.log('Nuevo método de pago creado:', newPaymentMethod);
 
   // Crear el objeto base, pero asegurando que firstName y lastName tengan valor
   const data = this.receiverRepository.create({

@@ -169,7 +169,7 @@ export class AccountsService {
 
   async findAllBanks(user: any) {
     const accounts = await this.userAccountRepo.find({
-      where: { userId: user.id },
+      where: { userId: user },
     });
 
     const enrichedAccounts = await Promise.all(
@@ -260,16 +260,14 @@ export class AccountsService {
 
   // filtrar cuenta de banco especifica mediante id del usuario e id del banco
   async findOneUserBank(userId: string, bankAccountId?: string) {
-    // 1️⃣ Traemos todas las cuentas del usuario
+    // Traemos todas las cuentas del usuario
     const allBanks = await this.findAllBanks(userId);
-    // Tu método actual que arma la respuesta con payment_type, details, etc.
 
-    // 2️⃣ Si no pasamos bankAccountId, devolvemos todo
     if (!bankAccountId) {
       return allBanks;
     }
 
-    // 3️⃣ Si pasamos bankAccountId, filtramos
+    //  Si pasamos bankAccountId, filtramos
     const found = allBanks.find((bank) =>
       bank.details.some((d) => d.account_id === bankAccountId),
     );
@@ -278,7 +276,7 @@ export class AccountsService {
       throw new NotFoundException('Cuenta no encontrada para este usuario');
     }
 
-    // 4️⃣ Filtramos los detalles para devolver solo el que coincide
+    //  Filtramos los detalles para devolver solo el que coincide
     const filteredDetails = found.details.filter(
       (d) => d.account_id === bankAccountId,
     );

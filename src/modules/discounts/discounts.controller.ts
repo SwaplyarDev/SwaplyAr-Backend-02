@@ -163,7 +163,8 @@ export class DiscountsController {
   }
 
   @Get('user-discounts/:id')
-  @Roles(...ALL_USER_ROLES)
+  //@Roles(...ALL_USER_ROLES)
+  @Roles(...ADMIN_ROLES)
   @ApiOperation({ summary: 'Obtener un descuento de usuario por su ID' })
   @ApiResponse({
     status: 200,
@@ -181,6 +182,7 @@ export class DiscountsController {
     const discount = await this.discountService.getUserDiscountById(
       id,
       user.id,
+      user.role, // <-- rol de admin, super-admin aquí
     );
     return { data: discount };
   }

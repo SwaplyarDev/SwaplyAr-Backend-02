@@ -14,6 +14,7 @@ import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/p
 import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
 import { UserDiscount } from '@users/entities/user-discount.entity';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -27,6 +28,10 @@ import { AdministracionStatusLog } from '@admin/entities/administracion-status-l
       AdministracionStatusLog,
     ]),
     FinancialAccountsModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'secretKey', // tu configuración real
+      signOptions: { expiresIn: '60s' }, // o la configuración que uses
+    }),
   ],
   controllers: [TransactionsController],
   providers: [

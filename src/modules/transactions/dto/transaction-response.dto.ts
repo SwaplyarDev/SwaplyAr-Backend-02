@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
+import { IsOptional, IsString } from 'class-validator';
 
 class PaymentMethodSenderDto {
   @Expose()
@@ -175,4 +176,156 @@ export class TransactionResponseDto {
   @Type(() => AmountResponseDto)
   @ApiProperty({ name: 'amount', type: AmountResponseDto })
   amount: AmountResponseDto;
+}
+
+export class PaymentMethodGetReceiverDto {
+  // Bank
+  @ApiProperty({ description: 'ID del método de pago (Bank)', example: '75e91e4b-a6dd-43b8-a386-0bf5a336957b', required: false })
+  @IsOptional()
+  @IsString()
+  id?: string;
+
+  @ApiProperty({ description: 'ID de la plataforma (Bank)', example: 'bank', required: false })
+  @IsOptional()
+  @IsString()
+  platformId?: string;
+
+  @ApiProperty({ description: 'Método (Bank, PIX, Crypto, VirtualBank)', example: 'bank', required: false })
+  @IsOptional()
+  @IsString()
+  method?: string;
+
+  @ApiProperty({ description: 'Moneda (Bank, Crypto, VirtualBank)', example: 'ARS', required: false })
+  @IsOptional()
+  @IsString()
+  currency?: string;
+
+  @ApiProperty({ description: 'Nombre del banco (Bank)', example: 'Banco Galicia', required: false })
+  @IsOptional()
+  @IsString()
+  bankName?: string;
+
+  @ApiProperty({ description: 'Clave de envío (CBU, alias, PIX)', example: 'CBU', required: false })
+  @IsOptional()
+  @IsString()
+  sendMethodKey?: string;
+
+  @ApiProperty({ description: 'Valor de la clave de envío', example: '1234567890123456789012', required: false })
+  @IsOptional()
+  @IsString()
+  sendMethodValue?: string;
+
+  // PIX
+  @ApiProperty({ description: 'ID del banco virtual (PIX)', example: '123', required: false })
+  @IsOptional()
+  @IsString()
+  pixId?: string;
+
+  @ApiProperty({ description: 'Clave del PIX', example: '123', required: false })
+  @IsOptional()
+  @IsString()
+  pixKey?: string;
+
+  @ApiProperty({ description: 'Valor del PIX', example: '123', required: false })
+  @IsOptional()
+  @IsString()
+  pixValue?: string;
+
+  @ApiProperty({ description: 'CPF (PIX)', example: '123', required: false })
+  @IsOptional()
+  @IsString()
+  cpf?: string;
+
+  // Crypto
+  @ApiProperty({ description: 'Red (Crypto)', example: 'Ethereum', required: false })
+  @IsOptional()
+  @IsString()
+  network?: string;
+
+  @ApiProperty({ description: 'Wallet (Crypto)', example: '0x123...', required: false })
+  @IsOptional()
+  @IsString()
+  wallet?: string;
+
+  // Virtual Bank
+  @ApiProperty({ description: 'Email de la cuenta (Virtual Bank)', example: 'nahuel@gmail.com', required: false })
+  @IsOptional()
+  @IsString()
+  emailAccount?: string;
+
+  @ApiProperty({ description: 'Código de transferencia (Virtual Bank)', example: '123', required: false })
+  @IsOptional()
+  @IsString()
+  transferCode?: string;
+}
+
+
+export class SenderAccountDto {
+  @ApiProperty({ example: '47964345-930b-4eec-b221-42ad423ac760' })
+  id: string;
+
+  @ApiProperty({ example: 'Juan' })
+  firstName: string;
+
+  @ApiProperty({ example: 'Pérez' })
+  lastName: string;
+
+  @ApiProperty({ type: PaymentMethodSenderDto })
+  paymentMethod: PaymentMethodSenderDto;
+}
+
+export class ReceiverAccountDto {
+  @ApiProperty({ example: 'e28f2e9f-b436-42cf-888c-c161739c8565' })
+  id: string;
+
+  @ApiProperty({ type: PaymentMethodGetReceiverDto })
+  paymentMethod: PaymentMethodGetReceiverDto;
+}
+
+export class ProofOfPaymentDto {
+  @ApiProperty({ example: '6d238f0a-3eab-4dc2-94cb-c9a833261a55' })
+  id: string;
+
+  @ApiProperty({ example: 'https://res.cloudinary.com/dy1jiclwg/image/upload/...png' })
+  imgUrl: string;
+}
+
+export class AmountDto {
+  @ApiProperty({ example: 'ba1196da-7e71-4710-8f44-2df28a31875e' })
+  id: string;
+
+  @ApiProperty({ example: 1000 })
+  amountSent: number;
+
+  @ApiProperty({ example: 'ARS' })
+  currencySent: string;
+
+  @ApiProperty({ example: 900 })
+  amountReceived: number;
+
+  @ApiProperty({ example: 'BRL' })
+  currencyReceived: string;
+}
+
+export class TransactionGetResponseDto {
+  @ApiProperty({ example: 'Sq5k0DMwf4' })
+  id: string;
+
+  @ApiProperty({ example: '2025-08-11T14:51:28.841Z' })
+  createdAt: string;
+
+  @ApiProperty({ example: 'pending' })
+  finalStatus: string;
+
+  @ApiProperty({ type: SenderAccountDto })
+  senderAccount: SenderAccountDto;
+
+  @ApiProperty({ type: ReceiverAccountDto })
+  receiverAccount: ReceiverAccountDto;
+
+  @ApiProperty({ type: ProofOfPaymentDto, required: false })
+  proofOfPayment?: ProofOfPaymentDto;
+
+  @ApiProperty({ type: AmountDto })
+  amount: AmountDto;
 }

@@ -13,6 +13,7 @@ import {
 import { User } from '../entities/user.entity';
 import { CloudinaryService } from '../../../service/cloudinary/cloudinary.service';
 import { DiscountService } from '@discounts/discounts.service';
+import { CreateVerificationResponseDto } from './dto/create-verification-response.dto';
 
 @Injectable()
 export class UserVerificationService {
@@ -32,7 +33,7 @@ export class UserVerificationService {
       document_back?: Express.Multer.File[];
       selfie_image?: Express.Multer.File[];
     },
-  ): Promise<UserVerification> {
+  ): Promise<CreateVerificationResponseDto> {
     if (
       !files.document_front?.[0] ||
       !files.document_back?.[0] ||
@@ -52,16 +53,29 @@ export class UserVerificationService {
     // Verificar si ya existe una verificación pendiente
     const existingVerification = await this.userVerificationRepository.findOne({
       where: {
-        users_id: userId,
+        user: { id: userId },
         verification_status: VerificationStatus.PENDING,
       },
     });
 
     if (existingVerification) {
-      throw new ConflictException(
-        'Ya existe una solicitud de verificación pendiente para este usuario',
-      );
-    }
+
+      return {
+
+        success: true,
+        message:
+          'Ya existe una solicitud pendiente. Puede reintentar sin problemas.',
+
+        data: {
+
+          verification_id: existingVerification.verification_id,
+          verification_status: existingVerification.verification_status,
+
+        },
+
+      };
+
+   }
 
     const folder = 'SwaplyAr/admin/user_verification';
 
@@ -85,7 +99,6 @@ export class UserVerificationService {
 
     // Crear nueva verificación
     const verification = this.userVerificationRepository.create({
-      users_id: userId,
       user: user,
       document_front: frontImageUrl,
       document_back: backImageUrl,
@@ -93,14 +106,29 @@ export class UserVerificationService {
       verification_status: VerificationStatus.PENDING,
     });
 
-    return this.userVerificationRepository.save(verification);
+    const savedVerification = await this.userVerificationRepository.save(verification);
+
+    return {
+
+      success: true,
+      message: 'Imágenes de verificación subidas correctamente. Su verificación está pendiente de revisión.',
+
+      data: {
+
+        verification_id: savedVerification.verification_id,
+        verification_status: savedVerification.verification_status,
+
+      },
+
+    };
+
   }
 
   async findByUserId(userId: string): Promise<UserVerification> {
     const verification = await this.userVerificationRepository.findOne({
-      where: { users_id: userId },
+      where: { user: { id: userId } },
       order: { created_at: 'DESC' },
-    });
+      });
 
     if (!verification) {
       throw new NotFoundException(
@@ -159,7 +187,7 @@ export class UserVerificationService {
 
     // Buscar verificación existente del usuario
     const verification = await this.userVerificationRepository.findOne({
-      where: { users_id: userId },
+      where: { user: { id: userId } },
       order: { created_at: 'DESC' },
     });
 
@@ -249,7 +277,7 @@ export class UserVerificationService {
     if (status === VerificationStatus.VERIFIED) {
       verification.verified_at = new Date();
       const user = await this.userRepository.findOne({
-        where: { id: verification.users_id },
+        where: { id: verification.user.id },
       });
 
       if (user) {

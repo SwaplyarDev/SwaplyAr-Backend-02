@@ -12,11 +12,9 @@ import { UserAccount } from './entities/user-account.entity';
 import { UserBank } from './entities/user-bank.entity';
 import { UserVirtualBank } from './entities/user-virtual-bank.entity';
 import { UserReceiverCrypto } from './entities/user-receiver-crypto.entity';
-import { UserPayPal } from './entities/user-paypal.entity';
-import { UserWise } from './entities/user-wise.entity';
-import { UserPayoneer } from './entities/user-payoneer.entity';
 import { UserPix } from './entities/user-pix.entity';
 import { Platform } from 'src/enum/platform.enum';
+import { UserAccValuesDto } from './dto/create-bank-account.dto';
 
 @Injectable()
 export class AccountsService {
@@ -31,81 +29,49 @@ export class AccountsService {
     private readonly virtualBankRepo: Repository<UserVirtualBank>,
     @InjectRepository(UserReceiverCrypto)
     private readonly receiverCryptoRepo: Repository<UserReceiverCrypto>,
-    @InjectRepository(UserPayPal)
-    private readonly payPalRepo: Repository<UserPayPal>,
-    @InjectRepository(UserWise)
-    private readonly wiseRepo: Repository<UserWise>,
-    @InjectRepository(UserPayoneer)
-    private readonly payoneerRepo: Repository<UserPayoneer>,
     @InjectRepository(UserPix)
     private readonly pixRepo: Repository<UserPix>,
   ) {}
 
   async createUserBank(
-    formData: Record<string, any>,
-    typeAccount: string,
-    userAccValues: any,
+    typeAccount: any,
+    userAccValues: UserAccValuesDto,
     userId: string,
   ) {
     try {
-      validateFields(typeAccount, formData, 'create');
-      validateUserAccount(userAccValues);
+      /*     validateFields(typeAccount, 'create');
+      validateUserAccount(userAccValues); */
+      // crea un usuario en la tabla user_account con su tipo de cuenta
 
       const userAccount = this.userAccountRepo.create({
-        accountName: userAccValues.account_name,
-        currency: userAccValues.currency,
-        typeId: userAccValues.account_type,
-        status: true,
+        accountType: userAccValues.accountType,
+        accountName: userAccValues.accountName,
         userId,
+        status: true,
       });
       const savedUserAccount = await this.userAccountRepo.save(userAccount);
+
+      // busca un tipo de cuenta para poder registrarla en una tabla
+      // ejemplo: si es igual a virtual_bank la busca en la tabla y crea una nueva
       let specificAccount;
+
       if (typeAccount === 'bank') {
         specificAccount = this.bankAccountRepo.create({
-          ...formData,
-          account_id: savedUserAccount.account_id,
           userAccount: savedUserAccount,
         });
         await this.bankAccountRepo.save(specificAccount);
       } else if (typeAccount === 'virtual_bank') {
         specificAccount = this.virtualBankRepo.create({
-          ...formData,
-          account_id: savedUserAccount.account_id,
+          accountId: savedUserAccount.account_id,
           userAccount: savedUserAccount,
         });
         await this.virtualBankRepo.save(specificAccount);
       } else if (typeAccount === 'receiver_crypto') {
         specificAccount = this.receiverCryptoRepo.create({
-          ...formData,
-          account_id: savedUserAccount.account_id,
           userAccount: savedUserAccount,
         });
-        await this.receiverCryptoRepo.save(specificAccount);
-      } else if (typeAccount === 'paypal') {
-        specificAccount = this.payPalRepo.create({
-          ...formData,
-          account_id: savedUserAccount.account_id,
-          userAccount: savedUserAccount,
-        });
-        await this.payPalRepo.save(specificAccount);
-      } else if (typeAccount === 'wise') {
-        specificAccount = this.wiseRepo.create({
-          ...formData,
-          account_id: savedUserAccount.account_id,
-          userAccount: savedUserAccount,
-        });
-        await this.wiseRepo.save(specificAccount);
-      } else if (typeAccount === 'payoneer') {
-        specificAccount = this.payoneerRepo.create({
-          ...formData,
-          account_id: savedUserAccount.account_id,
-          userAccount: savedUserAccount,
-        });
-        await this.payoneerRepo.save(specificAccount);
       } else if (typeAccount === 'pix') {
         specificAccount = this.pixRepo.create({
-          ...formData,
-          account_id: savedUserAccount.account_id,
           userAccount: savedUserAccount,
         });
         await this.pixRepo.save(specificAccount);
@@ -122,7 +88,7 @@ export class AccountsService {
     }
   }
 
-  async deleteBankAccount(user: any, bankAccountId: string) {
+  /*  async deleteBankAccount(user: any, bankAccountId: string) {
     // Busca la cuenta principal del usuario
     const userAccount = await this.userAccountRepo.findOne({
       where: { account_id: bankAccountId, userId: user.id },
@@ -166,8 +132,8 @@ export class AccountsService {
 
     return { message: 'Cuenta eliminada correctamente' };
   }
-
-  async findAllBanks(user: any) {
+ */
+  /*  async findAllBanks(user: any) {
     const accounts = await this.userAccountRepo.find({
       where: { userId: user },
     });
@@ -178,7 +144,7 @@ export class AccountsService {
         const { account_id } = account;
 
         let details: any[] = [];
-        // Dependiendo el typeId busca los detalles de la cuenta de banco
+
         switch (typeId) {
           case Platform.Bank:
             details = await this.bankAccountRepo.find({
@@ -212,43 +178,36 @@ export class AccountsService {
             details = [{ message: 'Tipo no soportado' }];
         }
 
-        // Seleccioná solo los campos que vas a devolver
         return {
           accountName: account.accountName,
           currency: account.currency,
           status: account.status,
           payment_type: account.typeId,
           details: details.map((d) => ({
-            /** ---------------------- CAMPOS GENERALES ---------------------- **/
-            account_id: d.account_id, // Usado por: Wise, Receiver, Virtual Bank, PayPal
-            iban: d.iban, // Usado por: Wise, Payoneer
-            bic: d.bic, // Usado por: Wise, Payoneer
-            email_account: d.email_account, // Usado por: Wise, Virtual Bank, PayPal, Payoneer
-            transfer_code: d.transfer_code, // Usado por: Wise, Receiver, Virtual Bank, PayPal, Payoneer
-            userAccount: d.userAccount, // Usado por: Wise, Receiver, Virtual Bank, PayPal
-            currency: d.currency, // Usado por: Receiver Crypto, Virtual Bank
+            account_id: d.account_id,
+            iban: d.iban,
+            bic: d.bic,
+            email_account: d.email_account,
+            transfer_code: d.transfer_code,
+            userAccount: d.userAccount,
+            currency: d.currency,
 
-            /** ---------------------- PIX ---------------------- **/
             pix_key: d.pix_key,
             pix_value: d.pix_value,
             cpf: d.cpf,
 
-            /** ---------------------- BANK ---------------------- **/
             bank_name: d.bank_name,
             send_method_key: d.send_method_key,
             send_method_value: d.send_method_value,
             document_type: d.document_type,
             document_value: d.document_value,
 
-            /** ---------------------- WISE ---------------------- **/
             wise_id: d.wise_id,
 
-            /** ----------------- RECEIVER CRYPTO ---------------- **/
             receiver_crypto: d.receiver_crypto,
             network: d.network,
             wallet: d.wallet,
 
-            /** ------------------- VIRTUAL BANK ----------------- **/
             virtual_bank_id: d.virtual_bank,
           })),
         };
@@ -256,10 +215,10 @@ export class AccountsService {
     );
 
     return enrichedAccounts;
-  }
+  } */
 
   // filtrar cuenta de banco especifica mediante id del usuario e id del banco
-  async findOneUserBank(userId: string, bankAccountId?: string) {
+  /*   async findOneUserBank(userId: string, bankAccountId?: string) {
     // Traemos todas las cuentas del usuario
     const allBanks = await this.findAllBanks(userId);
 
@@ -285,5 +244,5 @@ export class AccountsService {
       ...found,
       details: filteredDetails,
     };
-  }
+  } */
 }

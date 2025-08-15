@@ -12,9 +12,6 @@ export class UserReceiverCrypto {
   @PrimaryGeneratedColumn('uuid', { name: 'receiver_crypto' })
   receiver_crypto: string;
 
-  @Column({ name: 'account_id', type: 'uuid' })
-  account_id: string;
-
   @Column()
   currency: string;
 

@@ -12,14 +12,11 @@ export class UserBank {
   @PrimaryGeneratedColumn('uuid', { name: 'bank_id' })
   bankId: string;
 
-  @Column({ name: 'account_id', type: 'uuid' })
-  account_id: string;
-
   @Column({ name: 'currency' })
   currency: string;
 
   @Column({ name: 'bank_name' })
-  bank_name: string;
+  bankName: string;
 
   @Column({ name: 'send_method_key' })
   send_method_key: string;

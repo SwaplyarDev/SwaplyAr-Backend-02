@@ -99,8 +99,7 @@ export class AccountsController {
     const userId = req.user.id;
 
     const newBank = await this.accountsService.createUserBank(
-      dto.formData,
-      dto.typeAccount,
+      dto.userAccValues.accountType,
       dto.userAccValues,
       userId,
     );
@@ -110,15 +109,15 @@ export class AccountsController {
 
   //no lelva documentacion de swagger
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  /*   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @Delete()
   @HttpCode(HttpStatus.OK)
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {
     return this.accountsService.deleteBankAccount(req.user, dto.bankAccountId);
-  }
+  } */
 
-  @ApiOperation({
+  /*   @ApiOperation({
     summary: 'Obtener todas las cuentas del usuario autenticado',
   })
   @ApiResponse({
@@ -129,9 +128,7 @@ export class AccountsController {
         {
           id: 'uuid',
           typeAccount: 'bank',
-          formData: {
-            /* ... */
-          },
+          formData: {},
           userAccValues: {
             first_name: 'Juan',
             last_name: 'Pérez',
@@ -144,15 +141,15 @@ export class AccountsController {
       ],
     },
   })
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard) */
   /*  @Roles('user') */
-  @Get()
+  /*  @Get()
   async findAll(@Request() req) {
     return this.accountsService.findAllBanks(req.user.id);
-  }
+  } */
 
   // Obtener todas las cuentas de banco de un user
-  @ApiOperation({
+  /*   @ApiOperation({
     summary: 'Obtener todas las cuentas del usuario autenticado',
   })
   @ApiQuery({
@@ -187,11 +184,11 @@ export class AccountsController {
   @Get('/admin/findId')
   async findOneById(@Query('userId') userId: string) {
     return this.accountsService.findAllBanks(userId);
-  }
+  } */
 
   // obtener una cuenta
 
-  @ApiOperation({
+  /*   @ApiOperation({
     summary: 'Obtener una cuenta bancaria específica de un usuario autenticado',
   })
   @ApiQuery({
@@ -240,5 +237,5 @@ export class AccountsController {
     @Query('bankAccountId') bankAccountId: string,
   ) {
     return this.accountsService.findOneUserBank(userId, bankAccountId);
-  }
+  } */
 }

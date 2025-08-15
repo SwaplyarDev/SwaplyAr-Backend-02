@@ -1,46 +1,31 @@
 import {
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
-  IsNumber,
+  IsOptional,
   IsString,
-  IsObject,
+  IsUUID,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Platform } from 'src/enum/platform.enum';
 
 export class UserAccValuesDto {
-  @IsString()
-  @IsNotEmpty()
-  first_name: string;
+  @IsUUID()
+  userId: string;
 
   @IsString()
-  @IsNotEmpty()
-  last_name: string;
-
-  @IsString()
-  @IsNotEmpty()
-  identification: string;
-
-  @IsString()
-  @IsNotEmpty()
-  currency: string;
-
-  @IsString()
-  @IsNotEmpty()
-  account_name: string;
+  accountName: string;
 
   @IsEnum(Platform)
-  account_type: Platform;
+  accountType: Platform;
+
+  @IsOptional()
+  @IsBoolean()
+  status?: boolean;
 }
 
 export class CreateBankAccountDto {
-  @IsEnum(Platform)
-  typeAccount: Platform;
-
-  @IsObject()
-  formData: Record<string, any>;
-
   @ValidateNested()
   @Type(() => UserAccValuesDto)
   userAccValues: UserAccValuesDto;

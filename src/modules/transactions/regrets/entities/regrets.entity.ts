@@ -14,6 +14,9 @@ export class Regret {
   @PrimaryGeneratedColumn('uuid', { name: 'regret_id' })
   id: string;
 
+  @Column ({ type: 'varchar', name: 'transaction_id' })
+  transaction_id: string;
+
   @Column({ type: 'varchar', name: 'last_name' })
   last_name: string;
 

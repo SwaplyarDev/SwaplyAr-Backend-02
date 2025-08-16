@@ -147,14 +147,24 @@ export class MailerService {
       const config = this.configService.get('nodemailer');
       const from = config?.auth?.user;
 
-      if (!from || !config.auth.pass) {
-        throw new Error(
+      if (!from || !config?.auth?.pass) {
+        this.logger.error(
           'Falta configuración del correo. Verifica las variables de entorno EMAIL_USER y EMAIL_PASS.',
+        );
+        return { message: 'Mailer no configurado correctamente' };
+      }
+
+      // Intento de verificación (no abortamos completamente si falla)
+      try {
+        await this.mailer.verify();
+        this.logger.debug('Mailer verification: OK');
+      } catch (verifyErr: any) {
+        this.logger.warn(
+          `Mailer verification failed (continuando): ${verifyErr?.message ?? verifyErr}`,
         );
       }
 
-      await this.mailer.verify();
-
+      // Templates mapping...
       const statusTemplates: Partial<
         Record<AdminStatus, { subject: string; path: string }>
       > = {
@@ -198,7 +208,7 @@ export class MailerService {
           `No hay plantilla de correo definida para el estado: ${status}`,
         );
         return {
-          message: `No se envió el correo. No hay plantilla definida para el estado: ${status}`,
+          message: `No se envió el correo. No hay plantilla para: ${status}`,
         };
       }
 
@@ -220,11 +230,8 @@ export class MailerService {
         this.logger.warn(
           `No se encontró la plantilla en la ruta: ${templatePath}`,
         );
-        this.logger.warn(
-          `El correo no será enviado porque falta la plantilla.`,
-        );
         return {
-          message: `No se envió el correo. No se encontró la plantilla para el estado: ${status}`,
+          message: `No se envió el correo. Falta plantilla para el estado: ${status}`,
         };
       }
 
@@ -234,28 +241,73 @@ export class MailerService {
         this.buildTemplateData(transaction),
       );
 
+      // ------- NUEVO: Determinar destinatario con fallback -------
+      const candidateEmails: Array<string | undefined> = [
+        transaction?.senderAccount?.createdBy
+      ];
+
+      const normalize = (s?: string) =>
+        typeof s === 'string' ? s.trim().toLowerCase() : undefined;
+      const isValidEmail = (s?: string) =>
+        typeof s === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+
+      let recipient: string | undefined;
+      for (const c of candidateEmails) {
+        const n = normalize(c);
+        if (isValidEmail(n)) {
+          recipient = n;
+          break;
+        }
+      }
+
+      if (!recipient) {
+        this.logger.warn(
+          `No se encontró un destinatario válido para la transacción ${transaction?.id}. candidateEmails: ${JSON.stringify(candidateEmails)}`,
+        );
+        // No lanzamos error; devolvemos info para que el flujo admin no rompa.
+        return {
+          message: `No se envió el correo. No se detectó un email válido para la transacción ${transaction?.id}`,
+        };
+      }
+      // -----------------------------------------------------------
+
       const mailOptions = {
         from,
-        to: transaction.createdBy,
+        to: recipient,
         subject: selected.subject,
         html,
+        envelope: { from, to: [recipient] }, // explícito para evitar problemas en nodemailer
       };
 
       this.logger.log(
-        `Enviando correo desde ${from} a ${transaction.createdBy}`,
+        `Enviando correo desde ${from} a ${recipient} (tx=${transaction?.id})`,
       );
-      const result = await this.mailer.sendMail(mailOptions);
-      this.logger.log('Correo enviado exitosamente:', result);
-
-      return {
-        message: `El correo de estado ha sido enviado a ${transaction.createdBy}`,
-      };
+      try {
+        const result = await this.mailer.sendMail(mailOptions);
+        this.logger.log('Correo enviado exitosamente:', result);
+        return {
+          message: `El correo de estado ha sido enviado a ${recipient}`,
+          result,
+        };
+      } catch (sendErr: any) {
+        this.logger.error(
+          `Error al enviar correo (sendMail) a ${recipient}: ${sendErr?.message ?? sendErr}`,
+        );
+        // No relanzar para no romper proceso admin; devolver info.
+        return {
+          message: `Error enviando correo a ${recipient}`,
+          error: sendErr?.message ?? sendErr,
+        };
+      }
     } catch (error: any) {
       this.logger.error(
-        `Error al enviar el correo de estado: ${error.message}`,
+        `Error al procesar sendStatusEmail: ${error?.message ?? error}`,
       );
-      this.logger.error('Traza del error:', error.stack);
-      throw error;
+      // Devolver info (no relanzar) para evitar que el flujo admin se caiga por un mail faltante.
+      return {
+        message: `Error interno en MailerService`,
+        error: error?.message ?? error,
+      };
     }
   }
 

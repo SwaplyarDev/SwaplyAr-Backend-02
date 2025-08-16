@@ -38,7 +38,7 @@ export class AdminService {
     private readonly discountService: DiscountService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) { }
+  ) {}
 
   private convertAdminStatusToTransactionStatus(
     status: AdminStatus,
@@ -234,7 +234,10 @@ export class AdminService {
       console.log(transaction);
       const quantityToAdd = Number(transaction.amount.amountSent);
 
-      const starDto: UpdateStarDto = { quantity: quantityToAdd, transactionId: transaction.id };
+      const starDto: UpdateStarDto = {
+        quantity: quantityToAdd,
+        transactionId: transaction.id,
+      };
 
       const user = await this.userRepository.findOne({
         where: { profile: { email: transaction.senderAccount.createdBy } },

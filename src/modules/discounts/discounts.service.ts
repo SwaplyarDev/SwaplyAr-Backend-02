@@ -32,7 +32,7 @@ export class DiscountService {
     private readonly transactionRepo: Repository<Transaction>,
     @InjectRepository(UserRewardsLedger)
     private readonly rewardsLedgerRepo: Repository<UserRewardsLedger>,
-  ) { }
+  ) {}
 
   /**
    * Crea un código de descuento global y devuelve el código completo.
@@ -180,13 +180,20 @@ export class DiscountService {
   /**
    * Obtiene un descuento de usuario por ID, verifica propiedad y devuelve toda la información relevante.
    */
-  async getUserDiscountById(id: string, userId: string, userRole?: string): Promise<UserDiscount> {
+  async getUserDiscountById(
+    id: string,
+    userId: string,
+    userRole?: string,
+  ): Promise<UserDiscount> {
     const ud = await this.userDiscountRepo.findOne({
       where: { id },
       relations: ['user', 'discountCode', 'transaction'],
     });
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
-    if (ud.user.id !== userId && !['admin', 'super_admin'].includes(userRole || '')) {
+    if (
+      ud.user.id !== userId &&
+      !['admin', 'super_admin'].includes(userRole || '')
+    ) {
       throw new ForbiddenException(
         'No tiene permiso para acceder a este descuento',
       );
@@ -253,7 +260,9 @@ export class DiscountService {
   }> {
     // Verifica que se pase el transactionId
     if (!dto.transactionId) {
-      throw new BadRequestException('Se requiere transactionId para asignar estrellas.');
+      throw new BadRequestException(
+        'Se requiere transactionId para asignar estrellas.',
+      );
     }
 
     // Busca la transacción y verifica su estado
@@ -264,9 +273,10 @@ export class DiscountService {
       throw new NotFoundException('Transacción no encontrada');
     }
     if (transaction.finalStatus !== TransactionStatus.Completed) {
-      throw new BadRequestException('Solo se pueden asignar estrellas a transacciones completadas.');
+      throw new BadRequestException(
+        'Solo se pueden asignar estrellas a transacciones completadas.',
+      );
     }
-
 
     const ledger = await this.getOrCreateUserLedger(userId);
 

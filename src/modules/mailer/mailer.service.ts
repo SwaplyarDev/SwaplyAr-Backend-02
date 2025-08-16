@@ -89,7 +89,11 @@ export class MailerService {
     ];
 
     // Intentamos 2 ubicaciones: carpeta src (dev) y ruta relativa desde __dirname (dist)
-    const templatePathDev = join(process.cwd(), 'src', ...templateRelativeParts);
+    const templatePathDev = join(
+      process.cwd(),
+      'src',
+      ...templateRelativeParts,
+    );
     const templatePathDist = join(
       __dirname,
       '..',
@@ -114,7 +118,9 @@ export class MailerService {
         subject,
         text: `Tu código de verificación es: ${payload.VERIFICATION_CODE}`,
       });
-      return { message: `The code has been sent to the email ${to} (fallback text)` };
+      return {
+        message: `The code has been sent to the email ${to} (fallback text)`,
+      };
     }
 
     // Compilar y enviar la plantilla

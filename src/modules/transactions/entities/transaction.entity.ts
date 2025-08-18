@@ -63,9 +63,6 @@ export class Transaction {
   @JoinColumn({ name: 'receiver_account_id' })
   receiverAccount: ReceiverFinancialAccount;
 
-  @Column({ nullable: true, default: null })
-  userId: string;
-
   @OneToOne(() => Note, (note) => note.transaction)
   @JoinColumn({ name: 'note_id' })
   note: Note;

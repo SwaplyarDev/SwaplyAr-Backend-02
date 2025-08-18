@@ -45,6 +45,8 @@ import {
 } from '@users/dto/create-user-verification.dto';
 import { VerificationFilesInterceptor } from '@users/interceptors/verification-files.interceptor';
 import { GetVerificationResponseDto } from '@users/dto/verification-response.dto';
+import { CreateVerificationResponseDto, VerificationDataDto } from './dto/create-verification-response.dto';
+import { ObjectId } from 'typeorm';
 
 @ApiTags('User Verification')
 @Controller('verification')
@@ -66,6 +68,7 @@ export class UserVerificationController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Documentos subidos exitosamente',
+    type: CreateVerificationResponseDto,
     schema: {
       type: 'object',
       properties: {
@@ -114,13 +117,17 @@ export class UserVerificationController {
     const verification = await this.verificationService.create(userId, files);
 
     return {
+
       success: true,
       message:
         'Imágenes de verificación subidas correctamente. Su verificación está pendiente de revisión.',
-      data: {
-        verification_id: verification.verification_id,
-        status: verification.verification_status,
-      },
+
+      data: {  
+
+      verification_id: verification.data!.verification_id,
+      verification_status: verification.data!.verification_status,
+      
+    },
     };
   }
 

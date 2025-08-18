@@ -13,6 +13,7 @@ import {
 import { User } from '../entities/user.entity';
 import { CloudinaryService } from '../../../service/cloudinary/cloudinary.service';
 import { DiscountService } from '@discounts/discounts.service';
+import { CreateVerificationResponseDto } from './dto/create-verification-response.dto';
 
 @Injectable()
 export class UserVerificationService {
@@ -32,7 +33,7 @@ export class UserVerificationService {
       document_back?: Express.Multer.File[];
       selfie_image?: Express.Multer.File[];
     },
-  ): Promise<UserVerification> {
+  ): Promise<CreateVerificationResponseDto> {
     if (
       !files.document_front?.[0] ||
       !files.document_back?.[0] ||
@@ -58,10 +59,16 @@ export class UserVerificationService {
     });
 
     if (existingVerification) {
-      throw new ConflictException(
-        'Ya existe una solicitud de verificación pendiente para este usuario',
-      );
-    }
+
+      return {
+
+        success: true,
+        message:
+          'Ya existe una solicitud pendiente. Puede reintentar sin problemas.',
+        data: null, 
+      };
+
+   }
 
     const folder = 'SwaplyAr/admin/user_verification';
 
@@ -93,7 +100,22 @@ export class UserVerificationService {
       verification_status: VerificationStatus.PENDING,
     });
 
-    return this.userVerificationRepository.save(verification);
+    const savedVerification = await this.userVerificationRepository.save(verification);
+
+    return {
+
+      success: true,
+      message: 'Imágenes de verificación subidas correctamente. Su verificación está pendiente de revisión.',
+
+      data: {
+
+        verification_id: savedVerification.verification_id,
+        verification_status: savedVerification.verification_status,
+
+      },
+
+    };
+
   }
 
   async findByUserId(userId: string): Promise<UserVerification> {

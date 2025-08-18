@@ -1,5 +1,3 @@
-
-
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
 import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
@@ -59,7 +57,9 @@ export class Transaction {
   senderAccount: SenderFinancialAccount;
 
   @ManyToOne(
-    () => ReceiverFinancialAccount,(receiver) => receiver.transactions,)
+    () => ReceiverFinancialAccount,
+    (receiver) => receiver.transactions,
+  )
   @JoinColumn({ name: 'receiver_account_id' })
   receiverAccount: ReceiverFinancialAccount;
 
@@ -85,12 +85,11 @@ export class Transaction {
   @OneToOne(() => UserDiscount, (userDiscount) => userDiscount.transaction)
   userDiscount: UserDiscount;
 
-  @Column ({ default: false })
+  @Column({ default: false })
   isNoteVerified: boolean;
 
   @Column({ type: 'timestamp', nullable: true })
   noteVerificationExpiresAt?: Date;
-
 }
 
 // Relaciones de Transacciones y Pagos

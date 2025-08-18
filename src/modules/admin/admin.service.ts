@@ -171,7 +171,7 @@ export class AdminService {
 
     const transaction = await this.transactionsRepository.findOne({
       where: { id: transactionId },
-      relations: ['amount'],
+      relations: ['amount', 'senderAccount'],
     });
 
     if (!transaction) {
@@ -234,12 +234,15 @@ export class AdminService {
       console.log(transaction);
       const quantityToAdd = Number(transaction.amount.amountSent);
 
-      const starDto: UpdateStarDto = { quantity: quantityToAdd };
+      const starDto: UpdateStarDto = {
+        quantity: quantityToAdd,
+        transactionId: transaction.id,
+      };
 
-    const user = await this.userRepository.findOne({
-      where: { profile: { email: transaction.senderAccount.createdBy } },
-      relations: ['profile'],
-    });
+      const user = await this.userRepository.findOne({
+        where: { profile: { email: transaction.senderAccount.createdBy } },
+        relations: ['profile'],
+      });
 
       if (user) {
         const userId = user.id;
@@ -266,7 +269,11 @@ export class AdminService {
     }
 
     return {
-      message: 'Estado actualizado',
+      //message: 'Estado actualizado',
+      message:
+        status === AdminStatus.Approved
+          ? 'La transacción ha sido aprobada correctamente'
+          : 'Estado actualizado',
       status,
       transaction: updatedTransaction,
     };

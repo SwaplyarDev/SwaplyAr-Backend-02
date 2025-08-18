@@ -1,5 +1,3 @@
-
-
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Note } from './entities/note.entity';
@@ -10,11 +8,11 @@ import { TransactionsModule } from '@transactions/transactions.module';
 import { OtpModule } from '@otp/otp.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Note, Transaction]),
+  imports: [
+    TypeOrmModule.forFeature([Note, Transaction]),
 
-  OtpModule,
-  TransactionsModule,
-
+    OtpModule,
+    TransactionsModule,
   ],
 
   controllers: [NotesController],

@@ -8,4 +8,5 @@ export class UpdateStarDto {
   @IsInt()
   @Min(1)
   quantity: number;
+  transactionId: string;
 }

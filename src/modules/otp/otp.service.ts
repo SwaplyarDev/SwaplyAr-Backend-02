@@ -1,6 +1,8 @@
-
-
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OtpCode } from '../auth/entities/otp-code.entity';
@@ -11,9 +13,7 @@ import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-
 export class OtpService {
-
   private readonly secret: string;
   private readonly ttlSeconds: number;
 
@@ -27,12 +27,12 @@ export class OtpService {
     private readonly mailer: MailerService,
 
     private readonly configService: ConfigService,
-
-  ) { 
-    
-    this.secret = this.configService.get<string>('otp.jwtSecret', 'supersecret');
-    this.ttlSeconds = this.configService.get<number>('otp.ttl', 300);    
-
+  ) {
+    this.secret = this.configService.get<string>(
+      'otp.jwtSecret',
+      'supersecret',
+    );
+    this.ttlSeconds = this.configService.get<number>('otp.ttl', 300);
   }
 
   async sendOtpToEmail(email: string): Promise<void> {
@@ -45,8 +45,7 @@ export class OtpService {
 
     const otp = await this.createOtpFor(user);
     //await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
-    await this.mailer.sendAuthCodeMail(
-      user.profile.email,{
+    await this.mailer.sendAuthCodeMail(user.profile.email, {
       NAME: user.profile.firstName || user.profile.email,
       VERIFICATION_CODE: otp.code,
       BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
@@ -92,34 +91,33 @@ export class OtpService {
   async generateAndSendOtp(user: User): Promise<void> {
     const otp = await this.createOtpFor(user);
     //await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
-    await this.mailer.sendAuthCodeMail(
-      user.profile.email, {
+    await this.mailer.sendAuthCodeMail(user.profile.email, {
       NAME: user.profile.firstName || user.profile.email,
       VERIFICATION_CODE: otp.code,
       BASE_URL: process.env.BASE_URL || 'http://localhost:3001',
-      EXPIRATION_MINUTES: 10 
+      EXPIRATION_MINUTES: 10,
     });
-
   }
 
-  generateOtpToken (transactionId: string): string {
-
-    return jwt.sign ({ transactionId }, this.secret, { expiresIn: `${this.ttlSeconds}s` });
-
+  generateOtpToken(transactionId: string): string {
+    return jwt.sign({ transactionId }, this.secret, {
+      expiresIn: `${this.ttlSeconds}s`,
+    });
   }
 
-  verifyOtpToken (token: string): { transactionId: string; iat?: number; exp?: number } {
-
+  verifyOtpToken(token: string): {
+    transactionId: string;
+    iat?: number;
+    exp?: number;
+  } {
     try {
-
-      return jwt.verify(token, this.secret) as { transactionId: string; iat?: number; exp?: number };
-
+      return jwt.verify(token, this.secret) as {
+        transactionId: string;
+        iat?: number;
+        exp?: number;
+      };
     } catch {
-
       throw new UnauthorizedException('OTP inválido o expirado');
-
     }
-
   }
-
 }

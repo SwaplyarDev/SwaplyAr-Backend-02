@@ -29,16 +29,16 @@ async function bootstrap() {
     }),
   );
   app.useGlobalPipes(
-  new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    exceptionFactory: (errors) => {
-      console.log('❌ Errores de validación:', errors); // <-- DEBUG ACÁ
-      return new Error("Errores de validación:");
-    },
-  }),
-);
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      exceptionFactory: (errors) => {
+        console.log('❌ Errores de validación:', errors); // <-- DEBUG ACÁ
+        return new Error('Errores de validación:');
+      },
+    }),
+  );
 
   // 4. Prefijo global para rutas
   const apiPrefix = 'api/v2';
@@ -89,6 +89,5 @@ async function bootstrap() {
     `🚀 [${nodeEnv}] Server corriendo en http://${host}:${port}/${apiPrefix}`,
   );
 }
-
 
 void bootstrap();

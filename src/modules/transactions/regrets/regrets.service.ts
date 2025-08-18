@@ -1,6 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository} from 'typeorm';
+import { Repository } from 'typeorm';
 import { Regret } from './entities/regrets.entity';
 import { CreateRegretDto } from './dto/create-regret.dto';
 import { UpdateRegretDto } from './dto/update-regret.dto';
@@ -15,47 +19,37 @@ export class RegretsService {
 
     @InjectRepository(Transaction)
     private readonly transactionRepository: Repository<Transaction>,
-
   ) {}
 
-  async create (createRegretDto: CreateRegretDto) {
-
+  async create(createRegretDto: CreateRegretDto) {
     const { transaction_id, last_name, email, phone_number } = createRegretDto;
 
-    const transaction = await  this.transactionRepository.findOne ({
-
+    const transaction = (await this.transactionRepository.findOne({
       where: { id: transaction_id },
-      relations: ['senderAccount'], 
-
-    }) as Transaction & { senderAccount: SenderFinancialAccount };
+      relations: ['senderAccount'],
+    })) as Transaction & { senderAccount: SenderFinancialAccount };
 
     if (!transaction) {
-
-      throw new NotFoundException (`Transacción ${transaction_id} no encontrada`)
-
+      throw new NotFoundException(
+        `Transacción ${transaction_id} no encontrada`,
+      );
     }
 
     const normalizePhone = (phone: string) => phone.replace(/\D/g, '');
 
     if (
-
-        transaction.senderAccount.lastName !== last_name ||
-        transaction.senderAccount.createdBy !== email ||
-        normalizePhone (transaction.senderAccount.phoneNumber) !== normalizePhone (phone_number) 
-      
+      transaction.senderAccount.lastName !== last_name ||
+      transaction.senderAccount.createdBy !== email ||
+      normalizePhone(transaction.senderAccount.phoneNumber) !==
+        normalizePhone(phone_number)
     ) {
-      
-      throw new BadRequestException (
-
+      throw new BadRequestException(
         'La información suministrada no coincide con la información de la transacción',
-
-      )
-
+      );
     }
 
-    const regret = this.regretsRepository.create (createRegretDto);
-    return await this.regretsRepository.save (regret);
-
+    const regret = this.regretsRepository.create(createRegretDto);
+    return await this.regretsRepository.save(regret);
   }
 
   findAll() {

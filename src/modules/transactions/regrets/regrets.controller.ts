@@ -76,7 +76,6 @@ export class RegretsController {
       ],
     },
   })
-
   @Get()
   findAll() {
     return this.regretsService.findAll();

@@ -22,14 +22,10 @@ export class CreateRegretDto {
   email: string;
 
   @ApiProperty({ description: 'Telefono del usuario', example: '+1234567890' })
-
   @Transform(({ value, obj }) => {
-    
     const phone = value ?? obj.phone_number;
-    return phone.startsWith (`+`) ? phone: `+${phone}`;
-
+    return phone.startsWith(`+`) ? phone : `+${phone}`;
   })
-
   @IsString()
   phone_number: string;
 

@@ -71,6 +71,7 @@ export class AccountsService {
           accountType: userAccValues.accountType,
           currency: userAccValues.currency,
           accountId: savedUserAccount.account_id,
+          type: userAccValues.type,
           email: userAccValues.email,
           firstName: userAccValues.firstName,
           lastName: userAccValues.lastName,
@@ -225,7 +226,7 @@ export class AccountsService {
 
         return {
           accountName: account.accountName,
-          currency: account.currency,
+
           status: account.status,
           payment_type: typeId,
           details: mappedDetails,

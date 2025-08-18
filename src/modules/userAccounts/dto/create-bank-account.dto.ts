@@ -59,6 +59,10 @@ export class UserAccValuesDto {
   @IsString()
   lastName?: string;
 
+  @IsOptional()
+  @IsString()
+  type: string;
+
   // pix
   @IsOptional()
   @IsNumber()

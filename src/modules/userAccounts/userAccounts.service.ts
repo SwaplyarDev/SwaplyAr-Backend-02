@@ -34,12 +34,12 @@ export class AccountsService {
   ) {}
 
   async createUserBank(
-    typeAccount: any,
+    accountType: any,
     userAccValues: UserAccValuesDto,
     userId: string,
   ) {
     try {
-      /*     validateFields(typeAccount, 'create');
+      /*     validateFields(accountType, 'create');
       validateUserAccount(userAccValues); */
       // crea un usuario en la tabla user_account con su tipo de cuenta
 
@@ -50,30 +50,51 @@ export class AccountsService {
         status: true,
       });
       const savedUserAccount = await this.userAccountRepo.save(userAccount);
-
       // busca un tipo de cuenta para poder registrarla en una tabla
       // ejemplo: si es igual a virtual_bank la busca en la tabla y crea una nueva
       let specificAccount;
 
-      if (typeAccount === 'bank') {
+      if (accountType === 'bank') {
         specificAccount = this.bankAccountRepo.create({
+          currency: userAccValues.currency,
+          bankName: userAccValues.bankName,
+          send_method_key: userAccValues.send_method_key,
+          send_method_value: userAccValues.send_method_value,
+          document_type: userAccValues.document_type,
+          document_value: userAccValues.document_value,
           userAccount: savedUserAccount,
         });
+
         await this.bankAccountRepo.save(specificAccount);
-      } else if (typeAccount === 'virtual_bank') {
+      } else if (accountType === 'virtual_bank') {
         specificAccount = this.virtualBankRepo.create({
+          accountType: userAccValues.accountType,
+          currency: userAccValues.currency,
           accountId: savedUserAccount.account_id,
+          email: userAccValues.email,
+          firstName: userAccValues.firstName,
+          lastName: userAccValues.lastName,
           userAccount: savedUserAccount,
         });
+
         await this.virtualBankRepo.save(specificAccount);
-      } else if (typeAccount === 'receiver_crypto') {
+      } else if (accountType === 'receiver_crypto') {
         specificAccount = this.receiverCryptoRepo.create({
+          currency: userAccValues.currency,
+          network: userAccValues.network,
+          wallet: userAccValues.wallet,
           userAccount: savedUserAccount,
         });
-      } else if (typeAccount === 'pix') {
+
+        await this.receiverCryptoRepo.save(specificAccount);
+      } else if (accountType === 'pix') {
         specificAccount = this.pixRepo.create({
           userAccount: savedUserAccount,
+          cpf: userAccValues.cpf,
+          pix_value: userAccValues.pix_value,
+          pix_key: userAccValues.pix_key,
         });
+
         await this.pixRepo.save(specificAccount);
       }
 
@@ -133,89 +154,87 @@ export class AccountsService {
     return { message: 'Cuenta eliminada correctamente' };
   }
  */
-  /*  async findAllBanks(user: any) {
+
+  async findAllBanks(user: any) {
+    // Buscar todas las cuentas del usuario
     const accounts = await this.userAccountRepo.find({
       where: { userId: user },
     });
 
     const enrichedAccounts = await Promise.all(
       accounts.map(async (account) => {
-        const typeId = account.typeId as Platform;
+        const typeId = account.accountType as Platform;
         const { account_id } = account;
 
         let details: any[] = [];
 
+        // Buscar los detalles según el tipo de cuenta
         switch (typeId) {
           case Platform.Bank:
             details = await this.bankAccountRepo.find({
-              where: { account_id },
+              where: { userAccount: { account_id } },
+              relations: ['userAccount'],
             });
             break;
-          case Platform.PayPal:
-            details = await this.payPalRepo.find({ where: { account_id } });
-            break;
-          case Platform.Wise:
-            details = await this.wiseRepo.find({ where: { account_id } });
-            break;
-          case Platform.Payoneer:
-            details = await this.payoneerRepo.find({ where: { account_id } });
-            break;
+
           case Platform.Pix:
-            details = await this.pixRepo.find({ where: { account_id } });
+            details = await this.pixRepo.find({
+              where: { userAccount: { account_id } },
+              relations: ['userAccount'],
+            });
             break;
+
           case Platform.Virtual_Bank:
             details = await this.virtualBankRepo.find({
-              where: { account_id },
+              where: { userAccount: { account_id } },
+              relations: ['userAccount'],
             });
             break;
+
           case Platform.Receiver_Crypto:
             details = await this.receiverCryptoRepo.find({
-              where: { account_id },
+              where: { userAccount: { account_id } },
+              relations: ['userAccount'],
             });
-
             break;
+
           default:
             details = [{ message: 'Tipo no soportado' }];
         }
+
+        // Mapear los detalles de forma segura, evitando undefined
+        const mappedDetails = details.map((d) => ({
+          account_id:
+            d.account_id ?? d.bankId ?? d.receiver_crypto ?? d.virtual_bank_id,
+          currency: d.currency,
+          accountName: d.accountName ?? d.bank_name,
+          email: d.email ?? d.email_account,
+          firstName: d.firstName,
+          lastName: d.lastName,
+          network: d.network,
+          wallet: d.wallet,
+          pix_key: d.pix_key,
+          pix_value: d.pix_value,
+          cpf: d.cpf,
+          send_method_key: d.send_method_key,
+          send_method_value: d.send_method_value,
+          document_type: d.document_type,
+          document_value: d.document_value,
+          userAccount: d.userAccount,
+        }));
 
         return {
           accountName: account.accountName,
           currency: account.currency,
           status: account.status,
-          payment_type: account.typeId,
-          details: details.map((d) => ({
-            account_id: d.account_id,
-            iban: d.iban,
-            bic: d.bic,
-            email_account: d.email_account,
-            transfer_code: d.transfer_code,
-            userAccount: d.userAccount,
-            currency: d.currency,
-
-            pix_key: d.pix_key,
-            pix_value: d.pix_value,
-            cpf: d.cpf,
-
-            bank_name: d.bank_name,
-            send_method_key: d.send_method_key,
-            send_method_value: d.send_method_value,
-            document_type: d.document_type,
-            document_value: d.document_value,
-
-            wise_id: d.wise_id,
-
-            receiver_crypto: d.receiver_crypto,
-            network: d.network,
-            wallet: d.wallet,
-
-            virtual_bank_id: d.virtual_bank,
-          })),
+          payment_type: typeId,
+          details: mappedDetails,
         };
       }),
     );
 
     return enrichedAccounts;
-  } */
+  }
 
   // filtrar cuenta de banco especifica mediante id del usuario e id del banco
   /*   async findOneUserBank(userId: string, bankAccountId?: string) {

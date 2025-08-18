@@ -21,6 +21,7 @@ export class UserVirtualBank {
 
   @Column({ name: 'account_id' })
   accountId: string;
+
   @Column({ name: 'email' })
   email: string;
 

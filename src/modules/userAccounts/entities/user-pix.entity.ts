@@ -12,9 +12,6 @@ export class UserPix {
   @PrimaryGeneratedColumn('uuid', { name: 'pix_id' })
   pix_id: string;
 
-  @Column({ name: 'virtual_bank_id' })
-  virtual_bank_id: string;
-
   @Column({ name: 'pix_key' })
   pix_key: string;
 

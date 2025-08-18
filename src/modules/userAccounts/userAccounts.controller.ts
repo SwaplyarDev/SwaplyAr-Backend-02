@@ -97,6 +97,7 @@ export class AccountsController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Request() req, @Body() dto: CreateBankAccountDto) {
     const userId = req.user.id;
+    console.log('user');
 
     const newBank = await this.accountsService.createUserBank(
       dto.userAccValues.accountType,
@@ -117,7 +118,7 @@ export class AccountsController {
     return this.accountsService.deleteBankAccount(req.user, dto.bankAccountId);
   } */
 
-  /*   @ApiOperation({
+  @ApiOperation({
     summary: 'Obtener todas las cuentas del usuario autenticado',
   })
   @ApiResponse({
@@ -141,12 +142,12 @@ export class AccountsController {
       ],
     },
   })
-  @UseGuards(JwtAuthGuard, RolesGuard) */
-  /*  @Roles('user') */
-  /*  @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  /*   @Roles('user') */
+  @Get()
   async findAll(@Request() req) {
     return this.accountsService.findAllBanks(req.user.id);
-  } */
+  }
 
   // Obtener todas las cuentas de banco de un user
   /*   @ApiOperation({

@@ -64,29 +64,14 @@ export class NotesController {
   @Post('request-access')
   async requestAccess(@Body() dto: RequestNoteCodeDto) {
     const { transactionId } = dto;
+    await this.otpService.sendOtpForTransaction(transactionId);
 
-    const transaction = await this.transactionsService.findOne(transactionId, {
-      relations: ['senderAccount', 'receiverAccount'],
-    });
+  return {
+    message: 'Código enviado con éxito al correo asociado.',
+    code_sent: true,
+  };
 
-    if (!transaction) {
-      throw new NotFoundException('Transacción no encontrada');
-    }
 
-    const email = transaction.senderAccount?.createdBy;
-
-    if (!email) {
-      throw new BadRequestException(
-        'No se encontró un email asociado a la transacción',
-      );
-    }
-
-    await this.otpService.sendOtpToEmail(email);
-
-    return {
-      message: 'Código enviado con éxito al correo asociado.',
-      code_sent: true,
-    };
   }
 
   @ApiOperation({ summary: 'Verifica el código OTP para una transacción' })
@@ -140,7 +125,7 @@ export class NotesController {
       throw new BadRequestException('Email no asociado a la transacción');
     }
 
-    await this.otpService.validateOtpAndGetUser(email, dto.code);
+    await this.otpService.validateOtpForTransaction(email, dto.code);
     await this.notesService.markTransactionAsVerified(dto.transaction_id);
     const accessToken = this.otpService.generateOtpToken(dto.transaction_id);
 

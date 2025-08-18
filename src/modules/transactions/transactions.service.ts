@@ -55,12 +55,10 @@ export class TransactionsService {
       });
 
       if (!transaction) {
-        console.log('Transacción no encontrada.');
         throw new NotFoundException('Transacción no encontrada.');
       }
 
       if (!transaction.senderAccount) {
-        console.log('Cuenta del remitente no encontrada.');
         throw new NotFoundException('Cuenta del remitente no encontrada.');
       }
 
@@ -76,9 +74,6 @@ export class TransactionsService {
       const lastNameNormalized = normalizeString(lastName);
 
       if (senderLastNameNormalized !== lastNameNormalized) {
-        console.log(
-          'El apellido no coincide con el del remitente de la transacción.',
-        );
         throw new UnauthorizedException('Apellido inválido.');
       }
 
@@ -90,9 +85,6 @@ export class TransactionsService {
         .getMany();
 
       if (!statusHistory.length) {
-        console.log(
-          'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
-        );
         throw new NotFoundException(
           'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
         );
@@ -344,13 +336,14 @@ async findAllUserEmail(
    * Obtener una transacción por ID validando el email
    */
   async getTransactionByEmail(
-    transactionId: string,
-    userEmail: string,
-  ): Promise<Transaction> {
-    if (!userEmail) {
-      throw new ForbiddenException('Email is required');
-    }
+  transactionId: string,
+  userEmail: string,
+): Promise<Transaction> {
+  if (!userEmail) {
+    throw new ForbiddenException('Email is required');
+  }
 
+  try {
     const transaction = await this.transactionsRepository.findOne({
       where: { id: transactionId },
       relations: {
@@ -366,15 +359,31 @@ async findAllUserEmail(
     });
 
     if (!transaction) {
-      throw new NotFoundException('Transaction not found');
+      throw new NotFoundException(
+        `Transaction with id '${transactionId}' not found`,
+      );
     }
 
     if (transaction.senderAccount?.createdBy !== userEmail) {
-      throw new ForbiddenException('Unauthorized access to this transaction');
+      throw new ForbiddenException(
+        'Unauthorized access to this transaction',
+      );
     }
 
     return transaction;
+  } catch (error) {
+    // Si es una excepción de Nest la relanzo
+    if (error instanceof ForbiddenException || error instanceof NotFoundException) {
+      throw error;
+    }
+
+    // Si es cualquier otro error inesperado → 500
+    throw new InternalServerErrorException(
+      'Unexpected error while fetching transaction',
+    );
   }
+}
+
 
   async findOne (id: string, options?: FindOneOptions<Transaction>): Promise<Transaction> {
 

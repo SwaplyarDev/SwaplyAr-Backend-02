@@ -11,6 +11,9 @@ import {
   Query,
   Req,
   Request,
+  ForbiddenException,
+  NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -25,12 +28,14 @@ import {
   ApiConsumes,
   ApiBearerAuth,
   ApiQuery,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Transaction } from './entities/transaction.entity';
 import {
+  TransactionGetByIdDto,
   TransactionGetResponseDto,
   TransactionResponseDto,
 } from './dto/transaction-response.dto';
@@ -400,25 +405,59 @@ export class TransactionsController {
   @ApiOperation({
     summary:
       'Obtiene una transacción específica por su ID verificando el email del usuario',
+    description:
+      'Devuelve la transacción completa con sus relaciones (cuentas, método de pago, monto y comprobante), ' +
+      'siempre que el usuario autenticado sea el creador de la cuenta emisora. ' +
+      'Si la transacción no existe o el email no coincide, devuelve un error.',
   })
   @ApiResponse({
     status: 200,
     description: '✅ La transacción fue encontrada y el usuario tiene acceso',
-    type: Transaction,
+    type: TransactionGetByIdDto,
   })
+  @ApiUnauthorizedResponse({
+      description: 'No autorizado. Token no válido o no enviado.',
+    })
   @ApiResponse({
     status: 403,
-    description: 'Acceso no autorizado a la transacción',
+    description: '❌ Acceso no autorizado a la transacción',
   })
-  @ApiResponse({ status: 404, description: 'Transacción no encontrada' })
+  @ApiResponse({
+    status: 404,
+    description: '❌ Transacción no encontrada',
+  })
+  @ApiResponse({
+    status: 500,
+    description: '⚠️ Error interno del servidor',
+  })
+     @Get(':transaction_id')
   async getTransactionByEmail(
     @Param('transaction_id') transactionId: string,
     @Request() req: RequestWithUser,
-  ) {
+  ): Promise<TransactionGetByIdDto> {
     const userEmail = req.user.email;
-    return this.transactionsService.getTransactionByEmail(
-      transactionId,
-      userEmail,
-    );
+
+    try {
+      const transaction: Transaction = await this.transactionsService.getTransactionByEmail(
+        transactionId,
+        userEmail,
+      );
+
+      // Convierte Transaction → TransactionGetByIdDto y elimina los nulls automáticamente
+      const dto = plainToInstance(TransactionGetByIdDto, transaction, {
+        excludeExtraneousValues: true, // Solo expone los campos con @Expose
+      });
+
+      return dto;
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw new ForbiddenException(error.message || 'Acceso no autorizado');
+      }
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message || 'Transacción no encontrada');
+      }
+      throw new InternalServerErrorException('Error inesperado al obtener la transacción');
+    }
   }
+
 }

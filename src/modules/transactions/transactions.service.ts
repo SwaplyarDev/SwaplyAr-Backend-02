@@ -53,12 +53,10 @@ export class TransactionsService {
       });
 
       if (!transaction) {
-        console.log('Transacción no encontrada.');
         throw new NotFoundException('Transacción no encontrada.');
       }
 
       if (!transaction.senderAccount) {
-        console.log('Cuenta del remitente no encontrada.');
         throw new NotFoundException('Cuenta del remitente no encontrada.');
       }
 
@@ -74,9 +72,6 @@ export class TransactionsService {
       const lastNameNormalized = normalizeString(lastName);
 
       if (senderLastNameNormalized !== lastNameNormalized) {
-        console.log(
-          'El apellido no coincide con el del remitente de la transacción.',
-        );
         throw new UnauthorizedException('Apellido inválido.');
       }
 
@@ -88,9 +83,6 @@ export class TransactionsService {
         .getMany();
 
       if (!statusHistory.length) {
-        console.log(
-          'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
-        );
         throw new NotFoundException(
           'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
         );
@@ -158,20 +150,18 @@ export class TransactionsService {
         const transaction = this.transactionsRepository.create({
           countryTransaction: createTransactionDto.countryTransaction,
           message: createTransactionDto.message,
-          createdAt, // verifica si en la entidad es createdAt o created_at
+          createdAt, 
           senderAccount: financialAccounts.sender,
           receiverAccount: financialAccounts.receiver,
           amount,
           proofOfPayment,
         });
-        console.log('Transacción a guardar:', transaction);
         savedTransaction = await this.transactionsRepository.save(transaction);
       } catch (err) {
         throw new InternalServerErrorException(
           `Error al guardar la transacción: ${err.message || err}`,
         );
       }
-      console.log('Resultado guardado:', savedTransaction);
 
       let fullTransaction;
       try {
@@ -369,13 +359,14 @@ export class TransactionsService {
    * Obtener una transacción por ID validando el email
    */
   async getTransactionByEmail(
-    transactionId: string,
-    userEmail: string,
-  ): Promise<Transaction> {
-    if (!userEmail) {
-      throw new ForbiddenException('Email is required');
-    }
+  transactionId: string,
+  userEmail: string,
+): Promise<Transaction> {
+  if (!userEmail) {
+    throw new ForbiddenException('Email is required');
+  }
 
+  try {
     const transaction = await this.transactionsRepository.findOne({
       where: { id: transactionId },
       relations: {
@@ -391,15 +382,31 @@ export class TransactionsService {
     });
 
     if (!transaction) {
-      throw new NotFoundException('Transaction not found');
+      throw new NotFoundException(
+        `Transaction with id '${transactionId}' not found`,
+      );
     }
 
     if (transaction.senderAccount?.createdBy !== userEmail) {
-      throw new ForbiddenException('Unauthorized access to this transaction');
+      throw new ForbiddenException(
+        'Unauthorized access to this transaction',
+      );
     }
 
     return transaction;
+  } catch (error) {
+    // Si es una excepción de Nest la relanzo
+    if (error instanceof ForbiddenException || error instanceof NotFoundException) {
+      throw error;
+    }
+
+    // Si es cualquier otro error inesperado → 500
+    throw new InternalServerErrorException(
+      'Unexpected error while fetching transaction',
+    );
   }
+}
+
 
   async findOne(
     id: string,

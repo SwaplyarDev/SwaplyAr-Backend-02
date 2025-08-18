@@ -6,10 +6,11 @@ import { OtpController } from './otp.controller';
 import { OtpCode } from '@auth/entities/otp-code.entity';
 import { User } from '@users/entities/user.entity';
 import { AuthModule } from '@auth/auth.module';
+import { Transaction } from '@transactions/entities/transaction.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, OtpCode]),
+    TypeOrmModule.forFeature([User, OtpCode, Transaction]),
     MailerModule,
     AuthModule,
   ],

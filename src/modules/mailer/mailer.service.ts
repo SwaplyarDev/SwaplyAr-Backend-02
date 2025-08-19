@@ -29,12 +29,12 @@ export class MailerService {
     payload:
       | string
       | {
-          NAME: string;
-          VERIFICATION_CODE: string;
-          BASE_URL: string;
-          LOCATION?: string;
-          EXPIRATION_MINUTES: number;
-        },
+        NAME: string;
+        VERIFICATION_CODE: string;
+        BASE_URL: string;
+        LOCATION?: string;
+        EXPIRATION_MINUTES: number;
+      },
     subject = 'Código de verificación - SwaplyAr',
   ) {
     // Determinar "from" con varios fallbacks
@@ -328,6 +328,8 @@ export class MailerService {
     }
   }
 
+  
+
   /**
    * Construye los datos necesarios para renderizar el template de email.
    */
@@ -354,4 +356,69 @@ export class MailerService {
       RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`,
     };
   }
+
+
+  async sendReviewPaymentEmail(senderEmail: string, transaction: any) {
+  const context = this.buildReviewPaymentTemplateData(transaction);
+
+  // Determinar "from" con varios fallbacks
+  const nodemailerConfig = this.configService.get<any>('nodemailer');
+  const from =
+    nodemailerConfig?.auth?.user ??
+    this.configService.get<string>('EMAIL_USER') ??
+    this.configService.get<string>('nodemailer.auth.user');
+
+  // Ruta del template
+  const templatePath = join(
+    __dirname,
+    '..',
+    '..',
+    '..',
+    'modules',
+    'mailer',
+    'templates',
+    'email',
+    'transaction',
+    'operations_transactions',
+    'review-payment.hbs',
+  );
+
+  const html = this.compileTemplate(templatePath, context);
+
+  await this.mailer.sendMail({
+    from,
+    to: senderEmail,
+    subject: 'Revisión de pago',
+    html,
+  });
+}
+
+/**
+ * Construye los datos necesarios para el template review-payment.hbs.
+ */
+private buildReviewPaymentTemplateData(transaction: any): Record<string, any> {
+  const sender = transaction.senderAccount ?? {};
+  const receiver = transaction.receiverAccount ?? {};
+  const amount = transaction.amount ?? {};
+
+  return {
+    REFERENCE_NUMBER: transaction.id?.slice(0, 8)?.toUpperCase() ?? '',
+    TRANSACTION_ID: transaction.id,
+    NAME: sender.firstName ?? '',
+    LAST_NAME: sender.lastName ?? '',
+    PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
+    AMOUNT_SENT: amount.amountSent ?? 0,
+    SENT_CURRENCY: amount.currencySent ?? '',
+    PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
+    AMOUNT_RECEIVED: amount.amountReceived ?? 0,
+    RECEIVED_CURRENCY: amount.currencyReceived ?? '',
+    RECEIVED_NAME: receiver.firstName ?? 'No especificado',
+    BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
+    DATE_HOUR: new Date().toLocaleString('es-AR'),
+    MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
+  };
+}
+
+
+
 }

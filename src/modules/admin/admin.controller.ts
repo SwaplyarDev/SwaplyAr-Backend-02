@@ -12,6 +12,7 @@ import {
   UseGuards,
   ValidationPipe,
   Request,
+  NotFoundException,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -37,6 +38,9 @@ import { User as UserEntity } from '@users/entities/user.entity';
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { MailerService } from '../mailer/mailer.service';
 import { Transaction } from 'typeorm';
+import { TransactionAdminResponseDto, TransactionByIdAdminResponseDto } from './dto/get-transaction-response.dto';
+import { RolesGuard } from '@common/guards/roles.guard';
+import { Roles } from '@common/decorators/roles.decorator';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -49,62 +53,35 @@ export class AdminController {
   ) {}
 
   @ApiOperation({ summary: 'Obtener todas las transacciones' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Número de página (por defecto 1)' })
+  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Cantidad de elementos por página (por defecto 10)' })
   @ApiResponse({
     status: 200,
     description: 'Transacciones obtenidas correctamente',
-    schema: {
-      example: {
-        meta: {
-          totalPages: 5,
-          page: 1,
-          perPage: 12,
-          totalTransactions: 30,
-        },
-        data: [
-          {
-            id: 'uuid',
-            status: 'pending',
-          },
-        ],
-      },
-    },
+    type: TransactionAdminResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'No autorizado' })
-  @ApiResponse({ status: 403, description: 'Prohibido' })
-  @ApiResponse({ status: 404, description: 'No encontrado' })
-  @ApiResponse({ status: 500, description: 'Error interno del servidor' })
+  @ApiResponse({ status: 401, description: '❌ No autorizado. Token no válido o no enviado.' })
+  @ApiResponse({ status: 403, description: '❌ Acceso no autorizado, Solo para Administradores' })
+  @ApiResponse({ status: 404, description: '❌ No se encuentran Transacciones' })
+  @ApiResponse({ status: 500, description: '❌ Error interno del servidor' })
   @Get('transactions')
   async getAllTransactions(
-    @Query('page') page: string,
-    @Query('perPage') perPage: string,
-    @Query() query: any,
-    @User() user: any,
-  ) {
-    const dynamicFilters = { ...query };
-    delete dynamicFilters.page;
-    delete dynamicFilters.perPage;
-    const userEmail =
-      user.role === 'admin' || user.role === 'super_admin' ? null : user.email;
-    return this.adminService.findAllTransactionsPaginated(
-      userEmail,
-      page ? parseInt(page) : 1,
-      perPage ? parseInt(perPage) : 12,
-      dynamicFilters,
-    );
+    @Query('page') page = 1,
+    @Query('perPage') perPage = 10,
+  ): Promise<{ meta: any; data: TransactionAdminResponseDto[] }> {
+    return this.adminService.findAllTransactions(Number(page), Number(perPage));
   }
 
   @ApiOperation({ summary: 'Agregar comprobante a una transacción' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description:
-      'Sube un comprobante para una transacción. El `transactionId` es obligatorio y el `comprobante` es el archivo.',
+    description: 'Sube un comprobante para una transacción. El `transactionId` es obligatorio y el `comprobante` es el archivo.',
     schema: {
       type: 'object',
       properties: {
         transactionId: {
           type: 'string',
-          description:
-            'ID de la transacción a la que se asocia el comprobante.',
+          description: 'ID de la transacción a la que se asocia el comprobante.',
         },
         comprobante: {
           type: 'string',
@@ -179,9 +156,7 @@ export class AdminController {
   }
 
   @Get('transactions/status')
-  @ApiOperation({
-    summary: 'Obtener historial completo de estados de todas las transacciones',
-  })
+  @ApiOperation({ summary: 'Obtener historial completo de estados de todas las transacciones' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiResponse({
@@ -257,8 +232,7 @@ export class AdminController {
             motivo: 'Verificación completa',
             notas: 'Sin observaciones',
           },
-          description:
-            'Datos adicionales que pueden acompañar el cambio de estado',
+          description: 'Datos adicionales que pueden acompañar el cambio de estado',
         },
       },
       required: ['status'],
@@ -279,10 +253,8 @@ export class AdminController {
       additionalData,
     );
 
-    // Obtener la transacción actualizada para tener acceso al createdBy
     const transaction = await this.adminService.getTransactionById(id);
 
-    // Enviar correos electrónicos según el estado
     if (transaction && transaction.senderAccount.createdBy) {
       await this.mailerService.sendStatusEmail(transaction, status);
     }
@@ -291,55 +263,42 @@ export class AdminController {
   }
 
   @ApiOperation({ summary: 'Obtener una transacción por ID' })
-  @ApiResponse({ status: 200, description: 'Transacción encontrada' })
-  @ApiResponse({ status: 404, description: 'Transacción no encontrada' })
-  @ApiParam({
-    name: 'id',
-    description: 'ID de la transacción',
-    example: 'uuid',
+  @ApiResponse({
+    status: 200,
+    description: 'Transacción encontrada',
+    type: TransactionByIdAdminResponseDto,
   })
+    @ApiResponse({ status: 401, description: '❌ No autorizado. Token no válido o no enviado.' })
+  @ApiResponse({ status: 403, description: '❌ Acceso no autorizado, Solo para Administradores' })
+  @ApiResponse({ status: 404, description: '❌ Transaccion no Encontrada' })
+  @ApiResponse({ status: 500, description: '❌ Error interno del servidor' })
+  @ApiParam({ name: 'id', description: 'ID de la transacción', example: 'uuid' })
   @Get('transactions/:id')
-  async getTransaction(@Param('id') id: string, @User() user: any) {
+  async getTransaction(
+  @Param('id') id: string,
+): Promise<{ data?: TransactionByIdAdminResponseDto; message?: string }> {
+  try {
     if (!id) {
       return {
-        success: false,
         message: 'El ID de la transacción es requerido.',
       };
     }
+
     const transaction = await this.adminService.getTransactionById(id);
-    if (!transaction) {
+
+    return {
+      data: this.adminService.formatTransaction(transaction),
+    };
+  } catch (error) {
+    if (error instanceof NotFoundException) {
       return {
-        success: false,
         message: 'Transacción no encontrada.',
       };
     }
-    const userEmail = user.email;
-    const userRole = user.role;
-    const isAdmin = userRole === 'admin' || userRole === 'super_admin';
-    const senderEmail = transaction.senderAccount?.createdBy;
-    const receiverEmail = (transaction.receiverAccount as any)?.email;
-    const isOwner = senderEmail === userEmail || receiverEmail === userEmail;
-    if (!isAdmin && !isOwner) {
-      return {
-        success: false,
-        message: 'Acceso no autorizado a esta transacción.',
-      };
-    }
-
-    const receiver = transaction.receiverAccount as any;
-    if (!receiver) {
-      throw new Error('No se encontró receiver asociado a la transacción.');
-    }
-    const paymentMethod = receiver.paymentMethod;
-    if (!paymentMethod || paymentMethod.method !== 'bank') {
-      throw new Error('No se encontró banco asociado al receiver.');
-    }
-
-    return {
-      success: true,
-      data: transaction,
-    };
+    throw error;
   }
+}
+
 
   @ApiOperation({ summary: 'Actualizar el estado de una transacción por tipo' })
   @ApiResponse({

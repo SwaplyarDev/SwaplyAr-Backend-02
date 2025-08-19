@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
 
-class PaymentMethodSenderDto {
+export class PaymentMethodSenderDto {
   @Expose()
   @ApiProperty({ name: 'id', example: '75e91e4b-a6dd-43b8-a386-0bf5a336957b' })
   id: string;
@@ -16,7 +16,7 @@ class PaymentMethodSenderDto {
   method: string;
 }
 
-class PaymentMethodReceiverDto {
+export class PaymentMethodReceiverDto {
   @Expose()
   @ApiProperty({ name: 'id', example: '75e91e4b-a6dd-43b8-a386-0bf5a336957b' })
   id: string;
@@ -86,7 +86,7 @@ class PaymentMethodReceiverDto {
   transferCode?: string;
 }
 
-class AccountSenderDto {
+export class AccountSenderDto {
   @Expose()
   @ApiProperty({ name: 'id', example: '47964345-930b-4eec-b221-42ad423ac760' })
   id: string;
@@ -113,7 +113,7 @@ class AccountSenderDto {
   paymentMethod: PaymentMethodSenderDto;
 }
 
-class AccountReceiverDto {
+export class AccountReceiverDto {
   @Expose()
   @ApiProperty({ name: 'id', example: 'e28f2e9f-b436-42cf-888c-c161739c8565' })
   id: string;
@@ -124,7 +124,7 @@ class AccountReceiverDto {
   paymentMethod: PaymentMethodReceiverDto;
 }
 
-class ProofOfPaymentResponseDto {
+export class ProofOfPaymentResponseDto {
   @Expose()
   @ApiProperty({ name: 'id', example: '6d238f0a-3eab-4dc2-94cb-c9a833261a55' })
   id: string;
@@ -142,14 +142,14 @@ class ProofOfPaymentResponseDto {
   createAt: string;
 }
 
-class AmountResponseDto {
+export class AmountResponseDto {
   @Expose()
   @ApiProperty({ name: 'id', example: 'ba1196da-7e71-4710-8f44-2df28a31875e' })
   id: string;
 
   @Expose()
   @ApiProperty({ name: 'amountSent', example: 1000 })
-  amountSent: number;
+  amountSent: string;
 
   @Expose()
   @ApiProperty({ name: 'currencySent', example: 'ARS' })
@@ -157,7 +157,7 @@ class AmountResponseDto {
 
   @Expose()
   @ApiProperty({ name: 'amountReceived', example: 900 })
-  amountReceived: number;
+  amountReceived: string;
 
   @Expose()
   @ApiProperty({ name: 'currencyReceived', example: 'BRL' })
@@ -215,6 +215,7 @@ export class TransactionGetByIdDto extends TransactionResponseDto {
   @ApiProperty({ example: false })
   isNoteVerified: boolean;
 }
+
 export class PaymentMethodGetReceiverDto {
   // Bank
   @ApiProperty({

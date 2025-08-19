@@ -38,7 +38,7 @@ export class AdminService {
     private readonly discountService: DiscountService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   private convertAdminStatusToTransactionStatus(
     status: AdminStatus,
@@ -231,6 +231,15 @@ export class AdminService {
     );
 
     if (status === AdminStatus.Approved) {
+      // Solo cambia el estado, no asigna recompensas
+      return {
+        message: 'Estado cambiado a approved correctamente. No se asignaron recompensas.',
+        status: 200,
+        transaction: updatedTransaction,
+      };
+    }
+
+    if (status === AdminStatus.Completed) {
       console.log(transaction);
       const quantityToAdd = Number(transaction.amount.amountSent);
 
@@ -262,6 +271,11 @@ export class AdminService {
           `No se encontró usuario para la transacción ${transactionId}. No se actualizaron estrellas.`,
         );
       }
+      return {
+        message: 'Estado cambiado a completed y se asignaron recompensas.',
+        status: 200,
+        transaction: updatedTransaction,
+      };
     }
 
     if (updatedTransaction) {
@@ -269,11 +283,7 @@ export class AdminService {
     }
 
     return {
-      //message: 'Estado actualizado',
-      message:
-        status === AdminStatus.Approved
-          ? 'La transacción ha sido aprobada correctamente'
-          : 'Estado actualizado',
+      message: 'Estado actualizado',
       status,
       transaction: updatedTransaction,
     };

@@ -179,7 +179,7 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  /*  @Roles('admin') */
+  @Roles('admin')
   @Get('/admin/findId')
   async findOneById(@Query('userId') userId: string) {
     return this.accountsService.findAllBanks(userId);
@@ -229,7 +229,7 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  /*   @Roles('admin') */
+  @Roles('admin')
   @Get('/admin/findUserBank')
   async findOneUserBank(
     @Query('userId') userId: string,

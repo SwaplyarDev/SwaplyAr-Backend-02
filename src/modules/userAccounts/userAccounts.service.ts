@@ -114,10 +114,6 @@ export class AccountsService {
     const userAccount = await this.userAccountRepo.findOne({
       where: { account_id: bankAccountId, userId: user.id },
     });
-    console.log(
-      'looooooooooooooooooooooooooooooooooooooooooooooooooooooo',
-      userAccount,
-    );
 
     if (!userAccount) {
       throw new BadRequestException(

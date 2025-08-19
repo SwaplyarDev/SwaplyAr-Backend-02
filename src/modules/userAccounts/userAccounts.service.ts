@@ -39,10 +39,6 @@ export class AccountsService {
     userId: string,
   ) {
     try {
-      /*     validateFields(accountType, 'create');
-      validateUserAccount(userAccValues); */
-      // crea un usuario en la tabla user_account con su tipo de cuenta
-
       const userAccount = this.userAccountRepo.create({
         accountType: userAccValues.accountType,
         accountName: userAccValues.accountName,
@@ -105,8 +101,6 @@ export class AccountsService {
       }
 
       return {
-        message: 'bank created',
-        bank: savedUserAccount,
         details: specificAccount,
       };
     } catch (err) {
@@ -120,10 +114,6 @@ export class AccountsService {
     const userAccount = await this.userAccountRepo.findOne({
       where: { account_id: bankAccountId, userId: user.id },
     });
-    console.log(
-      'looooooooooooooooooooooooooooooooooooooooooooooooooooooo',
-      userAccount,
-    );
 
     if (!userAccount) {
       throw new BadRequestException(

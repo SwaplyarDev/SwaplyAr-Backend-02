@@ -90,7 +90,7 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
+  /*  @Roles('user') */
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Request() req, @Body() dto: CreateBankAccountDto) {
@@ -109,7 +109,7 @@ export class AccountsController {
   //DELETE una cuenta de banco
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
+  /*   @Roles('user') */
   @Delete()
   @HttpCode(HttpStatus.OK)
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {
@@ -141,7 +141,7 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
+  /*   @Roles('user') */
   @Get()
   async findAll(@Request() req) {
     return this.accountsService.findAllBanks(req.user.id);
@@ -179,7 +179,7 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
+  /*  @Roles('admin') */
   @Get('/admin/findId')
   async findOneById(@Query('userId') userId: string) {
     return this.accountsService.findAllBanks(userId);
@@ -229,7 +229,7 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
+  /*   @Roles('admin') */
   @Get('/admin/findUserBank')
   async findOneUserBank(
     @Query('userId') userId: string,

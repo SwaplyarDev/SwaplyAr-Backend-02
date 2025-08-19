@@ -12,12 +12,6 @@ export class UserPix {
   @PrimaryGeneratedColumn('uuid', { name: 'pix_id' })
   pix_id: string;
 
-  @Column({ name: 'account_id', type: 'uuid' })
-  account_id: string;
-
-  @Column({ name: 'virtual_bank_id' })
-  virtual_bank_id: string;
-
   @Column({ name: 'pix_key' })
   pix_key: string;
 
@@ -26,6 +20,10 @@ export class UserPix {
 
   @Column()
   cpf: number;
+
+  // 👇 agregamos la FK como propiedad explícita
+  @Column({ name: 'account_id' })
+  accountId: string;
 
   @ManyToOne(() => UserAccount)
   @JoinColumn({ name: 'account_id', referencedColumnName: 'account_id' })

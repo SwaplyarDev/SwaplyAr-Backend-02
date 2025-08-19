@@ -12,14 +12,11 @@ export class UserAccount {
   @PrimaryGeneratedColumn('uuid', { name: 'account_id' })
   account_id: string;
 
-  @Column({ name: 'account_name' })
+  @Column({ name: 'account_name', nullable: true })
   accountName: string;
 
-  @Column({ name: 'currency', length: 10 })
-  currency: string;
-
-  @Column({ name: 'status', type: 'boolean', default: true })
-  status: boolean;
+  @Column({ name: 'account_type', nullable: true })
+  accountType: Platform;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;
@@ -27,9 +24,13 @@ export class UserAccount {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
   updatedAt: Date;
 
-  @Column({ name: 'type_id' })
-  typeId: Platform;
-
   @Column({ name: 'user_id' })
   userId: string;
+
+  @Column({
+    name: 'status',
+    type: 'boolean',
+    default: true,
+  })
+  status: boolean;
 }

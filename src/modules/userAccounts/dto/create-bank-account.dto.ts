@@ -61,7 +61,7 @@ export class UserAccValuesDto {
 
   @IsOptional()
   @IsString()
-  type: string;
+  type: Platform;
 
   // pix
   @IsOptional()

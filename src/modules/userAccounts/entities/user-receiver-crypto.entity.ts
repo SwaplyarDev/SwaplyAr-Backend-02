@@ -21,6 +21,9 @@ export class UserReceiverCrypto {
   @Column()
   wallet: string;
 
+  @Column({ name: 'account_id' })
+  accountId: string;
+
   @ManyToOne(() => UserAccount)
   @JoinColumn({ name: 'account_id', referencedColumnName: 'account_id' })
   userAccount: UserAccount;

@@ -30,6 +30,10 @@ export class UserBank {
   @Column({ name: 'document_value', type: 'numeric' })
   document_value: number;
 
+  // 👇 FK explícita
+  @Column({ name: 'account_id' })
+  accountId: string;
+
   @ManyToOne(() => UserAccount)
   @JoinColumn({ name: 'account_id', referencedColumnName: 'account_id' })
   userAccount: UserAccount;

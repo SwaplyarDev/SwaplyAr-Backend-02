@@ -25,8 +25,6 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 
-//TODO: GET (user/accounts/:id) ,  GET (user/user:id/accounts) , GET (user/user:id/accounts/account:id),
-
 @ApiTags('Cuentas de Usuario')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -99,7 +97,7 @@ export class AccountsController {
     const userId = req.user.id;
     console.log('user');
 
-    const newBank = await this.accountsService.createUserBank(
+    const newBank = await this.accountsService.createUserBan(
       dto.userAccValues.accountType,
       dto.userAccValues,
       userId,
@@ -108,15 +106,15 @@ export class AccountsController {
     return { message: 'Banco creado correctamente', bank: newBank };
   }
 
-  //no lelva documentacion de swagger
+  //DELETE una cuenta de banco
 
-  /*   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  /*   @Roles('user') */
   @Delete()
   @HttpCode(HttpStatus.OK)
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {
     return this.accountsService.deleteBankAccount(req.user, dto.bankAccountId);
-  } */
+  }
 
   @ApiOperation({
     summary: 'Obtener todas las cuentas del usuario autenticado',
@@ -150,7 +148,7 @@ export class AccountsController {
   }
 
   // Obtener todas las cuentas de banco de un user
-  /*   @ApiOperation({
+  @ApiOperation({
     summary: 'Obtener todas las cuentas del usuario autenticado',
   })
   @ApiQuery({
@@ -185,11 +183,11 @@ export class AccountsController {
   @Get('/admin/findId')
   async findOneById(@Query('userId') userId: string) {
     return this.accountsService.findAllBanks(userId);
-  } */
+  }
 
   // obtener una cuenta
 
-  /*   @ApiOperation({
+  @ApiOperation({
     summary: 'Obtener una cuenta bancaria específica de un usuario autenticado',
   })
   @ApiQuery({
@@ -238,5 +236,5 @@ export class AccountsController {
     @Query('bankAccountId') bankAccountId: string,
   ) {
     return this.accountsService.findOneUserBank(userId, bankAccountId);
-  } */
+  }
 }

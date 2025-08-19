@@ -21,6 +21,10 @@ export class UserPix {
   @Column()
   cpf: number;
 
+  // 👇 agregamos la FK como propiedad explícita
+  @Column({ name: 'account_id' })
+  accountId: string;
+
   @ManyToOne(() => UserAccount)
   @JoinColumn({ name: 'account_id', referencedColumnName: 'account_id' })
   userAccount: UserAccount;

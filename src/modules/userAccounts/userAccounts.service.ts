@@ -33,7 +33,7 @@ export class AccountsService {
     private readonly pixRepo: Repository<UserPix>,
   ) {}
 
-  async createUserBank(
+  async createUserBan(
     accountType: any,
     userAccValues: UserAccValuesDto,
     userId: string,
@@ -54,7 +54,8 @@ export class AccountsService {
       // ejemplo: si es igual a virtual_bank la busca en la tabla y crea una nueva
       let specificAccount;
 
-      if (accountType === 'bank') {
+      // crea una cuenta de banco
+      if (accountType === Platform.Bank) {
         specificAccount = this.bankAccountRepo.create({
           currency: userAccValues.currency,
           bankName: userAccValues.bankName,
@@ -66,7 +67,9 @@ export class AccountsService {
         });
 
         await this.bankAccountRepo.save(specificAccount);
-      } else if (accountType === 'virtual_bank') {
+
+        //crea una cuenta virtual
+      } else if (accountType === Platform.Virtual_Bank) {
         specificAccount = this.virtualBankRepo.create({
           accountType: userAccValues.accountType,
           currency: userAccValues.currency,
@@ -77,18 +80,20 @@ export class AccountsService {
           lastName: userAccValues.lastName,
           userAccount: savedUserAccount,
         });
-
         await this.virtualBankRepo.save(specificAccount);
-      } else if (accountType === 'receiver_crypto') {
+
+        // crea una cuenta de crypto
+      } else if (accountType === Platform.Receiver_Crypto) {
         specificAccount = this.receiverCryptoRepo.create({
           currency: userAccValues.currency,
           network: userAccValues.network,
           wallet: userAccValues.wallet,
           userAccount: savedUserAccount,
         });
-
         await this.receiverCryptoRepo.save(specificAccount);
-      } else if (accountType === 'pix') {
+
+        // crea una cuenta de pix
+      } else if (accountType === Platform.Pix) {
         specificAccount = this.pixRepo.create({
           userAccount: savedUserAccount,
           cpf: userAccValues.cpf,
@@ -110,11 +115,15 @@ export class AccountsService {
     }
   }
 
-  /*  async deleteBankAccount(user: any, bankAccountId: string) {
+  async deleteBankAccount(user: any, bankAccountId: string) {
     // Busca la cuenta principal del usuario
     const userAccount = await this.userAccountRepo.findOne({
       where: { account_id: bankAccountId, userId: user.id },
     });
+    console.log(
+      'looooooooooooooooooooooooooooooooooooooooooooooooooooooo',
+      userAccount,
+    );
 
     if (!userAccount) {
       throw new BadRequestException(
@@ -123,27 +132,20 @@ export class AccountsService {
     }
 
     // Elimina solo en la tabla específica según el tipo de cuenta
-    switch (userAccount.typeId) {
-      case 'bank': // Bank
-        await this.bankAccountRepo.delete({ account_id: bankAccountId });
+    switch (userAccount.accountType) {
+      case Platform.Bank:
+        await this.bankAccountRepo.delete({ accountId: bankAccountId });
         break;
-      case 'paypal': // PayPal
-        await this.payPalRepo.delete({ account_id: bankAccountId });
+      case Platform.Pix:
+        await this.pixRepo.delete({ accountId: bankAccountId });
         break;
-      case 'wise': // Wise
-        await this.wiseRepo.delete({ account_id: bankAccountId });
+      case Platform.Virtual_Bank:
+        await this.virtualBankRepo.delete({ accountId: bankAccountId });
         break;
-      case 'payoneer': // Payoneer
-        await this.payoneerRepo.delete({ account_id: bankAccountId });
-        break;
-      case 'pix': // Pix
-        await this.pixRepo.delete({ account_id: bankAccountId });
-        break;
-      case 'virtual_bank': // Virtual Bank
-        await this.virtualBankRepo.delete({ account_id: bankAccountId });
-        break;
-      case 'receiver_crypto': // Receiver Crypto
-        await this.receiverCryptoRepo.delete({ account_id: bankAccountId });
+      case Platform.Receiver_Crypto:
+        await this.receiverCryptoRepo.delete({
+          accountId: bankAccountId,
+        });
         break;
       default:
         throw new BadRequestException('Tipo de cuenta no soportado');
@@ -154,7 +156,6 @@ export class AccountsService {
 
     return { message: 'Cuenta eliminada correctamente' };
   }
- */
 
   async findAllBanks(user: any) {
     // Buscar todas las cuentas del usuario
@@ -208,6 +209,7 @@ export class AccountsService {
           account_id:
             d.account_id ?? d.bankId ?? d.receiver_crypto ?? d.virtual_bank_id,
           currency: d.currency,
+          type: d.type,
           accountName: d.accountName ?? d.bank_name,
           email: d.email ?? d.email_account,
           firstName: d.firstName,
@@ -227,7 +229,6 @@ export class AccountsService {
         return {
           accountName: account.accountName,
 
-          status: account.status,
           payment_type: typeId,
           details: mappedDetails,
         };
@@ -238,7 +239,7 @@ export class AccountsService {
   }
 
   // filtrar cuenta de banco especifica mediante id del usuario e id del banco
-  /*   async findOneUserBank(userId: string, bankAccountId?: string) {
+  async findOneUserBank(userId: string, bankAccountId?: string) {
     // Traemos todas las cuentas del usuario
     const allBanks = await this.findAllBanks(userId);
 
@@ -264,5 +265,5 @@ export class AccountsService {
       ...found,
       details: filteredDetails,
     };
-  } */
+  }
 }

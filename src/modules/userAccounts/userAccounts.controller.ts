@@ -109,7 +109,7 @@ export class AccountsController {
   //DELETE una cuenta de banco
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  /*   @Roles('user') */
+  @Roles('user')
   @Delete()
   @HttpCode(HttpStatus.OK)
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {

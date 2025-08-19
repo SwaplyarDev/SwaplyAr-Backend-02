@@ -29,12 +29,12 @@ export class MailerService {
     payload:
       | string
       | {
-          NAME: string;
-          VERIFICATION_CODE: string;
-          BASE_URL: string;
-          LOCATION?: string;
-          EXPIRATION_MINUTES: number;
-        },
+        NAME: string;
+        VERIFICATION_CODE: string;
+        BASE_URL: string;
+        LOCATION?: string;
+        EXPIRATION_MINUTES: number;
+      },
     subject = 'Código de verificación - SwaplyAr',
   ) {
     // Determinar "from" con varios fallbacks
@@ -89,7 +89,11 @@ export class MailerService {
     ];
 
     // Intentamos 2 ubicaciones: carpeta src (dev) y ruta relativa desde __dirname (dist)
-    const templatePathDev = join(process.cwd(), 'src', ...templateRelativeParts);
+    const templatePathDev = join(
+      process.cwd(),
+      'src',
+      ...templateRelativeParts,
+    );
     const templatePathDist = join(
       __dirname,
       '..',
@@ -114,7 +118,9 @@ export class MailerService {
         subject,
         text: `Tu código de verificación es: ${payload.VERIFICATION_CODE}`,
       });
-      return { message: `The code has been sent to the email ${to} (fallback text)` };
+      return {
+        message: `The code has been sent to the email ${to} (fallback text)`,
+      };
     }
 
     // Compilar y enviar la plantilla
@@ -141,14 +147,24 @@ export class MailerService {
       const config = this.configService.get('nodemailer');
       const from = config?.auth?.user;
 
-      if (!from || !config.auth.pass) {
-        throw new Error(
+      if (!from || !config?.auth?.pass) {
+        this.logger.error(
           'Falta configuración del correo. Verifica las variables de entorno EMAIL_USER y EMAIL_PASS.',
+        );
+        return { message: 'Mailer no configurado correctamente' };
+      }
+
+      // Intento de verificación (no abortamos completamente si falla)
+      try {
+        await this.mailer.verify();
+        this.logger.debug('Mailer verification: OK');
+      } catch (verifyErr: any) {
+        this.logger.warn(
+          `Mailer verification failed (continuando): ${verifyErr?.message ?? verifyErr}`,
         );
       }
 
-      await this.mailer.verify();
-
+      // Templates mapping...
       const statusTemplates: Partial<
         Record<AdminStatus, { subject: string; path: string }>
       > = {
@@ -192,7 +208,7 @@ export class MailerService {
           `No hay plantilla de correo definida para el estado: ${status}`,
         );
         return {
-          message: `No se envió el correo. No hay plantilla definida para el estado: ${status}`,
+          message: `No se envió el correo. No hay plantilla para: ${status}`,
         };
       }
 
@@ -214,11 +230,8 @@ export class MailerService {
         this.logger.warn(
           `No se encontró la plantilla en la ruta: ${templatePath}`,
         );
-        this.logger.warn(
-          `El correo no será enviado porque falta la plantilla.`,
-        );
         return {
-          message: `No se envió el correo. No se encontró la plantilla para el estado: ${status}`,
+          message: `No se envió el correo. Falta plantilla para el estado: ${status}`,
         };
       }
 
@@ -228,28 +241,73 @@ export class MailerService {
         this.buildTemplateData(transaction),
       );
 
+      // ------- NUEVO: Determinar destinatario con fallback -------
+      const candidateEmails: Array<string | undefined> = [
+        transaction?.senderAccount?.createdBy
+      ];
+
+      const normalize = (s?: string) =>
+        typeof s === 'string' ? s.trim().toLowerCase() : undefined;
+      const isValidEmail = (s?: string) =>
+        typeof s === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+
+      let recipient: string | undefined;
+      for (const c of candidateEmails) {
+        const n = normalize(c);
+        if (isValidEmail(n)) {
+          recipient = n;
+          break;
+        }
+      }
+
+      if (!recipient) {
+        this.logger.warn(
+          `No se encontró un destinatario válido para la transacción ${transaction?.id}. candidateEmails: ${JSON.stringify(candidateEmails)}`,
+        );
+        // No lanzamos error; devolvemos info para que el flujo admin no rompa.
+        return {
+          message: `No se envió el correo. No se detectó un email válido para la transacción ${transaction?.id}`,
+        };
+      }
+      // -----------------------------------------------------------
+
       const mailOptions = {
         from,
-        to: transaction.createdBy,
+        to: recipient,
         subject: selected.subject,
         html,
+        envelope: { from, to: [recipient] }, // explícito para evitar problemas en nodemailer
       };
 
       this.logger.log(
-        `Enviando correo desde ${from} a ${transaction.createdBy}`,
+        `Enviando correo desde ${from} a ${recipient} (tx=${transaction?.id})`,
       );
-      const result = await this.mailer.sendMail(mailOptions);
-      this.logger.log('Correo enviado exitosamente:', result);
-
-      return {
-        message: `El correo de estado ha sido enviado a ${transaction.createdBy}`,
-      };
+      try {
+        const result = await this.mailer.sendMail(mailOptions);
+        this.logger.log('Correo enviado exitosamente:', result);
+        return {
+          message: `El correo de estado ha sido enviado a ${recipient}`,
+          result,
+        };
+      } catch (sendErr: any) {
+        this.logger.error(
+          `Error al enviar correo (sendMail) a ${recipient}: ${sendErr?.message ?? sendErr}`,
+        );
+        // No relanzar para no romper proceso admin; devolver info.
+        return {
+          message: `Error enviando correo a ${recipient}`,
+          error: sendErr?.message ?? sendErr,
+        };
+      }
     } catch (error: any) {
       this.logger.error(
-        `Error al enviar el correo de estado: ${error.message}`,
+        `Error al procesar sendStatusEmail: ${error?.message ?? error}`,
       );
-      this.logger.error('Traza del error:', error.stack);
-      throw error;
+      // Devolver info (no relanzar) para evitar que el flujo admin se caiga por un mail faltante.
+      return {
+        message: `Error interno en MailerService`,
+        error: error?.message ?? error,
+      };
     }
   }
 
@@ -269,6 +327,8 @@ export class MailerService {
       throw error;
     }
   }
+
+  
 
   /**
    * Construye los datos necesarios para renderizar el template de email.
@@ -296,4 +356,69 @@ export class MailerService {
       RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`,
     };
   }
+
+
+  async sendReviewPaymentEmail(senderEmail: string, transaction: any) {
+  const context = this.buildReviewPaymentTemplateData(transaction);
+
+  // Determinar "from" con varios fallbacks
+  const nodemailerConfig = this.configService.get<any>('nodemailer');
+  const from =
+    nodemailerConfig?.auth?.user ??
+    this.configService.get<string>('EMAIL_USER') ??
+    this.configService.get<string>('nodemailer.auth.user');
+
+  // Ruta del template
+  const templatePath = join(
+    __dirname,
+    '..',
+    '..',
+    '..',
+    'modules',
+    'mailer',
+    'templates',
+    'email',
+    'transaction',
+    'operations_transactions',
+    'review-payment.hbs',
+  );
+
+  const html = this.compileTemplate(templatePath, context);
+
+  await this.mailer.sendMail({
+    from,
+    to: senderEmail,
+    subject: 'Revisión de pago',
+    html,
+  });
+}
+
+/**
+ * Construye los datos necesarios para el template review-payment.hbs.
+ */
+private buildReviewPaymentTemplateData(transaction: any): Record<string, any> {
+  const sender = transaction.senderAccount ?? {};
+  const receiver = transaction.receiverAccount ?? {};
+  const amount = transaction.amount ?? {};
+
+  return {
+    REFERENCE_NUMBER: transaction.id?.slice(0, 8)?.toUpperCase() ?? '',
+    TRANSACTION_ID: transaction.id,
+    NAME: sender.firstName ?? '',
+    LAST_NAME: sender.lastName ?? '',
+    PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
+    AMOUNT_SENT: amount.amountSent ?? 0,
+    SENT_CURRENCY: amount.currencySent ?? '',
+    PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
+    AMOUNT_RECEIVED: amount.amountReceived ?? 0,
+    RECEIVED_CURRENCY: amount.currencyReceived ?? '',
+    RECEIVED_NAME: receiver.firstName ?? 'No especificado',
+    BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
+    DATE_HOUR: new Date().toLocaleString('es-AR'),
+    MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
+  };
+}
+
+
+
 }

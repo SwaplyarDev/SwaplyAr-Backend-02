@@ -14,22 +14,25 @@ export class ReceiverFinancialAccountsService {
     private readonly paymentMethodService: PaymentMethodService,
   ) {}
 
-  async create(createReceiverFinancialAccountDto: CreateReceiverFinancialAccountDto) {
-  const { paymentMethod } = createReceiverFinancialAccountDto;
+  async create(
+    createReceiverFinancialAccountDto: CreateReceiverFinancialAccountDto,
+  ) {
+    const { paymentMethod } = createReceiverFinancialAccountDto;
 
-  const newPaymentMethod = await this.paymentMethodService.create(paymentMethod);
-  console.log('Nuevo método de pago creado:', newPaymentMethod);
+    const newPaymentMethod =
+      await this.paymentMethodService.create(paymentMethod);
+    console.log('Nuevo método de pago creado:', newPaymentMethod);
 
-  // Crear el objeto base, pero asegurando que firstName y lastName tengan valor
-  const data = this.receiverRepository.create({
-    ...createReceiverFinancialAccountDto,
-    paymentMethod: newPaymentMethod,
-    firstName: createReceiverFinancialAccountDto.firstName ?? '', // si no viene, vacío
-    lastName: createReceiverFinancialAccountDto.lastName ?? '',   // si no viene, vacío
-  });
+    // Crear el objeto base, pero asegurando que firstName y lastName tengan valor
+    const data = this.receiverRepository.create({
+      ...createReceiverFinancialAccountDto,
+      paymentMethod: newPaymentMethod,
+      firstName: createReceiverFinancialAccountDto.firstName ?? '', // si no viene, vacío
+      lastName: createReceiverFinancialAccountDto.lastName ?? '', // si no viene, vacío
+    });
 
-  return await this.receiverRepository.save(data);
-}
+    return await this.receiverRepository.save(data);
+  }
 
   async findAll() {
     return await this.receiverRepository.find({
@@ -56,8 +59,8 @@ export class ReceiverFinancialAccountsService {
 
     if (!senderAccount) {
       throw new NotFoundException(`Sender account with ID ${id} not found`);
-  }
-  
+    }
+
     // Actualiza el paymentMethod (si se envía)
     if (dto.paymentMethod) {
       Object.assign(senderAccount.paymentMethod, dto.paymentMethod);

@@ -8,7 +8,7 @@ import { Type } from 'class-transformer';
 import { Platform } from 'src/enum/platform.enum';
 
 export class CreatePaymentMethodDto {
- @ApiProperty({ description: 'ID de la plataforma', example: 'bank' })
+  @ApiProperty({ description: 'ID de la plataforma', example: 'bank' })
   @IsEnum(Platform)
   platformId: Platform;
 

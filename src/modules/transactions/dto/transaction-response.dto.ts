@@ -42,7 +42,7 @@ class PaymentMethodReceiverDto {
   sendMethodKey?: string;
 
   @Expose()
-  @ApiProperty({ name: 'sendMethodValue', example: '1234567890123456789012', required: false })
+  @ApiProperty({name: 'sendMethodValue',example: '1234567890123456789012',required: false,})
   sendMethodValue?: string;
 
   @Expose()
@@ -52,6 +52,38 @@ class PaymentMethodReceiverDto {
   @Expose()
   @ApiProperty({ name: 'documentValue', example: '12345678', required: false })
   documentValue?: string;
+
+  @Expose()
+  @ApiProperty({description: 'ID del banco virtual (PIX)',example: '123',required: false,})
+  pixId?: string;
+
+  @Expose()
+  @ApiProperty({description: 'Clave del PIX',example: '123',required: false,})
+  pixKey?: string;
+
+  @Expose()
+  @ApiProperty({description: 'Valor del PIX', example: '123', required: false,})
+  pixValue?: string;
+
+  @Expose()
+  @ApiProperty({ description: 'CPF (PIX)', example: '123', required: false })
+  cpf?: string;
+
+  @Expose()
+  @ApiProperty({description: 'Red (Crypto)',example: 'Ethereum',required: false,})
+  network?: string;
+
+  @Expose()
+  @ApiProperty({description: 'Wallet (Crypto)',example: '0x123...',required: false,})
+  wallet?: string;
+
+  @Expose()
+  @ApiProperty({description: 'Email de la cuenta (Virtual Bank)',example: 'nahuel@gmail.com',required: false,})
+  emailAccount?: string;
+
+  @Expose()
+  @ApiProperty({description: 'Código de transferencia (Virtual Bank)', example: '123',required: false,})
+  transferCode?: string;
 }
 
 class AccountSenderDto {
@@ -177,56 +209,101 @@ export class TransactionResponseDto {
   @ApiProperty({ name: 'amount', type: AmountResponseDto })
   amount: AmountResponseDto;
 }
-
+ 
+export class TransactionGetByIdDto extends TransactionResponseDto {
+  @Expose()
+  @ApiProperty({ example: false })
+  isNoteVerified: boolean;
+}
 export class PaymentMethodGetReceiverDto {
   // Bank
-  @ApiProperty({ description: 'ID del método de pago (Bank)', example: '75e91e4b-a6dd-43b8-a386-0bf5a336957b', required: false })
+  @ApiProperty({
+    description: 'ID del método de pago (Bank)',
+    example: '75e91e4b-a6dd-43b8-a386-0bf5a336957b',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   id?: string;
 
-  @ApiProperty({ description: 'ID de la plataforma (Bank)', example: 'bank', required: false })
+  @ApiProperty({
+    description: 'ID de la plataforma (Bank)',
+    example: 'bank',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   platformId?: string;
 
-  @ApiProperty({ description: 'Método (Bank, PIX, Crypto, VirtualBank)', example: 'bank', required: false })
+  @ApiProperty({
+    description: 'Método (Bank, PIX, Crypto, VirtualBank)',
+    example: 'bank',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   method?: string;
 
-  @ApiProperty({ description: 'Moneda (Bank, Crypto, VirtualBank)', example: 'ARS', required: false })
+  @ApiProperty({
+    description: 'Moneda (Bank, Crypto, VirtualBank)',
+    example: 'ARS',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   currency?: string;
 
-  @ApiProperty({ description: 'Nombre del banco (Bank)', example: 'Banco Galicia', required: false })
+  @ApiProperty({
+    description: 'Nombre del banco (Bank)',
+    example: 'Banco Galicia',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   bankName?: string;
 
-  @ApiProperty({ description: 'Clave de envío (CBU, alias, PIX)', example: 'CBU', required: false })
+  @ApiProperty({
+    description: 'Clave de envío (CBU, alias, PIX)',
+    example: 'CBU',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   sendMethodKey?: string;
 
-  @ApiProperty({ description: 'Valor de la clave de envío', example: '1234567890123456789012', required: false })
+  @ApiProperty({
+    description: 'Valor de la clave de envío',
+    example: '1234567890123456789012',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   sendMethodValue?: string;
 
   // PIX
-  @ApiProperty({ description: 'ID del banco virtual (PIX)', example: '123', required: false })
+  @ApiProperty({
+    description: 'ID del banco virtual (PIX)',
+    example: '123',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   pixId?: string;
 
-  @ApiProperty({ description: 'Clave del PIX', example: '123', required: false })
+  @ApiProperty({
+    description: 'Clave del PIX',
+    example: '123',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   pixKey?: string;
 
-  @ApiProperty({ description: 'Valor del PIX', example: '123', required: false })
+  @ApiProperty({
+    description: 'Valor del PIX',
+    example: '123',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   pixValue?: string;
@@ -237,28 +314,43 @@ export class PaymentMethodGetReceiverDto {
   cpf?: string;
 
   // Crypto
-  @ApiProperty({ description: 'Red (Crypto)', example: 'Ethereum', required: false })
+  @ApiProperty({
+    description: 'Red (Crypto)',
+    example: 'Ethereum',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   network?: string;
 
-  @ApiProperty({ description: 'Wallet (Crypto)', example: '0x123...', required: false })
+  @ApiProperty({
+    description: 'Wallet (Crypto)',
+    example: '0x123...',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   wallet?: string;
 
   // Virtual Bank
-  @ApiProperty({ description: 'Email de la cuenta (Virtual Bank)', example: 'nahuel@gmail.com', required: false })
+  @ApiProperty({
+    description: 'Email de la cuenta (Virtual Bank)',
+    example: 'nahuel@gmail.com',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   emailAccount?: string;
 
-  @ApiProperty({ description: 'Código de transferencia (Virtual Bank)', example: '123', required: false })
+  @ApiProperty({
+    description: 'Código de transferencia (Virtual Bank)',
+    example: '123',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   transferCode?: string;
 }
-
 
 export class SenderAccountDto {
   @ApiProperty({ example: '47964345-930b-4eec-b221-42ad423ac760' })
@@ -286,7 +378,9 @@ export class ProofOfPaymentDto {
   @ApiProperty({ example: '6d238f0a-3eab-4dc2-94cb-c9a833261a55' })
   id: string;
 
-  @ApiProperty({ example: 'https://res.cloudinary.com/dy1jiclwg/image/upload/...png' })
+  @ApiProperty({
+    example: 'https://res.cloudinary.com/dy1jiclwg/image/upload/...png',
+  })
   imgUrl: string;
 }
 

@@ -17,22 +17,18 @@ export class FinancialAccountsService {
   ) {}
 
   async create(createFinancialAccountDto: CreateFinancialAccountDto) {
-  const { senderAccount, receiverAccount } = createFinancialAccountDto;
+    const { senderAccount, receiverAccount } = createFinancialAccountDto;
 
-  // Crear el receiver (igual puedes incluir email y phone si quieres)
-  const receiver = await this.receiverService.create(receiverAccount);
+    // Crear el receiver (igual puedes incluir email y phone si quieres)
+    const receiver = await this.receiverService.create(receiverAccount);
 
-  // Crear el sender, asegurándote de que se guarden email y phoneNumber
-  const sender = await this.senderService.create(senderAccount);
+    // Crear el sender, asegurándote de que se guarden email y phoneNumber
+    const sender = await this.senderService.create(senderAccount);
 
-  const { createdBy, phoneNumber, ...senderClean } = sender;
- 
+    const { createdBy, phoneNumber, ...senderClean } = sender;
 
-  return { sender: senderClean, receiver };
-
-
-}
-
+    return { sender: senderClean, receiver };
+  }
 
   async findAllReceiver() {
     return await this.receiverService.findAll();

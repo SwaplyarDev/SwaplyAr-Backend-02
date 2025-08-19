@@ -30,12 +30,11 @@ export class RegretsController {
     schema: {
       example: {
         id: 'uuid',
-        transaction_id: '123',
+        transaction_id: 'ZrzUcnGWWr',
         last_name: 'Davila',
         email: 'nahuel@gmail.com',
-        phone_number: '1234567890',
-        status: 'pending',
-        note: 'Nota de prueba',
+        phone_number: '+1234567890',
+        description: 'Nota de prueba',
       },
     },
   })
@@ -46,12 +45,11 @@ export class RegretsController {
       ejemplo1: {
         summary: 'Ejemplo de request',
         value: {
-          transaction_id: '123',
+          transaction_id: 'ZrzUcnGWWr',
           last_name: 'Davila',
           email: 'nahuel@gmail.com',
-          phone_number: '1234567890',
-          status: 'pending',
-          note: 'Nota de prueba',
+          phone_number: '+1234567890',
+          description: 'Descripción de prueba',
         },
       },
     },
@@ -69,7 +67,7 @@ export class RegretsController {
       example: [
         {
           id: 'uuid',
-          transaction_id: '123',
+          transaction_id: 'ZrzUcnGWWr',
           last_name: 'Davila',
           email: 'nahuel@gmail.com',
           phone_number: '1234567890',
@@ -94,7 +92,6 @@ export class RegretsController {
         last_name: 'Davila',
         email: 'nahuel@gmail.com',
         phone_number: '1234567890',
-        status: 'pending',
         note: 'Nota de prueba',
       },
     },

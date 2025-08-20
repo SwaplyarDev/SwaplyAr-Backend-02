@@ -57,37 +57,34 @@ export class OtpService {
     });
   }
 
-async sendOtpForTransaction(transactionId: string) {
-  // 1. Buscar la transacción con la relación senderAccount
-  const transaction = await this.transactionRepo.findOne({
-    where: { id: transactionId },
-    relations: ['senderAccount'], // <- aquí incluimos senderAccount
-  });
+  async sendOtpForTransaction(transactionId: string) {
+    // 1. Buscar la transacción con la relación senderAccount
+    const transaction = await this.transactionRepo.findOne({
+      where: { id: transactionId },
+      relations: ['senderAccount'], // <- aquí incluimos senderAccount
+    });
 
-  // 2. Validar que exista transacción y email del remitente
-  if (!transaction) {
-    throw new BadRequestException('Transacción no encontrada');
+    // 2. Validar que exista transacción y email del remitente
+    if (!transaction) {
+      throw new BadRequestException('Transacción no encontrada');
+    }
+    if (!transaction.senderAccount?.createdBy) {
+      throw new BadRequestException('Transacción sin email');
+    }
+
+    const email = transaction.senderAccount.createdBy;
+
+    // 3. Crear OTP
+    const otp = await this.createOtpForTransaction(transactionId, email);
+
+    // 4. Enviar correo
+    await this.mailer.sendAuthCodeMail(email, {
+      NAME: email,
+      VERIFICATION_CODE: otp.code,
+      BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
+      EXPIRATION_MINUTES: 5,
+    });
   }
-  if (!transaction.senderAccount?.createdBy) {
-    throw new BadRequestException('Transacción sin email');
-  }
-
-  const email = transaction.senderAccount.createdBy;
-
-  // 3. Crear OTP
-  const otp = await this.createOtpForTransaction(transactionId, email);
-
-  // 4. Enviar correo
-  await this.mailer.sendAuthCodeMail(email, {
-    NAME: email,
-    VERIFICATION_CODE: otp.code,
-    BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
-    EXPIRATION_MINUTES: 5,
-  });
-
-}
-
-
 
   async validateOtpAndGetUser(email: string, code: string): Promise<User> {
     const user = await this.userRepo.findOne({
@@ -109,17 +106,20 @@ async sendOtpForTransaction(transactionId: string) {
     return user;
   }
 
-  async validateOtpForTransaction(transactionId: string, code: string): Promise<boolean> {
-  const otp = await this.otpRepo.findOne({
-    where: { transactionId, code: code.trim(), isUsed: false },
-  });
-  if (!otp || otp.expiryDate < new Date()) {
-    return false;
+  async validateOtpForTransaction(
+    transactionId: string,
+    code: string,
+  ): Promise<boolean> {
+    const otp = await this.otpRepo.findOne({
+      where: { transactionId, code: code.trim(), isUsed: false },
+    });
+    if (!otp || otp.expiryDate < new Date()) {
+      return false;
+    }
+    otp.isUsed = true;
+    await this.otpRepo.save(otp);
+    return true;
   }
-  otp.isUsed = true;
-  await this.otpRepo.save(otp);
-  return true;
-}
 
   private async createOtpFor(user: User): Promise<OtpCode> {
     const code = generate(6, {
@@ -136,16 +136,23 @@ async sendOtpForTransaction(transactionId: string) {
     return this.otpRepo.save(otp);
   }
 
-  private async createOtpForTransaction(transactionId: string, email: string): Promise<OtpCode> {
-  const code = generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false }).trim();
-  const otp = this.otpRepo.create({
-    transactionId,
-    email,
-    code,
-    expiryDate: new Date(Date.now() + 10 * 60 * 1000), // 10 min
-  });
-  return this.otpRepo.save(otp);
-}
+  private async createOtpForTransaction(
+    transactionId: string,
+    email: string,
+  ): Promise<OtpCode> {
+    const code = generate(6, {
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+      specialChars: false,
+    }).trim();
+    const otp = this.otpRepo.create({
+      transactionId,
+      email,
+      code,
+      expiryDate: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+    });
+    return this.otpRepo.save(otp);
+  }
 
   async generateAndSendOtp(user: User): Promise<void> {
     const otp = await this.createOtpFor(user);

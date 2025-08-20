@@ -66,12 +66,10 @@ export class NotesController {
     const { transactionId } = dto;
     await this.otpService.sendOtpForTransaction(transactionId);
 
-  return {
-    message: 'Código enviado con éxito al correo asociado.',
-    code_sent: true,
-  };
-
-
+    return {
+      message: 'Código enviado con éxito al correo asociado.',
+      code_sent: true,
+    };
   }
 
   @ApiOperation({ summary: 'Verifica el código OTP para una transacción' })

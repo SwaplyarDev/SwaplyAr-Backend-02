@@ -14,6 +14,8 @@ import {
   ForbiddenException,
   NotFoundException,
   InternalServerErrorException,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -373,29 +375,29 @@ export class TransactionsController {
     status: 403,
     description: '❌ Acceso prohibido. El acceso es solo para Usuarios.',
   })
-  async findAll(
-    @Req() req: RequestWithUser,
-    @Query('page') page: string = '1',
-    @Query('pageSize') pageSize: string = '10',
-  ): Promise<{
-    data: TransactionGetResponseDto[];
-    pagination: {
-      page: number;
-      pageSize: number;
-      totalItems: number;
-      totalPages: number;
-    };
-  }> {
-    const pageNumber = parseInt(page, 10);
-    const pageSizeNumber = parseInt(pageSize, 10);
-    const email = req.user.email;
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number, example: 10 })
+async findAll(
+  @Req() req: RequestWithUser,
+  @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+  @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
+): Promise<{
+  data: TransactionGetResponseDto[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+  };
+}> {
+  const email = req.user.email;
 
-    return await this.transactionsService.findAllUserEmail(
-      email,
-      pageNumber,
-      pageSizeNumber,
-    );
-  }
+  return await this.transactionsService.findAllUserEmail(
+    email,
+    page,
+    pageSize,
+  );
+}
 
   // Obtener transacción por ID con autorización
   @Get(':transaction_id')

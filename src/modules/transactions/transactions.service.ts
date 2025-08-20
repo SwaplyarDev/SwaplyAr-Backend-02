@@ -306,6 +306,8 @@ export class TransactionsService {
           id: tx.senderAccount.id,
           firstName: tx.senderAccount.firstName,
           lastName: tx.senderAccount.lastName,
+          createdBy: tx.senderAccount.createdBy,
+          phoneNumber: tx.senderAccount.phoneNumber,
           paymentMethod: senderPaymentMethod,
         },
         receiverAccount: {

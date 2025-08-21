@@ -211,7 +211,7 @@ export class DiscountService {
     userRole?: string,
   ): Promise<UserDiscount> {
     const ud = await this.userDiscountRepo.findOne({
-      where: { user: { id } },
+      where: { id },
       relations: ['user', 'discountCode', 'transaction'],
     });
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');

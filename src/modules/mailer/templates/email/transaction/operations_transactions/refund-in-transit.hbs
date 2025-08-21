@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Transacción en Camino</title>
+    <title>Reembolso en Camino</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -20,7 +20,7 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       }
       .blue-border {
-        border: 5px solid #012d8a;
+        border: 5px solid #c0392b;
         width: 75%;
         margin: 0 auto;
       }
@@ -54,7 +54,7 @@
       }
       .content h3 {
         font-size: 19px;
-        color: #012d8a;
+        color: #c0392b;
         margin: 10px 0;
       }
       .details {
@@ -83,16 +83,16 @@
       .button {
         display: inline-block;
         padding: 10px 20px;
-        background-color: #012d8a;
+        background-color: #c0392b;
         color: white;
         text-decoration: none;
         border-radius: 5px;
         font-size: 16px;
-        margin: 10px 5px;
+        margin: 10px 0;
         transition: background-color 0.3s ease;
       }
       .button:hover {
-        background-color: #0056b3;
+        background-color: #922b21;
       }
       .footer {
         text-align: center;
@@ -120,73 +120,58 @@
       <div class="blue-border"></div>
       <div class="header">
         <div class="date">
-          Fecha de Solicitud
-          <br />{{DATE}}
+          Fecha del Reembolso<br />{{DATE}}
         </div>
-        <img
-          src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png"
-          alt="SwaplyAr Logotipo"
-          class="logo"
-        />
+        <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png"
+          alt="SwaplyAr Logotipo" class="logo" />
       </div>
       <div class="content">
-        <img
-          src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725225314/rewards1_hme3sh.png"
-          alt="Personaje"
-          class="img-center"
-        />
-        <h2>Tu transferencia va en camino</h2>
+        <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725225314/rewards1_hme3sh.png"
+          alt="Personaje" class="img-center" />
+        <h2>Tu reembolso está en camino 💸</h2>
         <h3>
-          Número de referencia
-          <br />{{REFERENCE_NUMBER}}
+          Número de referencia<br />{{REFERENCE_NUMBER}}
         </h3>
         <div class="details">
-          <p>
-            <strong>Destinatario:</strong>
-            <span class="variable">{{NAME}} {{LAST_NAME}}</span>
-          </p>
-          <p>DNI / CUIL: <span class="variable">{{DOCUMENT_NUMBER}}</span></p>
-          <p>
-            Monto enviado:
-            <span class="variable">$ {{MONEY_SENT}} {{SENT_CURRENCY}}</span>
-          </p>
-          <p>
-            Monto a recibir:
-            <span class="variable">{{MONEY_RECEIVED}} {{RECEIVED_CURRENCY}}</span>
-          </p>
-          <p>
-            Método de recepción:
-            <span class="variable">{{PAYMENT_METHOD}}</span>
-          </p>
-          <p>
-            CBU / ALIAS: <span class="variable">{{PAYMENT_METHOD_NUMBER}}</span>
-          </p>
+          <p><strong>Titular:</strong> <span class="variable">{{SENDER_NAME}} {{SENDER_LASTNAME}}</span></p>
+          <p>Monto a reembolsar: <span class="variable">{{REFUND_AMOUNT}} {{REFUND_CURRENCY}}</span></p>
+          <p>Método de reembolso: <span class="variable">{{PAYMENT_METHOD}}</span></p>
+
+          {{#if BANK_NAME}}
+            <p>Banco: <span class="variable">{{BANK_NAME}}</span></p>
+            <p>{{SEND_METHOD_KEY}}: <span class="variable">{{SEND_METHOD_VALUE}}</span></p>
+            <p>{{DOCUMENT_TYPE}}: <span class="variable">{{DOCUMENT_VALUE}}</span></p>
+          {{/if}}
+
+          {{#if PIX_KEY}}
+            <p>Pix Key: <span class="variable">{{PIX_KEY}}</span></p>
+            <p>Valor: <span class="variable">{{PIX_VALUE}}</span></p>
+            <p>CPF: <span class="variable">{{PIX_CPF}}</span></p>
+          {{/if}}
+
+          {{#if VIRTUAL_EMAIL}}
+            <p>Email: <span class="variable">{{VIRTUAL_EMAIL}}</span></p>
+            <p>Código Transferencia: <span class="variable">{{TRANSFER_CODE}}</span></p>
+          {{/if}}
+
+          {{#if CRYPTO_WALLET}}
+            <p>Moneda: <span class="variable">{{CRYPTO_CURRENCY}}</span></p>
+            <p>Red: <span class="variable">{{CRYPTO_NETWORK}}</span></p>
+            <p>Wallet: <span class="variable">{{CRYPTO_WALLET}}</span></p>
+          {{/if}}
         </div>
-        <div>
-          <img
-            src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224926/plus-rewards-logo_b73o6i.png"
-            alt="Plus Rewards"
-            class="img-center"
-          />
-          <p>
-            Gana más dinero en futuras transacciones con nuestro programa Plus
-            Rewards
-          </p>
-          <a href="https://swaplyar.vercel.app" class="button">SwaplyAr.com</a>
-          <a href="https://swaplyar.vercel.app/info/help-center" class="button">Ayuda!</a>
-        </div>
+        <p>Estamos procesando tu reembolso. En breve verás acreditado el dinero en tu cuenta ✅</p>
+        <a href="https://swaplyar.vercel.app" class="button">Ir a SwaplyAr</a>
+        <a href="https://swaplyar.vercel.app/info/help-center" class="button">Centro de Ayuda</a>
       </div>
       <div class="footer">
         <div class="footer-links">
-          <a href="#">Contactanos</a>
+          <a href="#">Contáctanos</a>
           <a href="#">Aviso Legal</a>
         </div>
         <p>© 2024 SwaplyAr.</p>
-        <img
-          src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224752/logo-solo_dgx9c5.png"
-          alt="Footer Logotipo"
-          class="footer-logo"
-        />
+        <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224752/logo-solo_dgx9c5.png"
+          alt="Footer Logotipo" class="footer-logo" />
       </div>
       <div class="blue-border"></div>
     </div>

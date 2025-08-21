@@ -165,42 +165,52 @@ export class MailerService {
       }
 
       // Templates mapping...
-      const statusTemplates: Partial<
-        Record<AdminStatus, { subject: string; path: string }>
-      > = {
-        [AdminStatus.ReviewPayment]: {
-          subject: 'Transacción en Revisión de Pago',
-          path: 'review-payment.hbs',
-        },
-        [AdminStatus.Approved]: {
-          subject: 'Transacción Aprobada',
-          path: 'approved.hbs',
-        },
-        [AdminStatus.Canceled]: {
-          subject: 'Transacción Cancelada',
-          path: 'canceled.hbs',
-        },
-        [AdminStatus.Completed]: {
-          subject: 'Transacción Completada',
-          path: 'completed.hbs',
-        },
-        [AdminStatus.Discrepancy]: {
-          subject: 'Discrepancia en la Transacción',
-          path: 'discrepancy.hbs',
-        },
-        [AdminStatus.Modified]: {
-          subject: 'Transacción Modificada',
-          path: 'modified.hbs',
-        },
-        [AdminStatus.Refunded]: {
-          subject: 'Transacción Reembolsada',
-          path: 'refunded.hbs',
-        },
-        [AdminStatus.Rejected]: {
-          subject: 'Transacción Rechazada',
-          path: 'reject.hbs',
-        },
-      };
+        const statusTemplates: Record<AdminStatus, { subject: string; path: string }> = {
+      [AdminStatus.Pending]: {
+        subject: 'Transacción Pendiente',
+        path: 'pending.hbs',
+      },
+      [AdminStatus.ReviewPayment]: {
+        subject: 'Transacción en Revisión de Pago',
+        path: 'review-payment.hbs',
+      },
+      [AdminStatus.Approved]: {
+        subject: 'Transacción Aprobada',
+        path: 'approved.hbs',
+      },
+      [AdminStatus.Rejected]: {
+        subject: 'Transacción Rechazada',
+        path: 'reject.hbs',
+      },
+      [AdminStatus.RefundInTransit]: {
+        subject: 'Reembolso en Tránsito',
+        path: 'refund-in-transit.hbs',
+      },
+      [AdminStatus.InTransit]: {
+        subject: 'Transacción en Tránsito',
+        path: 'in-transit.hbs',
+      },
+      [AdminStatus.Discrepancy]: {
+        subject: 'Discrepancia en la Transacción',
+        path: 'discrepancy.hbs',
+      },
+      [AdminStatus.Canceled]: {
+        subject: 'Transacción Cancelada',
+        path: 'canceled.hbs',
+      },
+      [AdminStatus.Modified]: {
+        subject: 'Transacción Modificada',
+        path: 'modified.hbs',
+      },
+      [AdminStatus.Refunded]: {
+        subject: 'Transacción Reembolsada',
+        path: 'refunded.hbs',
+      },
+      [AdminStatus.Completed]: {
+        subject: 'Transacción Completada',
+        path: 'completed.hbs',
+      },
+    };
 
       const selected = statusTemplates[status];
       if (!selected) {
@@ -380,7 +390,7 @@ export class MailerService {
     'email',
     'transaction',
     'operations_transactions',
-    'review-payment.hbs',
+    'pending.hbs',
   );
 
   const html = this.compileTemplate(templatePath, context);
@@ -388,7 +398,7 @@ export class MailerService {
   await this.mailer.sendMail({
     from,
     to: senderEmail,
-    subject: 'Revisión de pago',
+    subject: 'Transaccion en curso',
     html,
   });
 }

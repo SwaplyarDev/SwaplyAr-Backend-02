@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,12 +9,16 @@
       margin: 0;
       padding: 0;
       background-color: #f4f4f4;
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto', sans-serif;
     }
     .blue-border {
       height: 8px;
       background-color: #012d8a;
       border-radius: 20px;
+    }
+    .info {
+      color: rgba(37, 37, 38, 1);
+      font-weight: 300;
     }
     .container {
       max-width: 500px;
@@ -25,7 +28,7 @@
       padding: 20px 20px;
     }
     .header {
-      padding: 10px;
+      padding: 0 10px;
       text-align: left;
     }
     .footer,
@@ -38,6 +41,9 @@
       padding: 5px 0;
       border-top: 1px solid rgb(92, 124, 199);
       color: black;
+    }
+    .transaction-info {
+      text-decoration: none;
     }
     .social-icons a {
       margin: 0 5px;
@@ -56,90 +62,80 @@
     }
   </style>
 </head>
-
 <body>
   <div class="container">
     <section class="blue-border"></section>
+
     <!-- Header -->
-    <div class="header" style="text-align: right; font-size: 12px; color: #9A9EA6">@{{MODIFICATION_DATE}} SwaplyAr | Group OA
+    <div class="header" style="text-align: right; font-size: 12px; color: #888">
+      @{{MODIFICATION_DATE}} SwaplyAr | Group OA
     </div>
     <div class="header">
-      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" alt="SwaplyAr Logotipo"
-        style="width: 240px; margin: 20px auto" />
+      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" 
+           alt="SwaplyAr Logotipo" style="width: 170px" />
     </div>
 
     <!-- Main Content -->
-    <div style="text-align: center">
-      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731499524/12_aqxvxm.png" alt="Persona Discrepancia"
-        style="max-width: 95%; height: auto" />
+    <div style="text-align: center; padding: 0 20px">
+      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731499523/14_yi7yeh.png" 
+           alt="Personaje" style="max-width: 95%; height: auto" />
     </div>
 
-    <div style="padding-bottom: 10px" class="info">
-      <div style="width:420px; font-size: 20px; margin: 0 auto;">
-        Solicitud <strong style="color: #012A8E; font-weight: 600; font-size: 20px;">#{{REFERENCE_NUMBER}}</strong> tiene una discrepancia
-      </div>
+    <div class="info">
+      <p style="width:420px; font-size: 20px; margin: 0 auto; text-align: center;">
+        Solicitud <strong style="color: #012A8E; font-weight: 600; font-size: 20px;">#{{REFERENCE_NUMBER}}</strong> se
+        encuentra en <br /> pausa momentánea
+      </p>
     </div>
 
-    <div class="transaction-info" style="margin: 0 auto; width:424px; padding-top: 10px">
-      <p>ID de Solicitud<span style="float: right; font-weight: 600; color: #012A8E;">#{{TRANSACTION_ID}}</span></p>
-      <p>Nombre y apellido:<span style="float: right;">{{NAME}} {{LAST_NAME}}</span></p>
+    <div class="transaction-info" style="font-size: 15px; margin: 0 auto; width:424px; padding-top: 10px">
+      <p>ID de Transacción:<span style="float: right; color:#012d8a; font-weight: 600">#{{TRANSACTION_ID}}</span></p>
+      <p>Nombre y Apellido:<span style="float: right;">{{NAME}} {{LAST_NAME}}</span></p>
       <p>N° Teléfono: <span style="float: right;">{{PHONE_NUMBER}}</span></p>
       <p>Monto Enviado:<span style="float: right;">{{AMOUNT_SENT}} {{SENT_CURRENCY}}</span></p>
-      <p>Medio de Pago<span style="float: right;">{{PAYMENT_METHOD}}</span></p>
       <p>Monto a Recibir:<span style="float: right;">{{AMOUNT_RECEIVED}} {{RECEIVED_CURRENCY}}</span></p>
-      <p style="border-bottom: 1px solid #012d8a">Destinatario: <span style="float: right;">{{RECEIVED_NAME}}</span></p>
+      <p>Medio de Pago: <span style="float: right;">{{PAYMENT_METHOD}}</span></p>
     </div>
 
-    <section style="width: 424px; text-align: justify; padding:5rem 0; margin: 0 auto;">
-      <p style="font-size: 12px; color: rgb(93, 93, 93)">
-        Hemos detectado una discrepancia en tu solicitud. Por favor, revisa los detalles y ponte en contacto con nuestro
-        equipo de soporte para resolverla lo antes posible. La discrepancia está relacionada con:
-        <br><br>
-        {{DISCREPANCY_DETAILS}}
-      </p>
+    <section style="text-align: center; width: 100%">
+      <a href="{{BASE_URL}}" style="color: white" class="cta-button">SwaplyAr.com</a>
     </section>
 
     <!-- Links -->
     <nav>
-      <table align="center" cellpadding="0" cellspacing="0" role="presentation" style="
-        border-top: 1px solid rgb(92, 124, 199);
-        font-size: 18px;
-        width: 424px;
-        padding-bottom: 5px;
-        text-align: center;
-        color: black;
-      ">
+      <table role="presentation" style="border-top: 1px solid rgb(92, 124, 199);
+                                        font-size: 18px; text-align: center;
+                                        color: black; width: 410px;">
         <tr>
-          <td align="right" style="padding-right: 20px; padding-left: 22px; padding-top: 12px">
-            <a href="{{BASE_URL}}/info/help-center" style="color: black; text-decoration: none">Contactanos</a>
+          <td style="padding-right: 20px; padding-left: 22px; padding-top: 12px">
+            <a href="{{BASE_URL}}/info/help-center" style="color: black; text-decoration: none">Contáctanos</a>
           </td>
-          <td align="center" style="
-            width: 1px;
-            background-color: rgb(92, 124, 199);
-            position: relative;
-            top: 5px;
-          "></td>
-          <td align="left" style="padding-left: 20px; padding-top: 12px">
-            <a href="{{BASE_URL}}/info/terms-and-conditions" style="color: black; text-decoration: none">Avisos
-              Legales</a>
+          <td style="width: 1px; background-color: rgb(92, 124, 199);"></td>
+          <td style="padding-left: 20px; padding-top: 12px">
+            <a href="{{BASE_URL}}/info/terms-and-conditions" style="color: black; text-decoration: none">Avisos Legales</a>
           </td>
         </tr>
       </table>
     </nav>
 
-    <!-- Footer -->
+    <section style="text-align: justify; width: 430px; margin: 0 auto; font-size: 8px; color: #888;">
+      <p style="font-size: 8px;">
+        Este mensaje puede contener información confidencial. No compartas información sobre esta transacción con terceros. 
+        Si no eres el destinatario indicado, notifícaselo al remitente de inmediato y borra este correo electrónico de tu sistema.
+      </p>
+    </section>
+
     <section>
-      <table align="center" cellpadding="0" cellspacing="0" role="presentation"
-        style="margin-top:0; text-align: center">
+      <table role="presentation" style="margin-top: 20px; text-align: center">
         <tr>
-          <td align="center" style="padding-right: 21px; padding-left: 3.5rem;">
+          <td style="padding-right: 21px; padding-left: 4rem;">
             <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1730818197/logo-solosw_b8nke4.png"
-              alt="SwaplyAr Plus Rewards" style="width: 77px; height: auto" />
+                 alt="SwaplyAr Plus Rewards" style="width: 77px; height: auto" />
           </td>
-          <td align="center" style="width: 1px; background-color: rgb(92, 124, 199)"></td>
-          <td align="center" style="padding-left: 20px">
-            <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1739977015/1_b6ho52.png" alt="Logo Solo"
-              style="width: 141px; height: auto" />
+          <td style="width: 1px; background-color: rgb(92, 124, 199)"></td>
+          <td style="padding-left: 20px">
+            <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1739977015/1_b6ho52.png"
+                 alt="Logo Solo" style="width: 141px; height: auto" />
           </td>
         </tr>
       </table>
@@ -147,41 +143,37 @@
 
     <footer>
       <nav>
-        <table align="center" cellpadding="0" cellspacing="0" role="presentation" style="
-          width: 95%;
-          text-align: center;
-          padding-top: 10px;
-        ">
+        <table role="presentation" style="width: 95%; text-align: center; padding-top: 10px;">
           <tr>
-            <td align="center">
+            <td>
               <a href="https://www.linkedin.com/company/swaplyar/" style="text-decoration: none">
                 <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/linkedin_jhsarf.png"
-                  alt="Logo Linkedin" style="width: 28px; height: auto; margin-left: 10px" />
+                     alt="Logo Linkedin" style="width: 28px; height: auto; margin-left: 10px" />
               </a>
               <a href="https://www.instagram.com/swaplyar/" style="text-decoration: none">
                 <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330494/instagram_ihxf7s.png"
-                  alt="Logo Instagram" style="width: 28px; height: auto; margin-left: 10px" />
+                     alt="Logo Instagram" style="width: 28px; height: auto; margin-left: 10px" />
               </a>
               <a href="" style="text-decoration: none">
                 <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330493/facebook_cqn0dm.png"
-                  alt="Logo Facebook" style="width: 28px; height: auto; margin-left: 10px" />
+                     alt="Logo Facebook" style="width: 28px; height: auto; margin-left: 10px" />
               </a>
               <a href="https://api.whatsapp.com/send?phone=5491123832198" style="text-decoration: none">
                 <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/whatsapp_ji3tfh.png"
-                  alt="Logo WhatsApp" style="width: 28px; height: auto; margin-left: 10px" />
+                     alt="Logo WhatsApp" style="width: 28px; height: auto; margin-left: 10px" />
               </a>
             </td>
           </tr>
           <tr>
-            <td align="right" style="font-size: 10px; color: rgba(203, 196, 188)">
+            <td style="font-size: 10px; color: rgba(203, 196, 188)">
               {{DATE_HOUR}}
             </td>
           </tr>
         </table>
       </nav>
     </footer>
+
     <section class="blue-border"></section>
   </div>
 </body>
-
-</html> 
+</html>

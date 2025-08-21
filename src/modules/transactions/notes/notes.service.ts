@@ -34,67 +34,80 @@ export class NotesService {
   }
 
   async create(
-    transactionId: string,
-    createNoteDto: CreateNoteDto,
-    token: string,
-    file?: Express.Multer.File,
-  ) {
-    let payload: { transactionId: string };
+  transactionId: string,
+  createNoteDto: CreateNoteDto,
+  token: string,
+  file?: Express.Multer.File,
+) {
+  let payload: { transactionId: string };
 
-    try {
-      payload = this.otpService.verifyOtpToken(token);
-    } catch (err) {
-      throw new BadRequestException('Token inválido o expirado');
-    }
-
-    if (payload.transactionId !== transactionId) {
-      throw new BadRequestException(
-        'El token no corresponde a esta transacción',
-      );
-    }
-
-    const transaction = await this.transactionRepository.findOne({
-      where: { id: transactionId },
-    });
-
-    if (!transaction) {
-      throw new NotFoundException('Transacción no encontrada');
-    }
-
-    if (
-      !transaction.isNoteVerified ||
-      !transaction.noteVerificationExpiresAt ||
-      new Date() > transaction.noteVerificationExpiresAt
-    ) {
-      throw new NotFoundException(
-        'El acceso para crear nota ha expirado o no está habilitado',
-      );
-    }
-
-    let img_url: string | undefined;
-
-    if (file) {
-      try {
-        img_url = await this.cloudinaryService.uploadFile(
-          file.buffer,
-          'notes',
-          `note-${Date.now()}`,
-        );
-      } catch (error) {
-        throw new BadRequestException(
-          'Error al subir la imagen a Cloudinary: ' + error.message,
-        );
-      }
-    }
-
-    const note = this.notesRepository.create({
-      ...createNoteDto,
-      transaction,
-      img_url,
-    });
-
-    return await this.notesRepository.save(note);
+  try {
+    payload = this.otpService.verifyOtpToken(token);
+  } catch (err) {
+    throw new BadRequestException('Token inválido o expirado');
   }
+
+  if (payload.transactionId !== transactionId) {
+    throw new BadRequestException(
+      'El token no corresponde a esta transacción',
+    );
+  }
+
+  const transaction = await this.transactionRepository.findOne({
+    where: { id: transactionId },
+  });
+
+  if (!transaction) {
+    throw new NotFoundException('Transacción no encontrada');
+  }
+  if (transaction.note) {
+  throw new BadRequestException(
+    'Esta transacción ya tiene una nota asociada',
+  );
+}
+  if (
+    !transaction.isNoteVerified ||
+    !transaction.noteVerificationExpiresAt ||
+    new Date() > transaction.noteVerificationExpiresAt
+  ) {
+    throw new NotFoundException(
+      'El acceso para crear nota ha expirado o no está habilitado',
+    );
+  }
+
+  let img_url: string | undefined;
+
+  if (file) {
+    try {
+      img_url = await this.cloudinaryService.uploadFile(
+        file.buffer,
+        'notes',
+        `note-${Date.now()}`,
+      );
+    } catch (error) {
+      throw new BadRequestException(
+        'Error al subir la imagen a Cloudinary: ' + error.message,
+      );
+    }
+  }
+
+  // Crear nota
+  const note = this.notesRepository.create({
+    ...createNoteDto,
+    transaction,
+    img_url,
+  });
+
+  // Guardar nota
+  const savedNote = await this.notesRepository.save(note);
+
+  // Asociar la nota a la transacción y guardar la transacción
+  transaction.note = savedNote;
+  await this.transactionRepository.save(transaction);
+
+  return savedNote;
+}
+
 
   async findAll() {
     const notes = await this.notesRepository.find();

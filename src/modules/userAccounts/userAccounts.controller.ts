@@ -25,8 +25,6 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 
-//TODO: GET (user/accounts/:id) ,  GET (user/user:id/accounts) , GET (user/user:id/accounts/account:id),
-
 @ApiTags('Cuentas de Usuario')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -92,15 +90,15 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  /*  @Roles('user') */
+  @Roles('user')
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Request() req, @Body() dto: CreateBankAccountDto) {
     const userId = req.user.id;
+    console.log('user');
 
-    const newBank = await this.accountsService.createUserBank(
-      dto.formData,
-      dto.typeAccount,
+    const newBank = await this.accountsService.createUserBan(
+      dto.userAccValues.accountType,
       dto.userAccValues,
       userId,
     );
@@ -108,7 +106,7 @@ export class AccountsController {
     return { message: 'Banco creado correctamente', bank: newBank };
   }
 
-  //no lelva documentacion de swagger
+  //DELETE una cuenta de banco
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
@@ -129,9 +127,7 @@ export class AccountsController {
         {
           id: 'uuid',
           typeAccount: 'bank',
-          formData: {
-            /* ... */
-          },
+          formData: {},
           userAccValues: {
             first_name: 'Juan',
             last_name: 'Pérez',
@@ -145,7 +141,7 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  /*  @Roles('user') */
+  @Roles('user')
   @Get()
   async findAll(@Request() req) {
     return this.accountsService.findAllBanks(req.user.id);

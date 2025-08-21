@@ -21,11 +21,9 @@ export class UserVerification {
   @PrimaryGeneratedColumn('uuid')
   verification_id: string;
 
-  @ManyToOne(() => User, (user) => user.verifications)
+  @ManyToOne(() => User, (user) => user.verifications, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' }) //  fuerza a usar user_id como FK
   user: User;
-
-  @Column()
-  users_id: string;
 
   @Column()
   document_front: string;

@@ -20,6 +20,8 @@ import { TransactionStatus } from '../../enum/trasanction-status.enum';
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { DiscountService } from '@discounts/discounts.service';
 import { UpdateStarDto } from '@discounts/dto/update-star.dto';
+import { TransactionGetResponseDto } from '@transactions/dto/transaction-response.dto';
+import { TransactionAdminResponseDto, TransactionByIdAdminResponseDto } from './dto/get-transaction-response.dto';
 
 @Injectable()
 export class AdminService {
@@ -38,7 +40,7 @@ export class AdminService {
     private readonly discountService: DiscountService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   private convertAdminStatusToTransactionStatus(
     status: AdminStatus,
@@ -64,39 +66,160 @@ export class AdminService {
   /* -------------------------------------------------------------------------- */
   /*                                 FIND ALL                                   */
   /* -------------------------------------------------------------------------- */
-  async findAllTransactions(): Promise<Transaction[]> {
-    return await this.transactionsRepository.find({
-      relations: {
-        senderAccount: true,
-        receiverAccount: true,
-        amount: true,
-        proofOfPayment: true,
+async findAllTransactions(
+  page: number = 1,
+  perPage: number = 10,
+): Promise<{ meta: any; data: TransactionAdminResponseDto[] }> {
+  const [transactions, total] = await this.transactionsRepository.findAndCount({
+    relations: [
+      'senderAccount',
+      'senderAccount.paymentMethod',
+      'receiverAccount',
+      'receiverAccount.paymentMethod',
+      'amount',
+      'proofOfPayment',
+      'note',
+    ],
+    skip: (page - 1) * perPage,
+    take: perPage,
+  });
+
+  const data = transactions.map(tx => ({
+    id: tx.id,
+    countryTransaction: tx.countryTransaction,
+    message: tx.message,
+    createdAt: tx.createdAt.toISOString(),
+    finalStatus: tx.finalStatus,
+    senderAccount: {
+      id: tx.senderAccount.id,
+      firstName: tx.senderAccount.firstName,
+      lastName: tx.senderAccount.lastName,
+      createdBy: tx.senderAccount.createdBy,
+      phoneNumber: tx.senderAccount.phoneNumber,
+      paymentMethod: {
+        id: tx.senderAccount.paymentMethod.id,
+        platformId: tx.senderAccount.paymentMethod.platformId,
+        method: tx.senderAccount.paymentMethod.method,
       },
-    });
-  }
+    },
+    receiverAccount: {
+      id: tx.receiverAccount.id,
+      paymentMethod: tx.receiverAccount.paymentMethod,
+    },
+    note: tx.note && { note_id: tx.note.note_id },
+    proofOfPayment: tx.proofOfPayment,
+    amount: tx.amount,
+    isNoteVerified: tx.isNoteVerified,
+    noteVerificationExpiresAt: tx.noteVerificationExpiresAt
+      ? tx.noteVerificationExpiresAt.toISOString()
+      : '',
+  }));
+
+  return {
+    meta: {
+      totalPages: Math.ceil(total / perPage),
+      page,
+      perPage,
+      totalTransactions: total,
+    },
+    data,
+  };
+}
+
 
   /* -------------------------------------------------------------------------- */
   /*                         GET TRANSACTION BY ID                              */
   /* -------------------------------------------------------------------------- */
-  async getTransactionById(id: string): Promise<Transaction> {
+
+
+
+  
+async getTransactionById(id: string): Promise<Transaction> {
     const transaction = await this.transactionsRepository.findOne({
       where: { id },
       relations: [
         'senderAccount',
+        'senderAccount.paymentMethod',
         'receiverAccount',
         'receiverAccount.paymentMethod',
         'amount',
         'proofOfPayment',
+        'note',
       ],
     });
+
     if (!transaction) {
       Logger.warn(`Transacción no encontrada con ID: ${id}`);
       throw new NotFoundException('Transacción no encontrada.');
     }
+
     Logger.log(`Transacción encontrada con ID: ${id}`);
-    return transaction;
+    return transaction; // sin map ni filtrado
   }
 
+private removeNulls(obj: any): any {
+  if (obj === null || obj === undefined) return undefined;
+
+  if (Array.isArray(obj)) {
+    return obj.map(this.removeNulls).filter(v => v !== undefined);
+  }
+
+  if (typeof obj === 'object') {
+    const newObj: any = {};
+    Object.keys(obj).forEach(key => {
+      const value = this.removeNulls(obj[key]);
+      if (value !== undefined) {
+        newObj[key] = value;
+      }
+    });
+    return Object.keys(newObj).length ? newObj : undefined;
+  }
+
+  return obj;
+}
+
+
+formatTransaction(transaction: Transaction): TransactionByIdAdminResponseDto { // ⬅️ Corregido el tipo de entrada
+  const sender = transaction.senderAccount;
+  const receiver = transaction.receiverAccount;
+
+  // Manejo de la nota para evitar errores de 'undefined' y convertir la fecha
+  const formattedNote = transaction.note
+    ? {
+        note_id: transaction.note.note_id,
+        img_url: transaction.note.img_url,
+        message: transaction.note.message,
+        // Convertimos la fecha (tipo Date) a string ISO, si existe.
+        createdAt: transaction.note.createdAt?.toISOString(), 
+      }
+    : null; // Si no hay nota, el campo es nulo.
+
+  // Construimos el objeto final con todos los campos necesarios.
+  return {
+    id: transaction.id,
+    countryTransaction: transaction.countryTransaction,
+    message: transaction.message,
+    createdAt: transaction.createdAt.toISOString(),
+    finalStatus: transaction.finalStatus,
+    senderAccount: this.removeNulls({
+      id: sender.id,
+      firstName: sender.firstName,
+      lastName: sender.lastName,
+      createdBy: sender.createdBy,
+      phoneNumber: sender.phoneNumber,
+      paymentMethod: sender.paymentMethod,
+    }),
+    receiverAccount: {
+      id: receiver.id,
+      paymentMethod: receiver.paymentMethod, // Igual que arriba
+    },
+    note: formattedNote, // Usamos el objeto de nota formateado
+    proofOfPayment: transaction.proofOfPayment,
+    amount: transaction.amount,
+    isNoteVerified: transaction.isNoteVerified,
+    noteVerificationExpiresAt: transaction.noteVerificationExpiresAt?.toISOString(),
+  } as TransactionByIdAdminResponseDto;
+}
   /* -------------------------------------------------------------------------- */
   /*                        STATUS HISTORY FOR A TX                              */
   /* -------------------------------------------------------------------------- */
@@ -231,6 +354,15 @@ export class AdminService {
     );
 
     if (status === AdminStatus.Approved) {
+      // Solo cambia el estado, no asigna recompensas
+      return {
+        message: 'Estado cambiado a approved correctamente. No se asignaron recompensas.',
+        status: 200,
+        transaction: updatedTransaction,
+      };
+    }
+
+    if (status === AdminStatus.Completed) {
       console.log(transaction);
       const quantityToAdd = Number(transaction.amount.amountSent);
 
@@ -262,6 +394,11 @@ export class AdminService {
           `No se encontró usuario para la transacción ${transactionId}. No se actualizaron estrellas.`,
         );
       }
+      return {
+        message: 'Estado cambiado a completed y se asignaron recompensas.',
+        status: 200,
+        transaction: updatedTransaction,
+      };
     }
 
     if (updatedTransaction) {
@@ -269,11 +406,7 @@ export class AdminService {
     }
 
     return {
-      //message: 'Estado actualizado',
-      message:
-        status === AdminStatus.Approved
-          ? 'La transacción ha sido aprobada correctamente'
-          : 'Estado actualizado',
+      message: 'Estado actualizado',
       status,
       transaction: updatedTransaction,
     };

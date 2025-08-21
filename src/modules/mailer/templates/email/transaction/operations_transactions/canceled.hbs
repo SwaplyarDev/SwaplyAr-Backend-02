@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -14,6 +14,7 @@
       height: auto;
       color: #252526;
     }
+
     .container {
       max-width: 500px;
       margin: 0 auto;
@@ -21,30 +22,38 @@
       background-color: #ffffff;
       padding: 20px 20px;
     }
+
     .blue-border {
       height: 8px;
       background-color: #012d8a;
       border-radius: 20px;
     }
+
     .header {
       padding: 10px;
       text-align: left;
     }
+
     .info {
       padding: 10px;
       text-align: center;
       width: 424px;
     }
+
+    .footer,
+    .social-icons,
     .transaction-info p {
       margin: 0;
       padding: 20px 0;
       border-top: 1px solid rgb(92, 124, 199);
       color: black;
     }
+
     .social-icons a {
       margin: 0 5px;
       text-decoration: none;
     }
+
     .cta-button {
       text-align: center;
       display: inline-block;
@@ -62,18 +71,17 @@
 <body>
   <div class="container">
     <section class="blue-border"></section>
+
     <!-- Header -->
     <div class="header" style="text-align: right; font-size: 12px; color: #888">
       @{{MODIFICATION_DATE}} SwaplyAr | Group OA
     </div>
-    <div class="headerImage">
-      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" alt="SwaplyAr Logotipo"
-        style="width: 200px" />
+    <div class="headerImage" style="text-align: center;">
+      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" alt="SwaplyAr Logotipo" style="width: 200px;" />
     </div>
 
     <div style="text-align: center">
-      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731499524/16_h2ulhy.png" alt="Personaje"
-        style="max-width: 90%; height: auto" />
+      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731499524/16_h2ulhy.png" alt="Personaje" style="max-width: 90%; height: auto" />
     </div>
 
     <div class="info">
@@ -85,14 +93,8 @@
 
     <div style="font-size: 16px; width: 424px; margin: 0 auto; text-align: justify;">
       <p>Hola {{NAME}} {{LAST_NAME}},</p>
-      <p>Le informamos que su solicitud <strong>#{{TRANSACTION_ID}}</strong> no pudo ser procesada, ya que no cumple con
-        nuestros <a style="color: inherit; font-weight: 600; text-decoration: none;"
-          href="{{BASE_URL}}/info/terms-and-conditions">Términos y Condiciones</a> ni con nuestra <a
-          style="color: inherit; text-decoration: none; font-weight: 600" href="{{BASE_URL}}/info/help-center">Política
-          de Información</a>.</p>
-      <p>Por este motivo, ha sido rechazada en nuestro sistema y, en caso de corresponder, se
-        procederá con el reembolso a la cuenta de origen. Una vez que la transacción sea identificada en nuestro
-        sistema y el reembolso esté en proceso, recibirá una notificación por correo electrónico.</p>
+      <p>Le informamos que su solicitud <strong>#{{TRANSACTION_ID}}</strong> no pudo ser procesada, ya que no cumple con nuestros <a style="color: inherit; font-weight: 600; text-decoration: none;" href="{{BASE_URL}}/info/terms-and-conditions">Términos y Condiciones</a> ni con nuestra <a style="color: inherit; text-decoration: none; font-weight: 600;" href="{{BASE_URL}}/info/help-center">Política de Información</a>.</p>
+      <p>Por este motivo, ha sido rechazada en nuestro sistema y, en caso de corresponder, se procederá con el reembolso a la cuenta de origen. Una vez que la transacción sea identificada en nuestro sistema y el reembolso esté en proceso, recibirá una notificación por correo electrónico.</p>
       <p>Si necesita más información, no dude en ponerse en contacto con nuestro equipo de soporte.</p>
       <p>Atentamente,<br>Soporte de SwaplyAR</p>
     </div>
@@ -110,26 +112,14 @@
 
     <!-- Links -->
     <nav>
-      <table role="presentation" style="
-        border-top: 1px solid rgb(92, 124, 199);
-        font-size: 18px;
-        text-align: center;
-        color: black;
-        width: 410px;
-      ">
+      <table role="presentation" style="border-top: 1px solid rgb(92, 124, 199); font-size: 18px; text-align: center; color: black; width: 410px;">
         <tr>
           <td style="padding-right: 20px; padding-left: 22px; padding-top: 12px">
             <a href="{{BASE_URL}}/info/help-center" style="color: black; text-decoration: none">Contactanos</a>
           </td>
-          <td style="
-            width: 1px;
-            background-color: rgb(92, 124, 199);
-            position: relative;
-            top: 5px;
-          "></td>
+          <td style="width: 1px; background-color: rgb(92, 124, 199); position: relative; top: 5px;"></td>
           <td style="padding-left: 20px; padding-top: 12px">
-            <a href="{{BASE_URL}}/info/terms-and-conditions" style="color: black; text-decoration: none">Avisos
-              Legales</a>
+            <a href="{{BASE_URL}}/info/terms-and-conditions" style="color: black; text-decoration: none">Avisos Legales</a>
           </td>
         </tr>
       </table>
@@ -145,13 +135,11 @@
       <table role="presentation" style="margin-top: 20px; text-align: center">
         <tr>
           <td style="padding-right: 21px; padding-left: 4rem;">
-            <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1730818197/logo-solosw_b8nke4.png"
-              alt="SwaplyAr Plus Rewards" style="width: 77px; height: auto" />
+            <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1730818197/logo-solosw_b8nke4.png" alt="SwaplyAr Plus Rewards" style="width: 77px; height: auto" />
           </td>
           <td style="width: 1px; background-color: rgb(92, 124, 199)"></td>
           <td style="padding-left: 20px">
-            <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1739977015/1_b6ho52.png" alt="Logo Solo"
-              style="width: 141px; height: auto" />
+            <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1739977015/1_b6ho52.png" alt="Logo Solo" style="width: 141px; height: auto" />
           </td>
         </tr>
       </table>
@@ -163,20 +151,16 @@
           <tr>
             <td>
               <a href="https://www.linkedin.com/company/swaplyar/" style="text-decoration: none">
-                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/linkedin_jhsarf.png"
-                  alt="Logo Linkedin" style="width: 28px; height: auto; margin-left: 10px" />
+                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/linkedin_jhsarf.png" alt="Logo Linkedin" style="width: 28px; height: auto; margin-left: 10px" />
               </a>
               <a href="https://www.instagram.com/swaplyar/" style="text-decoration: none">
-                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330494/instagram_ihxf7s.png"
-                  alt="Logo Instagram" style="width: 28px; height: auto; margin-left: 10px" />
+                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330494/instagram_ihxf7s.png" alt="Logo Instagram" style="width: 28px; height: auto; margin-left: 10px" />
               </a>
               <a href="" style="text-decoration: none">
-                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330493/facebook_cqn0dm.png"
-                  alt="Logo Facebook" style="width: 28px; height: auto; margin-left: 10px" />
+                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330493/facebook_cqn0dm.png" alt="Logo Facebook" style="width: 28px; height: auto; margin-left: 10px" />
               </a>
               <a href="https://api.whatsapp.com/send?phone=5491123832198" style="text-decoration: none">
-                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/whatsapp_ji3tfh.png"
-                  alt="Logo WhatsApp" style="width: 28px; height: auto; margin-left: 10px" />
+                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/whatsapp_ji3tfh.png" alt="Logo WhatsApp" style="width: 28px; height: auto; margin-left: 10px" />
               </a>
             </td>
           </tr>
@@ -188,8 +172,9 @@
         </table>
       </nav>
     </footer>
+
     <section class="blue-border"></section>
   </div>
 </body>
 
-</html> 
+</html>

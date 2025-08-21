@@ -178,10 +178,9 @@ export class DiscountsController {
   async getUserDiscountById(
     @Param('id', ParseUUIDPipe) id: string,
     @User() user: UserEntity,
-  ): Promise<DataResponse<UserDiscount>> {
-    const discount = await this.discountService.getUserDiscountById(
+  ): Promise<DataResponse<UserDiscount[]>> {
+    const discount = await this.discountService.getUserDiscountsByUserId(
       id,
-      user.id,
       user.role, // <-- rol de admin, super-admin aquí
     );
     return { data: discount };

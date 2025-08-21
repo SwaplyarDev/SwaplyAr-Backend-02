@@ -6,8 +6,10 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from '@users/entities/user.entity';
+import { UserVerificationAttempt } from './user-verification-attempt.entity';
 
 export enum VerificationStatus {
   PENDING = 'pending',
@@ -24,6 +26,9 @@ export class UserVerification {
   @ManyToOne(() => User, (user) => user.verifications, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' }) //  fuerza a usar user_id como FK
   user: User;
+
+  @OneToMany (() => UserVerificationAttempt, (attempt) => attempt.verification)
+  attempts: UserVerificationAttempt [];
 
   @Column()
   document_front: string;

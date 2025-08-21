@@ -221,29 +221,10 @@ export class UserVerificationController {
       selfie_image?: Express.Multer.File[];
     },
   ) {
-    // Validar que los tres archivos estén presentes
-    if (
-      !files.document_front?.[0] ||
-      !files.document_back?.[0] ||
-      !files.selfie_image?.[0]
-    ) {
-      throw new BadRequestException(
-        'Se requieren tres imágenes: frente y reverso del documento, y selfie',
-      );
-    }
 
     const userId = req.user.id;
-    const verification = await this.verificationService.reupload(userId, files);
+    return this.verificationService.reupload (userId, files);
 
-    return {
-      success: true,
-      message:
-        'Imágenes de verificación re-subidas correctamente. Su verificación está nuevamente pendiente de revisión.',
-      data: {
-        verification_id: verification.verification_id,
-        status: verification.verification_status,
-      },
-    };
   }
 
   @Get('admin/list')

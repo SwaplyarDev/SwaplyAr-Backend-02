@@ -65,8 +65,8 @@ export class UserAccValuesDto {
 
   // pix
   @IsOptional()
-  @IsNumber()
-  cpf: number;
+  @IsString()
+  cpf: string;
   @IsOptional()
   @IsString()
   pix_value: string;

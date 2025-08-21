@@ -49,7 +49,6 @@ export class AccountsService {
       // busca un tipo de cuenta para poder registrarla en una tabla
       // ejemplo: si es igual a virtual_bank la busca en la tabla y crea una nueva
       let specificAccount;
-      console.log('accountType', accountType);
 
       // crea una cuenta de banco
       if (accountType === Platform.Bank) {

@@ -18,8 +18,8 @@ export class UserPix {
   @Column({ name: 'pix_value' })
   pix_value: string;
 
-  @Column()
-  cpf: number;
+  @Column({ type: 'char', length: 11 })
+  cpf: string;
 
   // 👇 agregamos la FK como propiedad explícita
   @Column({ name: 'account_id' })

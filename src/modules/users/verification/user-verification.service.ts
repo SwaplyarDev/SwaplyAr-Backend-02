@@ -59,23 +59,17 @@ export class UserVerificationService {
     });
 
     if (existingVerification) {
-
       return {
-
         success: true,
         message:
           'Ya existe una solicitud pendiente. Puede reintentar sin problemas.',
 
         data: {
-
           verification_id: existingVerification.verification_id,
           verification_status: existingVerification.verification_status,
-
         },
-
       };
-
-   }
+    }
 
     const folder = 'SwaplyAr/admin/user_verification';
 
@@ -106,29 +100,26 @@ export class UserVerificationService {
       verification_status: VerificationStatus.PENDING,
     });
 
-    const savedVerification = await this.userVerificationRepository.save(verification);
+    const savedVerification =
+      await this.userVerificationRepository.save(verification);
 
     return {
-
       success: true,
-      message: 'Imágenes de verificación subidas correctamente. Su verificación está pendiente de revisión.',
+      message:
+        'Imágenes de verificación subidas correctamente. Su verificación está pendiente de revisión.',
 
       data: {
-
         verification_id: savedVerification.verification_id,
         verification_status: savedVerification.verification_status,
-
       },
-
     };
-
   }
 
   async findByUserId(userId: string): Promise<UserVerification> {
     const verification = await this.userVerificationRepository.findOne({
       where: { user: { id: userId } },
       order: { created_at: 'DESC' },
-      });
+    });
 
     if (!verification) {
       throw new NotFoundException(

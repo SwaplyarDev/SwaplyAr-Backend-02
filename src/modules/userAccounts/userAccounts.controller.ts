@@ -106,7 +106,6 @@ export class AccountsController {
   }
 
   //DELETE una cuenta de banco
-
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @Delete()

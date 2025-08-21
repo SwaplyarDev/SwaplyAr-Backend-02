@@ -11,6 +11,7 @@ import {
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
+import { AdminStatus } from 'src/enum/admin-status.enum';
 import { MailerService } from '@mailer/mailer.service';
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
@@ -43,7 +44,7 @@ export class TransactionsService {
   async getPublicStatusHistory(
     id: string,
     lastName: string,
-  ): Promise<UserStatusHistoryResponse[]> {
+  ): Promise<{ status: string; message: string } | { status: string; history: UserStatusHistoryResponse[] }> {
     console.log(
       `Buscando historial para transaction_id: ${id} y lastName: ${lastName}`,
     );
@@ -76,26 +77,46 @@ export class TransactionsService {
       if (senderLastNameNormalized !== lastNameNormalized) {
         throw new UnauthorizedException('Apellido inválido.');
       }
+      const statusHistoryEntities = await this.statusLogRepository
+      .createQueryBuilder('statusLog')
+      .leftJoin('statusLog.transaction', 'transaction')
+      .where('transaction.transaction_id = :id', { id })
+      .orderBy('statusLog.changedAt', 'ASC')
+      .getMany();
 
-      const statusHistory = await this.statusLogRepository
-        .createQueryBuilder('statusLog')
-        .leftJoin('statusLog.transaction', 'transaction')
-        .where('transaction.transaction_id = :id', { id })
-        .orderBy('statusLog.changedAt', 'DESC')
-        .getMany();
-
-      if (!statusHistory.length) {
-        throw new NotFoundException(
-          'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
-        );
-      }
-
-      return statusHistory.map((log) => ({
+      // Mapear historial a la respuesta esperada
+      const history: UserStatusHistoryResponse[] = statusHistoryEntities.map((log) => ({
         id: log.id,
         status: log.status,
         changedAt: log.changedAt,
         message: log.message,
       }));
+
+      // Si el historial no incluye 'pending', lo agregamos manualmente al inicio
+      if (!history.length || history[0].status !== 'pending') {
+        history.unshift({
+          id: '',
+          status: AdminStatus.Pending,
+          changedAt: transaction.createdAt,
+          message: 'Transacción creada',
+        });
+      }
+
+      // Si no hay historial de cambios, solo retorna el estado actual y mensaje
+      if (history.length === 1 && history[0].status === 'pending') {
+        return {
+          status: transaction.finalStatus,
+          message: 'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
+          history,
+        };
+      }
+
+      // Si hay historial, retorna estado actual y el historial completo
+      return {
+        status: transaction.finalStatus,
+        history,
+      };
+
     } catch (error) {
       console.error('Error en getPublicStatusHistory:', error);
       throw error;
@@ -306,6 +327,8 @@ export class TransactionsService {
           id: tx.senderAccount.id,
           firstName: tx.senderAccount.firstName,
           lastName: tx.senderAccount.lastName,
+          createdBy: tx.senderAccount.createdBy,
+          phoneNumber: tx.senderAccount.phoneNumber,
           paymentMethod: senderPaymentMethod,
         },
         receiverAccount: {

@@ -99,6 +99,8 @@ export class NotesController {
       },
     },
   })
+
+  // VERIFICA EL CODIGO OTP PARA UNA TRANSACCIÓN
   @Post('verify-code')
   async verifyNoteCode(@Body() dto: ValidateNoteCodeDto) {
     const transaction = await this.transactionsService.findOne(

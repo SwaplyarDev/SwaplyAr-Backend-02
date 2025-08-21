@@ -107,17 +107,26 @@ export class OtpService {
   }
 
   async validateOtpForTransaction(
-    transactionId: string,
+    email: string,
     code: string,
   ): Promise<boolean> {
+    // Buscar OTP por email y código
     const otp = await this.otpRepo.findOne({
-      where: { transactionId, code: code.trim(), isUsed: false },
+      where: { email, code, isUsed: false },
     });
-    if (!otp || otp.expiryDate < new Date()) {
+
+    // OTP no encontrado o ya usado'
+    if (!otp) {
       return false;
     }
+    // OTP expirado
+    if (otp.expiryDate < new Date()) {
+      return false;
+    }
+    // set OTP como usado para evitar reutilización
     otp.isUsed = true;
     await this.otpRepo.save(otp);
+
     return true;
   }
 

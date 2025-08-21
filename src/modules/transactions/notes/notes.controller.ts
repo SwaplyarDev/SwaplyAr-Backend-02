@@ -12,6 +12,7 @@ import {
   BadRequestException,
   UploadedFile,
   UseInterceptors,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Req } from '@nestjs/common';
 import { NotesService } from './notes.service';
@@ -105,14 +106,7 @@ export class NotesController {
   async verifyNoteCode(@Body() dto: ValidateNoteCodeDto) {
     const transaction = await this.transactionsService.findOne(
       dto.transaction_id,
-      {
-        relations: [
-          'senderAccount',
-          'receiverAccount',
-          'receiverAccount.paymentMethod',
-          'amount',
-        ],
-      },
+      { relations: ['senderAccount', 'receiverAccount', 'amount'] },
     );
 
     if (!transaction) {
@@ -125,12 +119,27 @@ export class NotesController {
       throw new BadRequestException('Email no asociado a la transacción');
     }
 
-    await this.otpService.validateOtpForTransaction(email, dto.code);
+    const isValidOtp = await this.otpService.validateOtpForTransaction(
+      email,
+      dto.code,
+    );
+
+    if (!isValidOtp) {
+      throw new UnauthorizedException('Código OTP inválido o expirado');
+    }
+
+    // Solo marcar como verificada después de validar OTP
     await this.notesService.markTransactionAsVerified(dto.transaction_id);
+
+    // Generar token para acceder a la nota
     const accessToken = this.otpService.generateOtpToken(dto.transaction_id);
 
     return {
-      transaction,
+      transactionId: transaction.id,
+      senderName: transaction.senderAccount.firstName,
+      receiverName: transaction.receiverAccount.firstName,
+      amountSent: transaction.amount.amountSent,
+      currency: transaction.amount.currencySent,
       noteAccessToken: accessToken,
       expiresIn: '5m',
     };

@@ -95,7 +95,6 @@ export class AccountsController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Request() req, @Body() dto: CreateBankAccountDto) {
     const userId = req.user.id;
-    console.log('user');
 
     const newBank = await this.accountsService.createUserBan(
       dto.userAccValues.accountType,

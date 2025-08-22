@@ -34,7 +34,7 @@ export class AccountsService {
   ) {}
 
   async createUserBan(
-    accountType: any,
+    accountType: Platform,
     userAccValues: UserAccValuesDto,
     userId: string,
   ) {

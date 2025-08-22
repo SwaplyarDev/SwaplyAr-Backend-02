@@ -66,7 +66,6 @@ async sendOtpForTransaction(transactionId: string) {
     relations: ['senderAccount'], // <- aquí incluimos senderAccount
   });
 
-  // 2. Validar que exista transacción y email del remitente
   if (!transaction) {
     throw new BadRequestException('Transacción no encontrada');
   }
@@ -76,10 +75,8 @@ async sendOtpForTransaction(transactionId: string) {
 
   const email = transaction.senderAccount.createdBy;
 
-  // 3. Crear OTP
   const otp = await this.createOtpForTransaction(transactionId, email);
 
-  // 4. Enviar correo
   await this.mailer.sendAuthCodeMail(email, {
     NAME: email,
     VERIFICATION_CODE: otp.code,

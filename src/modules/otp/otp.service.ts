@@ -59,12 +59,12 @@ export class OtpService {
   );
   }
 
-async sendOtpForTransaction(transactionId: string) {
-  // 1. Buscar la transacción con la relación senderAccount
-  const transaction = await this.transactionRepo.findOne({
-    where: { id: transactionId },
-    relations: ['senderAccount'], // <- aquí incluimos senderAccount
-  });
+  async sendOtpForTransaction(transactionId: string) {
+    // 1. Buscar la transacción con la relación senderAccount
+    const transaction = await this.transactionRepo.findOne({
+      where: { id: transactionId },
+      relations: ['senderAccount'], // <- aquí incluimos senderAccount
+    });
 
   if (!transaction) {
     throw new BadRequestException('Transacción no encontrada');
@@ -73,7 +73,7 @@ async sendOtpForTransaction(transactionId: string) {
     throw new BadRequestException('Transacción sin email');
   }
 
-  const email = transaction.senderAccount.createdBy;
+    const email = transaction.senderAccount.createdBy;
 
   const otp = await this.createOtpForTransaction(transactionId, email);
 
@@ -107,17 +107,29 @@ async sendOtpForTransaction(transactionId: string) {
     return user;
   }
 
-  async validateOtpForTransaction(transactionId: string, code: string): Promise<boolean> {
-  const otp = await this.otpRepo.findOne({
-    where: { transactionId, code: code.trim(), isUsed: false },
-  });
-  if (!otp || otp.expiryDate < new Date()) {
-    return false;
+  async validateOtpForTransaction(
+    email: string,
+    code: string,
+  ): Promise<boolean> {
+    // Buscar OTP por email y código
+    const otp = await this.otpRepo.findOne({
+      where: { email, code, isUsed: false },
+    });
+
+    // OTP no encontrado o ya usado'
+    if (!otp) {
+      return false;
+    }
+    // OTP expirado
+    if (otp.expiryDate < new Date()) {
+      return false;
+    }
+    // set OTP como usado para evitar reutilización
+    otp.isUsed = true;
+    await this.otpRepo.save(otp);
+
+    return true;
   }
-  otp.isUsed = true;
-  await this.otpRepo.save(otp);
-  return true;
-}
 
   private async createOtpFor(user: User): Promise<OtpCode> {
     const code = generate(6, {
@@ -134,16 +146,23 @@ async sendOtpForTransaction(transactionId: string) {
     return this.otpRepo.save(otp);
   }
 
-  private async createOtpForTransaction(transactionId: string, email: string): Promise<OtpCode> {
-  const code = generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false }).trim();
-  const otp = this.otpRepo.create({
-    transactionId,
-    email,
-    code,
-    expiryDate: new Date(Date.now() + 10 * 60 * 1000), // 10 min
-  });
-  return this.otpRepo.save(otp);
-}
+  private async createOtpForTransaction(
+    transactionId: string,
+    email: string,
+  ): Promise<OtpCode> {
+    const code = generate(6, {
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+      specialChars: false,
+    }).trim();
+    const otp = this.otpRepo.create({
+      transactionId,
+      email,
+      code,
+      expiryDate: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+    });
+    return this.otpRepo.save(otp);
+  }
 
   async generateAndSendOtp(user: User): Promise<void> {
     const otp = await this.createOtpFor(user);

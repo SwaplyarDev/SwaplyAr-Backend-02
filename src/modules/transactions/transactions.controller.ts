@@ -340,7 +340,7 @@ export class TransactionsController {
   async getPublicStatusHistory(
     @Param('id') id: string,
     @Query('lastName') lastName: string,
-  ): Promise<UserStatusHistoryResponseDto> {
+  ): Promise<any> {
     const history = await this.transactionsService.getPublicStatusHistory(
       id,
       lastName,

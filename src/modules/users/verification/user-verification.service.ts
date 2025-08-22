@@ -14,6 +14,7 @@ import { User } from '../entities/user.entity';
 import { CloudinaryService } from '../../../service/cloudinary/cloudinary.service';
 import { DiscountService } from '@discounts/discounts.service';
 import { CreateVerificationResponseDto } from './dto/create-verification-response.dto';
+import { UserVerificationAttempt } from '@users/entities/user-verification-attempt.entity';
 
 @Injectable()
 export class UserVerificationService {
@@ -24,6 +25,10 @@ export class UserVerificationService {
     private readonly userRepository: Repository<User>,
     private readonly cloudinaryService: CloudinaryService,
     private readonly discountService: DiscountService,
+
+    @InjectRepository(UserVerificationAttempt)
+    private readonly userVerificationAttemptsRepository: Repository<UserVerificationAttempt>,
+    
   ) {}
 
   async create(
@@ -59,23 +64,17 @@ export class UserVerificationService {
     });
 
     if (existingVerification) {
-
       return {
-
         success: true,
         message:
           'Ya existe una solicitud pendiente. Puede reintentar sin problemas.',
 
         data: {
-
           verification_id: existingVerification.verification_id,
           verification_status: existingVerification.verification_status,
-
         },
-
       };
-
-   }
+    }
 
     const folder = 'SwaplyAr/admin/user_verification';
 
@@ -106,29 +105,26 @@ export class UserVerificationService {
       verification_status: VerificationStatus.PENDING,
     });
 
-    const savedVerification = await this.userVerificationRepository.save(verification);
+    const savedVerification =
+      await this.userVerificationRepository.save(verification);
 
     return {
-
       success: true,
-      message: 'Imágenes de verificación subidas correctamente. Su verificación está pendiente de revisión.',
+      message:
+        'Imágenes de verificación subidas correctamente. Su verificación está pendiente de revisión.',
 
       data: {
-
         verification_id: savedVerification.verification_id,
         verification_status: savedVerification.verification_status,
-
       },
-
     };
-
   }
 
   async findByUserId(userId: string): Promise<UserVerification> {
     const verification = await this.userVerificationRepository.findOne({
       where: { user: { id: userId } },
       order: { created_at: 'DESC' },
-      });
+    });
 
     if (!verification) {
       throw new NotFoundException(
@@ -173,7 +169,7 @@ export class UserVerificationService {
       document_back?: Express.Multer.File[];
       selfie_image?: Express.Multer.File[];
     },
-  ): Promise<UserVerification> {
+  ): Promise<CreateVerificationResponseDto> {
     // Validar archivos requeridos
     if (
       !files.document_front?.[0] ||
@@ -199,40 +195,73 @@ export class UserVerificationService {
 
     // Validar que la verificación esté en estado RESEND_DATA
     if (verification.verification_status !== VerificationStatus.RESEND_DATA) {
-      throw new BadRequestException(
-        'Solo es posible re-subir documentos si la verificación está en estado REENVÍO DE DATOS',
-      );
+
+      return {
+
+        success: true,
+        message:
+          'La verificación ya está en proceso, no es necesario volver a subir documentos.',
+
+        data: {
+
+          verification_id: verification.verification_id,
+          verification_status: verification.verification_status,
+
+        },
+
+      };
+
     }
 
     const folder = 'SwaplyAr/admin/user_verification';
+    const timestamp = Date.now ();
 
-    // Subir imágenes nuevas en paralelo
     const [frontImageUrl, backImageUrl, selfieImageUrl] = await Promise.all([
       this.cloudinaryService.uploadFile(
         files.document_front[0].buffer,
         folder,
-        `front_${userId}`,
+        `front_${userId}_${timestamp}`,
       ),
       this.cloudinaryService.uploadFile(
         files.document_back[0].buffer,
         folder,
-        `back_${userId}`,
+        `back_${userId}_${timestamp}`,
       ),
       this.cloudinaryService.uploadFile(
         files.selfie_image[0].buffer,
         folder,
-        `selfie_${userId}`,
+        `selfie_${userId}_${timestamp}`,
       ),
     ]);
 
-    // Actualizar verificación
-    verification.document_front = frontImageUrl;
-    verification.document_back = backImageUrl;
-    verification.selfie_image = selfieImageUrl;
+    await this.userVerificationAttemptsRepository.save ({
+
+      verification_id: verification.verification_id,
+      document_front: frontImageUrl,
+      document_back: backImageUrl,
+      selfie_image: selfieImageUrl,
+
+    });
+
     verification.verification_status = VerificationStatus.PENDING;
     verification.note_rejection = '';
 
-    return this.userVerificationRepository.save(verification);
+    const savedVerification = await this.userVerificationRepository.save(verification);
+
+    return {
+
+      success: true,
+      message: 'Imágenes de verificación re-subidas correctamente. Su verificación está pendiente de revisión.',
+
+      data: {
+
+        verification_id: savedVerification.verification_id,
+        verification_status: savedVerification.verification_status,
+
+      },
+
+    };
+
   }
 
   async updateStatus(

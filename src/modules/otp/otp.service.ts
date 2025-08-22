@@ -54,7 +54,9 @@ export class OtpService {
       VERIFICATION_CODE: otp.code,
       BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
       EXPIRATION_MINUTES: 15, // o el valor que uses
-    });
+    },
+    'login'
+  );
   }
 
 async sendOtpForTransaction(transactionId: string) {
@@ -83,8 +85,7 @@ async sendOtpForTransaction(transactionId: string) {
     VERIFICATION_CODE: otp.code,
     BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
     EXPIRATION_MINUTES: 5,
-  });
-
+  }); 
 }
 
 
@@ -151,11 +152,14 @@ async sendOtpForTransaction(transactionId: string) {
     const otp = await this.createOtpFor(user);
     //await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
     await this.mailer.sendAuthCodeMail(user.profile.email, {
+      ID: user.profile.id,
       NAME: user.profile.firstName || user.profile.email,
       VERIFICATION_CODE: otp.code,
       BASE_URL: process.env.BASE_URL || 'http://localhost:3001',
       EXPIRATION_MINUTES: 10,
-    });
+    },
+    'register'
+  );
   }
 
   generateOtpToken(transactionId: string): string {

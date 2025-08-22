@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bienvenido a SwaplyAr</title>
+  <title>Verificación de inicio de sesión</title>
   <style>
     body {
       margin: 0;
@@ -87,40 +87,26 @@
            alt="SwaplyAr Logotipo" 
            style="width: 180px; margin-top: 20px;" />
     </div>
-
+    
+    <div class="title">Verifica tu correo electrónico para iniciar sesión en SwaplyAr</div>
     <div class="title">Hola, {{NAME}}!</div>
 
     <div class="message">
-      Bienvenido/a a la familia de SwaplyAr. Recibí y envía dinero de cualquier billetera virtual y criptomoneda a tu cuenta bancaria, ya son miles de usuarios que están aprovechando los beneficios de usar SwaplyAr y SwaplyAr Plus Rewards
-
-      ¡Intercambia con confianza con la mejor tasa del mercado y en el menor tiempo posible!
-      Para completar tu registro, utiliza el siguiente código de verificación:
-      <h4>Verifica tu correo electrónico para iniciar sesión</h4>
+      Hemos recibido un intento de inicio de sesión.<br><br>
+      Para completar el proceso de inicio de sesión, ingresa el código de 6 dígitos en la ventana original o introdúcelo en una nueva ventana haciendo clic en el siguiente enlace:
     </div>
 
     <div class="code-box">{{VERIFICATION_CODE}}</div>
 
     <div style="text-align:center">
-      <a href="{{BASE_URL}}/auth/verify" class="cta-button">Verificar mi cuenta</a>
+      <a href="{{BASE_URL}}/auth/login-register" class="cta-button">Iniciar sesión</a>
     </div>
 
     <div class="footer">
-      Este código expirará en {{EXPIRATION_MINUTES}} minutos.<br />
-      Si no solicitaste esta cuenta, puedes ignorar este mensaje.
+      Si no intentó iniciar sesión pero recibió este correo electrónico, o si la ubicación no coincide, ignore este correo electrónico. No comparta ni reenvíe el código de 6 dígitos a nadie. Nuestro servicio de atención al cliente nunca lo solicitará. No lea este código en voz alta. Tenga cuidado con los intentos de phishing y siempre verifique el remitente y el dominio <a href="{{BASE_URL}}" style="font-weight: 600;">(swaplyar.com)</a> antes de actuar. Si le preocupa la seguridad de su cuenta, visite nuestra página de Centro de Ayuda para ponerse en contacto con nosotros.
     </div>
 
     <section class="blue-border" style="margin-top:20px;"></section>
-
-    <footer style="color: #666" class="footer">
-      <p style="color: #666">
-        Nuestro servicio de atención al cliente nunca lo solicitará. No lea este código en voz alta. Tenga cuidado con los intentos de phishing y siempre
-        verifique el remitente y el dominio <a style="font-weight: 600" href="{{BASE_URL}}">(swaplyar.com)</a> antes de
-        actuar. Si le preocupa la seguridad de su cuenta, visite nuestra página <a href="{{BASE_URL}}/info/help-center"
-          style="font-weight: 600;">de Centro de Ayuda</a> para ponerse en contacto con nosotros.
-      </p>
-    </footer>
-
-    <div class="blue-border"></div>
   </div>
 </body>
 

@@ -31,6 +31,8 @@ import { ValidateNoteCodeDto } from './dto/validate-note-code.dto';
 import { RequestNoteCodeDto } from './dto/request-note-code.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 
 @ApiTags('Notas')
 @Controller('notes')
@@ -191,14 +193,19 @@ export class NotesController {
     description: 'Token temporal devuelto por /notes/verify-code',
     required: true,
   })
+  // crea una nota
   @Post(':transactionId')
   async create(
     @Param('transactionId') transactionId: string,
     @UploadedFile() file: Express.Multer.File,
-    @Body() createNoteDto: CreateNoteDto,
+    @Body() createNoteDto: any,
     @Req() req: Request,
   ) {
     const token = req.headers['note-access-token'] as string;
+    console.log('TOKEN:', token);
+    console.log('TRANSACTION ID:', transactionId);
+    console.log('body:', createNoteDto);
+
     if (!token)
       throw new BadRequestException('Falta el header note-access-token');
 

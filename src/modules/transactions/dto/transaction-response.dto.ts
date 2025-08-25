@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { RegretDto } from '@transactions/regrets/dto/regret-response-dto';
+import { Regret } from '@transactions/regrets/entities/regrets.entity';
 import { Expose, Type } from 'class-transformer';
 import { IsEmail, IsOptional, IsString } from 'class-validator';
 
@@ -188,6 +190,16 @@ export class TransactionResponseDto {
   @Expose()
   @ApiProperty({ name: 'finalStatus', example: 'pending' })
   finalStatus: string;
+
+  @Expose()
+  @Type(() => RegretDto)
+  @ApiProperty({ type: RegretDto, required: false })
+  regret?: RegretDto;
+
+  @Expose()
+  @ApiProperty({ example: null })
+  regretId?: string | null;
+
 
   @Expose()
   @Type(() => AccountSenderDto)
@@ -418,6 +430,9 @@ export class TransactionGetResponseDto {
 
   @ApiProperty({ example: 'pending' })
   finalStatus: string;
+
+  @ApiProperty({ example: 'c7a0e81d-2a49-4d09-8120-6f02d63e1f01', nullable: true })
+  regretId?: string | null;
 
   @ApiProperty({ type: SenderAccountDto })
   senderAccount: SenderAccountDto;

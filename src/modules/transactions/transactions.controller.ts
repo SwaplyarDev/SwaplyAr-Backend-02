@@ -377,27 +377,27 @@ export class TransactionsController {
   })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'pageSize', required: false, type: Number, example: 10 })
-async findAll(
-  @Req() req: RequestWithUser,
-  @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-  @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
-): Promise<{
-  data: TransactionGetResponseDto[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    totalItems: number;
-    totalPages: number;
-  };
-}> {
-  const email = req.user.email;
+  async findAll(
+    @Req() req: RequestWithUser,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
+  ): Promise<{
+    data: TransactionGetResponseDto[];
+    pagination: {
+      page: number;
+      pageSize: number;
+      totalItems: number;
+      totalPages: number;
+    };
+  }> {
+    const email = req.user.email;
 
-  return await this.transactionsService.findAllUserEmail(
-    email,
-    page,
-    pageSize,
-  );
-}
+    return await this.transactionsService.findAllUserEmail(
+      email,
+      page,
+      pageSize,
+    );
+  }
 
   // Obtener transacción por ID con autorización
   @Get(':transaction_id')
@@ -418,8 +418,8 @@ async findAll(
     type: TransactionGetByIdDto,
   })
   @ApiUnauthorizedResponse({
-      description: 'No autorizado. Token no válido o no enviado.',
-    })
+    description: 'No autorizado. Token no válido o no enviado.',
+  })
   @ApiResponse({
     status: 403,
     description: '❌ Acceso no autorizado a la transacción',
@@ -432,7 +432,7 @@ async findAll(
     status: 500,
     description: '⚠️ Error interno del servidor',
   })
-     @Get(':transaction_id')
+  @Get(':transaction_id')
   async getTransactionByEmail(
     @Param('transaction_id') transactionId: string,
     @Request() req: RequestWithUser,
@@ -440,10 +440,11 @@ async findAll(
     const userEmail = req.user.email;
 
     try {
-      const transaction: Transaction = await this.transactionsService.getTransactionByEmail(
-        transactionId,
-        userEmail,
-      );
+      const transaction: Transaction =
+        await this.transactionsService.getTransactionByEmail(
+          transactionId,
+          userEmail,
+        );
 
       // Convierte Transaction → TransactionGetByIdDto y elimina los nulls automáticamente
       const dto = plainToInstance(TransactionGetByIdDto, transaction, {
@@ -456,10 +457,13 @@ async findAll(
         throw new ForbiddenException(error.message || 'Acceso no autorizado');
       }
       if (error instanceof NotFoundException) {
-        throw new NotFoundException(error.message || 'Transacción no encontrada');
+        throw new NotFoundException(
+          error.message || 'Transacción no encontrada',
+        );
       }
-      throw new InternalServerErrorException('Error inesperado al obtener la transacción');
+      throw new InternalServerErrorException(
+        'Error inesperado al obtener la transacción',
+      );
     }
   }
-
 }

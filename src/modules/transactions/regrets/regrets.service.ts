@@ -49,7 +49,12 @@ export class RegretsService {
     }
 
     const regret = this.regretsRepository.create(createRegretDto);
-    return await this.regretsRepository.save(regret);
+    const savedRegret = await this.regretsRepository.save(regret);
+
+    transaction.regret = savedRegret;
+    await this.transactionRepository.save(transaction);
+
+    return savedRegret;
   }
 
   findAll() {

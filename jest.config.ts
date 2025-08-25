@@ -14,6 +14,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   moduleNameMapper: {
+    '^@admin/(.*)$': '<rootDir>/src/modules/admin/$1',
     '^@auth/(.*)$': '<rootDir>/src/modules/auth/$1',
     '^@users/(.*)$': '<rootDir>/src/modules/users/$1',
     '^@transactions/(.*)$': '<rootDir>/src/modules/transactions/$1',

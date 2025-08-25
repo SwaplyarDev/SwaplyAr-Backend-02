@@ -258,6 +258,7 @@ export class TransactionsService {
         receiverAccount: { paymentMethod: true },
         proofOfPayment: true,
         amount: true,
+        regret: true,
       },
       where: { senderAccount: { createdBy } },
       skip,
@@ -323,6 +324,7 @@ export class TransactionsService {
         id: tx.id,
         createdAt: tx.createdAt.toISOString(),
         finalStatus: tx.finalStatus,
+        regretId: tx.regret ? tx.regret.id : null,
         senderAccount: {
           id: tx.senderAccount.id,
           firstName: tx.senderAccount.firstName,
@@ -370,6 +372,7 @@ export class TransactionsService {
       const transaction = await this.transactionsRepository.findOne({
         where: { id: transactionId },
         relations: {
+          regret:true,
           senderAccount: {
             paymentMethod: true,
           },

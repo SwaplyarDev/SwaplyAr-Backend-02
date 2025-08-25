@@ -79,6 +79,7 @@ async findAllTransactions(
       'amount',
       'proofOfPayment',
       'note',
+      'regret',
     ],
     skip: (page - 1) * perPage,
     take: perPage,
@@ -107,6 +108,7 @@ async findAllTransactions(
       paymentMethod: tx.receiverAccount.paymentMethod,
     },
     note: tx.note && { note_id: tx.note.note_id },
+    regret : tx.regret && { regret_id: tx.regret.id },
     proofOfPayment: tx.proofOfPayment,
     amount: tx.amount,
     isNoteVerified: tx.isNoteVerified,
@@ -144,7 +146,9 @@ async getTransactionById(id: string): Promise<Transaction> {
         'receiverAccount.paymentMethod',
         'amount',
         'proofOfPayment',
+        'regret',
         'note',
+        
       ],
     });
 

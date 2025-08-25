@@ -177,6 +177,31 @@ export class DiscountService {
     return qb.getMany();
   }
 
+/* Obtiene descuentos de un usuario específico por su user_id */
+  async getUserDiscountsByUserId(
+    id: string,
+    userRole?: string,
+  ): Promise<UserDiscount[]> {
+    const qd = this.userDiscountRepo
+      .createQueryBuilder('ud')
+      .leftJoinAndSelect('ud.user', 'user')
+      .leftJoinAndSelect('ud.discountCode', 'code')
+      .leftJoinAndSelect('ud.transaction', 'transaction')
+      .where('user.id = :id', { id });
+
+    const ud = await qd.getMany();
+
+    if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
+    if (!['admin', 'super_admin'].includes(userRole || '')
+    ) {
+      throw new ForbiddenException(
+        'No tiene permiso para acceder a este descuento',
+      );
+    }
+
+    return ud
+  }
+
   /**
    * Obtiene un descuento de usuario por ID, verifica propiedad y devuelve toda la información relevante.
    */

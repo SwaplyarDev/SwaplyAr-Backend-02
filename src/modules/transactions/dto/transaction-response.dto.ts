@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsOptional, IsString } from 'class-validator';
 
 export class PaymentMethodSenderDto {
   @Expose()
@@ -362,6 +362,13 @@ export class SenderAccountDto {
 
   @ApiProperty({ example: 'Pérez' })
   lastName: string;
+
+  @ApiProperty({ example: 'example@gmail.com' })
+  @IsEmail()
+  createdBy: string;
+ 
+  @ApiProperty({ example: 'Pérez' })
+  phoneNumber: string;
 
   @ApiProperty({ type: PaymentMethodSenderDto })
   paymentMethod: PaymentMethodSenderDto;

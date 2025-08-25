@@ -54,17 +54,18 @@ export class OtpService {
       VERIFICATION_CODE: otp.code,
       BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
       EXPIRATION_MINUTES: 15, // o el valor que uses
-    });
+    },
+    'login'
+  );
   }
 
-async sendOtpForTransaction(transactionId: string) {
-  // 1. Buscar la transacción con la relación senderAccount
-  const transaction = await this.transactionRepo.findOne({
-    where: { id: transactionId },
-    relations: ['senderAccount'], // <- aquí incluimos senderAccount
-  });
+  async sendOtpForTransaction(transactionId: string) {
+    // 1. Buscar la transacción con la relación senderAccount
+    const transaction = await this.transactionRepo.findOne({
+      where: { id: transactionId },
+      relations: ['senderAccount'], // <- aquí incluimos senderAccount
+    });
 
-  // 2. Validar que exista transacción y email del remitente
   if (!transaction) {
     throw new BadRequestException('Transacción no encontrada');
   }
@@ -72,19 +73,16 @@ async sendOtpForTransaction(transactionId: string) {
     throw new BadRequestException('Transacción sin email');
   }
 
-  const email = transaction.senderAccount.createdBy;
+    const email = transaction.senderAccount.createdBy;
 
-  // 3. Crear OTP
   const otp = await this.createOtpForTransaction(transactionId, email);
 
-  // 4. Enviar correo
   await this.mailer.sendAuthCodeMail(email, {
     NAME: email,
     VERIFICATION_CODE: otp.code,
     BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
     EXPIRATION_MINUTES: 5,
-  });
-
+  }); 
 }
 
 
@@ -109,17 +107,29 @@ async sendOtpForTransaction(transactionId: string) {
     return user;
   }
 
-  async validateOtpForTransaction(transactionId: string, code: string): Promise<boolean> {
-  const otp = await this.otpRepo.findOne({
-    where: { transactionId, code: code.trim(), isUsed: false },
-  });
-  if (!otp || otp.expiryDate < new Date()) {
-    return false;
+  async validateOtpForTransaction(
+    email: string,
+    code: string,
+  ): Promise<boolean> {
+    // Buscar OTP por email y código
+    const otp = await this.otpRepo.findOne({
+      where: { email, code, isUsed: false },
+    });
+
+    // OTP no encontrado o ya usado'
+    if (!otp) {
+      return false;
+    }
+    // OTP expirado
+    if (otp.expiryDate < new Date()) {
+      return false;
+    }
+    // set OTP como usado para evitar reutilización
+    otp.isUsed = true;
+    await this.otpRepo.save(otp);
+
+    return true;
   }
-  otp.isUsed = true;
-  await this.otpRepo.save(otp);
-  return true;
-}
 
   private async createOtpFor(user: User): Promise<OtpCode> {
     const code = generate(6, {
@@ -136,26 +146,36 @@ async sendOtpForTransaction(transactionId: string) {
     return this.otpRepo.save(otp);
   }
 
-  private async createOtpForTransaction(transactionId: string, email: string): Promise<OtpCode> {
-  const code = generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false }).trim();
-  const otp = this.otpRepo.create({
-    transactionId,
-    email,
-    code,
-    expiryDate: new Date(Date.now() + 10 * 60 * 1000), // 10 min
-  });
-  return this.otpRepo.save(otp);
-}
+  private async createOtpForTransaction(
+    transactionId: string,
+    email: string,
+  ): Promise<OtpCode> {
+    const code = generate(6, {
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+      specialChars: false,
+    }).trim();
+    const otp = this.otpRepo.create({
+      transactionId,
+      email,
+      code,
+      expiryDate: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+    });
+    return this.otpRepo.save(otp);
+  }
 
   async generateAndSendOtp(user: User): Promise<void> {
     const otp = await this.createOtpFor(user);
     //await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
     await this.mailer.sendAuthCodeMail(user.profile.email, {
+      ID: user.profile.id,
       NAME: user.profile.firstName || user.profile.email,
       VERIFICATION_CODE: otp.code,
       BASE_URL: process.env.BASE_URL || 'http://localhost:3001',
       EXPIRATION_MINUTES: 10,
-    });
+    },
+    'register'
+  );
   }
 
   generateOtpToken(transactionId: string): string {

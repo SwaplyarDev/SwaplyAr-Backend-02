@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bienvenido a SwaplyAr Plus Rewards</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 20px;
+    }
+
+    .blue-border {
+      height: 7px;
+      background-color: #012d8a;
+      width: 95%;
+      margin: 0 auto;
+      border-radius: 20px;
+    }
+
+    .title {
+      color: #252526;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 500;
+      margin-top: 20px;
+    }
+
+    .message {
+      color: #252526;
+      font-size: 16px;
+      line-height: 1.5;
+      margin-top: 20px;
+      text-align: justify;
+    }
+
+    .code-box {
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      background-color: #f1f1f1;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 20px auto;
+      color: #012d8a;
+    }
+
+    .footer {
+      font-size: 12px;
+      color: #777;
+      text-align: center;
+      margin-top: 30px;
+      line-height: 1.5;
+    }
+
+    a {
+      color: #012d8a;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <section class="blue-border"></section>
+
+    <div class="title">Hola, {{NAME}}</div>
+
+    <div class="message">
+      Bienvenido al programa de <strong>SwaplyAr Plus Rewards</strong>. Obtienes recompensas por las transacciones realizadas, mientras más transacciones realizas ¡más beneficios obtienes!
+    </div>
+
+    <div class="code-box">Código de Membresía: {{ID}}</div>
+
+    <div class="message">
+      Descubre todos los beneficios de nuestro programa de fidelización visitando nuestra página web. En la sección <strong>Programa de Fidelización</strong>, encontrarás información detallada sobre las recompensas, beneficios exclusivos y cómo aprovechar al máximo tu experiencia con nosotros.
+      <br/><br/>
+      Si tienes alguna pregunta o necesitas asistencia adicional, nuestro equipo de atención al cliente estará siempre disponible para ayudarte. No dudes en ponerte en contacto con nosotros para recibir el soporte que necesites.
+    </div>
+
+    <div style="text-align:center; margin-top: 20px;">
+      <a href="{{BASE_URL}}">SwaplyAr.com</a>
+    </div>
+
+    <div class="footer">
+      Centro de Ayuda | <a href="{{PRIVACY_URL}}">Política y Privacidad</a>
+      <br/><br/>
+      Este mensaje puede contener información confidencial. No compartas información sobre esta transacción con terceros. Si no eres el destinatario indicado, notifícaselo al remitente de inmediato y borra este correo electrónico de tu sistema.
+    </div>
+
+    <section class="blue-border" style="margin-top:20px;"></section>
+  </div>
+</body>
+</html>

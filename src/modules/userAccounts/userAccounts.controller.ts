@@ -90,12 +90,11 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
+  /*   @Roles('user') */
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Request() req, @Body() dto: CreateBankAccountDto) {
     const userId = req.user.id;
-    console.log('user');
 
     const newBank = await this.accountsService.createUserBan(
       dto.userAccValues.accountType,
@@ -107,7 +106,6 @@ export class AccountsController {
   }
 
   //DELETE una cuenta de banco
-
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @Delete()
@@ -140,14 +138,14 @@ export class AccountsController {
       ],
     },
   })
+  // Obtener todas las cuentas de banco de un user
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
+  /*   @Roles('user') */
   @Get()
   async findAll(@Request() req) {
     return this.accountsService.findAllBanks(req.user.id);
   }
 
-  // Obtener todas las cuentas de banco de un user
   @ApiOperation({
     summary: 'Obtener todas las cuentas del usuario autenticado',
   })

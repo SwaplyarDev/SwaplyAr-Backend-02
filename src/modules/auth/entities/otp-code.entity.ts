@@ -12,7 +12,10 @@ export class OtpCode {
   @PrimaryGeneratedColumn('uuid', { name: 'otp_code_id' })
   id: string;
 
-  @ManyToOne(() => User, (user) => user.otpCodes, { onDelete: 'CASCADE', nullable: true })
+  @ManyToOne(() => User, (user) => user.otpCodes, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
   @JoinColumn({ name: 'user_id' })
   user?: User;
 
@@ -29,5 +32,5 @@ export class OtpCode {
   isUsed: boolean;
 
   @Column({ name: 'email', nullable: true })
-  email?: string; 
+  email?: string;
 }

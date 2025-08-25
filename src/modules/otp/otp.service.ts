@@ -10,7 +10,7 @@ import { User } from '@users/entities/user.entity';
 import { MailerService } from '@mailer/mailer.service';
 import { generate } from 'otp-generator';
 import * as jwt from 'jsonwebtoken';
-import { ConfigService } from '@nestjs/config';
+
 import { Transaction } from '@transactions/entities/transaction.entity';
 
 @Injectable()
@@ -29,14 +29,12 @@ export class OtpService {
     private readonly otpRepo: Repository<OtpCode>,
 
     private readonly mailer: MailerService,
-
-    private readonly configService: ConfigService,
   ) {
-    this.secret = this.configService.get<string>(
-      'otp.jwtSecret',
-      'supersecret',
-    );
-    this.ttlSeconds = this.configService.get<number>('otp.ttl', 300);
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET environment variable is not defined');
+    }
+    this.secret = process.env.JWT_SECRET;
+    this.ttlSeconds = 16000;
   }
 
   async sendOtpToEmail(email: string): Promise<void> {
@@ -116,7 +114,7 @@ export class OtpService {
       where: { email, code, isUsed: false },
     });
 
-    // OTP no encontrado o ya usado'
+    // OTP no encontrado o ya usado
     if (!otp) {
       return false;
     }
@@ -189,12 +187,18 @@ export class OtpService {
     iat?: number;
     exp?: number;
   } {
+    console.log(this.secret);
     try {
-      return jwt.verify(token, this.secret) as {
+      console.log(this.secret);
+      const payload = jwt.verify(token, this.secret) as {
         transactionId: string;
         iat?: number;
         exp?: number;
       };
+
+      console.log('Payload del token verificado:', payload);
+
+      return payload;
     } catch {
       throw new UnauthorizedException('OTP inválido o expirado');
     }

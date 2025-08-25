@@ -1,11 +1,7 @@
-import { IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateNoteDto {
-  @IsString()
-  @ApiProperty({
-    description: 'Mensaje asociado a la transacción',
-    example: 'Pago recibido correctamente',
-  })
+  @IsString({ message: 'El campo "message" debe ser un texto' })
+  @IsNotEmpty({ message: 'El campo "message" es obligatorio' })
   message: string;
 }

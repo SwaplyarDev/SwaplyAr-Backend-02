@@ -8,6 +8,12 @@ class NoteDto {
   note_id: string;
 }
 
+class RegretDto{
+  @Expose()
+  @ApiProperty({ name: 'id', example: 'e3b4c4b0-9c1e-4e6a-8c5a-4d3a5b6c7d8a', required: false})
+  regret_id: string
+}
+
 class NoteDetailsDto extends NoteDto { // Extending NoteIdDto to reuse the note_id property
   @Expose()
   @ApiProperty({
@@ -34,6 +40,39 @@ class NoteDetailsDto extends NoteDto { // Extending NoteIdDto to reuse the note_
   createdAt?: string;
 }
 
+class RegretDetailsDto extends RegretDto{
+  @Expose()
+  @ApiProperty({
+    example: 'Perez',
+    description: 'Last name of the regret (optional).',
+    required: false,
+  })
+  last_name?: string;
+
+  @Expose()
+  @ApiProperty({
+    example: 'perez@gmail.com',
+    description: 'Email of the regret (optional).',
+    required: false,
+  })
+  email?: string;
+
+  @Expose()
+  @ApiProperty({
+    example: '123456789',
+    description: 'Phone number of the regret (optional).',
+    required: false,
+  })
+  phone_number?: string;
+
+  @Expose()
+  @ApiProperty({
+    example: 'Transferencia bancaria rechazada',
+    description: 'Description of the regret (optional).',
+    required: false,
+  })
+  description?: string;
+}
 
 export class TransactionAdminResponseDto extends TransactionGetResponseDto {
   @Expose()
@@ -65,6 +104,12 @@ export class TransactionByIdAdminResponseDto extends TransactionGetResponseDto {
   @Expose()
   @ApiProperty({ name: 'noteVerificationExpiresAt', example: '2025-08-19T12:57:56.171Z', required: false })
   noteVerificationExpiresAt?: string;
+
+
+  @Expose()
+  @Type(() => RegretDto)
+  @ApiProperty({ name: 'regret', type: RegretDto, required: false })
+  regret?: RegretDetailsDto
 
 }
 

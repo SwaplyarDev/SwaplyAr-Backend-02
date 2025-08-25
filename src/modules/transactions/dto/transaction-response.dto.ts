@@ -168,6 +168,46 @@ export class AmountResponseDto {
   received: boolean;
 }
 
+export class NoteResponseDto {
+  @Expose()
+  @ApiProperty({ name: 'note_id', example: 'ba1196da-7e71-4710-8f44-2df28a31875e' })
+  note_id: string;
+
+  @Expose()
+  @ApiProperty({ name: 'img_url', example: "https://res.cloudinary.com/dy1jiclwg/image/upload/...png" })
+  img_url: string;
+
+  @Expose()
+  @ApiProperty({ name: 'message', example: 'Pago recibido correctamente' })
+  message: string;
+
+}
+
+export class RegretResponseDto {
+  @Expose()
+  @ApiProperty({ name: 'regret_id', example: 'ba1196da-7e71-4710-8f44-2df28a31875e' })
+  regret_id: string;
+
+  /*
+    @Expose()
+  @ApiProperty({ name: 'last_name', example: "Perez" })
+  last_name: string;
+
+  @Expose()
+  @ApiProperty({ name: 'email', example: 'coronajonhatan@gmail.com' })
+  email: string;
+
+  @Expose()
+  @ApiProperty({ name: 'phone_number', example: '123456789' })
+  phone_number: string;
+
+  @Expose()
+  @ApiProperty({ name: 'description', example: 'Pago rechazado' })
+  description: string;
+  */
+
+}
+
 export class TransactionResponseDto {
   @Expose()
   @ApiProperty({ name: 'id', example: 'Sq5k0DMwf4' })
@@ -208,6 +248,16 @@ export class TransactionResponseDto {
   @Type(() => AmountResponseDto)
   @ApiProperty({ name: 'amount', type: AmountResponseDto })
   amount: AmountResponseDto;
+
+  @Expose()
+  @Type(() => NoteResponseDto)
+  @ApiProperty({ name: 'note', type: NoteResponseDto })
+  note: NoteResponseDto;
+
+  @Expose()
+  @Type(() => RegretResponseDto)
+  @ApiProperty({ name: 'regret', type: RegretResponseDto })
+  regret: RegretResponseDto;
 }
  
 export class TransactionGetByIdDto extends TransactionResponseDto {
@@ -409,6 +459,37 @@ export class AmountDto {
   currencyReceived: string;
 }
 
+
+export class noteDto {
+  @ApiProperty({ example: 'ba1196da-7e71-4710-8f44-2df28a31875e' })
+  note_id: string;
+
+  @ApiProperty({ example: 'https://res.cloudinary.com/dy1jiclwg/image/upload/...png' })
+  img_url: string;
+
+@ApiProperty({ example: 'Pago recibido correctamente' })
+  message:string
+
+}
+
+export class regretDto {
+  @ApiProperty({ example: 'ba1196da-7e71-4710-8f44-2df28a31875e' })
+  id: string;
+
+  @ApiProperty({ example: 'Perez' })
+  last_name: string;
+
+@ApiProperty({ example: 'perez@gmail.com' })
+  email:string
+
+  @ApiProperty({ example: '123456789' })
+  phone_number: string
+
+  @ApiProperty({ example: 'Pago recibido correctamente' })
+  description: string
+}
+
+
 export class TransactionGetResponseDto {
   @ApiProperty({ example: 'Sq5k0DMwf4' })
   id: string;
@@ -430,4 +511,12 @@ export class TransactionGetResponseDto {
 
   @ApiProperty({ type: AmountDto })
   amount: AmountDto;
+
+  /*
+  @ApiProperty({ type:noteDto  })
+  note?:noteDto ;
+
+  @ApiProperty({ type: regretDto })
+  regret?: regretDto;
+  */
 }

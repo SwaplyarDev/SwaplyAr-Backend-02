@@ -232,6 +232,8 @@ export class TransactionsService {
         receiverAccount: true,
         amount: true,
         proofOfPayment: true,
+        note: true,
+        regret: true
       },
     });
   }
@@ -258,6 +260,8 @@ export class TransactionsService {
         receiverAccount: { paymentMethod: true },
         proofOfPayment: true,
         amount: true,
+        note: true,
+        regret: true
       },
       where: { senderAccount: { createdBy } },
       skip,
@@ -345,6 +349,8 @@ export class TransactionsService {
           currencyReceived: tx.amount.currencyReceived,
           amountReceived: tx.amount.amountReceived,
         },
+        note: tx.note && { note_id: tx.note.note_id },
+    regret : tx.regret && { regret_id: tx.regret.id },
       };
     });
 
@@ -378,6 +384,8 @@ export class TransactionsService {
           },
           amount: true,
           proofOfPayment: true,
+          note: true,
+          regret: true
         },
       });
 

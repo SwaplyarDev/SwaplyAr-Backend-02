@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@users/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -19,20 +19,57 @@ export class UsersService {
   ) {}
 
   async register(userDto: RegisterUserDto): Promise<User> {
-    const user = new User();
-    const userProfile = new UserProfile();
+    try {
+      // Validaciones básicas
+      if (!userDto.email) {
+        throw new BadRequestException('El email es obligatorio');
+      }
 
-    userProfile.firstName = userDto.firstName || 'Nombre';
-    userProfile.lastName = userDto.lastName || 'Apellido';
-    userProfile.email = userDto.email || 'sin.email@dominio.com';
+      if (!userDto.termsAccepted) {
+        throw new BadRequestException(
+          'Debes aceptar los términos y condiciones',
+        );
+      }
 
-    user.profile = userProfile;
-    user.termsAccepted = userDto.termsAccepted ?? false;
-    user.role = userDto.role || 'user';
+      const existing = await this.userRepository.findOne({
+    where: {
+    profile: {
+      email: userDto.email,
+    },
+    },
+    relations: ['profile'],
+    });
 
-    user.rewardsLedger = new UserRewardsLedger();
+    if (existing) {
+        throw new ConflictException('El correo ya está registrado');
+      }
 
-    return this.userRepository.save(user);
+      const user = new User();
+      const userProfile = new UserProfile();
+
+      userProfile.firstName = userDto.firstName;
+      userProfile.lastName = userDto.lastName;
+      userProfile.email = userDto.email;
+
+      user.profile = userProfile;
+      user.termsAccepted = userDto.termsAccepted ?? false;
+      user.role = 'user';
+      user.rewardsLedger = new UserRewardsLedger();
+
+      return await this.userRepository.save(user);
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof ConflictException
+      ) {
+        throw error;
+      }
+
+      console.error('Error al registrar usuario:', error);
+      throw new InternalServerErrorException(
+        'Error interno al registrar el usuario',
+      );
+    }
   }
 
   async findByEmail(email: string): Promise<User | null> {

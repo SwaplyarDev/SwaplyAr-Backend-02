@@ -38,7 +38,10 @@ import { User as UserEntity } from '@users/entities/user.entity';
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { MailerService } from '../mailer/mailer.service';
 import { Transaction } from 'typeorm';
-import { TransactionAdminResponseDto, TransactionByIdAdminResponseDto } from './dto/get-transaction-response.dto';
+import {
+  TransactionAdminResponseDto,
+  TransactionByIdAdminResponseDto,
+} from './dto/get-transaction-response.dto';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 
@@ -53,16 +56,35 @@ export class AdminController {
   ) {}
 
   @ApiOperation({ summary: 'Obtener todas las transacciones' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Número de página (por defecto 1)' })
-  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Cantidad de elementos por página (por defecto 10)' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Número de página (por defecto 1)',
+  })
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    type: Number,
+    description: 'Cantidad de elementos por página (por defecto 10)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Transacciones obtenidas correctamente',
     type: TransactionAdminResponseDto,
   })
-  @ApiResponse({ status: 401, description: '❌ No autorizado. Token no válido o no enviado.' })
-  @ApiResponse({ status: 403, description: '❌ Acceso no autorizado, Solo para Administradores' })
-  @ApiResponse({ status: 404, description: '❌ No se encuentran Transacciones' })
+  @ApiResponse({
+    status: 401,
+    description: '❌ No autorizado. Token no válido o no enviado.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: '❌ Acceso no autorizado, Solo para Administradores',
+  })
+  @ApiResponse({
+    status: 404,
+    description: '❌ No se encuentran Transacciones',
+  })
   @ApiResponse({ status: 500, description: '❌ Error interno del servidor' })
   @Get('transactions')
   async getAllTransactions(
@@ -75,13 +97,15 @@ export class AdminController {
   @ApiOperation({ summary: 'Agregar comprobante a una transacción' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Sube un comprobante para una transacción. El `transactionId` es obligatorio y el `comprobante` es el archivo.',
+    description:
+      'Sube un comprobante para una transacción. El `transactionId` es obligatorio y el `comprobante` es el archivo.',
     schema: {
       type: 'object',
       properties: {
         transactionId: {
           type: 'string',
-          description: 'ID de la transacción a la que se asocia el comprobante.',
+          description:
+            'ID de la transacción a la que se asocia el comprobante.',
         },
         comprobante: {
           type: 'string',
@@ -156,7 +180,9 @@ export class AdminController {
   }
 
   @Get('transactions/status')
-  @ApiOperation({ summary: 'Obtener historial completo de estados de todas las transacciones' })
+  @ApiOperation({
+    summary: 'Obtener historial completo de estados de todas las transacciones',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiResponse({
@@ -232,7 +258,8 @@ export class AdminController {
             motivo: 'Verificación completa',
             notas: 'Sin observaciones',
           },
-          description: 'Datos adicionales que pueden acompañar el cambio de estado',
+          description:
+            'Datos adicionales que pueden acompañar el cambio de estado',
         },
       },
       required: ['status'],
@@ -268,37 +295,46 @@ export class AdminController {
     description: 'Transacción encontrada',
     type: TransactionByIdAdminResponseDto,
   })
-    @ApiResponse({ status: 401, description: '❌ No autorizado. Token no válido o no enviado.' })
-  @ApiResponse({ status: 403, description: '❌ Acceso no autorizado, Solo para Administradores' })
+  @ApiResponse({
+    status: 401,
+    description: '❌ No autorizado. Token no válido o no enviado.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: '❌ Acceso no autorizado, Solo para Administradores',
+  })
   @ApiResponse({ status: 404, description: '❌ Transaccion no Encontrada' })
   @ApiResponse({ status: 500, description: '❌ Error interno del servidor' })
-  @ApiParam({ name: 'id', description: 'ID de la transacción', example: 'uuid' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la transacción',
+    example: 'uuid',
+  })
   @Get('transactions/:id')
   async getTransaction(
-  @Param('id') id: string,
-): Promise<{ data?: TransactionByIdAdminResponseDto; message?: string }> {
-  try {
-    if (!id) {
-      return {
-        message: 'El ID de la transacción es requerido.',
-      };
-    }
+    @Param('id') id: string,
+  ): Promise<{ data?: TransactionByIdAdminResponseDto; message?: string }> {
+    try {
+      if (!id) {
+        return {
+          message: 'El ID de la transacción es requerido.',
+        };
+      }
 
-    const transaction = await this.adminService.getTransactionById(id);
+      const transaction = await this.adminService.getTransactionById(id);
 
-    return {
-      data: this.adminService.formatTransaction(transaction),
-    };
-  } catch (error) {
-    if (error instanceof NotFoundException) {
       return {
-        message: 'Transacción no encontrada.',
+        data: this.adminService.formatTransaction(transaction),
       };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return {
+          message: 'Transacción no encontrada.',
+        };
+      }
+      throw error;
     }
-    throw error;
   }
-}
-
 
   @ApiOperation({ summary: 'Actualizar el estado de una transacción por tipo' })
   @ApiResponse({

@@ -144,7 +144,7 @@ export class UserVerificationService {
 
     const [data, total] = await this.userVerificationRepository.findAndCount({
       where: whereCondition,
-      relations: ['user', 'user.profile'],
+      relations: ['user', 'user.profile', 'attempts'],
       order: { created_at: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -158,7 +158,7 @@ export class UserVerificationService {
   ): Promise<UserVerification | null> {
     return this.userVerificationRepository.findOne({
       where: { verification_id: verificationId },
-      relations: ['user', 'user.profile'], // Para incluir info del usuario relacionado
+      relations: ['user', 'user.profile', 'attempts'], // Para incluir info del usuario relacionado
     });
   }
 
@@ -278,6 +278,7 @@ export class UserVerificationService {
 
     const verification = await this.userVerificationRepository.findOne({
       where: { verification_id: verificationId },
+      relations: ['user'],  
     });
 
     if (!verification) {

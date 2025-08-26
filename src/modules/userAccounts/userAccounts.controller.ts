@@ -105,39 +105,42 @@ export class AccountsController {
     return { message: 'Banco creado correctamente', bank: newBank };
   }
 
-  //DELETE una cuenta de banco
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
-  @Delete()
-  @HttpCode(HttpStatus.OK)
+  // DELETE una cuenta de banco
+  @ApiOperation({
+    summary: 'Eliminar una cuenta bancaria del usuario autenticado',
+  })
+  @ApiBody({
+    type: DeleteBankAccountDto,
+    description: 'DTO con el ID de la cuenta a eliminar',
+    example: { bankAccountId: 'uuid-de-la-cuenta' },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Cuenta eliminada correctamente',
+    schema: {
+      example: { message: 'Cuenta eliminada correctamente' },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Cuenta no encontrada o no pertenece al usuario',
+    schema: {
+      example: {
+        message: 'Cuenta no encontrada o no pertenece al usuario',
+        error: 'Bad Request',
+        statusCode: 400,
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'No autorizado',
+    schema: { example: { message: 'Forbidden resource' } },
+  })
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {
     return this.accountsService.deleteBankAccount(req.user, dto.bankAccountId);
   }
 
-  @ApiOperation({
-    summary: 'Obtener todas las cuentas del usuario autenticado',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de cuentas del usuario',
-    schema: {
-      example: [
-        {
-          id: 'uuid',
-          typeAccount: 'bank',
-          formData: {},
-          userAccValues: {
-            first_name: 'Juan',
-            last_name: 'Pérez',
-            identification: '12345678',
-            currency: 'ARS',
-            account_name: 'Cuenta Principal',
-            account_type: 1,
-          },
-        },
-      ],
-    },
-  })
   // Obtener todas las cuentas de banco de un user
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')

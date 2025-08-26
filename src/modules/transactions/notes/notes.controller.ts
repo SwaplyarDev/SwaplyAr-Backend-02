@@ -195,57 +195,33 @@ export class NotesController {
   })
   // crea una nota
   @Post(':transactionId')
-  @UseInterceptors(FileInterceptor('file'))
-  @ApiConsumes('multipart/form-data')
-  @ApiParam({
-    name: 'transactionId',
-    description: 'ID de la transacción',
-    example: 'uuid-transaccion',
-  })
-  @ApiBody({
-    description: 'Datos para crear una nota con imagen opcional',
-    schema: {
-      type: 'object',
-      properties: {
-        message: { type: 'string', example: 'Pago recibido correctamente' },
-        file: {
-          type: 'string',
-          format: 'binary',
-          description: 'Archivo de imagen opcional',
-        },
-      },
-      required: ['message'],
-    },
-  })
-  @ApiHeader({
-    name: 'note-access-token',
-    description: 'Token temporal devuelto por /notes/verify-code',
-    required: true,
-  })
   async create(
     @Param('transactionId') transactionId: string,
-    @UploadedFile() file?: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createNoteDto: any,
     @Req() req: Request,
   ) {
     const token = req.headers['note-access-token'] as string;
+    console.log('TOKEN:', token);
+    console.log('TRANSACTION ID:', transactionId);
+    console.log('body:', createNoteDto);
+
     if (!token)
       throw new BadRequestException('Falta el header note-access-token');
 
-    // 🔹 Multer deja los campos de texto en req.body
-    const createNoteDto = plainToClass(CreateNoteDto, req.body);
-
-    // 🔹 Validamos el DTO
     try {
-      await validateOrReject(createNoteDto);
-    } catch (errors) {
-      throw new BadRequestException(errors);
+      return await this.notesService.create(
+        transactionId,
+        createNoteDto,
+        token,
+        file,
+      );
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Error interno al crear la nota',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    // 🔹 Logs para depuración
-    console.log('DTO parseado:', createNoteDto);
-    console.log('Archivo recibido:', file);
-
-    return this.notesService.create(transactionId, createNoteDto, token, file);
   }
   // obtiene todas las notas
   @ApiOperation({ summary: 'Obtener todas las notas' })

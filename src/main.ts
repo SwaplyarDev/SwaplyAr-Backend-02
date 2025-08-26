@@ -17,17 +17,20 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   // 3. Validación global de request inputs
-  app.useGlobalPipes(
+  /* app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      //exceptionFactory: (errors) => {
-        //console.log('❌ Errores de validación:', errors);
-        //return new Error(`Errores de validación:`);
-      //},
+      transformOptions: {
+        enableImplicitConversion: true, // 👈 hace cast automático (string → number, etc.)
+      },
+      exceptionFactory: (errors) => {
+        console.log('❌ Errores de validación:', errors);
+        return new Error(`Errores de validación:`);
+      },
     }),
-  );
+  ); */
 
   // 4. Prefijo global para rutas
   const apiPrefix = 'api/v2';

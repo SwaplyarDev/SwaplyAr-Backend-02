@@ -4,8 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { validateFields } from './helpers/validate-fields.helper';
-import { validateUserAccount } from './helpers/validate-user-account.helper';
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserAccount } from './entities/user-account.entity';
@@ -33,19 +32,21 @@ export class AccountsService {
     private readonly pixRepo: Repository<UserPix>,
   ) {}
 
-  async createUserBan(
-    accountType: Platform,
-    userAccValues: UserAccValuesDto,
-    userId: string,
-  ) {
+  async createUserBan(userAccValues: UserAccValuesDto, userId: string) {
     try {
+      const accountType = userAccValues.accountType;
+
       const userAccount = this.userAccountRepo.create({
-        accountType: userAccValues.accountType,
+        accountType: accountType,
         accountName: userAccValues.accountName,
         userId,
         status: true,
       });
       const savedUserAccount = await this.userAccountRepo.save(userAccount);
+
+      if (!savedUserAccount) {
+        throw new BadRequestException('Error al crear la cuenta');
+      }
       // busca un tipo de cuenta para poder registrarla en una tabla
       // ejemplo: si es igual a virtual_bank la busca en la tabla y crea una nueva
       let specificAccount;
@@ -147,20 +148,23 @@ export class AccountsService {
     return { message: 'Cuenta eliminada correctamente' };
   }
 
-  async findAllBanks(user: any) {
+  async findAllBanks(user: string) {
     // Buscar todas las cuentas del usuario
     const accounts = await this.userAccountRepo.find({
       where: { userId: user },
     });
 
+    if (!accounts || accounts.length === 0) {
+      throw new NotFoundException('No se encontraron cuentas registradas');
+    }
+
     const enrichedAccounts = await Promise.all(
       accounts.map(async (account) => {
-        const typeId = account.accountType as Platform;
+        const typeId = account.accountType;
         const { account_id } = account;
 
         let details: any[] = [];
 
-        // Buscar los detalles según el tipo de cuenta
         switch (typeId) {
           case Platform.Bank:
             details = await this.bankAccountRepo.find({

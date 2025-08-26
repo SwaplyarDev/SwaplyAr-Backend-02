@@ -90,14 +90,14 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  /*   @Roles('user') */
+  // CREAR una cuenta de banco
+  @Roles('user')
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Request() req, @Body() dto: CreateBankAccountDto) {
     const userId = req.user.id;
 
     const newBank = await this.accountsService.createUserBan(
-      dto.userAccValues.accountType,
       dto.userAccValues,
       userId,
     );
@@ -140,7 +140,7 @@ export class AccountsController {
   })
   // Obtener todas las cuentas de banco de un user
   @UseGuards(JwtAuthGuard, RolesGuard)
-  /*   @Roles('user') */
+  @Roles('user')
   @Get()
   async findAll(@Request() req) {
     return this.accountsService.findAllBanks(req.user.id);
@@ -177,13 +177,12 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
+  // OBTENER todas las cuentas de banco de un user por admin
   @Roles('admin')
   @Get('/admin/findId')
   async findOneById(@Query('userId') userId: string) {
     return this.accountsService.findAllBanks(userId);
   }
-
-  // obtener una cuenta
 
   @ApiOperation({
     summary: 'Obtener una cuenta bancaria específica de un usuario autenticado',
@@ -227,6 +226,7 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
+  // OBTENER una cuenta de banco de un user por admin
   @Roles('admin')
   @Get('/admin/findUserBank')
   async findOneUserBank(

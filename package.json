@@ -17,6 +17,8 @@
     "test:otp": "jest src/modules/otp/otp.controller.spec.ts",
     "test:auth": "jest src/modules/auth/auth.controller.spec.ts",
     "test:questions": "jest src/modules/questions/questions.controller.spec.ts",
+    "test:accounts": "jest src/modules/userAccounts/accounts.controller.spec.ts",
+    "test:transactions": "jest src/modules/transactions/transactions.controller.spec.ts",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",

@@ -163,7 +163,7 @@ export class NotesController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('image'))
   @ApiConsumes('multipart/form-data')
   @ApiParam({
     name: 'transactionId',
@@ -202,9 +202,6 @@ export class NotesController {
     @Req() req: Request,
   ) {
     const token = req.headers['note-access-token'] as string;
-    console.log('TOKEN:', token);
-    console.log('TRANSACTION ID:', transactionId);
-    console.log('body:', createNoteDto);
 
     if (!token)
       throw new BadRequestException('Falta el header note-access-token');

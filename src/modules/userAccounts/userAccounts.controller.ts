@@ -32,6 +32,7 @@ import {
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
+  // CREAR una cuenta de banco
   @ApiOperation({
     summary: 'Crear una cuenta bancaria para el usuario autenticado',
   })
@@ -90,18 +91,15 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  // CREAR una cuenta de banco
   @Roles('user')
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Request() req, @Body() dto: CreateBankAccountDto) {
     const userId = req.user.id;
-
     const newBank = await this.accountsService.createUserBan(
       dto.userAccValues,
       userId,
     );
-
     return { message: 'Banco creado correctamente', bank: newBank };
   }
 
@@ -112,42 +110,43 @@ export class AccountsController {
   @ApiBody({
     type: DeleteBankAccountDto,
     description: 'DTO con el ID de la cuenta a eliminar',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Cuenta eliminada correctamente',
-    schema: {
-      example: { message: 'Cuenta eliminada correctamente' },
-    },
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Cuenta no encontrada o no pertenece al usuario',
-    schema: {
-      example: {
-        message: 'Cuenta no encontrada o no pertenece al usuario',
-        error: 'Bad Request',
-        statusCode: 400,
+    examples: {
+      ejemplo1: {
+        summary: 'Ejemplo de request',
+        value: { bankAccountId: 'uuid-de-la-cuenta' },
       },
     },
   })
+  @ApiResponse({ status: 200, description: 'Cuenta eliminada correctamente' })
   @ApiResponse({
-    status: 403,
-    description: 'No autorizado',
-    schema: { example: { message: 'Forbidden resource' } },
+    status: 400,
+    description: 'Cuenta no encontrada o no pertenece al usuario',
   })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
+  @Delete()
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {
     return this.accountsService.deleteBankAccount(req.user, dto.bankAccountId);
   }
 
-  // Obtener todas las cuentas de banco de un user
+  // GET todas las cuentas de banco de un user
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @Get()
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Obtener todas las cuentas bancarias del usuario autenticado',
+    description:
+      'Devuelve una lista con todas las cuentas bancarias asociadas al usuario autenticado. ' +
+      'El usuario debe estar logueado y tener el rol `user` para poder acceder a este endpoint.',
+  })
   async findAll(@Request() req) {
     return this.accountsService.findAllBanks(req.user.id);
   }
 
+  // GET todas las cuentas de banco de un user por admin
   @ApiOperation({
     summary: 'Obtener todas las cuentas del usuario autenticado',
   })
@@ -179,13 +178,13 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  // OBTENER todas las cuentas de banco de un user por admin
   @Roles('admin')
   @Get('/admin/findId')
   async findOneById(@Query('userId') userId: string) {
     return this.accountsService.findAllBanks(userId);
   }
 
+  // GET una cuenta de banco de un user por admin
   @ApiOperation({
     summary: 'Obtener una cuenta bancaria específica de un usuario autenticado',
   })
@@ -228,7 +227,6 @@ export class AccountsController {
     },
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  // OBTENER una cuenta de banco de un user por admin
   @Roles('admin')
   @Get('/admin/findUserBank')
   async findOneUserBank(

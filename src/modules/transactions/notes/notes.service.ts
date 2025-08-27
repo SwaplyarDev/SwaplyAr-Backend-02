@@ -49,7 +49,7 @@ export class NotesService {
 
     if (payload.transactionId !== transactionId) {
       throw new BadRequestException(
-        'El token no corresponde a esta transacción',
+        'Debes verificar el código para esta transacción',
       );
     }
 
@@ -70,11 +70,6 @@ export class NotesService {
       );
     }
 
-    //  Validar message obligatorio
-    if (!createNoteDto.message || createNoteDto.message.trim() === '') {
-      throw new BadRequestException('El campo message es obligatorio');
-    }
-
     //  Verificar que la nota esté habilitada
     if (
       !transaction.isNoteVerified ||
@@ -93,7 +88,7 @@ export class NotesService {
         img_url = await this.cloudinaryService.uploadFile(
           file.buffer,
           'notes',
-          `note-${Date.now()}`,
+          `note-${transactionId}-${Date.now()}`,
         );
       } catch (error) {
         throw new BadRequestException(

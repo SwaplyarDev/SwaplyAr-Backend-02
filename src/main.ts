@@ -22,10 +22,13 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      //exceptionFactory: (errors) => {
-        //console.log('❌ Errores de validación:', errors);
-        //return new Error(`Errores de validación:`);
-      //},
+      transformOptions: {
+        enableImplicitConversion: true, // 👈 hace cast automático (string → number, etc.)
+      },
+      exceptionFactory: (errors) => {
+        console.log('❌ Errores de validación:', errors);
+        return new Error(`Errores de validación:`);
+      },
     }),
   );
 

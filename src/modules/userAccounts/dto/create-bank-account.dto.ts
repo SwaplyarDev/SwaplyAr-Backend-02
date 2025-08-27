@@ -76,10 +76,6 @@ export class UserAccValuesDto {
 }
 
 export class CreateBankAccountDto {
-
-   @IsEnum(Platform)
-  accountType: Platform;
-
   @ValidateNested()
   @Type(() => UserAccValuesDto)
   userAccValues: UserAccValuesDto;

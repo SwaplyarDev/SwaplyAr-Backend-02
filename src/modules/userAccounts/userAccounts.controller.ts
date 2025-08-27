@@ -112,7 +112,6 @@ export class AccountsController {
   @ApiBody({
     type: DeleteBankAccountDto,
     description: 'DTO con el ID de la cuenta a eliminar',
-    example: { bankAccountId: 'uuid-de-la-cuenta' },
   })
   @ApiResponse({
     status: 200,

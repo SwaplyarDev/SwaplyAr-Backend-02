@@ -16,6 +16,6 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
       : false, // SSL desactivado en desarrollo
     synchronize: !isProduction,
     entities: ['dist/**//**.entity.{ts,js}'],
-    dropSchema: true,
+    // dropSchema: false, --> Descomentar si quieres que se elimine el esquema en cada inicio (útil para desarrollo)
   };
 });

@@ -27,22 +27,50 @@ describe('TransactionsController (integración real)', () => {
           useValue: {
             create: jest.fn().mockImplementation((dto) => ({
               ...dto,
-              senderAccount: dto.financialAccounts?.senderAccount || { firstName: 'Pedro', lastName: 'Gomez', paymentMethod: { platformId: 'virtual_bank' } },
-              receiverAccount: dto.financialAccounts?.receiverAccount || { firstName: 'Juan', lastName: 'Pérez', paymentMethod: { bankName: 'Banco Galicia' } },
+              senderAccount: dto.financialAccounts?.senderAccount || {
+                firstName: 'Pedro',
+                lastName: 'Gomez',
+                paymentMethod: { platformId: 'virtual_bank' },
+              },
+              receiverAccount: dto.financialAccounts?.receiverAccount || {
+                firstName: 'Juan',
+                lastName: 'Pérez',
+                paymentMethod: { bankName: 'Banco Galicia' },
+              },
             })),
-            save: jest.fn().mockImplementation((transaction) =>
-              Promise.resolve({ ...transaction, id: 'tx-123' }),
-            ),
+            save: jest
+              .fn()
+              .mockImplementation((transaction) =>
+                Promise.resolve({ ...transaction, id: 'tx-123' }),
+              ),
             findOne: jest.fn().mockImplementation((options) =>
               Promise.resolve({
                 id: 'tx-123',
                 countryTransaction: 'Argentina',
                 message: 'Test',
                 createdAt: new Date().toISOString(),
-                senderAccount: { firstName: 'Pedro', lastName: 'Gomez', paymentMethod: { platformId: 'virtual_bank' } },
-                receiverAccount: { firstName: 'Juan', lastName: 'Pérez', paymentMethod: { bankName: 'Banco Galicia' } },
-                amount: { id: 'amount-123', amountSent: 5000, amountReceived: 5000, currencySent: 'ARS', currencyReceived: 'ARS' },
-                proofOfPayment: { id: 'proof-123', type: 'image', url: 'https://example.com/proof.jpg' },
+                senderAccount: {
+                  firstName: 'Pedro',
+                  lastName: 'Gomez',
+                  paymentMethod: { platformId: 'virtual_bank' },
+                },
+                receiverAccount: {
+                  firstName: 'Juan',
+                  lastName: 'Pérez',
+                  paymentMethod: { bankName: 'Banco Galicia' },
+                },
+                amount: {
+                  id: 'amount-123',
+                  amountSent: 5000,
+                  amountReceived: 5000,
+                  currencySent: 'ARS',
+                  currencyReceived: 'ARS',
+                },
+                proofOfPayment: {
+                  id: 'proof-123',
+                  type: 'image',
+                  url: 'https://example.com/proof.jpg',
+                },
               }),
             ),
           },

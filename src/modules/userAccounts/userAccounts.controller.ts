@@ -132,7 +132,6 @@ export class AccountsController {
 
   // GET todas las cuentas de banco de un user
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @Get()
   @ApiBearerAuth()

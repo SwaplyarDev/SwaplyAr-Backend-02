@@ -64,6 +64,7 @@ export class TransactionsController {
     private readonly jwtService: JwtService,
   ) {}
 
+  // POST /transactions - Crear transacción con comprobante
   @ApiOperation({
     summary: 'Crear una transacción con comprobante de pago',
     description: `

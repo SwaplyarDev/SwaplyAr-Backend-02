@@ -16,7 +16,7 @@ import { UpdateBankDto } from '../financial-accounts/payment-methods/bank/dto/cr
 import { AdministracionMaster } from './entities/administracion-master.entity';
 import { AdminStatus } from '../../enum/admin-status.enum';
 import { User } from '@users/entities/user.entity';
-import { TransactionStatus } from '../../enum/trasanction-status.enum';
+
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { DiscountService } from '@discounts/discounts.service';
 import { UpdateStarDto } from '@discounts/dto/update-star.dto';
@@ -47,23 +47,21 @@ export class AdminService {
 
   private convertAdminStatusToTransactionStatus(
     status: AdminStatus,
-  ): TransactionStatus {
-    // Mapeo directo entre AdminStatus y TransactionStatus
-    const statusMap: Record<AdminStatus, TransactionStatus> = {
-      [AdminStatus.Pending]: TransactionStatus.Pending,
-      [AdminStatus.ReviewPayment]: TransactionStatus.Review_Payment,
-      [AdminStatus.Approved]: TransactionStatus.Approved,
-      [AdminStatus.Rejected]: TransactionStatus.Rejected,
-      [AdminStatus.RefundInTransit]: TransactionStatus.Refund_In_Transit,
-      [AdminStatus.InTransit]: TransactionStatus.In_Transit,
-      [AdminStatus.Discrepancy]: TransactionStatus.Discrepancy,
-      [AdminStatus.Canceled]: TransactionStatus.Canceled,
-      [AdminStatus.Modified]: TransactionStatus.Modified,
-      [AdminStatus.Refunded]: TransactionStatus.Refunded,
-      [AdminStatus.Completed]: TransactionStatus.Completed,
+  ): AdminStatus {
+    const statusMap: Record<AdminStatus, AdminStatus> = {
+      [AdminStatus.Pending]: AdminStatus.Pending,
+      [AdminStatus.ReviewPayment]: AdminStatus.ReviewPayment,
+      [AdminStatus.Approved]: AdminStatus.Approved,
+      [AdminStatus.Rejected]: AdminStatus.Rejected,
+      [AdminStatus.RefundInTransit]: AdminStatus.RefundInTransit,
+      [AdminStatus.InTransit]: AdminStatus.InTransit,
+      [AdminStatus.Discrepancy]: AdminStatus.Discrepancy,
+      [AdminStatus.Canceled]: AdminStatus.Canceled,
+      [AdminStatus.Modified]: AdminStatus.Modified,
+      [AdminStatus.Refunded]: AdminStatus.Refunded,
+      [AdminStatus.Completed]: AdminStatus.Completed,
     };
-
-    return statusMap[status] || TransactionStatus.Pending;
+    return statusMap[status] || AdminStatus.Pending;
   }
 
   /* -------------------------------------------------------------------------- */

@@ -18,7 +18,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateStarDto } from '@discounts/dto/update-star.dto';
 import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
-import { TransactionStatus } from 'src/enum/trasanction-status.enum';
+import { AdminStatus } from 'src/enum/admin-status.enum';
 
 export class DiscountService {
   constructor(
@@ -177,7 +177,7 @@ export class DiscountService {
     return qb.getMany();
   }
 
-/* Obtiene descuentos de un usuario específico por su user_id */
+  /* Obtiene descuentos de un usuario específico por su user_id */
   async getUserDiscountsByUserId(
     id: string,
     userRole?: string,
@@ -192,14 +192,13 @@ export class DiscountService {
     const ud = await qd.getMany();
 
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
-    if (!['admin', 'super_admin'].includes(userRole || '')
-    ) {
+    if (!['admin', 'super_admin'].includes(userRole || '')) {
       throw new ForbiddenException(
         'No tiene permiso para acceder a este descuento',
       );
     }
 
-    return ud
+    return ud;
   }
 
   /**
@@ -297,7 +296,7 @@ export class DiscountService {
     if (!transaction) {
       throw new NotFoundException('Transacción no encontrada');
     }
-    if (transaction.finalStatus !== TransactionStatus.Completed) {
+    if (transaction.finalStatus !== AdminStatus.Completed) {
       throw new BadRequestException(
         'Solo se pueden asignar estrellas a transacciones completadas.',
       );

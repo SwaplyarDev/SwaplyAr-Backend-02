@@ -2,7 +2,6 @@ import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/p
 import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
 import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
 import { Amount } from '@transactions/amounts/entities/amount.entity';
-import { TransactionStatus } from 'src/enum/trasanction-status.enum';
 
 import {
   Entity,
@@ -19,6 +18,7 @@ import { customAlphabet } from 'nanoid';
 import { Note } from '@transactions/notes/entities/note.entity';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';
 import { UserDiscount } from '@users/entities/user-discount.entity';
+import { AdminStatus } from 'src/enum/admin-status.enum';
 
 export const nanoidCustom = customAlphabet(
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
@@ -46,11 +46,11 @@ export class Transaction {
 
   @Column({
     type: 'enum',
-    enum: TransactionStatus,
-    default: TransactionStatus.Pending,
+    enum: AdminStatus,
+    default: AdminStatus.Pending,
     name: 'final_status',
   })
-  finalStatus: TransactionStatus;
+  finalStatus: AdminStatus;
 
   @ManyToOne(() => SenderFinancialAccount, (sender) => sender.transactions)
   @JoinColumn({ name: 'sender_account_id' })

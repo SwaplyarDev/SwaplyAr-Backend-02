@@ -1,17 +1,10 @@
-import {
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { DiscountCode } from '@users/entities/discount-code.entity';
 import { UserDiscount } from '@users/entities/user-discount.entity';
 import { User } from '@users/entities/user.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { CreateUserDiscountDto } from './dto/create-user-discount.dto';
-import {
-  FilterTypeEnum,
-  FilterUserDiscountsDto,
-} from './dto/filter-user-discounts.dto';
+import { FilterTypeEnum, FilterUserDiscountsDto } from './dto/filter-user-discounts.dto';
 import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
 import { CreateDiscountCodeDto } from './dto/create-discount-code.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -60,11 +53,7 @@ export class DiscountService {
    * @param value Valor del descuento.
    * @returns El id del descuento de usuario creado.
    */
-  async assignSystemDiscount(
-    user: User,
-    prefix: string,
-    value: number,
-  ): Promise<string> {
+  async assignSystemDiscount(user: User, prefix: string, value: number): Promise<string> {
     const codeEntity = this.discountCodeRepo.create({
       code: `${prefix}-${Math.random().toString(36).substr(2, 6)}`.toUpperCase(),
       value,
@@ -98,9 +87,7 @@ export class DiscountService {
         where: { code: dto.code },
       });
       if (!discountCode) {
-        throw new NotFoundException(
-          `Código de descuento '${dto.code}' no encontrado`,
-        );
+        throw new NotFoundException(`Código de descuento '${dto.code}' no encontrado`);
       }
     } else {
       throw new BadRequestException('Debe proporcionar codeId o code');
@@ -110,11 +97,7 @@ export class DiscountService {
       ? await this.findTransactionByIdOrThrow(dto.transactionId)
       : null;
 
-    const userDiscount = this.createUserDiscountEntity(
-      user,
-      discountCode,
-      transaction,
-    );
+    const userDiscount = this.createUserDiscountEntity(user, discountCode, transaction);
     await this.userDiscountRepo.save(userDiscount);
 
     const result = await this.userDiscountRepo.findOne({
@@ -122,10 +105,7 @@ export class DiscountService {
       relations: ['user', 'discountCode', 'transaction'],
     });
 
-    if (!result)
-      throw new NotFoundException(
-        'Descuento de usuario no encontrado tras la creación',
-      );
+    if (!result) throw new NotFoundException('Descuento de usuario no encontrado tras la creación');
 
     return result;
   }
@@ -148,9 +128,7 @@ export class DiscountService {
   /**
    * Obtiene todos los descuentos de usuarios con filtro opcional y sus datos relacionados.
    */
-  async getAllUserDiscounts(
-    filterDto: FilterUserDiscountsDto,
-  ): Promise<UserDiscount[]> {
+  async getAllUserDiscounts(filterDto: FilterUserDiscountsDto): Promise<UserDiscount[]> {
     const qb = this.userDiscountRepo
       .createQueryBuilder('ud')
       .leftJoinAndSelect('ud.user', 'user')
@@ -178,10 +156,7 @@ export class DiscountService {
   }
 
   /* Obtiene descuentos de un usuario específico por su user_id */
-  async getUserDiscountsByUserId(
-    id: string,
-    userRole?: string,
-  ): Promise<UserDiscount[]> {
+  async getUserDiscountsByUserId(id: string, userRole?: string): Promise<UserDiscount[]> {
     const qd = this.userDiscountRepo
       .createQueryBuilder('ud')
       .leftJoinAndSelect('ud.user', 'user')
@@ -193,9 +168,7 @@ export class DiscountService {
 
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
     if (!['admin', 'super_admin'].includes(userRole || '')) {
-      throw new ForbiddenException(
-        'No tiene permiso para acceder a este descuento',
-      );
+      throw new ForbiddenException('No tiene permiso para acceder a este descuento');
     }
 
     return ud;
@@ -204,23 +177,14 @@ export class DiscountService {
   /**
    * Obtiene un descuento de usuario por ID, verifica propiedad y devuelve toda la información relevante.
    */
-  async getUserDiscountById(
-    id: string,
-    userId: string,
-    userRole?: string,
-  ): Promise<UserDiscount> {
+  async getUserDiscountById(id: string, userId: string, userRole?: string): Promise<UserDiscount> {
     const ud = await this.userDiscountRepo.findOne({
       where: { id },
       relations: ['user', 'discountCode', 'transaction'],
     });
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
-    if (
-      ud.user.id !== userId &&
-      !['admin', 'super_admin'].includes(userRole || '')
-    ) {
-      throw new ForbiddenException(
-        'No tiene permiso para acceder a este descuento',
-      );
+    if (ud.user.id !== userId && !['admin', 'super_admin'].includes(userRole || '')) {
+      throw new ForbiddenException('No tiene permiso para acceder a este descuento');
     }
 
     return ud;
@@ -235,9 +199,7 @@ export class DiscountService {
     userId: string,
   ): Promise<UserDiscount> {
     const ud = await this.getUserDiscountById(id, userId);
-    const transaction = await this.findTransactionByIdOrThrow(
-      dto.transactionId,
-    );
+    const transaction = await this.findTransactionByIdOrThrow(dto.transactionId);
     ud.isUsed = true;
     ud.transaction = transaction;
     ud.usedAt = new Date();
@@ -247,18 +209,14 @@ export class DiscountService {
       relations: ['user', 'discountCode', 'transaction'],
     });
     if (!updatedUd)
-      throw new NotFoundException(
-        'Descuento de usuario no encontrado tras actualizar',
-      );
+      throw new NotFoundException('Descuento de usuario no encontrado tras actualizar');
     return updatedUd;
   }
 
   /**
    * Elimina un descuento de usuario y devuelve un mensaje de confirmación.
    */
-  async deleteUserDiscount(
-    id: string,
-  ): Promise<{ success: boolean; message: string }> {
+  async deleteUserDiscount(id: string): Promise<{ success: boolean; message: string }> {
     const ud = await this.userDiscountRepo.findOne({ where: { id } });
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
     await this.userDiscountRepo.remove(ud);
@@ -284,9 +242,7 @@ export class DiscountService {
   }> {
     // Verifica que se pase el transactionId
     if (!dto.transactionId) {
-      throw new BadRequestException(
-        'Se requiere transactionId para asignar estrellas.',
-      );
+      throw new BadRequestException('Se requiere transactionId para asignar estrellas.');
     }
 
     // Busca la transacción y verifica su estado
@@ -331,9 +287,7 @@ export class DiscountService {
    * - Crea/activa un nuevo código de descuento PLUS REWARDS
    * - Puede enviar notificaciones, emails, etc.
    */
-  private async handleCycleCompletion(
-    ledger: UserRewardsLedger,
-  ): Promise<string> {
+  private async handleCycleCompletion(ledger: UserRewardsLedger): Promise<string> {
     // Reiniciamos contadores
     ledger.quantity = 0;
     ledger.stars = 0;
@@ -394,20 +348,15 @@ export class DiscountService {
     return user;
   }
 
-  private async findDiscountCodeByIdOrThrow(
-    discountCodeId: string,
-  ): Promise<DiscountCode> {
+  private async findDiscountCodeByIdOrThrow(discountCodeId: string): Promise<DiscountCode> {
     const discountCode = await this.discountCodeRepo.findOne({
       where: { id: discountCodeId },
     });
-    if (!discountCode)
-      throw new NotFoundException('Código de descuento no válido');
+    if (!discountCode) throw new NotFoundException('Código de descuento no válido');
     return discountCode;
   }
 
-  private async findTransactionByIdOrThrow(
-    transactionId: string,
-  ): Promise<Transaction> {
+  private async findTransactionByIdOrThrow(transactionId: string): Promise<Transaction> {
     const transaction = await this.transactionRepo.findOne({
       where: { id: transactionId },
     });

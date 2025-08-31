@@ -15,12 +15,7 @@ import { User } from '@users/entities/user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Transaction,
-      AdministracionStatusLog,
-      AdministracionMaster,
-      User,
-    ]),
+    TypeOrmModule.forFeature([Transaction, AdministracionStatusLog, AdministracionMaster, User]),
     FileUploadModule,
     ProofOfPaymentsModule,
     BankModule,

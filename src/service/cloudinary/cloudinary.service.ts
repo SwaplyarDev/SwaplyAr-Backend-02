@@ -1,9 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import {
-  v2 as cloudinary,
-  UploadApiOptions,
-  UploadApiResponse,
-} from 'cloudinary';
+import { v2 as cloudinary, UploadApiOptions, UploadApiResponse } from 'cloudinary';
 import * as dotenv from 'dotenv';
 
 @Injectable()
@@ -17,15 +13,9 @@ export class CloudinaryService {
     });
   }
 
-  async uploadFile(
-    buffer: Buffer,
-    folder: string,
-    fileName: string,
-  ): Promise<string> {
+  async uploadFile(buffer: Buffer, folder: string, fileName: string): Promise<string> {
     if (!buffer || buffer.length === 0) {
-      throw new BadRequestException(
-        'No se envió ningún archivo o el archivo está vacío',
-      );
+      throw new BadRequestException('No se envió ningún archivo o el archivo está vacío');
     }
 
     const options: UploadApiOptions = {

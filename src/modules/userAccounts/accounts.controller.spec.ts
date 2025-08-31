@@ -3,9 +3,7 @@ import { AccountsController } from './userAccounts.controller';
 import { AccountsService } from './userAccounts.service';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
-import {
-  CreateBankAccountDto,
-} from './dto/create-bank-account.dto';
+import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { DeleteBankAccountDto } from './dto/delete-bank-account.dto';
 import { BadRequestException } from '@nestjs/common';
 import { Platform } from 'src/enum/platform.enum';
@@ -46,10 +44,7 @@ describe('AccountsController', () => {
   };
 
   const expectDeleteBankAccountCalled = (id: string) => {
-    expect(mockAccountsService.deleteBankAccount).toHaveBeenCalledWith(
-      mockRequest.user,
-      id,
-    );
+    expect(mockAccountsService.deleteBankAccount).toHaveBeenCalledWith(mockRequest.user, id);
   };
 
   beforeEach(async () => {
@@ -80,10 +75,7 @@ describe('AccountsController', () => {
       };
       mockAccountsService.createUserBan.mockResolvedValue(createdBankAccount);
 
-      const result = await accountsController.create(
-        mockRequest,
-        createBankAccountDto,
-      );
+      const result = await accountsController.create(mockRequest, createBankAccountDto);
 
       expectCreateUserBankCalled();
       expect(mockAccountsService.createUserBan).toHaveBeenCalledTimes(1);
@@ -98,9 +90,9 @@ describe('AccountsController', () => {
         new BadRequestException('No se pudo crear la cuenta bancaria'),
       );
 
-      await expect(
-        accountsController.create(mockRequest, createBankAccountDto),
-      ).rejects.toThrow(BadRequestException);
+      await expect(accountsController.create(mockRequest, createBankAccountDto)).rejects.toThrow(
+        BadRequestException,
+      );
 
       expectCreateUserBankCalled();
       expect(mockAccountsService.createUserBan).toHaveBeenCalledTimes(1);
@@ -122,14 +114,12 @@ describe('AccountsController', () => {
 
     it('debería lanzar un error si la cuenta no existe', async () => {
       mockAccountsService.deleteBankAccount.mockRejectedValueOnce(
-        new BadRequestException(
-          'Cuenta no encontrada o no pertenece al usuario',
-        ),
+        new BadRequestException('Cuenta no encontrada o no pertenece al usuario'),
       );
 
-      await expect(
-        accountsController.delete(mockRequest, deleteDto),
-      ).rejects.toThrow(BadRequestException);
+      await expect(accountsController.delete(mockRequest, deleteDto)).rejects.toThrow(
+        BadRequestException,
+      );
 
       expectDeleteBankAccountCalled(deleteDto.bankAccountId);
       expect(mockAccountsService.deleteBankAccount).toHaveBeenCalledTimes(1);
@@ -138,16 +128,12 @@ describe('AccountsController', () => {
 
   describe('findAll', () => {
     it('debería devolver todas las cuentas del usuario autenticado', async () => {
-      const expectedAccounts = [
-        { id: 'bank-uuid-123', ...createBankAccountDto },
-      ];
+      const expectedAccounts = [{ id: 'bank-uuid-123', ...createBankAccountDto }];
       mockAccountsService.findAllBanks.mockResolvedValue(expectedAccounts);
 
       const result = await accountsController.findAll(mockRequest);
 
-      expect(mockAccountsService.findAllBanks).toHaveBeenCalledWith(
-        mockRequest.user.id,
-      );
+      expect(mockAccountsService.findAllBanks).toHaveBeenCalledWith(mockRequest.user.id);
       expect(mockAccountsService.findAllBanks).toHaveBeenCalledTimes(1);
       expect(result).toEqual(expectedAccounts);
     });
@@ -157,13 +143,9 @@ describe('AccountsController', () => {
         new BadRequestException('Error al obtener las cuentas'),
       );
 
-      await expect(accountsController.findAll(mockRequest)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(accountsController.findAll(mockRequest)).rejects.toThrow(BadRequestException);
 
-      expect(mockAccountsService.findAllBanks).toHaveBeenCalledWith(
-        mockRequest.user.id,
-      );
+      expect(mockAccountsService.findAllBanks).toHaveBeenCalledWith(mockRequest.user.id);
       expect(mockAccountsService.findAllBanks).toHaveBeenCalledTimes(1);
     });
   });

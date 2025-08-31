@@ -41,9 +41,7 @@ import { UpdateReceiverFinancialAccountDto } from './receiver-financial-accounts
 @ApiTags('Financial Accounts')
 @Controller('financial-accounts')
 export class FinancialAccountController {
-  constructor(
-    private readonly financialAccountsService: FinancialAccountsService,
-  ) {}
+  constructor(private readonly financialAccountsService: FinancialAccountsService) {}
 
   @ApiOperation({ summary: 'Crear cuentas financieras (emisor y receptor)' })
   @ApiResponse({
@@ -501,9 +499,7 @@ export class FinancialAccountController {
     description: 'Autorización no permitida, solo para usuarios',
   })
   @Delete(':id')
-  async deleteAccount(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-  ) {
+  async deleteAccount(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     await this.financialAccountsService.deleteById(id);
     return { message: 'Cuenta eliminada correctamente', id };
   }

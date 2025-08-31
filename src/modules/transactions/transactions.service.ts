@@ -20,10 +20,7 @@ import { FinancialAccountsService } from '@financial-accounts/financial-accounts
 import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 import { plainToInstance } from 'class-transformer';
-import {
-  TransactionGetResponseDto,
-  TransactionResponseDto,
-} from './dto/transaction-response.dto';
+import { TransactionGetResponseDto, TransactionResponseDto } from './dto/transaction-response.dto';
 import { FindOneOptions, Repository } from 'typeorm';
 
 @Injectable()
@@ -45,8 +42,7 @@ export class TransactionsService {
     id: string,
     lastName: string,
   ): Promise<
-    | { status: string; message: string }
-    | { status: string; history: UserStatusHistoryResponse[] }
+    { status: string; message: string } | { status: string; history: UserStatusHistoryResponse[] }
   > {
     try {
       const transaction = await this.transactionsRepository.findOne({
@@ -68,9 +64,7 @@ export class TransactionsService {
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '');
 
-      const senderLastNameNormalized = normalizeString(
-        transaction.senderAccount.lastName,
-      );
+      const senderLastNameNormalized = normalizeString(transaction.senderAccount.lastName);
       const lastNameNormalized = normalizeString(lastName);
 
       if (senderLastNameNormalized !== lastNameNormalized) {
@@ -84,14 +78,12 @@ export class TransactionsService {
         .getMany();
 
       // Mapear historial a la respuesta esperada
-      const history: UserStatusHistoryResponse[] = statusHistoryEntities.map(
-        (log) => ({
-          id: log.id,
-          status: log.status,
-          changedAt: log.changedAt,
-          message: log.message,
-        }),
-      );
+      const history: UserStatusHistoryResponse[] = statusHistoryEntities.map((log) => ({
+        id: log.id,
+        status: log.status,
+        changedAt: log.changedAt,
+        message: log.message,
+      }));
 
       // Si el historial no incluye 'pending', lo agregamos manualmente al inicio
       if (!history.length || history[0].status !== 'pending') {
@@ -107,8 +99,7 @@ export class TransactionsService {
       if (history.length === 1 && history[0].status === 'pending') {
         return {
           status: transaction.finalStatus,
-          message:
-            'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
+          message: 'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
           history,
         };
       }
@@ -134,9 +125,7 @@ export class TransactionsService {
       const createdAt = new Date();
 
       if (!file) {
-        throw new BadRequestException(
-          'El comprobante de pago (archivo) es obligatorio.',
-        );
+        throw new BadRequestException('El comprobante de pago (archivo) es obligatorio.');
       }
 
       let financialAccounts;
@@ -145,27 +134,21 @@ export class TransactionsService {
           createTransactionDto.financialAccounts,
         );
       } catch (err) {
-        throw new BadRequestException(
-          `Error al crear cuentas financieras: ${err.message || err}`,
-        );
+        throw new BadRequestException(`Error al crear cuentas financieras: ${err.message || err}`);
       }
 
       let amount;
       try {
         amount = await this.amountService.create(createTransactionDto.amount);
       } catch (err) {
-        throw new BadRequestException(
-          `Error al crear el monto: ${err.message || err}`,
-        );
+        throw new BadRequestException(`Error al crear el monto: ${err.message || err}`);
       }
 
       let proofOfPayment;
       try {
         proofOfPayment = await this.proofOfPaymentService.create(file);
       } catch (err) {
-        throw new BadRequestException(
-          `Error al subir comprobante de pago: ${err.message || err}`,
-        );
+        throw new BadRequestException(`Error al subir comprobante de pago: ${err.message || err}`);
       }
 
       let savedTransaction;
@@ -202,9 +185,7 @@ export class TransactionsService {
         });
 
         if (!fullTransaction) {
-          throw new NotFoundException(
-            'La transacción no se encontró después de ser creada.',
-          );
+          throw new NotFoundException('La transacción no se encontró después de ser creada.');
         }
 
         if (fullTransaction.senderAccount?.createdBy) {
@@ -215,10 +196,7 @@ export class TransactionsService {
 
         const senderEmail = fullTransaction.senderAccount?.createdBy;
         if (senderEmail) {
-          await this.mailerService.sendReviewPaymentEmail(
-            senderEmail,
-            fullTransaction,
-          );
+          await this.mailerService.sendReviewPaymentEmail(senderEmail, fullTransaction);
         }
       } catch (err) {
         throw new InternalServerErrorException(
@@ -232,9 +210,7 @@ export class TransactionsService {
     } catch (error) {
       throw error instanceof HttpException
         ? error
-        : new InternalServerErrorException(
-            'Error inesperado al crear la transacción.',
-          );
+        : new InternalServerErrorException('Error inesperado al crear la transacción.');
     }
   }
 
@@ -265,31 +241,26 @@ export class TransactionsService {
       totalPages: number;
     };
   }> {
-    if (
-      !createdBy ||
-      typeof createdBy !== 'string' ||
-      createdBy.trim() === ''
-    ) {
+    if (!createdBy || typeof createdBy !== 'string' || createdBy.trim() === '') {
       throw new ForbiddenException('no se proporcionó un email válido');
     }
 
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
-    const [transactions, totalItems] =
-      await this.transactionsRepository.findAndCount({
-        relations: {
-          senderAccount: { paymentMethod: true },
-          receiverAccount: { paymentMethod: true },
-          proofOfPayment: true,
-          amount: true,
-          regret: true,
-        },
-        where: { senderAccount: { createdBy } },
-        skip,
-        take,
-        order: { createdAt: 'DESC' },
-      });
+    const [transactions, totalItems] = await this.transactionsRepository.findAndCount({
+      relations: {
+        senderAccount: { paymentMethod: true },
+        receiverAccount: { paymentMethod: true },
+        proofOfPayment: true,
+        amount: true,
+        regret: true,
+      },
+      where: { senderAccount: { createdBy } },
+      skip,
+      take,
+      order: { createdAt: 'DESC' },
+    });
 
     const totalPages = Math.ceil(totalItems / pageSize);
 
@@ -367,9 +338,7 @@ export class TransactionsService {
         },
         receiverAccount: {
           id: tx.receiverAccount.id,
-          paymentMethod: getReceiverMethodDisplay(
-            tx.receiverAccount.paymentMethod,
-          ),
+          paymentMethod: getReceiverMethodDisplay(tx.receiverAccount.paymentMethod),
         },
         proofOfPayment: tx.proofOfPayment
           ? { id: tx.proofOfPayment.id, imgUrl: tx.proofOfPayment.imgUrl }
@@ -393,10 +362,7 @@ export class TransactionsService {
   /**
    * Obtener una transacción por ID validando el email
    */
-  async getTransactionByEmail(
-    transactionId: string,
-    userEmail: string,
-  ): Promise<Transaction> {
+  async getTransactionByEmail(transactionId: string, userEmail: string): Promise<Transaction> {
     if (!userEmail) {
       throw new ForbiddenException('Email is required');
     }
@@ -418,9 +384,7 @@ export class TransactionsService {
       });
 
       if (!transaction) {
-        throw new NotFoundException(
-          `Transaction with id '${transactionId}' not found`,
-        );
+        throw new NotFoundException(`Transaction with id '${transactionId}' not found`);
       }
 
       if (transaction.senderAccount?.createdBy !== userEmail) {
@@ -430,24 +394,16 @@ export class TransactionsService {
       return transaction;
     } catch (error) {
       // Si es una excepción de Nest la relanzo
-      if (
-        error instanceof ForbiddenException ||
-        error instanceof NotFoundException
-      ) {
+      if (error instanceof ForbiddenException || error instanceof NotFoundException) {
         throw error;
       }
 
       // Si es cualquier otro error inesperado → 500
-      throw new InternalServerErrorException(
-        'Unexpected error while fetching transaction',
-      );
+      throw new InternalServerErrorException('Unexpected error while fetching transaction');
     }
   }
 
-  async findOne(
-    id: string,
-    options?: FindOneOptions<Transaction>,
-  ): Promise<Transaction> {
+  async findOne(id: string, options?: FindOneOptions<Transaction>): Promise<Transaction> {
     const transaction = await this.transactionsRepository.findOne({
       where: { id },
       ...options,

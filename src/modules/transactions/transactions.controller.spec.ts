@@ -186,10 +186,7 @@ describe('TransactionsController (integración real)', () => {
     const expectedDto = plainToInstance(CreateTransactionDto, dto);
     const file = createMockFile();
 
-    const result = await controller.create(
-      { createTransactionDto: JSON.stringify(dto) },
-      file,
-    );
+    const result = await controller.create({ createTransactionDto: JSON.stringify(dto) }, file);
 
     // Verifica los campos más importantes
     expect(result.senderAccount.firstName).toBe('Pedro');

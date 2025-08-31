@@ -267,36 +267,25 @@ export class TransactionsController {
   })
   @Post()
   @UseInterceptors(FileInterceptor('file'))
-  async create(
-    @Body() body: CreateTransactionBody,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
+  async create(@Body() body: CreateTransactionBody, @UploadedFile() file: Express.Multer.File) {
     if (!body || Object.keys(body).length === 0) {
       throw new BadRequestException('El body está vacío');
     }
 
     if (!body.createTransactionDto) {
       throw new BadRequestException(
-        'El campo createTransactionDto es requerido. Body recibido: ' +
-          JSON.stringify(body),
+        'El campo createTransactionDto es requerido. Body recibido: ' + JSON.stringify(body),
       );
     }
 
     let parsedDto: Partial<CreateTransactionDto>;
     try {
-      parsedDto = JSON.parse(
-        body.createTransactionDto,
-      ) as Partial<CreateTransactionDto>;
+      parsedDto = JSON.parse(body.createTransactionDto) as Partial<CreateTransactionDto>;
     } catch {
-      throw new BadRequestException(
-        'El campo createTransactionDto debe ser un JSON válido',
-      );
+      throw new BadRequestException('El campo createTransactionDto debe ser un JSON válido');
     }
 
-    const createTransactionDto = plainToInstance(
-      CreateTransactionDto,
-      parsedDto,
-    );
+    const createTransactionDto = plainToInstance(CreateTransactionDto, parsedDto);
 
     const fileData: FileUploadDTO = file
       ? {
@@ -314,10 +303,7 @@ export class TransactionsController {
           size: 0,
         };
 
-    return await this.transactionsService.create(
-      createTransactionDto,
-      fileData,
-    );
+    return await this.transactionsService.create(createTransactionDto, fileData);
   }
 
   // Obtener historial de estados (público)
@@ -331,8 +317,7 @@ export class TransactionsController {
   })
   @ApiResponse({
     status: 401,
-    description:
-      '❌ El apellido no coincide con el remitente de la transacción.',
+    description: '❌ El apellido no coincide con el remitente de la transacción.',
   })
   @ApiResponse({
     status: 404,
@@ -342,10 +327,7 @@ export class TransactionsController {
     @Param('id') id: string,
     @Query('lastName') lastName: string,
   ): Promise<any> {
-    const history = await this.transactionsService.getPublicStatusHistory(
-      id,
-      lastName,
-    );
+    const history = await this.transactionsService.getPublicStatusHistory(id, lastName);
     return {
       success: true,
       message: 'Historial obtenido correctamente',
@@ -364,8 +346,7 @@ export class TransactionsController {
   @ApiResponse({
     type: [TransactionGetResponseDto],
     status: 200,
-    description:
-      '✅ Lista de transacciones o mensaje indicando que no hay transacciones',
+    description: '✅ Lista de transacciones o mensaje indicando que no hay transacciones',
   })
   @ApiResponse({
     status: 401,
@@ -393,11 +374,7 @@ export class TransactionsController {
   }> {
     const email = req.user.email;
 
-    return await this.transactionsService.findAllUserEmail(
-      email,
-      page,
-      pageSize,
-    );
+    return await this.transactionsService.findAllUserEmail(email, page, pageSize);
   }
 
   // Obtener transacción por ID con autorización
@@ -406,8 +383,7 @@ export class TransactionsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @ApiOperation({
-    summary:
-      'Obtiene una transacción específica por su ID verificando el email del usuario',
+    summary: 'Obtiene una transacción específica por su ID verificando el email del usuario',
     description:
       'Devuelve la transacción completa con sus relaciones (cuentas, método de pago, monto y comprobante), ' +
       'siempre que el usuario autenticado sea el creador de la cuenta emisora. ' +
@@ -441,11 +417,10 @@ export class TransactionsController {
     const userEmail = req.user.email;
 
     try {
-      const transaction: Transaction =
-        await this.transactionsService.getTransactionByEmail(
-          transactionId,
-          userEmail,
-        );
+      const transaction: Transaction = await this.transactionsService.getTransactionByEmail(
+        transactionId,
+        userEmail,
+      );
 
       // Convierte Transaction → TransactionGetByIdDto y elimina los nulls automáticamente
       const dto = plainToInstance(TransactionGetByIdDto, transaction, {
@@ -458,13 +433,9 @@ export class TransactionsController {
         throw new ForbiddenException(error.message || 'Acceso no autorizado');
       }
       if (error instanceof NotFoundException) {
-        throw new NotFoundException(
-          error.message || 'Transacción no encontrada',
-        );
+        throw new NotFoundException(error.message || 'Transacción no encontrada');
       }
-      throw new InternalServerErrorException(
-        'Error inesperado al obtener la transacción',
-      );
+      throw new InternalServerErrorException('Error inesperado al obtener la transacción');
     }
   }
 }

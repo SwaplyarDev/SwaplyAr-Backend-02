@@ -1,11 +1,5 @@
 import { Platform } from 'src/enum/platform.enum';
-import {
-  Column,
-  Entity,
-  Index,
-  PrimaryGeneratedColumn,
-  TableInheritance,
-} from 'typeorm';
+import { Column, Entity, Index, PrimaryGeneratedColumn, TableInheritance } from 'typeorm';
 
 @Entity('payment_methods')
 @TableInheritance({ column: { type: 'varchar', name: 'method' } })

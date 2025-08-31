@@ -96,10 +96,7 @@ export class AccountsController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Request() req, @Body() dto: CreateBankAccountDto) {
     const userId = req.user.id;
-    const newBank = await this.accountsService.createUserBan(
-      dto.userAccValues,
-      userId,
-    );
+    const newBank = await this.accountsService.createUserBan(dto.userAccValues, userId);
     return { message: 'Banco creado correctamente', bank: newBank };
   }
 

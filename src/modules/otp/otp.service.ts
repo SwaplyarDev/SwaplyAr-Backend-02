@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OtpCode } from '../auth/entities/otp-code.entity';
@@ -47,14 +43,16 @@ export class OtpService {
 
     const otp = await this.createOtpFor(user);
     //await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
-    await this.mailer.sendAuthCodeMail(user.profile.email, {
-      NAME: user.profile.firstName || user.profile.email,
-      VERIFICATION_CODE: otp.code,
-      BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
-      EXPIRATION_MINUTES: 15, // o el valor que uses
-    },
-    'login'
-  );
+    await this.mailer.sendAuthCodeMail(
+      user.profile.email,
+      {
+        NAME: user.profile.firstName || user.profile.email,
+        VERIFICATION_CODE: otp.code,
+        BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
+        EXPIRATION_MINUTES: 15, // o el valor que uses
+      },
+      'login',
+    );
   }
 
   async sendOtpForTransaction(transactionId: string) {
@@ -64,26 +62,24 @@ export class OtpService {
       relations: ['senderAccount'], // <- aquí incluimos senderAccount
     });
 
-  if (!transaction) {
-    throw new BadRequestException('Transacción no encontrada');
-  }
-  if (!transaction.senderAccount?.createdBy) {
-    throw new BadRequestException('Transacción sin email');
-  }
+    if (!transaction) {
+      throw new BadRequestException('Transacción no encontrada');
+    }
+    if (!transaction.senderAccount?.createdBy) {
+      throw new BadRequestException('Transacción sin email');
+    }
 
     const email = transaction.senderAccount.createdBy;
 
-  const otp = await this.createOtpForTransaction(transactionId, email);
+    const otp = await this.createOtpForTransaction(transactionId, email);
 
-  await this.mailer.sendAuthCodeMail(email, {
-    NAME: email,
-    VERIFICATION_CODE: otp.code,
-    BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
-    EXPIRATION_MINUTES: 5,
-  }); 
-}
-
-
+    await this.mailer.sendAuthCodeMail(email, {
+      NAME: email,
+      VERIFICATION_CODE: otp.code,
+      BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
+      EXPIRATION_MINUTES: 5,
+    });
+  }
 
   async validateOtpAndGetUser(email: string, code: string): Promise<User> {
     const user = await this.userRepo.findOne({
@@ -105,10 +101,7 @@ export class OtpService {
     return user;
   }
 
-  async validateOtpForTransaction(
-    email: string,
-    code: string,
-  ): Promise<boolean> {
+  async validateOtpForTransaction(email: string, code: string): Promise<boolean> {
     // Buscar OTP por email y código
     const otp = await this.otpRepo.findOne({
       where: { email, code, isUsed: false },
@@ -144,10 +137,7 @@ export class OtpService {
     return this.otpRepo.save(otp);
   }
 
-  private async createOtpForTransaction(
-    transactionId: string,
-    email: string,
-  ): Promise<OtpCode> {
+  private async createOtpForTransaction(transactionId: string, email: string): Promise<OtpCode> {
     const code = generate(6, {
       lowerCaseAlphabets: false,
       upperCaseAlphabets: false,
@@ -165,15 +155,17 @@ export class OtpService {
   async generateAndSendOtp(user: User): Promise<void> {
     const otp = await this.createOtpFor(user);
     //await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
-    await this.mailer.sendAuthCodeMail(user.profile.email, {
-      ID: user.profile.id,
-      NAME: user.profile.firstName || user.profile.email,
-      VERIFICATION_CODE: otp.code,
-      BASE_URL: process.env.BASE_URL || 'http://localhost:3001',
-      EXPIRATION_MINUTES: 10,
-    },
-    'register'
-  );
+    await this.mailer.sendAuthCodeMail(
+      user.profile.email,
+      {
+        ID: user.profile.id,
+        NAME: user.profile.firstName || user.profile.email,
+        VERIFICATION_CODE: otp.code,
+        BASE_URL: process.env.BASE_URL || 'http://localhost:3001',
+        EXPIRATION_MINUTES: 10,
+      },
+      'register',
+    );
   }
 
   generateOtpToken(transactionId: string): string {

@@ -10,13 +10,7 @@ import { AuthModule } from '@auth/auth.module';
 import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      DiscountCode,
-      UserDiscount,
-      User,
-      Transaction,
-      UserRewardsLedger,
-    ]),
+    TypeOrmModule.forFeature([DiscountCode, UserDiscount, User, Transaction, UserRewardsLedger]),
     AuthModule,
   ],
   controllers: [DiscountsController],

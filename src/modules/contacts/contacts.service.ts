@@ -19,9 +19,7 @@ export class ContactService {
   }
 
   // crea un nuevo contacto
-  async createContact(
-    dto: CreateContactDto,
-  ): Promise<{ message: string; contact_id: string }> {
+  async createContact(dto: CreateContactDto): Promise<{ message: string; contact_id: string }> {
     const user_register = await this.usersService.findByEmail(dto.email);
 
     if (user_register) {

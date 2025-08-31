@@ -9,11 +9,7 @@ import { AuthModule } from '@auth/auth.module';
 import { Transaction } from '@transactions/entities/transaction.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User, OtpCode, Transaction]),
-    MailerModule,
-    AuthModule,
-  ],
+  imports: [TypeOrmModule.forFeature([User, OtpCode, Transaction]), MailerModule, AuthModule],
   providers: [OtpService],
   controllers: [OtpController],
   exports: [OtpService],

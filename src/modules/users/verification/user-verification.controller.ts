@@ -45,7 +45,10 @@ import {
 } from '@users/dto/create-user-verification.dto';
 import { VerificationFilesInterceptor } from '@users/interceptors/verification-files.interceptor';
 import { GetVerificationResponseDto } from '@users/dto/verification-response.dto';
-import { CreateVerificationResponseDto, VerificationDataDto } from './dto/create-verification-response.dto';
+import {
+  CreateVerificationResponseDto,
+  VerificationDataDto,
+} from './dto/create-verification-response.dto';
 import { ObjectId } from 'typeorm';
 
 @ApiTags('User Verification')
@@ -87,11 +90,9 @@ export class UserVerificationController {
       },
     },
   })
-
   @ApiNotFoundResponse({ description: 'Usuario no encontrado.' })
   @ApiConflictResponse({
-    description:
-      'Ya existe una solicitud de verificación pendiente para este usuario.',
+    description: 'Ya existe una solicitud de verificación pendiente para este usuario.',
   })
   @ApiForbiddenResponse({
     description: 'Autorización no permitida, solo para usuarios',
@@ -115,7 +116,6 @@ export class UserVerificationController {
   ) {
     const userId = req.user.id;
     return this.verificationService.create(userId, files);
-
   }
 
   @UseGuards(RolesGuard)
@@ -123,8 +123,7 @@ export class UserVerificationController {
   @Get('status')
   @ApiOperation({
     summary: 'Consultar estado de verificación',
-    description:
-      'Permite a un usuario consultar el estado actual de su verificación.',
+    description: 'Permite a un usuario consultar el estado actual de su verificación.',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -177,27 +176,27 @@ export class UserVerificationController {
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: UploadFilesDto })
   @ApiResponse({
-   status: HttpStatus.OK,
-   description: 'Documentos re-subidos exitosamente',
-   schema: {
-     type: 'object',
-     properties: {
-       success: { type: 'boolean', example: true },
-       message: {
-         type: 'string',
-         example:
-           'Imágenes de verificación re-subidas correctamente. Su verificación está pendiente de revisión.',
-       },
-       data: {
-         type: 'object',
-         properties: {
-           verification_id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
-           verification_status: { type: 'string', example: 'pending' },
-         },
-       },
-     },
-   },
- })
+    status: HttpStatus.OK,
+    description: 'Documentos re-subidos exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: {
+          type: 'string',
+          example:
+            'Imágenes de verificación re-subidas correctamente. Su verificación está pendiente de revisión.',
+        },
+        data: {
+          type: 'object',
+          properties: {
+            verification_id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
+            verification_status: { type: 'string', example: 'pending' },
+          },
+        },
+      },
+    },
+  })
   @ApiNotFoundResponse({
     description: 'No se encontró una verificación existente para este usuario.',
   })
@@ -221,10 +220,8 @@ export class UserVerificationController {
       selfie_image?: Express.Multer.File[];
     },
   ) {
-
     const userId = req.user.id;
-    return this.verificationService.reupload (userId, files);
-
+    return this.verificationService.reupload(userId, files);
   }
   @Get('admin/list')
   @UseGuards(RolesGuard)
@@ -286,15 +283,23 @@ export class UserVerificationController {
               documents: {
                 type: 'object',
                 properties: {
-                front: { type: 'string', example: 'https://.../front.png' },
-                back: { type: 'string', example: 'https://.../back.png' },
-                selfie: { type: 'string', example: 'https://.../selfie.png' },
+                  front: { type: 'string', example: 'https://.../front.png' },
+                  back: { type: 'string', example: 'https://.../back.png' },
+                  selfie: { type: 'string', example: 'https://.../selfie.png' },
                 },
               },
               verification_status: { type: 'string', example: 'pending' },
               rejection_note: { type: 'string', example: null },
-              submitted_at: { type: 'string', format: 'date-time', example: '2025-08-22T01:31:43.733Z' },
-              updated_at: { type: 'string', format: 'date-time', example: '2025-08-22T01:35:05.634Z' },
+              submitted_at: {
+                type: 'string',
+                format: 'date-time',
+                example: '2025-08-22T01:31:43.733Z',
+              },
+              updated_at: {
+                type: 'string',
+                format: 'date-time',
+                example: '2025-08-22T01:35:05.634Z',
+              },
               verified_at: { type: 'string', format: 'date-time', example: null },
             },
           },
@@ -315,18 +320,15 @@ export class UserVerificationController {
   @Get('admin/list')
   async listPending(@Query() query: GetVerificationsQueryDto) {
     const { status, page = 1, limit = 10 } = query;
-    const { data: verifications, total } =
-      await this.verificationService.findVerificationsByStatus(
-        status,
-        page,
-        limit,
-      );
+    const { data: verifications, total } = await this.verificationService.findVerificationsByStatus(
+      status,
+      page,
+      limit,
+    );
 
     const data = verifications.map((v) => {
       const latestAttempt =
-        v.attempts && v.attempts.length > 0
-          ? v.attempts[v.attempts.length - 1]
-          : null;
+        v.attempts && v.attempts.length > 0 ? v.attempts[v.attempts.length - 1] : null;
 
       const documents = latestAttempt
         ? {
@@ -347,15 +349,13 @@ export class UserVerificationController {
           ? {
               firstName: v.user.profile.firstName,
               lastName: v.user.profile.lastName,
-              email: "usuario@ejemplo.com",
+              email: 'usuario@ejemplo.com',
             }
           : null,
         documents,
         verification_status: v.verification_status,
         rejection_note:
-          v.note_rejection && v.note_rejection.trim() !== ''
-            ? v.note_rejection
-            : null,
+          v.note_rejection && v.note_rejection.trim() !== '' ? v.note_rejection : null,
         submitted_at: v.created_at,
         updated_at: v.updated_at,
         verified_at: v.verified_at ? v.verified_at.toISOString() : null,
@@ -364,9 +364,7 @@ export class UserVerificationController {
 
     return {
       success: true,
-      message: `Verificaciones${
-        status ? ` con estado ${status}` : ''
-      } obtenidas correctamente`,
+      message: `Verificaciones${status ? ` con estado ${status}` : ''} obtenidas correctamente`,
       page,
       limit,
       total,
@@ -412,8 +410,16 @@ export class UserVerificationController {
             },
             verification_status: { type: 'string', example: 'pending' },
             rejection_note: { type: 'string', example: null },
-            submitted_at: { type: 'string', format: 'date-time', example: '2025-08-22T01:31:43.733Z' },
-            updated_at: { type: 'string', format: 'date-time', example: '2025-08-22T01:35:05.634Z' },
+            submitted_at: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-08-22T01:31:43.733Z',
+            },
+            updated_at: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-08-22T01:35:05.634Z',
+            },
             verified_at: { type: 'string', format: 'date-time', example: null },
           },
         },
@@ -431,67 +437,63 @@ export class UserVerificationController {
   })
   @Get('admin/:verificationId')
   async getVerificationById(@Param('verificationId') verificationId: string) {
-  const verification =
-    await this.verificationService.findVerificationById(verificationId);
+    const verification = await this.verificationService.findVerificationById(verificationId);
 
-  if (!verification) {
-    throw new NotFoundException(
-      `Verification with id ${verificationId} not found`,
-    );
-  }
+    if (!verification) {
+      throw new NotFoundException(`Verification with id ${verificationId} not found`);
+    }
 
-  const profile = verification.user?.profile;
+    const profile = verification.user?.profile;
 
-  const latestAttempt =
-    verification.attempts && verification.attempts.length > 0
-      ? verification.attempts[verification.attempts.length - 1]
-      : null;
+    const latestAttempt =
+      verification.attempts && verification.attempts.length > 0
+        ? verification.attempts[verification.attempts.length - 1]
+        : null;
 
-  const documents = latestAttempt
-    ? {
-        front: latestAttempt.document_front,
-        back: latestAttempt.document_back,
-        selfie: latestAttempt.selfie_image,
-      }
-    : {
-        front: verification.document_front,
-        back: verification.document_back,
-        selfie: verification.selfie_image,
-      };
+    const documents = latestAttempt
+      ? {
+          front: latestAttempt.document_front,
+          back: latestAttempt.document_back,
+          selfie: latestAttempt.selfie_image,
+        }
+      : {
+          front: verification.document_front,
+          back: verification.document_back,
+          selfie: verification.selfie_image,
+        };
 
-  return {
-    success: true,
-    message: 'Verificación obtenida correctamente',
-    data: {
-      id: verification.verification_id,
-      user_id: verification.user?.id,
-      user_profile: profile
-        ? {
-            firstName: profile.firstName,
-            lastName: profile.lastName,
-            email: 'usuario@ejemplo.com', 
-          }
-        : null,
-      documents,
-      verification_status: verification.verification_status,
-       rejection_note:
+    return {
+      success: true,
+      message: 'Verificación obtenida correctamente',
+      data: {
+        id: verification.verification_id,
+        user_id: verification.user?.id,
+        user_profile: profile
+          ? {
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+              email: 'usuario@ejemplo.com',
+            }
+          : null,
+        documents,
+        verification_status: verification.verification_status,
+        rejection_note:
           verification.note_rejection && verification.note_rejection.trim() !== ''
             ? verification.note_rejection
             : null,
-      submitted_at: verification.created_at,
-      updated_at: verification.updated_at,
-      verified_at: verification.verified_at ? verification.verified_at.toISOString() : null,
-    },
-  };
-}
+        submitted_at: verification.created_at,
+        updated_at: verification.updated_at,
+        verified_at: verification.verified_at ? verification.verified_at.toISOString() : null,
+      },
+    };
+  }
 
   @Patch('admin/:verificationId')
   @UseGuards(RolesGuard)
   @Roles('admin')
   @ApiOperation({
     summary: 'Actualizar estado de verificación',
-    description:
-      'Permite a los administradores aprobar, rechazar o solicitar reenvío de datos.',
+    description: 'Permite a los administradores aprobar, rechazar o solicitar reenvío de datos.',
   })
   @ApiParam({
     name: 'verificationId',
@@ -594,8 +596,7 @@ export class UserVerificationController {
   @Roles('admin')
   @ApiOperation({
     summary: 'Eliminar una verificación',
-    description:
-      'Permite a los administradores eliminar una verificación existente por su ID.',
+    description: 'Permite a los administradores eliminar una verificación existente por su ID.',
   })
   @ApiParam({
     name: 'verificationId',

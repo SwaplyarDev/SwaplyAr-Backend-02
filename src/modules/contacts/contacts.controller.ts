@@ -129,10 +129,7 @@ export class ContactController {
   //actualiza un contacto por ID
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Put(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateContactDto,
-  ): Promise<Contact> {
+  async update(@Param('id') id: string, @Body() dto: UpdateContactDto): Promise<Contact> {
     return this.contactService.updateContact(id, dto);
   }
 

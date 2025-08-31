@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -117,9 +112,7 @@ export class AccountsService {
     });
 
     if (!userAccount) {
-      throw new BadRequestException(
-        'Cuenta no encontrada o no pertenece al usuario',
-      );
+      throw new BadRequestException('Cuenta no encontrada o no pertenece al usuario');
     }
 
     // Elimina solo en la tabla específica según el tipo de cuenta
@@ -200,8 +193,7 @@ export class AccountsService {
 
         // Mapear los detalles de forma segura, evitando undefined
         const mappedDetails = details.map((d) => ({
-          account_id:
-            d.account_id ?? d.bankId ?? d.receiver_crypto ?? d.virtual_bank_id,
+          account_id: d.account_id ?? d.bankId ?? d.receiver_crypto ?? d.virtual_bank_id,
           currency: d.currency,
           type: d.type,
           accountName: d.accountName ?? d.bank_name,
@@ -242,18 +234,14 @@ export class AccountsService {
     }
 
     //  Si pasamos bankAccountId, filtramos
-    const found = allBanks.find((bank) =>
-      bank.details.some((d) => d.account_id === bankAccountId),
-    );
+    const found = allBanks.find((bank) => bank.details.some((d) => d.account_id === bankAccountId));
 
     if (!found) {
       throw new NotFoundException('Cuenta no encontrada para este usuario');
     }
 
     //  Filtramos los detalles para devolver solo el que coincide
-    const filteredDetails = found.details.filter(
-      (d) => d.account_id === bankAccountId,
-    );
+    const filteredDetails = found.details.filter((d) => d.account_id === bankAccountId);
 
     return {
       ...found,

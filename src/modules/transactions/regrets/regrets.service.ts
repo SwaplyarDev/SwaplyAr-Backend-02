@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Regret } from './entities/regrets.entity';
@@ -30,9 +26,7 @@ export class RegretsService {
     })) as Transaction & { senderAccount: SenderFinancialAccount };
 
     if (!transaction) {
-      throw new NotFoundException(
-        `Transacción ${transaction_id} no encontrada`,
-      );
+      throw new NotFoundException(`Transacción ${transaction_id} no encontrada`);
     }
 
     const normalizePhone = (phone: string) => phone.replace(/\D/g, '');
@@ -40,8 +34,7 @@ export class RegretsService {
     if (
       transaction.senderAccount.lastName !== last_name ||
       transaction.senderAccount.createdBy !== email ||
-      normalizePhone(transaction.senderAccount.phoneNumber) !==
-        normalizePhone(phone_number)
+      normalizePhone(transaction.senderAccount.phoneNumber) !== normalizePhone(phone_number)
     ) {
       throw new BadRequestException(
         'La información suministrada no coincide con la información de la transacción',

@@ -44,7 +44,7 @@ export class PaymentMethodReceiverDto {
   sendMethodKey?: string;
 
   @Expose()
-  @ApiProperty({name: 'sendMethodValue',example: '1234567890123456789012',required: false,})
+  @ApiProperty({ name: 'sendMethodValue', example: '1234567890123456789012', required: false })
   sendMethodValue?: string;
 
   @Expose()
@@ -56,15 +56,15 @@ export class PaymentMethodReceiverDto {
   documentValue?: string;
 
   @Expose()
-  @ApiProperty({description: 'ID del banco virtual (PIX)',example: '123',required: false,})
+  @ApiProperty({ description: 'ID del banco virtual (PIX)', example: '123', required: false })
   pixId?: string;
 
   @Expose()
-  @ApiProperty({description: 'Clave del PIX',example: '123',required: false,})
+  @ApiProperty({ description: 'Clave del PIX', example: '123', required: false })
   pixKey?: string;
 
   @Expose()
-  @ApiProperty({description: 'Valor del PIX', example: '123', required: false,})
+  @ApiProperty({ description: 'Valor del PIX', example: '123', required: false })
   pixValue?: string;
 
   @Expose()
@@ -72,19 +72,27 @@ export class PaymentMethodReceiverDto {
   cpf?: string;
 
   @Expose()
-  @ApiProperty({description: 'Red (Crypto)',example: 'Ethereum',required: false,})
+  @ApiProperty({ description: 'Red (Crypto)', example: 'Ethereum', required: false })
   network?: string;
 
   @Expose()
-  @ApiProperty({description: 'Wallet (Crypto)',example: '0x123...',required: false,})
+  @ApiProperty({ description: 'Wallet (Crypto)', example: '0x123...', required: false })
   wallet?: string;
 
   @Expose()
-  @ApiProperty({description: 'Email de la cuenta (Virtual Bank)',example: 'nahuel@gmail.com',required: false,})
+  @ApiProperty({
+    description: 'Email de la cuenta (Virtual Bank)',
+    example: 'nahuel@gmail.com',
+    required: false,
+  })
   emailAccount?: string;
 
   @Expose()
-  @ApiProperty({description: 'Código de transferencia (Virtual Bank)', example: '123',required: false,})
+  @ApiProperty({
+    description: 'Código de transferencia (Virtual Bank)',
+    example: '123',
+    required: false,
+  })
   transferCode?: string;
 }
 
@@ -200,7 +208,6 @@ export class TransactionResponseDto {
   @ApiProperty({ example: null })
   regretId?: string | null;
 
-
   @Expose()
   @Type(() => AccountSenderDto)
   @ApiProperty({ name: 'senderAccount', type: AccountSenderDto })
@@ -221,7 +228,7 @@ export class TransactionResponseDto {
   @ApiProperty({ name: 'amount', type: AmountResponseDto })
   amount: AmountResponseDto;
 }
- 
+
 export class TransactionGetByIdDto extends TransactionResponseDto {
   @Expose()
   @ApiProperty({ example: false })
@@ -378,7 +385,7 @@ export class SenderAccountDto {
   @ApiProperty({ example: 'example@gmail.com' })
   @IsEmail()
   createdBy: string;
- 
+
   @ApiProperty({ example: 'Pérez' })
   phoneNumber: string;
 

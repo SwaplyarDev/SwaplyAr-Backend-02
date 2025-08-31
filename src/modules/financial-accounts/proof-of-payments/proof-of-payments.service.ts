@@ -20,11 +20,7 @@ export class ProofOfPaymentsService {
 
     const fileName = `proofOfPayment_${file.originalName}_${Date.now()}`; // le agregamos un nombre para la img
 
-    const imgUrl = await this.fileUploadService.uploadFile(
-      file,
-      folder,
-      fileName,
-    );
+    const imgUrl = await this.fileUploadService.uploadFile(file, folder, fileName);
     if (!imgUrl) {
       throw new Error('error al subir la imagen');
     }

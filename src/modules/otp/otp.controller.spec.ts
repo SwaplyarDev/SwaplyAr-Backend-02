@@ -70,10 +70,7 @@ describe('OtpController', () => {
     otpService.validateOtpAndGetUser.mockResolvedValue(fakeUser);
     authService.generateTokens.mockResolvedValue(tokens);
     const result = await controller.validateAndLogin(dto);
-    expect(otpService.validateOtpAndGetUser).toHaveBeenCalledWith(
-      dto.email,
-      dto.code,
-    );
+    expect(otpService.validateOtpAndGetUser).toHaveBeenCalledWith(dto.email, dto.code);
     expect(authService.generateTokens).toHaveBeenCalledWith(fakeUser);
     expect(result).toEqual(tokens);
   });

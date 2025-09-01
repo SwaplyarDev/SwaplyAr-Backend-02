@@ -69,10 +69,7 @@ export class User {
   refreshTokens: RefreshToken[];
 
   @Exclude()
-  @OneToMany(
-    () => UserVerification,
-    (userVerification) => userVerification.user,
-  )
+  @OneToMany(() => UserVerification, (userVerification) => userVerification.user)
   verifications: UserVerification[];
 
   @Exclude()

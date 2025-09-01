@@ -12,10 +12,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuestionsController } from './questions.controller';
 import { QuestionsService } from './questions.service';
-import {
-  BadRequestException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { Question } from './entities/question.entity';
 import { CreateQuestionDto } from './dto/create-question.dto';
 
@@ -83,9 +80,7 @@ describe('QuestionsController', () => {
     });
 
     it('Debe lanzar BadRequestException si "page" no es un número', async () => {
-      await expect(controller.getAllQuestionsPaginated('abc')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(controller.getAllQuestionsPaginated('abc')).rejects.toThrow(BadRequestException);
     });
 
     it('Debe usar la página 1 si no se pasa el query param "page"', async () => {
@@ -140,9 +135,9 @@ describe('QuestionsController', () => {
         description: '',
       };
 
-      await expect(
-        controller.createQuestion(invalidDto as any),
-      ).rejects.toThrow(BadRequestException);
+      await expect(controller.createQuestion(invalidDto as any)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('Debe lanzar BadRequestException si el DTO contiene campos extra no permitidos', async () => {
@@ -152,9 +147,9 @@ describe('QuestionsController', () => {
         extra: 'campo no permitido',
       };
 
-      await expect(
-        controller.createQuestion(invalidDto as any),
-      ).rejects.toThrow(BadRequestException);
+      await expect(controller.createQuestion(invalidDto as any)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

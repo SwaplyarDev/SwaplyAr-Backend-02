@@ -8,12 +8,7 @@ import { TransactionsModule } from '@transactions/transactions.module';
 import { OtpModule } from '@otp/otp.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Note, Transaction]),
-
-    OtpModule,
-    TransactionsModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Note, Transaction]), OtpModule, TransactionsModule],
 
   controllers: [NotesController],
   providers: [NotesService],

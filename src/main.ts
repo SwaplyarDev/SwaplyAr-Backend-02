@@ -22,10 +22,13 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      //exceptionFactory: (errors) => {
-        //console.log('❌ Errores de validación:', errors);
-        //return new Error(`Errores de validación:`);
-      //},
+      transformOptions: {
+        enableImplicitConversion: true, // 👈 hace cast automático (string → number, etc.)
+      },
+      exceptionFactory: (errors) => {
+        console.log('❌ Errores de validación:', errors);
+        return new Error(`Errores de validación:`);
+      },
     }),
   );
 
@@ -42,10 +45,7 @@ async function bootstrap() {
   ];
   app.enableCors({
     credentials: true,
-    origin: (
-      origin: string | undefined,
-      callback: (err: Error | null, allow?: boolean) => void,
-    ) =>
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) =>
       !origin || whitelist.includes(origin)
         ? callback(null, true)
         : callback(new Error('CORS origin no permitido'), false),
@@ -74,9 +74,7 @@ async function bootstrap() {
   const host = nodeEnv === 'production' ? '0.0.0.0' : 'localhost';
 
   await app.listen(port, host);
-  console.log(
-    `🚀 [${nodeEnv}] Server corriendo en http://${host}:${port}/${apiPrefix}`,
-  );
+  console.log(`🚀 [${nodeEnv}] Server corriendo en http://${host}:${port}/${apiPrefix}`);
 }
 
 void bootstrap();

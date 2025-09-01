@@ -32,10 +32,7 @@ export class OtpController {
   @ApiResponse({ status: 200, description: 'Tokens generados' })
   @ApiBody({ type: ValidateCodeDto })
   async validateAndLogin(@Body() dto: ValidateCodeDto) {
-    const user = await this.otpService.validateOtpAndGetUser(
-      dto.email,
-      dto.code,
-    );
+    const user = await this.otpService.validateOtpAndGetUser(dto.email, dto.code);
     return this.authService.generateTokens(user);
   }
 }

@@ -4,11 +4,16 @@ import { TransactionGetResponseDto } from '../../transactions/dto/transaction-re
 
 class NoteDto {
   @Expose()
-  @ApiProperty({ name: 'note_id', example: '8422324d-3c49-4a2c-899a-6866033e2aac', required: false})
+  @ApiProperty({
+    name: 'note_id',
+    example: '8422324d-3c49-4a2c-899a-6866033e2aac',
+    required: false,
+  })
   note_id: string;
 }
 
-class NoteDetailsDto extends NoteDto { // Extending NoteIdDto to reuse the note_id property
+class NoteDetailsDto extends NoteDto {
+  // Extending NoteIdDto to reuse the note_id property
   @Expose()
   @ApiProperty({
     example: 'https://res.cloudinary.com/dy1jiclwg/image/upload/...',
@@ -34,7 +39,6 @@ class NoteDetailsDto extends NoteDto { // Extending NoteIdDto to reuse the note_
   createdAt?: string;
 }
 
-
 export class TransactionAdminResponseDto extends TransactionGetResponseDto {
   @Expose()
   @Type(() => NoteDto)
@@ -46,11 +50,13 @@ export class TransactionAdminResponseDto extends TransactionGetResponseDto {
   isNoteVerified: boolean;
 
   @Expose()
-@ApiProperty({ name: 'noteVerificationExpiresAt', example: '2025-08-19T12:57:56.171Z', required: false })
-noteVerificationExpiresAt?: string;
-
+  @ApiProperty({
+    name: 'noteVerificationExpiresAt',
+    example: '2025-08-19T12:57:56.171Z',
+    required: false,
+  })
+  noteVerificationExpiresAt?: string;
 }
-
 
 export class TransactionByIdAdminResponseDto extends TransactionGetResponseDto {
   @Expose()
@@ -63,9 +69,10 @@ export class TransactionByIdAdminResponseDto extends TransactionGetResponseDto {
   isNoteVerified: boolean;
 
   @Expose()
-  @ApiProperty({ name: 'noteVerificationExpiresAt', example: '2025-08-19T12:57:56.171Z', required: false })
+  @ApiProperty({
+    name: 'noteVerificationExpiresAt',
+    example: '2025-08-19T12:57:56.171Z',
+    required: false,
+  })
   noteVerificationExpiresAt?: string;
-
 }
-
-

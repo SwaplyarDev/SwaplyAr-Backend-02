@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindManyOptions } from 'typeorm';
 import { Transaction } from '../../modules/transactions/entities/transaction.entity';
@@ -16,7 +11,7 @@ import { UpdateBankDto } from '../financial-accounts/payment-methods/bank/dto/cr
 import { AdministracionMaster } from './entities/administracion-master.entity';
 import { AdminStatus } from '../../enum/admin-status.enum';
 import { User } from '@users/entities/user.entity';
-import { TransactionStatus } from '../../enum/trasanction-status.enum';
+
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { DiscountService } from '@discounts/discounts.service';
 import { UpdateStarDto } from '@discounts/dto/update-star.dto';
@@ -45,25 +40,21 @@ export class AdminService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  private convertAdminStatusToTransactionStatus(
-    status: AdminStatus,
-  ): TransactionStatus {
-    // Mapeo directo entre AdminStatus y TransactionStatus
-    const statusMap: Record<AdminStatus, TransactionStatus> = {
-      [AdminStatus.Pending]: TransactionStatus.Pending,
-      [AdminStatus.ReviewPayment]: TransactionStatus.Review_Payment,
-      [AdminStatus.Approved]: TransactionStatus.Approved,
-      [AdminStatus.Rejected]: TransactionStatus.Rejected,
-      [AdminStatus.RefundInTransit]: TransactionStatus.Refund_In_Transit,
-      [AdminStatus.InTransit]: TransactionStatus.In_Transit,
-      [AdminStatus.Discrepancy]: TransactionStatus.Discrepancy,
-      [AdminStatus.Canceled]: TransactionStatus.Canceled,
-      [AdminStatus.Modified]: TransactionStatus.Modified,
-      [AdminStatus.Refunded]: TransactionStatus.Refunded,
-      [AdminStatus.Completed]: TransactionStatus.Completed,
+  private convertAdminStatusToTransactionStatus(status: AdminStatus): AdminStatus {
+    const statusMap: Record<AdminStatus, AdminStatus> = {
+      [AdminStatus.Pending]: AdminStatus.Pending,
+      [AdminStatus.ReviewPayment]: AdminStatus.ReviewPayment,
+      [AdminStatus.Approved]: AdminStatus.Approved,
+      [AdminStatus.Rejected]: AdminStatus.Rejected,
+      [AdminStatus.RefundInTransit]: AdminStatus.RefundInTransit,
+      [AdminStatus.InTransit]: AdminStatus.InTransit,
+      [AdminStatus.Discrepancy]: AdminStatus.Discrepancy,
+      [AdminStatus.Canceled]: AdminStatus.Canceled,
+      [AdminStatus.Modified]: AdminStatus.Modified,
+      [AdminStatus.Refunded]: AdminStatus.Refunded,
+      [AdminStatus.Completed]: AdminStatus.Completed,
     };
-
-    return statusMap[status] || TransactionStatus.Pending;
+    return statusMap[status] || AdminStatus.Pending;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -73,20 +64,19 @@ export class AdminService {
     page: number = 1,
     perPage: number = 10,
   ): Promise<{ meta: any; data: TransactionAdminResponseDto[] }> {
-    const [transactions, total] =
-      await this.transactionsRepository.findAndCount({
-        relations: [
-          'senderAccount',
-          'senderAccount.paymentMethod',
-          'receiverAccount',
-          'receiverAccount.paymentMethod',
-          'amount',
-          'proofOfPayment',
-          'note',
-        ],
-        skip: (page - 1) * perPage,
-        take: perPage,
-      });
+    const [transactions, total] = await this.transactionsRepository.findAndCount({
+      relations: [
+        'senderAccount',
+        'senderAccount.paymentMethod',
+        'receiverAccount',
+        'receiverAccount.paymentMethod',
+        'amount',
+        'proofOfPayment',
+        'note',
+      ],
+      skip: (page - 1) * perPage,
+      take: perPage,
+    });
 
     const data = transactions.map((tx) => ({
       id: tx.id,
@@ -217,8 +207,7 @@ export class AdminService {
       proofOfPayment: transaction.proofOfPayment,
       amount: transaction.amount,
       isNoteVerified: transaction.isNoteVerified,
-      noteVerificationExpiresAt:
-        transaction.noteVerificationExpiresAt?.toISOString(),
+      noteVerificationExpiresAt: transaction.noteVerificationExpiresAt?.toISOString(),
     } as TransactionByIdAdminResponseDto;
   }
   /* -------------------------------------------------------------------------- */
@@ -246,26 +235,20 @@ export class AdminService {
       });
 
       if (!statusHistory || statusHistory.length === 0) {
-        this.logger.warn(
-          `No se encontró historial de estados para la transacción ${id}`,
-        );
+        this.logger.warn(`No se encontró historial de estados para la transacción ${id}`);
         throw new NotFoundException('No se encontró historial de estados.');
       }
 
       // Transformar la respuesta para tener el formato deseado
-      const formattedHistory: StatusHistoryResponse[] = statusHistory.map(
-        (log) => ({
-          ...log,
-          changedByAdmin: {
-            id: log.changedByAdmin.id,
-            name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`,
-          },
-        }),
-      );
+      const formattedHistory: StatusHistoryResponse[] = statusHistory.map((log) => ({
+        ...log,
+        changedByAdmin: {
+          id: log.changedByAdmin.id,
+          name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`,
+        },
+      }));
 
-      this.logger.log(
-        `Historial de estados obtenido correctamente para la transacción ${id}`,
-      );
+      this.logger.log(`Historial de estados obtenido correctamente para la transacción ${id}`);
       return formattedHistory;
     } catch (error) {
       this.logger.error(
@@ -337,8 +320,7 @@ export class AdminService {
     await this.statusLogRepository.save(statusLog);
 
     // Convertir el estado de admin a estado de transacción
-    const transactionStatus =
-      this.convertAdminStatusToTransactionStatus(status);
+    const transactionStatus = this.convertAdminStatusToTransactionStatus(status);
 
     // Actualizar el estado en la transacción
     await this.transactionsRepository.update(
@@ -357,8 +339,7 @@ export class AdminService {
     if (status === AdminStatus.Approved) {
       // Solo cambia el estado, no asigna recompensas
       return {
-        message:
-          'Estado cambiado a approved correctamente. No se asignaron recompensas.',
+        message: 'Estado cambiado a approved correctamente. No se asignaron recompensas.',
         status: 200,
         transaction: updatedTransaction,
       };
@@ -380,8 +361,10 @@ export class AdminService {
 
       if (user) {
         const userId = user.id;
-        const { cycleCompleted, message: starMessage } =
-          await this.discountService.updateStars(starDto, userId);
+        const { cycleCompleted, message: starMessage } = await this.discountService.updateStars(
+          starDto,
+          userId,
+        );
 
         this.logger.log(
           `Recompensas actualizadas para usuario ${userId}: +${quantityToAdd}. Ciclo completo: ${cycleCompleted}`,
@@ -474,9 +457,7 @@ export class AdminService {
         );
       }
     } else {
-      throw new Error(
-        'Se requiere un archivo o comprobante válido en la solicitud',
-      );
+      throw new Error('Se requiere un archivo o comprobante válido en la solicitud');
     }
     await this.transactionsRepository.update(
       { id: transactionId },
@@ -650,41 +631,34 @@ export class AdminService {
   /* -------------------------------------------------------------------------- */
   async getAllStatusHistory(page = 1, limit = 10) {
     try {
-      const [statusHistory, total] =
-        await this.statusLogRepository.findAndCount({
-          relations: [
-            'transaction',
-            'changedByAdmin',
-            'changedByAdmin.profile',
-          ],
-          select: {
+      const [statusHistory, total] = await this.statusLogRepository.findAndCount({
+        relations: ['transaction', 'changedByAdmin', 'changedByAdmin.profile'],
+        select: {
+          id: true,
+          status: true,
+          changedAt: true,
+          message: true,
+          changedByAdmin: {
             id: true,
-            status: true,
-            changedAt: true,
-            message: true,
-            changedByAdmin: {
-              id: true,
-              profile: {
-                firstName: true,
-                lastName: true,
-              },
+            profile: {
+              firstName: true,
+              lastName: true,
             },
           },
-          order: { changedAt: 'DESC' },
-          skip: (page - 1) * limit,
-          take: limit,
-        });
+        },
+        order: { changedAt: 'DESC' },
+        skip: (page - 1) * limit,
+        take: limit,
+      });
 
       // Transformar la respuesta para tener el formato deseado
-      const formattedHistory: StatusHistoryResponse[] = statusHistory.map(
-        (log) => ({
-          ...log,
-          changedByAdmin: {
-            id: log.changedByAdmin.id,
-            name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`,
-          },
-        }),
-      );
+      const formattedHistory: StatusHistoryResponse[] = statusHistory.map((log) => ({
+        ...log,
+        changedByAdmin: {
+          id: log.changedByAdmin.id,
+          name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`,
+        },
+      }));
 
       return {
         data: formattedHistory,
@@ -696,10 +670,7 @@ export class AdminService {
         },
       };
     } catch (error) {
-      this.logger.error(
-        'Error al obtener el historial completo de estados:',
-        error,
-      );
+      this.logger.error('Error al obtener el historial completo de estados:', error);
       throw error;
     }
   }

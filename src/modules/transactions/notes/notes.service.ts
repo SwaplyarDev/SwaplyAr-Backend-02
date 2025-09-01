@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Note } from './entities/note.entity';
@@ -48,9 +43,7 @@ export class NotesService {
     }
 
     if (payload.transactionId !== transactionId) {
-      throw new BadRequestException(
-        'El token no corresponde a esta transacción',
-      );
+      throw new BadRequestException('Debes verificar el código para esta transacción');
     }
 
     // Obtener transacción y relacion note
@@ -65,14 +58,7 @@ export class NotesService {
 
     //  Evitar duplicados
     if (transaction.note) {
-      throw new BadRequestException(
-        'Ya existe una nota creada para esta transacción',
-      );
-    }
-
-    //  Validar message obligatorio
-    if (!createNoteDto.message || createNoteDto.message.trim() === '') {
-      throw new BadRequestException('El campo message es obligatorio');
+      throw new BadRequestException('Ya existe una nota creada para esta transacción');
     }
 
     //  Verificar que la nota esté habilitada
@@ -81,9 +67,7 @@ export class NotesService {
       !transaction.noteVerificationExpiresAt ||
       new Date() > transaction.noteVerificationExpiresAt
     ) {
-      throw new NotFoundException(
-        'El acceso para crear nota ha expirado o no está habilitado',
-      );
+      throw new NotFoundException('El acceso para crear nota ha expirado o no está habilitado');
     }
 
     //  Subir imagen a Cloudinary si existe
@@ -93,12 +77,10 @@ export class NotesService {
         img_url = await this.cloudinaryService.uploadFile(
           file.buffer,
           'notes',
-          `note-${Date.now()}`,
+          `note-${transactionId}-${Date.now()}`,
         );
       } catch (error) {
-        throw new BadRequestException(
-          'Error al subir la imagen a Cloudinary: ' + error.message,
-        );
+        throw new BadRequestException('Error al subir la imagen a Cloudinary: ' + error.message);
       }
     }
 
@@ -135,15 +117,13 @@ export class NotesService {
 
   async update(id: string, updateNoteDto: any) {
     const result = await this.notesRepository.update(id, updateNoteDto);
-    if (result.affected === 0)
-      throw new NotFoundException('Nota no encontrada');
+    if (result.affected === 0) throw new NotFoundException('Nota no encontrada');
     return this.findOne(id);
   }
 
   async remove(id: string) {
     const result = await this.notesRepository.delete(id);
-    if (result.affected === 0)
-      throw new NotFoundException('Nota no encontrada');
+    if (result.affected === 0) throw new NotFoundException('Nota no encontrada');
     return { message: 'Nota eliminada correctamente' };
   }
 }

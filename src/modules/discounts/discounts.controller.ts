@@ -12,13 +12,7 @@ import {
   HttpStatus,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiOkResponse,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { DiscountService } from './discounts.service';
 import { CreateUserDiscountDto } from './dto/create-user-discount.dto';
 import { FilterUserDiscountsDto } from './dto/filter-user-discounts.dto';
@@ -155,10 +149,7 @@ export class DiscountsController {
     @Query() filterDto: FilterUserDiscountsDto,
     @User() user: UserEntity,
   ): Promise<DataResponse<UserDiscount[]>> {
-    const discounts = await this.discountService.getUserDiscounts(
-      filterDto,
-      user.id,
-    );
+    const discounts = await this.discountService.getUserDiscounts(filterDto, user.id);
     return { data: discounts };
   }
 
@@ -212,9 +203,7 @@ export class DiscountsController {
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 403, description: 'No autorizado' })
   @HttpCode(HttpStatus.OK)
-  async deleteUserDiscount(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<DataResponse<void>> {
+  async deleteUserDiscount(@Param('id', ParseUUIDPipe) id: string): Promise<DataResponse<void>> {
     await this.discountService.deleteUserDiscount(id);
     return { data: undefined };
   }
@@ -226,8 +215,7 @@ export class DiscountsController {
   @Roles(...ADMIN_ROLES)
   @ApiOperation({ summary: 'Actualizar recompensas de usuario (estrellas)' })
   @ApiOkResponse({
-    description:
-      'Recompensa actualizada, devuelve true si se completó un ciclo',
+    description: 'Recompensa actualizada, devuelve true si se completó un ciclo',
     schema: {
       example: {
         data: {
@@ -300,8 +288,7 @@ export class DiscountsController {
   @Get('stars/:userId')
   @Roles(...ADMIN_ROLES)
   @ApiOperation({
-    summary:
-      'Obtener recompensas del usuario (cantidad y estrellas) por ID de usuario',
+    summary: 'Obtener recompensas del usuario (cantidad y estrellas) por ID de usuario',
   })
   @ApiOkResponse({
     description: 'Datos de recompensa',

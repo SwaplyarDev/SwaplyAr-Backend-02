@@ -36,9 +36,7 @@ export function validateFields(
     throw new BadRequestException(`Invalid account type: ${typeAccount}`);
   }
 
-  const missingFields = requiredFields[typeAccount].filter(
-    (field) => !formData[field],
-  );
+  const missingFields = requiredFields[typeAccount].filter((field) => !formData[field]);
   if (missingFields.length) {
     throw new BadRequestException(
       `Missing required fields for ${typeAccount} account: ${missingFields.join(', ')}`,
@@ -46,9 +44,7 @@ export function validateFields(
   }
 
   if (typeVerif === 'update' && updateFields[typeAccount]) {
-    const missingUpdateFields = updateFields[typeAccount].filter(
-      (field) => !formData[field],
-    );
+    const missingUpdateFields = updateFields[typeAccount].filter((field) => !formData[field]);
     if (missingUpdateFields.length) {
       throw new BadRequestException(
         `Missing required fields for updating ${typeAccount} account: ${missingUpdateFields.join(', ')}`,

@@ -13,15 +13,7 @@ import { ReceiverCrypto } from './receiver-crypto/entities/receiver-crypto.entit
 import { VirtualBank } from './virutal-bank/entities/virtual-bank.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      PaymentMethod,
-      Bank,
-      Pix,
-      ReceiverCrypto,
-      VirtualBank,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([PaymentMethod, Bank, Pix, ReceiverCrypto, VirtualBank])],
   controllers: [PaymentMethodController],
   providers: [
     PaymentMethodService,

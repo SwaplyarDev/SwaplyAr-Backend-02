@@ -1,10 +1,4 @@
-import {
-  IsBoolean,
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  Matches,
-} from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -45,7 +39,6 @@ export class RegisterUserDto {
   })
   termsAccepted: boolean;
 }
-
 
 export class UserResponseDto {
   @ApiProperty({

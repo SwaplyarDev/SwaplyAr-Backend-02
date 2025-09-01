@@ -7,15 +7,9 @@ import { Platform } from 'src/enum/platform.enum';
 
 @Injectable()
 export class BankService {
-  constructor(
-    @InjectRepository(Bank) private readonly bankRepository: Repository<Bank>,
-  ) {}
+  constructor(@InjectRepository(Bank) private readonly bankRepository: Repository<Bank>) {}
 
-  async create(
-    createBankDto: CreateBankDto,
-    platformId: Platform,
-    method: string,
-  ) {
+  async create(createBankDto: CreateBankDto, platformId: Platform, method: string) {
     const newBank = this.bankRepository.create({
       ...createBankDto,
       platformId,

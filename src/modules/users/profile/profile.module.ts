@@ -7,10 +7,7 @@ import { UserLocation } from '@users/entities/user-location.entity';
 import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UserProfile, UserLocation]),
-    FileUploadModule,
-  ],
+  imports: [TypeOrmModule.forFeature([UserProfile, UserLocation]), FileUploadModule],
   controllers: [ProfileController],
   providers: [ProfileService],
   exports: [ProfileService],

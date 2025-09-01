@@ -1,11 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  IsEnum,
-  IsNotEmpty,
-  IsInt,
-  Min,
-} from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsNotEmpty, IsInt, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { VerificationStatus } from '@users/entities/user-verification.entity';
 import { Type } from 'class-transformer';
@@ -67,8 +60,7 @@ export class UploadFilesDto {
 export class GetVerificationsQueryDto {
   @IsOptional()
   @IsEnum(VerificationStatus, {
-    message:
-      'El status debe ser uno de: pending, verified, rejected, resend-data',
+    message: 'El status debe ser uno de: pending, verified, rejected, resend-data',
   })
   status?: VerificationStatus;
 

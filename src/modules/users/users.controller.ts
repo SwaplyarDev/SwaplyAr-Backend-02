@@ -66,14 +66,14 @@ export class UsersController {
   })
   @Post('register')
   async register(@Body() userDto: RegisterUserDto): Promise<UserResponseDto> {
-  const user = await this.usersService.register(userDto);
+    const user = await this.usersService.register(userDto);
 
-  await this.otpService.generateAndSendOtp(user);
+    await this.otpService.generateAndSendOtp(user);
 
-  await this.discountService.assignSystemDiscount(user, 'WELCOME', 3);
+    await this.discountService.assignSystemDiscount(user, 'WELCOME', 3);
 
-  return user as unknown as UserResponseDto;
-}
+    return user as unknown as UserResponseDto;
+  }
 
   @Patch(':userId/role')
   @UseGuards(JwtAuthGuard, RolesGuard)

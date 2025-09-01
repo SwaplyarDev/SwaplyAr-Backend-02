@@ -14,15 +14,10 @@ export class SenderFinancialAccountsService {
     private readonly paymentMethodService: PaymentMethodService,
   ) {}
 
-  async create(
-    createSenderFinancialAccountDto: CreateSenderFinancialAccountDto,
-  ) {
+  async create(createSenderFinancialAccountDto: CreateSenderFinancialAccountDto) {
     const { paymentMethod } = createSenderFinancialAccountDto;
 
-    const newPaymentMethod = await this.paymentMethodService.create(
-      paymentMethod,
-      true,
-    );
+    const newPaymentMethod = await this.paymentMethodService.create(paymentMethod, true);
 
     const data = this.senderRepository.create({
       ...createSenderFinancialAccountDto,

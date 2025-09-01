@@ -1,21 +1,11 @@
-import {
-  Injectable,
-  NestMiddleware,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NestMiddleware, BadRequestException } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
 @Injectable()
 export class UpdateReceiverFieldsMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    const {
-      bankName,
-      sendMethodKey,
-      sendMethodValue,
-      documentType,
-      documentValue,
-      currency,
-    } = req.body;
+    const { bankName, sendMethodKey, sendMethodValue, documentType, documentValue, currency } =
+      req.body;
     if (
       !bankName &&
       !sendMethodKey &&

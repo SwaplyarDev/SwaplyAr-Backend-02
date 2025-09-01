@@ -1,10 +1,4 @@
-import {
-  IsEnum,
-  IsNumber,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Platform } from 'src/enum/platform.enum';
 
@@ -20,40 +14,40 @@ export class UserAccValuesDto {
   //bank
   @IsOptional()
   @IsString()
-  bankName: string;
+  bankName?: string;
 
   @IsOptional()
   @IsString()
-  send_method_key: string;
+  send_method_key?: string;
 
   @IsOptional()
   @IsString()
-  send_method_value: string;
+  send_method_value?: string;
 
   @IsOptional()
   @IsString()
-  document_type: string;
+  document_type?: string;
 
   @IsOptional()
   @IsNumber()
-  document_value: number;
+  document_value?: number;
 
   // receiver
   @IsOptional()
   @IsString()
-  network: string;
+  network?: string;
   @IsOptional()
   @IsString()
-  wallet: string;
+  wallet?: string;
 
   //virtual_bank
   @IsOptional()
   @IsString()
-  email: string;
+  email?: string;
 
   @IsOptional()
   @IsString()
-  firstName: string;
+  firstName?: string;
 
   @IsOptional()
   @IsString()
@@ -61,18 +55,18 @@ export class UserAccValuesDto {
 
   @IsOptional()
   @IsString()
-  type: Platform;
+  type?: Platform;
 
   // pix
   @IsOptional()
   @IsString()
-  cpf: string;
+  cpf?: string;
   @IsOptional()
   @IsString()
-  pix_value: string;
+  pix_value?: string;
   @IsOptional()
   @IsString()
-  pix_key: string;
+  pix_key?: string;
 }
 
 export class CreateBankAccountDto {

@@ -14,9 +14,7 @@ export class MailerService {
   private readonly logger = new Logger(MailerService.name);
 
   constructor(private readonly configService: ConfigService) {
-    this.mailer = createTransport(
-      configService.get<SMTPTransport.Options>('nodemailer'),
-    );
+    this.mailer = createTransport(configService.get<SMTPTransport.Options>('nodemailer'));
   }
 
   /**
@@ -24,11 +22,11 @@ export class MailerService {
    * - si `payload` es `string` => envía texto plano (legacy).
    * - si `payload` es un objeto => renderiza plantilla Handlebars.
    */
-  async sendAuthCodeMail(
-    to: string,
-    payload:
-      | string
-      | {
+async sendAuthCodeMail(
+  to: string,
+  payload:
+    | string
+    | {
         ID?: string;
         NAME: string;
         VERIFICATION_CODE: string;
@@ -36,13 +34,13 @@ export class MailerService {
         LOCATION?: string;
         EXPIRATION_MINUTES: number;
       },
-    mailType?: 'register' | 'login',
-  ) {
-    const nodemailerConfig = this.configService.get<any>('nodemailer');
-    const from =
-      nodemailerConfig?.auth?.user ??
-      this.configService.get<string>('EMAIL_USER') ??
-      this.configService.get<string>('nodemailer.auth.user');
+  mailType?: 'register' | 'login', 
+) {
+  const nodemailerConfig = this.configService.get<any>('nodemailer');
+  const from =
+    nodemailerConfig?.auth?.user ??
+    this.configService.get<string>('EMAIL_USER') ??
+    this.configService.get<string>('nodemailer.auth.user');
 
     if (!from) {
       this.logger.error(
@@ -66,14 +64,14 @@ export class MailerService {
       return { message: `The code has been sent to the email ${to}` };
     }
 
-    // Plantillas según mailType
-    const templateFiles =
-      mailType === 'register'
-        ? [
-          { file: 'welcome_verification_code.hbs', subject: 'Bienvenido a SwaplyAr' },
-          { file: 'plus_rewards_welcome.hbs', subject: 'Tus beneficios SwaplyAr Plus Rewards' },
-        ]
-        : [{ file: 'login_verification_code.hbs', subject: 'Código de inicio de sesión' }];
+  // Plantillas según mailType
+  const templateFiles =
+  mailType === 'register'
+    ? [
+        { file: 'welcome_verification_code.hbs', subject: 'Bienvenido a SwaplyAr' },
+        { file: 'plus_rewards_welcome.hbs', subject: 'Tus beneficios SwaplyAr Plus Rewards' },
+      ]
+    : [{ file: 'login_verification_code.hbs', subject: 'Código de inicio de sesión' }];
 
     for (const template of templateFiles) {
       const templateRelativeParts: string[] = [
@@ -191,9 +189,7 @@ export class MailerService {
 
       const selected = statusTemplates[status];
       if (!selected) {
-        this.logger.warn(
-          `No hay plantilla de correo definida para el estado: ${status}`,
-        );
+        this.logger.warn(`No hay plantilla de correo definida para el estado: ${status}`);
         return {
           message: `No se envió el correo. No hay plantilla para: ${status}`,
         };
@@ -214,24 +210,17 @@ export class MailerService {
       );
 
       if (!existsSync(templatePath)) {
-        this.logger.warn(
-          `No se encontró la plantilla en la ruta: ${templatePath}`,
-        );
+        this.logger.warn(`No se encontró la plantilla en la ruta: ${templatePath}`);
         return {
           message: `No se envió el correo. Falta plantilla para el estado: ${status}`,
         };
       }
 
       this.logger.log(`Cargando plantilla desde: ${templatePath}`);
-      const html = this.compileTemplate(
-        templatePath,
-        this.buildTemplateData(transaction),
-      );
+      const html = this.compileTemplate(templatePath, this.buildTemplateData(transaction));
 
       // ------- NUEVO: Determinar destinatario con fallback -------
-      const candidateEmails: Array<string | undefined> = [
-        transaction?.senderAccount?.createdBy
-      ];
+      const candidateEmails: Array<string | undefined> = [transaction?.senderAccount?.createdBy];
 
       const normalize = (s?: string) =>
         typeof s === 'string' ? s.trim().toLowerCase() : undefined;
@@ -266,9 +255,7 @@ export class MailerService {
         envelope: { from, to: [recipient] }, // explícito para evitar problemas en nodemailer
       };
 
-      this.logger.log(
-        `Enviando correo desde ${from} a ${recipient} (tx=${transaction?.id})`,
-      );
+      this.logger.log(`Enviando correo desde ${from} a ${recipient} (tx=${transaction?.id})`);
       try {
         const result = await this.mailer.sendMail(mailOptions);
         this.logger.log('Correo enviado exitosamente:', result);
@@ -287,9 +274,7 @@ export class MailerService {
         };
       }
     } catch (error: any) {
-      this.logger.error(
-        `Error al procesar sendStatusEmail: ${error?.message ?? error}`,
-      );
+      this.logger.error(`Error al procesar sendStatusEmail: ${error?.message ?? error}`);
       // Devolver info (no relanzar) para evitar que el flujo admin se caiga por un mail faltante.
       return {
         message: `Error interno en MailerService`,
@@ -301,10 +286,7 @@ export class MailerService {
   /**
    * Carga y compila un template Handlebars desde el archivo especificado.
    */
-  private compileTemplate(
-    templatePath: string,
-    data: Record<string, any>,
-  ): string {
+  private compileTemplate(templatePath: string, data: Record<string, any>): string {
     try {
       const rawTemplate = readFileSync(templatePath, 'utf8');
       const compiled = Handlebars.compile(rawTemplate);
@@ -315,7 +297,7 @@ export class MailerService {
     }
   }
 
-
+  
 
   /**
    * Construye los datos necesarios para renderizar el template de email.
@@ -331,8 +313,7 @@ export class MailerService {
       NAME: sender.firstName ?? '',
       LAST_NAME: sender.lastName ?? '',
       TRANSACTION_ID: transaction.id,
-      BASE_URL:
-        this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
+      BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
       DATE_HOUR: new Date().toLocaleString('es-AR'),
       PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
       AMOUNT_SENT: amount.amountSent ?? 0,
@@ -342,65 +323,6 @@ export class MailerService {
       PAYMENT_METHOD: receiver.paymentMethod?.bankName ?? 'N/A',
       RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`,
     };
-  }
-
-  /**
- * Devuelve la URL de la imagen según método y moneda
- */
-  private getPaymentMethodImg(paymentMethod: string, currency: string): string {
-    if (paymentMethod === 'paypal') {
-      return currency === 'USD'
-        ? 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224913/paypal.big_phrzvb.png'
-        : 'https://res.cloudinary.com/dwrhturiy/image/upload/v1726600628/paypal.dark_lgvm7j.png';
-    }
-    if (paymentMethod === 'payoneer') {
-      if (currency === 'USD')
-        return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224899/payoneer.usd.big_djd07t.png';
-      if (currency === 'EUR')
-        return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224887/payoneer.eur.big_xxdjxd.png';
-    }
-    if (paymentMethod === 'bank') {
-      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725223550/banco.medium_vy2eqp.webp';
-    }
-    if (paymentMethod === 'wise') {
-      if (currency === 'USD')
-        return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225432/wise.usd.big_yvnpez.png';
-      if (currency === 'EUR')
-        return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225416/wise.eur.big_etdolw.png';
-    }
-    if (paymentMethod === 'tether') {
-      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329683/TetherLight_jkyojt.png';
-    }
-    if (paymentMethod === 'pix') {
-      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329734/Pix1_lib603.png';
-    }
-    return '';
-  }
-
-  private getPaymentReceivedImg(paymentMethod: string, currency: string): string {
-    if (paymentMethod === 'paypal') {
-      return currency === 'USD'
-        ? 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224913/paypal.big_phrzvb.png'
-        : 'https://res.cloudinary.com/dwrhturiy/image/upload/v1726600628/paypal.dark_lgvm7j.png';
-    }
-    if (paymentMethod === 'payoneer') {
-      if (currency === 'USD') return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224899/payoneer.usd.big_djd07t.png';
-      if (currency === 'EUR') return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224887/payoneer.eur.big_xxdjxd.png';
-    }
-    if (paymentMethod === 'bank') {
-      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725223550/banco.medium_vy2eqp.webp';
-    }
-    if (paymentMethod === 'wise') {
-      if (currency === 'USD') return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225432/wise.usd.big_yvnpez.png';
-      if (currency === 'EUR') return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225416/wise.eur.big_etdolw.png';
-    }
-    if (paymentMethod === 'tether') {
-      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329683/TetherLight_jkyojt.png';
-    }
-    if (paymentMethod === 'pix') {
-      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329734/Pix1_lib603.png';
-    }
-    return '';
   }
 
 
@@ -414,20 +336,20 @@ export class MailerService {
       this.configService.get<string>('EMAIL_USER') ??
       this.configService.get<string>('nodemailer.auth.user');
 
-    // Ruta del template
-    const templatePath = join(
-      __dirname,
-      '..',
-      '..',
-      '..',
-      'modules',
-      'mailer',
-      'templates',
-      'email',
-      'transaction',
-      'operations_transactions',
-      'review-payment.hbs',
-    );
+  // Ruta del template
+  const templatePath = join(
+    __dirname,
+    '..',
+    '..',
+    '..',
+    'modules',
+    'mailer',
+    'templates',
+    'email',
+    'transaction',
+    'operations_transactions',
+    'pending.hbs',
+  );
 
     const html = this.compileTemplate(templatePath, context);
 
@@ -439,44 +361,31 @@ export class MailerService {
     });
   }
 
-  /**
-   * Construye los datos necesarios para el template review-payment.hbs.
-   */
-  private buildReviewPaymentTemplateData(transaction: any): Record<string, any> {
-    const sender = transaction.senderAccount ?? {};
-    const receiver = transaction.receiverAccount ?? {};
-    const amount = transaction.amount ?? {};
+/**
+ * Construye los datos necesarios para el template review-payment.hbs.
+ */
+private buildReviewPaymentTemplateData(transaction: any): Record<string, any> {
+  const sender = transaction.senderAccount ?? {};
+  const receiver = transaction.receiverAccount ?? {};
+  const amount = transaction.amount ?? {};
 
-    const receiverPaymentMethod = receiver.paymentMethod?.method ?? '';
-    const receiverCurrency = amount.currencyReceived ?? '';
-
-    const paymentMethod = sender.paymentMethod?.method ?? '';
-    const currency = amount.currencySent ?? '';
-
-    return {
-      REFERENCE_NUMBER: transaction.id?.slice(0, 8)?.toUpperCase() ?? '',
-      TRANSACTION_ID: transaction.id,
-      NAME: sender.firstName ?? '',
-      LAST_NAME: sender.lastName ?? '',
-      PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
-      AMOUNT_SENT: amount.amountSent ?? 0,
-      SENT_CURRENCY: amount.currencySent ?? '',
-      DOCUMENT_NUMBER: sender.paymethod?.document_value ?? '',
-      PAYMENT_METHOD: paymentMethod || 'No especificado',
-      PAYMENT_RECEIVED_IMG: this.getPaymentReceivedImg(receiverPaymentMethod, receiverCurrency),
-      PAYMENT_METHOD_IMG: this.getPaymentMethodImg(sender.paymentMethod?.method ?? '', transaction.amount?.currencySent ?? ''),
-      //PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
-      AMOUNT_RECEIVED: amount.amountReceived ?? 0,
-      RECEIVED_CURRENCY: amount.currencyReceived ?? '',
-      RECEIVED_NAME: receiver.firstName ?? 'No especificado',
-      BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
-      DATE_HOUR: new Date().toLocaleString('es-AR'),
-      MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
-
-
-      //PAYMENT_METHOD_IMG: this.getPaymentMethodImg(paymentMethod, currency),
-    };
-  }
+  return {
+    REFERENCE_NUMBER: transaction.id?.slice(0, 8)?.toUpperCase() ?? '',
+    TRANSACTION_ID: transaction.id,
+    NAME: sender.firstName ?? '',
+    LAST_NAME: sender.lastName ?? '',
+    PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
+    AMOUNT_SENT: amount.amountSent ?? 0,
+    SENT_CURRENCY: amount.currencySent ?? '',
+    PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
+    AMOUNT_RECEIVED: amount.amountReceived ?? 0,
+    RECEIVED_CURRENCY: amount.currencyReceived ?? '',
+    RECEIVED_NAME: receiver.firstName ?? 'No especificado',
+    BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
+    DATE_HOUR: new Date().toLocaleString('es-AR'),
+    MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
+  };
+}
 
 
 

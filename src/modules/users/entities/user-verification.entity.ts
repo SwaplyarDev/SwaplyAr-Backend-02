@@ -27,8 +27,8 @@ export class UserVerification {
   @JoinColumn({ name: 'user_id' }) //  fuerza a usar user_id como FK
   user: User;
 
-  @OneToMany (() => UserVerificationAttempt, (attempt) => attempt.verification)
-  attempts: UserVerificationAttempt [];
+  @OneToMany(() => UserVerificationAttempt, (attempt) => attempt.verification)
+  attempts: UserVerificationAttempt[];
 
   @Column()
   document_front: string;

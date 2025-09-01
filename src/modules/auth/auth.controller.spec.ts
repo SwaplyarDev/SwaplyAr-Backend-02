@@ -38,9 +38,7 @@ describe('AuthController', () => {
     const expectedtoken = { access_token: 'refresh123' };
     authService.refreshAccessToken.mockResolvedValue(expectedtoken);
     const result = await controller.refresh(dto);
-    expect(authService.refreshAccessToken).toHaveBeenCalledWith(
-      dto.refresh_token,
-    );
+    expect(authService.refreshAccessToken).toHaveBeenCalledWith(dto.refresh_token);
     expect(result).toEqual(expectedtoken);
   });
 });

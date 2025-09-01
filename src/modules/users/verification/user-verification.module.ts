@@ -9,7 +9,10 @@ import { DiscountModule } from '@discounts/discounts.module';
 import { UserVerificationAttempt } from '@users/entities/user-verification-attempt.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserVerification, User, UserVerificationAttempt]), DiscountModule],
+  imports: [
+    TypeOrmModule.forFeature([UserVerification, User, UserVerificationAttempt]),
+    DiscountModule,
+  ],
   controllers: [UserVerificationController],
   providers: [UserVerificationService, CloudinaryService],
   exports: [UserVerificationService],

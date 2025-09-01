@@ -1,12 +1,5 @@
 import { AdminStatus } from '../../../enum/admin-status.enum';
-import {
-  IsNotEmpty,
-  IsUUID,
-  IsEnum,
-  IsOptional,
-  IsString,
-  IsBoolean,
-} from 'class-validator';
+import { IsNotEmpty, IsUUID, IsEnum, IsOptional, IsString, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAdministracionStatusLogDto {

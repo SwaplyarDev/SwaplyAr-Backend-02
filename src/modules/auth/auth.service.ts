@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MailerService } from 'src/modules/mailer/mailer.service';
@@ -68,9 +64,7 @@ export class AuthService {
         secret: process.env.JWT_REFRESH_SECRET,
       });
     } catch (error) {
-      throw new UnauthorizedException(
-        `Invalid or expired refresh token. - ${error}`,
-      );
+      throw new UnauthorizedException(`Invalid or expired refresh token. - ${error}`);
     }
 
     const payload = this.buildPayload(user);

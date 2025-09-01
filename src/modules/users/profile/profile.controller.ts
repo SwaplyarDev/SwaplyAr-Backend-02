@@ -18,12 +18,7 @@ import { ProfileService } from './profile.service';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { User } from '@users/entities/user.entity';
 import { UserProfile } from '@users/entities/user-profile.entity';
 
@@ -72,9 +67,7 @@ export class ProfileController {
     description: 'Perfil de usuario',
     type: User,
   })
-  async getUserProfileByIdController(
-    @Query('userId') userId: string,
-  ): Promise<UserProfile> {
+  async getUserProfileByIdController(@Query('userId') userId: string): Promise<UserProfile> {
     if (!userId || userId.trim() === '') {
       throw new BadRequestException('El ID del usuario es requerido');
     }
@@ -105,9 +98,7 @@ export class ProfileController {
     description: 'Perfil de usuario',
     type: UserProfile,
   })
-  async getUserProfileByEmailController(
-    @Query('email') email: string,
-  ): Promise<UserProfile> {
+  async getUserProfileByEmailController(@Query('email') email: string): Promise<UserProfile> {
     if (!email || email.trim() === '') {
       throw new BadRequestException('Email is required');
     }
@@ -142,10 +133,7 @@ export class ProfileController {
   ) {
     const userId = req.user.id;
 
-    return this.profileService.updateNickname(
-      userId,
-      updateNicknameDto.nickName,
-    );
+    return this.profileService.updateNickname(userId, updateNicknameDto.nickName);
   }
 
   /**
@@ -160,10 +148,7 @@ export class ProfileController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Actualizar email del perfil autenticado' })
   @ApiResponse({ status: 200, description: 'Email actualizado correctamente' })
-  async updateUserProfileEmailController(
-    @Req() req,
-    @Body() updateEmailDto: UpdateEmailDto,
-  ) {
+  async updateUserProfileEmailController(@Req() req, @Body() updateEmailDto: UpdateEmailDto) {
     const userId = req.user.id;
     return this.profileService.updateEmail(userId, updateEmailDto.email);
   }
@@ -179,10 +164,7 @@ export class ProfileController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Actualizar email del perfil autenticado' })
   @ApiResponse({ status: 200, description: 'Email actualizado correctamente' })
-  async updateUserProfilePhoneController(
-    @Req() req,
-    @Body() updatePhoneDto: UpdatePhoneDto,
-  ) {
+  async updateUserProfilePhoneController(@Req() req, @Body() updatePhoneDto: UpdatePhoneDto) {
     const userId = req.user.id;
     console.log(userId);
 
@@ -232,10 +214,7 @@ export class ProfileController {
   @Put('my-profile/picture')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
-  async updateProfilePicture(
-    @UploadedFile() file: Express.Multer.File,
-    @Req() req: any,
-  ) {
+  async updateProfilePicture(@UploadedFile() file: Express.Multer.File, @Req() req: any) {
     const userId = req.user?.id;
 
     if (!userId) {
@@ -247,10 +226,7 @@ export class ProfileController {
     }
 
     try {
-      const result = await this.profileService.updateUserPictureById(
-        userId,
-        file,
-      );
+      const result = await this.profileService.updateUserPictureById(userId, file);
       return { message: 'Imagen actualizada correctamente', result };
     } catch (error) {
       console.log('error', error);

@@ -95,9 +95,7 @@ export class ProfileService {
     });
 
     if (!profile) {
-      throw new NotFoundException(
-        `Perfil con ID de usuario ${userId} no encontrado`,
-      );
+      throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
     }
 
     // Validar si ya existe otro perfil con el mismo email
@@ -120,15 +118,11 @@ export class ProfileService {
       relations: ['user'],
     });
     if (!profile) {
-      throw new NotFoundException(
-        `Perfil con ID de usuario ${userId} no encontrado`,
-      );
+      throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
     }
 
     if (profile.phone === phone) {
-      throw new BadRequestException(
-        'Este número ya está registrado en tu perfil.',
-      );
+      throw new BadRequestException('Este número ya está registrado en tu perfil.');
     }
 
     profile.phone = phone;
@@ -137,19 +131,14 @@ export class ProfileService {
   }
 
   // actualiza la localizacion del usuario logeado
-  async updateLocation(
-    userId: string,
-    locationDto: UpdateUserLocationDto,
-  ): Promise<UserProfile> {
+  async updateLocation(userId: string, locationDto: UpdateUserLocationDto): Promise<UserProfile> {
     const profile = await this.profileRepository.findOne({
       where: { user: { id: userId } },
       relations: ['user', 'user.locations'],
     });
 
     if (!profile) {
-      throw new NotFoundException(
-        `Perfil con ID de usuario ${userId} no encontrado`,
-      );
+      throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
     }
 
     const user = profile.user;
@@ -185,9 +174,7 @@ export class ProfileService {
     });
 
     if (!profile) {
-      throw new NotFoundException(
-        `Perfil con ID de usuario ${id} no encontrado`,
-      );
+      throw new NotFoundException(`Perfil con ID de usuario ${id} no encontrado`);
     }
 
     await this.profileRepository.remove(profile);
@@ -216,11 +203,7 @@ export class ProfileService {
       buffer: file.buffer,
     };
 
-    const imgUrl = await this.fileUploadService.uploadFile(
-      fileDTO,
-      folder,
-      fileName,
-    );
+    const imgUrl = await this.fileUploadService.uploadFile(fileDTO, folder, fileName);
     if (!imgUrl) {
       throw new Error('Error al subir la imagen');
     }

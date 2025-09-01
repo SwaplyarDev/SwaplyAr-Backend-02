@@ -55,12 +55,8 @@ export class AdministracionMaster {
   transferReceived: string;
 
   // Logs de estado asociados
-  @OneToMany(
-    () => AdministracionStatusLog,
-    (log: AdministracionStatusLog) => log.transaction,
-    {
-      cascade: true,
-    },
-  )
+  @OneToMany(() => AdministracionStatusLog, (log: AdministracionStatusLog) => log.transaction, {
+    cascade: true,
+  })
   statusLogs: AdministracionStatusLog[];
 }

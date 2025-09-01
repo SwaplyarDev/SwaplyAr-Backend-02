@@ -1,11 +1,5 @@
 import { Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsString,
-  IsArray,
-  IsDate,
-  ValidateNested,
-} from 'class-validator';
+import { IsBoolean, IsString, IsArray, IsDate, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class StatusHistoryItemDto {

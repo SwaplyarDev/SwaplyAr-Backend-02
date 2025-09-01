@@ -14,19 +14,10 @@ import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { NotFoundException } from '@nestjs/common';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { Question } from './entities/question.entity';
 import { JwtAuthGuard } from '../../common/jwt-auth.guard';
-import {
-  createQuestionSchema,
-  deleteQuestionSchema,
-} from './validation/question.schema';
+import { createQuestionSchema, deleteQuestionSchema } from './validation/question.schema';
 import { BadRequestException } from '@nestjs/common';
 
 @ApiTags('Questions')
@@ -68,9 +59,7 @@ export class QuestionsController {
       const pageNumber = parseInt(page, 10);
 
       if (isNaN(pageNumber)) {
-        throw new BadRequestException(
-          'El parámetro "page" debe ser un número válido',
-        );
+        throw new BadRequestException('El parámetro "page" debe ser un número válido');
       }
 
       const currentPage = pageNumber <= 0 ? 1 : pageNumber;
@@ -81,9 +70,7 @@ export class QuestionsController {
         throw error;
       }
 
-      throw new InternalServerErrorException(
-        'Error al obtener las preguntas paginadas',
-      );
+      throw new InternalServerErrorException('Error al obtener las preguntas paginadas');
     }
   }
 
@@ -118,9 +105,7 @@ export class QuestionsController {
     const result = createQuestionSchema.safeParse(body);
 
     if (!result.success) {
-      const isStrictError = result.error.issues.some(
-        (issue) => issue.code === 'unrecognized_keys',
-      );
+      const isStrictError = result.error.issues.some((issue) => issue.code === 'unrecognized_keys');
 
       const message = isStrictError
         ? "Solo se aceptan los campos 'title' y 'description'"

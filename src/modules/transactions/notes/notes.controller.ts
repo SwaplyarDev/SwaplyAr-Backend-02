@@ -31,8 +31,8 @@ import { ValidateNoteCodeDto } from './dto/validate-note-code.dto';
 import { RequestNoteCodeDto } from './dto/request-note-code.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
+import { plainToClass, plainToInstance } from 'class-transformer';
+import { validate, validateOrReject } from 'class-validator';
 
 @ApiTags('Notas')
 @Controller('notes')
@@ -106,10 +106,9 @@ export class NotesController {
   // VERIFICA EL CODIGO OTP PARA UNA TRANSACCIÓN
   @Post('verify-code')
   async verifyNoteCode(@Body() dto: ValidateNoteCodeDto) {
-    const transaction = await this.transactionsService.findOne(
-      dto.transaction_id,
-      { relations: ['senderAccount', 'receiverAccount', 'amount'] },
-    );
+    const transaction = await this.transactionsService.findOne(dto.transaction_id, {
+      relations: ['senderAccount', 'receiverAccount', 'amount'],
+    });
 
     if (!transaction) {
       throw new NotFoundException('Transacción no encontrada');
@@ -121,10 +120,7 @@ export class NotesController {
       throw new BadRequestException('Email no asociado a la transacción');
     }
 
-    const isValidOtp = await this.otpService.validateOtpForTransaction(
-      email,
-      dto.code,
-    );
+    const isValidOtp = await this.otpService.validateOtpForTransaction(email, dto.code);
 
     if (!isValidOtp) {
       throw new UnauthorizedException('Código OTP inválido o expirado');
@@ -202,20 +198,11 @@ export class NotesController {
     @Req() req: Request,
   ) {
     const token = req.headers['note-access-token'] as string;
-    console.log('TOKEN:', token);
-    console.log('TRANSACTION ID:', transactionId);
-    console.log('body:', createNoteDto);
 
-    if (!token)
-      throw new BadRequestException('Falta el header note-access-token');
+    if (!token) throw new BadRequestException('Falta el header note-access-token');
 
     try {
-      return await this.notesService.create(
-        transactionId,
-        createNoteDto,
-        token,
-        file,
-      );
+      return await this.notesService.create(transactionId, createNoteDto, token, file);
     } catch (error) {
       throw new HttpException(
         error.message || 'Error interno al crear la nota',
@@ -223,7 +210,7 @@ export class NotesController {
       );
     }
   }
-
+  // obtiene todas las notas
   @ApiOperation({ summary: 'Obtener todas las notas' })
   @ApiResponse({
     status: 200,

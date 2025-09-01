@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class FixFinancialAccountsRelation1750000004000
-  implements MigrationInterface
-{
+export class FixFinancialAccountsRelation1750000004000 implements MigrationInterface {
   name = 'FixFinancialAccountsRelation1750000004000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

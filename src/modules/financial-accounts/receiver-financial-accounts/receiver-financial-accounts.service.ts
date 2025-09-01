@@ -14,13 +14,10 @@ export class ReceiverFinancialAccountsService {
     private readonly paymentMethodService: PaymentMethodService,
   ) {}
 
-  async create(
-    createReceiverFinancialAccountDto: CreateReceiverFinancialAccountDto,
-  ) {
+  async create(createReceiverFinancialAccountDto: CreateReceiverFinancialAccountDto) {
     const { paymentMethod } = createReceiverFinancialAccountDto;
 
-    const newPaymentMethod =
-      await this.paymentMethodService.create(paymentMethod);
+    const newPaymentMethod = await this.paymentMethodService.create(paymentMethod);
     console.log('Nuevo método de pago creado:', newPaymentMethod);
 
     // Crear el objeto base, pero asegurando que firstName y lastName tengan valor

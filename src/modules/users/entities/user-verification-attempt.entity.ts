@@ -1,7 +1,4 @@
-
-
 import {
-
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -12,36 +9,29 @@ import {
 
 import { UserVerification } from './user-verification.entity';
 
-@Entity ('user_verification_attempts')
-
+@Entity('user_verification_attempts')
 export class UserVerificationAttempt {
-
-  @PrimaryGeneratedColumn ('uuid')
+  @PrimaryGeneratedColumn('uuid')
   attempt_id: string;
 
-  @Column ()
+  @Column()
   verification_id: string;
 
-  @Column ()
+  @Column()
   document_front: string;
 
-  @Column ()
+  @Column()
   document_back: string;
 
-  @Column ()
+  @Column()
   selfie_image: string;
 
-  @CreateDateColumn ()
+  @CreateDateColumn()
   created_at: Date;
 
-  @ManyToOne (() => UserVerification, (verification) => verification.attempts, {
-
+  @ManyToOne(() => UserVerification, (verification) => verification.attempts, {
     onDelete: 'CASCADE',
-
   })
-
-  @JoinColumn ({ name: 'verification_id' })
+  @JoinColumn({ name: 'verification_id' })
   verification: UserVerification;
-  
 }
-

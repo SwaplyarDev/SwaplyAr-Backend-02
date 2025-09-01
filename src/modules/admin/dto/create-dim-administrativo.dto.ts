@@ -1,10 +1,4 @@
-import {
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsEmail,
-  IsDateString,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsEmail, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateDimAdministrativoDto {

@@ -5,10 +5,7 @@ import { ReceiverFinancialAccount } from './entities/receiver-financial-account.
 import { PaymentMethodModule } from '@financial-accounts/payment-methods/payment-method.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([ReceiverFinancialAccount]),
-    PaymentMethodModule,
-  ],
+  imports: [TypeOrmModule.forFeature([ReceiverFinancialAccount]), PaymentMethodModule],
   controllers: [],
   providers: [ReceiverFinancialAccountsService],
   exports: [ReceiverFinancialAccountsService],

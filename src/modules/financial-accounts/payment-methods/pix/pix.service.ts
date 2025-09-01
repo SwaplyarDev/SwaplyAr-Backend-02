@@ -7,15 +7,9 @@ import { Platform } from 'src/enum/platform.enum';
 
 @Injectable()
 export class PixService {
-  constructor(
-    @InjectRepository(Pix) private readonly pixRepository: Repository<Pix>,
-  ) {}
+  constructor(@InjectRepository(Pix) private readonly pixRepository: Repository<Pix>) {}
 
-  async create(
-    createPixDto: CreatePixDto,
-    platformId: Platform,
-    method: string,
-  ) {
+  async create(createPixDto: CreatePixDto, platformId: Platform, method: string) {
     const newPix = this.pixRepository.create({
       ...createPixDto,
       platformId,

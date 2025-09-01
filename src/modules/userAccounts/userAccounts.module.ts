@@ -11,13 +11,7 @@ import { UserPix } from './entities/user-pix.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      UserAccount,
-      UserBank,
-      UserVirtualBank,
-      UserReceiverCrypto,
-      UserPix,
-    ]),
+    TypeOrmModule.forFeature([UserAccount, UserBank, UserVirtualBank, UserReceiverCrypto, UserPix]),
   ],
   controllers: [AccountsController],
   providers: [AccountsService],

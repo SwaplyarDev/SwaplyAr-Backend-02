@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFinancialAccountDto } from './dto/create-financial-accounts.dto';
 import { SenderFinancialAccountsService } from './sender-financial-accounts/sender-financial-accounts.service';
 import { ReceiverFinancialAccountsService } from './receiver-financial-accounts/receiver-financial-accounts.service';
@@ -64,8 +60,7 @@ export class FinancialAccountsService {
       const newPlatformId = incomingPaymentMethod.platformId?.toLowerCase();
       const newMethod = incomingPaymentMethod.method?.toLowerCase();
 
-      const isDifferent =
-        currentPlatformId !== newPlatformId || currentMethod !== newMethod;
+      const isDifferent = currentPlatformId !== newPlatformId || currentMethod !== newMethod;
 
       if (isDifferent) {
         throw new BadRequestException(
@@ -82,9 +77,7 @@ export class FinancialAccountsService {
     const existingAccount = await this.receiverService.findById(id);
 
     if (!existingAccount) {
-      throw new NotFoundException(
-        `Cuenta receptora con ID ${id} no encontrada`,
-      );
+      throw new NotFoundException(`Cuenta receptora con ID ${id} no encontrada`);
     }
 
     const currentPaymentMethod = existingAccount.paymentMethod;
@@ -98,8 +91,7 @@ export class FinancialAccountsService {
       const newPlatformId = incomingPaymentMethod.platformId?.toLowerCase();
       const newMethod = incomingPaymentMethod.method?.toLowerCase();
 
-      const isDifferent =
-        currentPlatformId !== newPlatformId || currentMethod !== newMethod;
+      const isDifferent = currentPlatformId !== newPlatformId || currentMethod !== newMethod;
 
       if (isDifferent) {
         throw new BadRequestException(
@@ -119,8 +111,6 @@ export class FinancialAccountsService {
     const receiverDeleted = await this.receiverService.delete(id);
     if (receiverDeleted) return;
 
-    throw new NotFoundException(
-      `No se encontró ninguna cuenta con el ID: ${id}`,
-    );
+    throw new NotFoundException(`No se encontró ninguna cuenta con el ID: ${id}`);
   }
 }

@@ -15,13 +15,9 @@ export class AdministracionStatusLog {
   @PrimaryGeneratedColumn('uuid', { name: 'log_id' })
   id: string;
 
-  @ManyToOne(
-    () => AdministracionMaster,
-    (master: AdministracionMaster) => master.statusLogs,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
+  @ManyToOne(() => AdministracionMaster, (master: AdministracionMaster) => master.statusLogs, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'transaction_id' })
   transaction: AdministracionMaster;
 

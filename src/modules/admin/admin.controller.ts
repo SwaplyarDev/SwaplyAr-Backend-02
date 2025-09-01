@@ -104,8 +104,7 @@ export class AdminController {
       properties: {
         transactionId: {
           type: 'string',
-          description:
-            'ID de la transacción a la que se asocia el comprobante.',
+          description: 'ID de la transacción a la que se asocia el comprobante.',
         },
         comprobante: {
           type: 'string',
@@ -128,11 +127,7 @@ export class AdminController {
     body: AddVoucherDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.adminService.addTransactionReceipt(
-      body.transactionId,
-      file,
-      body.comprobante,
-    );
+    return this.adminService.addTransactionReceipt(body.transactionId, file, body.comprobante);
   }
 
   @Get('transactions/status/:id')
@@ -258,8 +253,7 @@ export class AdminController {
             motivo: 'Verificación completa',
             notas: 'Sin observaciones',
           },
-          description:
-            'Datos adicionales que pueden acompañar el cambio de estado',
+          description: 'Datos adicionales que pueden acompañar el cambio de estado',
         },
       },
       required: ['status'],

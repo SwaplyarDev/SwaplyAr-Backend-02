@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Put,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AbandonedTransactionsService } from './abandoned-transactions.service';
 import { CreateAbandonedTransactionDto } from '../dto/create-abandoned-transaction.dto';
@@ -15,9 +7,7 @@ import { AbandonedTransaction } from '../entities/abandoned-transaction.entity';
 @ApiTags('Transacciones Abandonadas')
 @Controller('abandoned-transactions')
 export class AbandonedTransactionsController {
-  constructor(
-    private readonly abandonedTransactionsService: AbandonedTransactionsService,
-  ) {}
+  constructor(private readonly abandonedTransactionsService: AbandonedTransactionsService) {}
 
   @Post()
   @ApiOperation({ summary: 'Crear una nueva transacción abandonada' })
@@ -29,9 +19,7 @@ export class AbandonedTransactionsController {
   async create(
     @Body() createAbandonedTransactionDto: CreateAbandonedTransactionDto,
   ): Promise<AbandonedTransaction> {
-    return await this.abandonedTransactionsService.create(
-      createAbandonedTransactionDto,
-    );
+    return await this.abandonedTransactionsService.create(createAbandonedTransactionDto);
   }
 
   @Get()
@@ -76,10 +64,7 @@ export class AbandonedTransactionsController {
     @Body()
     updateAbandonedTransactionDto: Partial<CreateAbandonedTransactionDto>,
   ): Promise<AbandonedTransaction> {
-    return await this.abandonedTransactionsService.update(
-      id,
-      updateAbandonedTransactionDto,
-    );
+    return await this.abandonedTransactionsService.update(id, updateAbandonedTransactionDto);
   }
 
   @Delete(':id')

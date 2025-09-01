@@ -5,10 +5,7 @@ import { SenderFinancialAccount } from './entities/sender-financial-account.enti
 import { PaymentMethodModule } from '@financial-accounts/payment-methods/payment-method.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([SenderFinancialAccount]),
-    PaymentMethodModule,
-  ],
+  imports: [TypeOrmModule.forFeature([SenderFinancialAccount]), PaymentMethodModule],
   controllers: [],
   providers: [SenderFinancialAccountsService],
   exports: [SenderFinancialAccountsService],

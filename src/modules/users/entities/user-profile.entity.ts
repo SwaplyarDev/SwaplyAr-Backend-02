@@ -1,11 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserSocials } from '@users/entities/user-socials.entity';
 import { UserCategory } from '@users/entities/user-category.entity';
 import { User } from '@users/entities/user.entity';

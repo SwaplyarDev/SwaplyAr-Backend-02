@@ -6,10 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {
-  UserVerification,
-  VerificationStatus,
-} from '../entities/user-verification.entity';
+import { UserVerification, VerificationStatus } from '../entities/user-verification.entity';
 import { User } from '../entities/user.entity';
 import { CloudinaryService } from '../../../service/cloudinary/cloudinary.service';
 import { DiscountService } from '@discounts/discounts.service';
@@ -28,7 +25,6 @@ export class UserVerificationService {
 
     @InjectRepository(UserVerificationAttempt)
     private readonly userVerificationAttemptsRepository: Repository<UserVerificationAttempt>,
-    
   ) {}
 
   async create(
@@ -39,11 +35,7 @@ export class UserVerificationService {
       selfie_image?: Express.Multer.File[];
     },
   ): Promise<CreateVerificationResponseDto> {
-    if (
-      !files.document_front?.[0] ||
-      !files.document_back?.[0] ||
-      !files.selfie_image?.[0]
-    ) {
+    if (!files.document_front?.[0] || !files.document_back?.[0] || !files.selfie_image?.[0]) {
       throw new BadRequestException(
         'Se requieren tres imágenes: frente y reverso del documento, y selfie',
       );
@@ -66,8 +58,7 @@ export class UserVerificationService {
     if (existingVerification) {
       return {
         success: true,
-        message:
-          'Ya existe una solicitud pendiente. Puede reintentar sin problemas.',
+        message: 'Ya existe una solicitud pendiente. Puede reintentar sin problemas.',
 
         data: {
           verification_id: existingVerification.verification_id,
@@ -105,8 +96,7 @@ export class UserVerificationService {
       verification_status: VerificationStatus.PENDING,
     });
 
-    const savedVerification =
-      await this.userVerificationRepository.save(verification);
+    const savedVerification = await this.userVerificationRepository.save(verification);
 
     return {
       success: true,
@@ -127,9 +117,7 @@ export class UserVerificationService {
     });
 
     if (!verification) {
-      throw new NotFoundException(
-        'No se encontró verificación para este usuario',
-      );
+      throw new NotFoundException('No se encontró verificación para este usuario');
     }
 
     return verification;
@@ -153,9 +141,7 @@ export class UserVerificationService {
     return { data, total };
   }
 
-  async findVerificationById(
-    verificationId: string,
-  ): Promise<UserVerification | null> {
+  async findVerificationById(verificationId: string): Promise<UserVerification | null> {
     return this.userVerificationRepository.findOne({
       where: { verification_id: verificationId },
       relations: ['user', 'user.profile', 'attempts'], // Para incluir info del usuario relacionado
@@ -171,11 +157,7 @@ export class UserVerificationService {
     },
   ): Promise<CreateVerificationResponseDto> {
     // Validar archivos requeridos
-    if (
-      !files.document_front?.[0] ||
-      !files.document_back?.[0] ||
-      !files.selfie_image?.[0]
-    ) {
+    if (!files.document_front?.[0] || !files.document_back?.[0] || !files.selfie_image?.[0]) {
       throw new BadRequestException(
         'Se requieren tres imágenes: frente y reverso del documento, y selfie',
       );
@@ -188,33 +170,24 @@ export class UserVerificationService {
     });
 
     if (!verification) {
-      throw new NotFoundException(
-        'No se encontró una verificación existente para este usuario.',
-      );
+      throw new NotFoundException('No se encontró una verificación existente para este usuario.');
     }
 
     // Validar que la verificación esté en estado RESEND_DATA
     if (verification.verification_status !== VerificationStatus.RESEND_DATA) {
-
       return {
-
         success: true,
-        message:
-          'La verificación ya está en proceso, no es necesario volver a subir documentos.',
+        message: 'La verificación ya está en proceso, no es necesario volver a subir documentos.',
 
         data: {
-
           verification_id: verification.verification_id,
           verification_status: verification.verification_status,
-
         },
-
       };
-
     }
 
     const folder = 'SwaplyAr/admin/user_verification';
-    const timestamp = Date.now ();
+    const timestamp = Date.now();
 
     const [frontImageUrl, backImageUrl, selfieImageUrl] = await Promise.all([
       this.cloudinaryService.uploadFile(
@@ -234,13 +207,11 @@ export class UserVerificationService {
       ),
     ]);
 
-    await this.userVerificationAttemptsRepository.save ({
-
+    await this.userVerificationAttemptsRepository.save({
       verification_id: verification.verification_id,
       document_front: frontImageUrl,
       document_back: backImageUrl,
       selfie_image: selfieImageUrl,
-
     });
 
     verification.verification_status = VerificationStatus.PENDING;
@@ -249,19 +220,15 @@ export class UserVerificationService {
     const savedVerification = await this.userVerificationRepository.save(verification);
 
     return {
-
       success: true,
-      message: 'Imágenes de verificación re-subidas correctamente. Su verificación está pendiente de revisión.',
+      message:
+        'Imágenes de verificación re-subidas correctamente. Su verificación está pendiente de revisión.',
 
       data: {
-
         verification_id: savedVerification.verification_id,
         verification_status: savedVerification.verification_status,
-
       },
-
     };
-
   }
 
   async updateStatus(
@@ -278,17 +245,16 @@ export class UserVerificationService {
 
     const verification = await this.userVerificationRepository.findOne({
       where: { verification_id: verificationId },
-      relations: ['user'],  
+      relations: ['user'],
     });
 
     if (!verification) {
       throw new NotFoundException('Verificación no encontrada');
     }
 
-    const puedeActualizar = [
-      VerificationStatus.PENDING,
-      VerificationStatus.RESEND_DATA,
-    ].includes(verification.verification_status);
+    const puedeActualizar = [VerificationStatus.PENDING, VerificationStatus.RESEND_DATA].includes(
+      verification.verification_status,
+    );
 
     if (!puedeActualizar) {
       throw new ConflictException('Esta verificación ya ha sido procesada');
@@ -297,8 +263,7 @@ export class UserVerificationService {
     verification.verification_status = status;
 
     if (
-      (status === VerificationStatus.REJECTED ||
-        status === VerificationStatus.RESEND_DATA) &&
+      (status === VerificationStatus.REJECTED || status === VerificationStatus.RESEND_DATA) &&
       noteRejection
     ) {
       verification.note_rejection = noteRejection;
@@ -313,9 +278,7 @@ export class UserVerificationService {
       if (user) {
         await this.discountService.assignSystemDiscount(user, 'VERIFY', 5);
       } else {
-        throw new NotFoundException(
-          'Usuario no encontrado. No se aplicó el descuento',
-        );
+        throw new NotFoundException('Usuario no encontrado. No se aplicó el descuento');
       }
     }
 

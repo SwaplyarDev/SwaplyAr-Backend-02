@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@users/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -26,21 +32,19 @@ export class UsersService {
       }
 
       if (!userDto.termsAccepted) {
-        throw new BadRequestException(
-          'Debes aceptar los términos y condiciones',
-        );
+        throw new BadRequestException('Debes aceptar los términos y condiciones');
       }
 
       const existing = await this.userRepository.findOne({
-    where: {
-    profile: {
-      email: userDto.email,
-    },
-    },
-    relations: ['profile'],
-    });
+        where: {
+          profile: {
+            email: userDto.email,
+          },
+        },
+        relations: ['profile'],
+      });
 
-    if (existing) {
+      if (existing) {
         throw new ConflictException('El correo ya está registrado');
       }
 
@@ -58,17 +62,12 @@ export class UsersService {
 
       return await this.userRepository.save(user);
     } catch (error) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof ConflictException
-      ) {
+      if (error instanceof BadRequestException || error instanceof ConflictException) {
         throw error;
       }
 
       console.error('Error al registrar usuario:', error);
-      throw new InternalServerErrorException(
-        'Error interno al registrar el usuario',
-      );
+      throw new InternalServerErrorException('Error interno al registrar el usuario');
     }
   }
 
@@ -94,10 +93,7 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async updateUserRole(
-    userId: string,
-    role: 'user' | 'admin' | 'super_admin',
-  ): Promise<User> {
+  async updateUserRole(userId: string, role: 'user' | 'admin' | 'super_admin'): Promise<User> {
     const user = await this.findById(userId);
     if (!user) {
       throw new NotFoundException('Usuario no encontrado');

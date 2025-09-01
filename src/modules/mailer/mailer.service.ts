@@ -22,11 +22,11 @@ export class MailerService {
    * - si `payload` es `string` => envía texto plano (legacy).
    * - si `payload` es un objeto => renderiza plantilla Handlebars.
    */
-async sendAuthCodeMail(
-  to: string,
-  payload:
-    | string
-    | {
+  async sendAuthCodeMail(
+    to: string,
+    payload:
+      | string
+      | {
         ID?: string;
         NAME: string;
         VERIFICATION_CODE: string;
@@ -34,13 +34,13 @@ async sendAuthCodeMail(
         LOCATION?: string;
         EXPIRATION_MINUTES: number;
       },
-  mailType?: 'register' | 'login', 
-) {
-  const nodemailerConfig = this.configService.get<any>('nodemailer');
-  const from =
-    nodemailerConfig?.auth?.user ??
-    this.configService.get<string>('EMAIL_USER') ??
-    this.configService.get<string>('nodemailer.auth.user');
+    mailType?: 'register' | 'login',
+  ) {
+    const nodemailerConfig = this.configService.get<any>('nodemailer');
+    const from =
+      nodemailerConfig?.auth?.user ??
+      this.configService.get<string>('EMAIL_USER') ??
+      this.configService.get<string>('nodemailer.auth.user');
 
     if (!from) {
       this.logger.error(
@@ -64,14 +64,14 @@ async sendAuthCodeMail(
       return { message: `The code has been sent to the email ${to}` };
     }
 
-  // Plantillas según mailType
-  const templateFiles =
-  mailType === 'register'
-    ? [
-        { file: 'welcome_verification_code.hbs', subject: 'Bienvenido a SwaplyAr' },
-        { file: 'plus_rewards_welcome.hbs', subject: 'Tus beneficios SwaplyAr Plus Rewards' },
-      ]
-    : [{ file: 'login_verification_code.hbs', subject: 'Código de inicio de sesión' }];
+    // Plantillas según mailType
+    const templateFiles =
+      mailType === 'register'
+        ? [
+          { file: 'welcome_verification_code.hbs', subject: 'Bienvenido a SwaplyAr' },
+          { file: 'plus_rewards_welcome.hbs', subject: 'Tus beneficios SwaplyAr Plus Rewards' },
+        ]
+        : [{ file: 'login_verification_code.hbs', subject: 'Código de inicio de sesión' }];
 
     for (const template of templateFiles) {
       const templateRelativeParts: string[] = [
@@ -297,7 +297,31 @@ async sendAuthCodeMail(
     }
   }
 
-  
+  private getPaymentMethodImg(method: string, currency: string): string {
+    if (method === 'paypal') {
+      return currency === 'USD'
+        ? 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224913/paypal.big_phrzvb.png'
+        : 'https://res.cloudinary.com/dwrhturiy/image/upload/v1726600628/paypal.dark_lgvm7j.png';
+    }
+    if (method === 'payoneer') {
+      if (currency === 'USD') return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224899/payoneer.usd.big_djd07t.png';
+      if (currency === 'EUR') return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224887/payoneer.eur.big_xxdjxd.png';
+    }
+    if (method === 'bank') {
+      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725223550/banco.medium_vy2eqp.webp';
+    }
+    if (method === 'wise') {
+      if (currency === 'USD') return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225432/wise.usd.big_yvnpez.png';
+      if (currency === 'EUR') return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225416/wise.eur.big_etdolw.png';
+    }
+    if (method === 'tether') {
+      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329683/TetherLight_jkyojt.png';
+    }
+    if (method === 'pix') {
+      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329734/Pix1_lib603.png';
+    }
+    return '';
+  }
 
   /**
    * Construye los datos necesarios para renderizar el template de email.
@@ -320,8 +344,10 @@ async sendAuthCodeMail(
       SENT_CURRENCY: amount.currencySent ?? '',
       AMOUNT_RECEIVED: amount.amountReceived ?? 0,
       RECEIVED_CURRENCY: amount.currencyReceived ?? '',
-      PAYMENT_METHOD: receiver.paymentMethod?.bankName ?? 'N/A',
+      PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
       RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`,
+      PAYMENT_METHOD_IMG: this.getPaymentMethodImg(sender.paymentMethod?.method ?? '', amount.currencySent ?? ''),
+      PAYMENT_RECEIVED_IMG: this.getPaymentMethodImg(receiver.paymentMethod?.method ?? '', amount.currencyReceived ?? ''),
     };
   }
 
@@ -336,20 +362,20 @@ async sendAuthCodeMail(
       this.configService.get<string>('EMAIL_USER') ??
       this.configService.get<string>('nodemailer.auth.user');
 
-  // Ruta del template
-  const templatePath = join(
-    __dirname,
-    '..',
-    '..',
-    '..',
-    'modules',
-    'mailer',
-    'templates',
-    'email',
-    'transaction',
-    'operations_transactions',
-    'pending.hbs',
-  );
+    // Ruta del template
+    const templatePath = join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'modules',
+      'mailer',
+      'templates',
+      'email',
+      'transaction',
+      'operations_transactions',
+      'pending.hbs',
+    );
 
     const html = this.compileTemplate(templatePath, context);
 
@@ -361,31 +387,32 @@ async sendAuthCodeMail(
     });
   }
 
-/**
- * Construye los datos necesarios para el template review-payment.hbs.
- */
-private buildReviewPaymentTemplateData(transaction: any): Record<string, any> {
-  const sender = transaction.senderAccount ?? {};
-  const receiver = transaction.receiverAccount ?? {};
-  const amount = transaction.amount ?? {};
+  /**
+   * Construye los datos necesarios para el template review-payment.hbs.
+   */
+  private buildReviewPaymentTemplateData(transaction: any): Record<string, any> {
+    const sender = transaction.senderAccount ?? {};
+    const receiver = transaction.receiverAccount ?? {};
+    const amount = transaction.amount ?? {};
 
-  return {
-    REFERENCE_NUMBER: transaction.id?.slice(0, 8)?.toUpperCase() ?? '',
-    TRANSACTION_ID: transaction.id,
-    NAME: sender.firstName ?? '',
-    LAST_NAME: sender.lastName ?? '',
-    PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
-    AMOUNT_SENT: amount.amountSent ?? 0,
-    SENT_CURRENCY: amount.currencySent ?? '',
-    PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
-    AMOUNT_RECEIVED: amount.amountReceived ?? 0,
-    RECEIVED_CURRENCY: amount.currencyReceived ?? '',
-    RECEIVED_NAME: receiver.firstName ?? 'No especificado',
-    BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
-    DATE_HOUR: new Date().toLocaleString('es-AR'),
-    MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
-  };
-}
+    return {
+      REFERENCE_NUMBER: transaction.id?.slice(0, 8)?.toUpperCase() ?? '',
+      TRANSACTION_ID: transaction.id,
+      NAME: sender.firstName ?? '',
+      LAST_NAME: sender.lastName ?? '',
+      PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
+      AMOUNT_SENT: amount.amountSent ?? 0,
+      SENT_CURRENCY: amount.currencySent ?? '',
+      PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
+      PAYMENT_METHOD_IMG: this.getPaymentMethodImg(sender.paymentMethod?.method ?? '', amount.currencySent ?? ''),
+      AMOUNT_RECEIVED: amount.amountReceived ?? 0,
+      RECEIVED_CURRENCY: amount.currencyReceived ?? '',
+      RECEIVED_NAME: receiver.firstName ?? 'No especificado',
+      BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
+      DATE_HOUR: new Date().toLocaleString('es-AR'),
+      MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
+    };
+  }
 
 
 

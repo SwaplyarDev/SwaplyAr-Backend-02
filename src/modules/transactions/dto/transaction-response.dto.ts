@@ -200,15 +200,6 @@ export class TransactionResponseDto {
   finalStatus: string;
 
   @Expose()
-  @Type(() => RegretDto)
-  @ApiProperty({ type: RegretDto, required: false })
-  regret?: RegretDto;
-
-  @Expose()
-  @ApiProperty({ example: null })
-  regretId?: string | null;
-
-  @Expose()
   @Type(() => AccountSenderDto)
   @ApiProperty({ name: 'senderAccount', type: AccountSenderDto })
   senderAccount: AccountSenderDto;
@@ -230,6 +221,11 @@ export class TransactionResponseDto {
 }
 
 export class TransactionGetByIdDto extends TransactionResponseDto {
+  @Expose()
+  @Type(() => RegretDto)
+  @ApiProperty({ type: RegretDto, required: false })
+  regret?: RegretDto;
+  
   @Expose()
   @ApiProperty({ example: false })
   isNoteVerified: boolean;

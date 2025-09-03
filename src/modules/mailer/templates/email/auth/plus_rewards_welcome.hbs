@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="es">
 
@@ -13,6 +14,31 @@
       font-family: 'Roboto', sans-serif;
     }
 
+    .button{
+      height: 40px;
+      background-color: #012d8a;
+      width: 160px;
+      margin: 0 auto;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;   
+      justify-content: center;
+    }
+
+      .text-button{
+      color: #ffffff;
+      font-weight:500;
+    }
+
+      .text-button:hover{
+      color: #ffffff;
+    }
+
+    .button:hover {
+    background-color: #0140c5; 
+    cursor: pointer;
+    }
+
     .container {
       max-width: 500px;
       margin: 0 auto;
@@ -22,18 +48,25 @@
     }
 
     .blue-border {
-      height: 7px;
+      height: 5px;
       background-color: #012d8a;
-      width: 95%;
+      width: 100%;
       margin: 0 auto;
       border-radius: 20px;
     }
 
+    .blue-border-skinny {
+      height: 1px;
+      background-color: #012ABE;
+      width: 75%;
+      margin: 0 auto;
+      border-radius: 20px;
+    }
+
+
     .title {
       color: #252526;
-      text-align: center;
-      font-size: 24px;
-      font-weight: 500;
+      font-size: 16px;
       margin-top: 20px;
     }
 
@@ -41,35 +74,83 @@
       color: #252526;
       font-size: 16px;
       line-height: 1.5;
-      margin-top: 20px;
+      margin-top: 5px;
       text-align: justify;
     }
 
+    .code{
+      color: #012ABE;
+      font-size: 35px ;
+      font-weight: 300;
+    }
+
     .code-box {
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      letter-spacing: 3px;
+      white-space: nowrap;
+      font-size: 16px;
       background-color: #f1f1f1;
       border-radius: 10px;
       padding: 15px;
       margin: 20px auto;
-      color: #012d8a;
+      color: #252526;
+      display: flex;
+      align-items: center; 
+      justify-content: space-between;
     }
 
     .footer {
       font-size: 12px;
       color: #777;
       text-align: center;
-      margin-top: 30px;
+      margin-top: 0px;
       line-height: 1.5;
     }
 
+    .group-OA{
+      display: flex;
+      justify-content: right;
+      text-align: right;
+      margin: 0 10px;
+    }
+
+    .logo{
+      height: auto;
+      width: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    .logo-s{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    .vertical-bar{
+      font-size: 25px;
+      color: #4056a7;
+      margin: 0 10px;
+      margin-left: 15px;
+      font-weight: lighter;
+    }
+
     a {
-      color: #012d8a;
+      
       text-decoration: none;
       font-weight: 600;
+      text-align: center;
+      font-size: 15px;
+      color:#777
     }
+
+    a:hover{
+      text-decoration: none;
+      color:#777
+    }
+
+ 
   </style>
 </head>
 
@@ -77,31 +158,42 @@
   <div class="container">
     <section class="blue-border"></section>
 
-    <div class="title">Hola, {{NAME}}</div>
+    <img class="logo" src="https://res.cloudinary.com/df5jwzuq9/image/upload/v1722209853/logo_g74htq.png" alt="">
+
+    <section class="blue-border-skinny"></section>
+
+    <div class="title">Hola, <strong>{{NAME}}</strong></div>
 
     <div class="message">
       Bienvenido al programa de <strong>SwaplyAr Plus Rewards</strong>. Obtienes recompensas por las transacciones realizadas, mientras más transacciones realizas ¡más beneficios obtienes!
     </div>
 
-    <div class="code-box">Código de Membresía: {{ID}}</div>
+    <div class="code-box">Tu código de Membresía: <span class="code">{{ID}}</span></div>
+
+    <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1751466383/swaplyPlusRewards_q56rtb.png" alt="">
 
     <div class="message">
-      Descubre todos los beneficios de nuestro programa de fidelización visitando nuestra página web. En la sección <strong>Programa de Fidelización</strong>, encontrarás información detallada sobre las recompensas, beneficios exclusivos y cómo aprovechar al máximo tu experiencia con nosotros.
-      <br/><br/>
+      <strong>Descubre todos los beneficios</strong> de nuestro programa de fidelización visitando nuestra página web. En la sección <strong>Programa de Fidelización</strong>, encontrarás información detallada sobre las recompensas, beneficios exclusivos y cómo <strong>aprovechar al máximo tu experiencia con nosotros</strong>.
       Si tienes alguna pregunta o necesitas asistencia adicional, nuestro equipo de atención al cliente estará siempre disponible para ayudarte. No dudes en ponerte en contacto con nosotros para recibir el soporte que necesites.
     </div>
 
-    <div style="text-align:center; margin-top: 20px;">
-      <a href="{{BASE_URL}}">SwaplyAr.com</a>
+    <div class="button" style="text-align:center; margin-top: 20px;">
+      <a class="text-button" href="{{BASE_URL}}">SwaplyAr.com</a>
     </div>
 
+    <section class="blue-border-skinny" style="text-align:center; margin-top: 30px; margin: bottom 0; width:350px"></section>
+
     <div class="footer">
-      Centro de Ayuda | <a href="{{PRIVACY_URL}}">Política y Privacidad</a>
+      <a href="https://www.swaplyar.com/es/centro-de-ayuda">Centro de Ayuda</a> <span class="vertical-bar"> | </span><a href="{{PRIVACY_URL}}">Política y Privacidad</a>
       <br/><br/>
       Este mensaje puede contener información confidencial. No compartas información sobre esta transacción con terceros. Si no eres el destinatario indicado, notifícaselo al remitente de inmediato y borra este correo electrónico de tu sistema.
     </div>
 
-    <section class="blue-border" style="margin-top:20px;"></section>
+    <img class="logo-s" src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224752/logo-solo_dgx9c5.png">
+    
+    <div class="group-OA">© 2024 SwaplyAr | Group OA.</div>
+
+    <section class="blue-border" style="margin-top:20px; margin-bottom:20px"></section>
   </div>
 </body>
 </html>

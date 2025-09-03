@@ -15,7 +15,6 @@ import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
 import { UserDiscount } from '@users/entities/user-discount.entity';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { JwtModule } from '@nestjs/jwt';
-import Mail from 'nodemailer/lib/mailer';
 import { MailerModule } from '@mailer/mailer.module';
 
 @Module({

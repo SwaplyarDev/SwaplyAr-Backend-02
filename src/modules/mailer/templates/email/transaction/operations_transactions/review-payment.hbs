@@ -211,7 +211,7 @@
       <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" alt="SwaplyAr Logotipo"
         class="logo" />
     </div>
-    <div class="content">
+    <div class="content" style="font-size: 15px; margin: 0 auto; width:424px; padding-top: 10px">
       <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731499523/13_bz4qha.png" alt="Personaje"
         class="img-center" />
       <h2>Hemos recibido una transferencia en nuestra<br>cuenta</h2>
@@ -229,24 +229,24 @@
           Id de Solicitud <span class="variable" style="float: right; color:#012d8a; font-weight: 600">#{{REFERENCE_NUMBER}}</span>
         </p>
         <p>
-          <strong>Destinatario:</strong>
+          <strong>Nombre y Apellido:</strong>
           <span class="variable">{{NAME}} {{LAST_NAME}}</span>
         </p>
-        <p>DNI / CUIL: <span class="variable">{{DOCUMENT_NUMBER}}</span></p>
+        <p>Nº Teléfono: <span class="variable">{{PHONE_NUMBER}}</span></p>
         <p>
           Monto enviado:
-          <span class="variable">$ {{MONEY_SENT}} {{SENT_CURRENCY}}</span>
+          <span class="variable">$ {{AMOUNT_SENT}} {{SENT_CURRENCY}}</span>
         </p>
         <p>
           Monto a recibir:
-          <span class="variable">{{MONEY_RECEIVED}} {{RECEIVED_CURRENCY}}</span>
+          <span class="variable">{{AMOUNT_RECEIVED}} {{RECEIVED_CURRENCY}}</span>
         </p>
         <p>
           Método de recepción:
           <span class="variable">{{PAYMENT_METHOD}}</span>
         </p>
         <p>
-          CBU / ALIAS: <span class="variable">{{PAYMENT_METHOD_NUMBER}}</span>
+          Destinatario <span class="variable">{{RECEIVED_NAME}}</span>
         </p>
       </div>
 

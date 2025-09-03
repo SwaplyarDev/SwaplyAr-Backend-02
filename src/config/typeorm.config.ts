@@ -14,7 +14,7 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
     ssl: isProduction
       ? { rejectUnauthorized: false } // SSL activado en producción
       : false, // SSL desactivado en desarrollo
-    synchronize: !isProduction,
+    synchronize: false,
     entities: ['dist/**//**.entity.{ts,js}'],
     dropSchema: false,
   };

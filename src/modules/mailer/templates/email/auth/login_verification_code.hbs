@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="es">
 
@@ -6,6 +7,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Verificación de inicio de sesión</title>
   <style>
+    a {
+      text-decoration: none;
+      color: #012d8a;
+    }
+
     body {
       margin: 0;
       padding: 0;
@@ -32,14 +38,14 @@
     .title {
       color: #252526;
       text-align: center;
-      font-size: 26px;
+      font-size: 18px;
       font-weight: 500;
       margin-top: 20px;
     }
 
     .message {
       color: #252526;
-      font-size: 16px;
+      font-size: 18px;
       line-height: 150%;
       margin-top: 20px;
       text-align: justify;
@@ -83,13 +89,13 @@
     <section class="blue-border"></section>
 
     <div style="text-align:center">
-      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" 
+      <img class="logo" src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224752/logo-solo_dgx9c5.png"
            alt="SwaplyAr Logotipo" 
-           style="width: 180px; margin-top: 20px;" />
+           style="width: 70px; margin-top: 20px;" />
     </div>
     
-    <div class="title">Verifica tu correo electrónico para iniciar sesión en SwaplyAr</div>
-    <div class="title">Hola, {{NAME}}!</div>
+    <div class="title">Verifica tu correo electrónico para iniciar sesión en <a href="https://www.swaplyar.com/es/inicio">SwaplyAr</a></div>
+    <div class="message">¡Hola, <strong>{{NAME}}</strong>!</div>
 
     <div class="message">
       Hemos recibido un intento de inicio de sesión.<br><br>
@@ -103,7 +109,7 @@
     </div>
 
     <div class="footer">
-      Si no intentó iniciar sesión pero recibió este correo electrónico, o si la ubicación no coincide, ignore este correo electrónico. No comparta ni reenvíe el código de 6 dígitos a nadie. Nuestro servicio de atención al cliente nunca lo solicitará. No lea este código en voz alta. Tenga cuidado con los intentos de phishing y siempre verifique el remitente y el dominio <a href="{{BASE_URL}}" style="font-weight: 600;">(swaplyar.com)</a> antes de actuar. Si le preocupa la seguridad de su cuenta, visite nuestra página de Centro de Ayuda para ponerse en contacto con nosotros.
+      Si no intentó iniciar sesión pero recibió este correo electrónico, o si la ubicación no coincide, ignore este correo electrónico. No comparta ni reenvíe el código de 6 dígitos a nadie. Nuestro servicio de atención al cliente nunca lo solicitará. No lea este código en voz alta. Tenga cuidado con los intentos de phishing y siempre verifique el remitente y el dominio <a href="{{BASE_URL}}" style="font-weight: 600;">(swaplyar.com)</a> antes de actuar. Si le preocupa la seguridad de su cuenta, visite nuestra página <strong><a href="https://www.swaplyar.com/es/centro-de-ayuda">de Centro de Ayuda</a></strong> para ponerse en contacto con nosotros.
     </div>
 
     <section class="blue-border" style="margin-top:20px;"></section>

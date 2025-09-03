@@ -252,9 +252,10 @@ export class UserVerificationService {
       throw new NotFoundException('Verificación no encontrada');
     }
 
-    const puedeActualizar = [VerificationStatus.PENDING, VerificationStatus.RESEND_DATA].includes(
-      verification.verification_status,
-    );
+    const puedeActualizar =
+  verification.verification_status === VerificationStatus.PENDING || 
+  verification.verification_status === VerificationStatus.RESEND_DATA || 
+  (verification.verification_status === VerificationStatus.REJECTED && status === VerificationStatus.RESEND_DATA); 
 
     if (!puedeActualizar) {
       throw new ConflictException('Esta verificación ya ha sido procesada');

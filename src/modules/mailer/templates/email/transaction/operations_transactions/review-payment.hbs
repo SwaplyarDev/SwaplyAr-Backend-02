@@ -1,194 +1,362 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Transacción en Camino</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f4f4f4;
-      }
-      .container {
-        max-width: 500px;
-        margin: 20px auto;
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      }
-      .blue-border {
-        border: 5px solid #012d8a;
-        width: 75%;
-        margin: 0 auto;
-      }
-      .header {
-        text-align: center;
-        margin-bottom: 20px;
-      }
-      .date {
-        text-align: right;
-        font-size: 12px;
-        color: #333;
-        margin-top: 20px;
-      }
-      .logo {
-        width: 150px;
-        display: block;
-        margin: 0 auto;
-      }
-      .img-center {
-        max-width: 50%;
-        height: auto;
-        display: block;
-        margin: 0 auto;
-      }
-      .content {
-        text-align: center;
-      }
-      .content h2 {
-        color: #000;
-        margin: 5px 0;
-      }
-      .content h3 {
-        font-size: 19px;
-        color: #012d8a;
-        margin: 10px 0;
-      }
-      .details {
-        text-align: left;
-        margin: 10px 0;
-      }
-      .details p {
-        line-height: 1.6;
-        margin: 5px 0;
-        position: relative;
-        padding-bottom: 5px;
-      }
-      .details p::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background-color: #000;
-      }
-      .variable {
-        float: right;
-        text-align: right;
-      }
-      .button {
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #012d8a;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        font-size: 16px;
-        margin: 10px 5px;
-        transition: background-color 0.3s ease;
-      }
-      .button:hover {
-        background-color: #0056b3;
-      }
-      .footer {
-        text-align: center;
-        font-size: 12px;
-        color: #888;
-        margin-top: 20px;
-      }
-      .footer-links {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-      }
-      .footer-links a {
-        text-align: center;
-        flex: 1;
-      }
-      .footer-logo {
-        width: 40px;
-        margin: 10px auto;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="blue-border"></div>
-      <div class="header">
-        <div class="date">
-          Fecha de Solicitud
-          <br />{{DATE}}
-        </div>
-        <img
-          src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png"
-          alt="SwaplyAr Logotipo"
-          class="logo"
-        />
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transacción en Camino</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 20px auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .blue-border {
+      border: 5px solid #012d8a;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .date {
+      text-align: right;
+      font-size: 12px;
+      color: #333;
+      margin-top: 20px;
+    }
+
+    .logo {
+      width: 150px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .img-center {
+      max-width: 50%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .content {
+      text-align: center;
+    }
+
+    .content h2 {
+      color: #000;
+      margin: 5px 0;
+    }
+
+    .content h3 {
+      font-size: 19px;
+      color: #012d8a;
+      margin: 10px 0;
+    }
+
+    .details {
+      text-align: left;
+      margin: 10px 0;
+      padding: 16px;
+      border-collapse: collapse;
+
+    }
+
+    .details p {
+      line-height: 1.6;
+      margin: 5px 0;
+      position: relative;
+      border-top: 1px solid rgb(92, 124, 199);
+      color: black;
+      padding: 5px 0;
+      padding-bottom: 5px;
+    }
+
+    .details p::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background-color: #000;
+    }
+
+
+    .payment-transfer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .payment-transfer img {
+      padding-left: 30px;
+      max-height: 50px;
+      height: auto;
+    }
+
+    .variable {
+      float: right;
+      text-align: right;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #012d8a;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 16px;
+      margin: 10px 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .info-text {
+      font-family: Roboto, Arial, sans-serif;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 300;
+      line-height: 150%;
+      color: #252526;
+      text-align: justify;
+      margin-bottom: 0;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .info-text span {
+      color: #252526;
+      font-family: Roboto, Arial, sans-serif;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 600;
+      line-height: 150%;
+    }
+
+    .confidential-section {
+      text-align: center;
+      font-size: 8px;
+      color: #888;
+      padding: 0px 20px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .confidential-section p {
+      color: #161F33;
+      text-align: justify;
+      font-family: Roboto, Arial, sans-serif;
+      font-size: 8px;
+      font-style: normal;
+      font-weight: 300;
+      line-height: 150%;
+      margin: 0;
+    }
+
+
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+      margin-top: 20px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .footer-links a {
+      text-align: center;
+      flex: 1;
+    }
+
+    .footer-logo {
+      width: 40px;
+      margin: 10px auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="blue-border"></div>
+    <div class="header">
+      <div class="date">
+        @{{MODIFICATION_DATE}} SwaplyAr | Group OA
       </div>
-      <div class="content">
-        <img
-          src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725225314/rewards1_hme3sh.png"
-          alt="Personaje"
-          class="img-center"
-        />
-        <h2>Tu transferencia va en camino</h2>
-        <h3>
-          Número de referencia
-          <br />{{REFERENCE_NUMBER}}
-        </h3>
-        <div class="details">
-          <p>
-            <strong>Destinatario:</strong>
-            <span class="variable">{{NAME}} {{LAST_NAME}}</span>
-          </p>
-          <p>DNI / CUIL: <span class="variable">{{DOCUMENT_NUMBER}}</span></p>
-          <p>
-            Monto enviado:
-            <span class="variable">$ {{MONEY_SENT}} {{SENT_CURRENCY}}</span>
-          </p>
-          <p>
-            Monto a recibir:
-            <span class="variable">{{MONEY_RECEIVED}} {{RECEIVED_CURRENCY}}</span>
-          </p>
-          <p>
-            Método de recepción:
-            <span class="variable">{{PAYMENT_METHOD}}</span>
-          </p>
-          <p>
-            CBU / ALIAS: <span class="variable">{{PAYMENT_METHOD_NUMBER}}</span>
-          </p>
-        </div>
-        <div>
-          <img
-            src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224926/plus-rewards-logo_b73o6i.png"
-            alt="Plus Rewards"
-            class="img-center"
-          />
-          <p>
-            Gana más dinero en futuras transacciones con nuestro programa Plus
-            Rewards
-          </p>
-          <a href="https://swaplyar.vercel.app" class="button">SwaplyAr.com</a>
-          <a href="https://swaplyar.vercel.app/info/help-center" class="button">Ayuda!</a>
-        </div>
-      </div>
-      <div class="footer">
-        <div class="footer-links">
-          <a href="#">Contactanos</a>
-          <a href="#">Aviso Legal</a>
-        </div>
-        <p>© 2024 SwaplyAr.</p>
-        <img
-          src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224752/logo-solo_dgx9c5.png"
-          alt="Footer Logotipo"
-          class="footer-logo"
-        />
-      </div>
-      <div class="blue-border"></div>
+      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" alt="SwaplyAr Logotipo"
+        class="logo" />
     </div>
-  </body>
+    <div class="content">
+      <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731499523/13_bz4qha.png" alt="Personaje"
+        class="img-center" />
+      <h2>Hemos recibido una transferencia en nuestra<br>cuenta</h2>
+
+      <div class="payment-transfer">
+        <img src="{{PAYMENT_METHOD_IMG}}" alt="Método de pago enviado" />
+        <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731499521/20_dtcfgk.png" alt="Flecha"
+          style="width: 80px; height: auto; margin-bottom: 0.7em" />
+        <img src="{{PAYMENT_RECEIVED_IMG}}" alt="Método de pago recibido" />
+      </div>
+
+
+      <div class="details" style="font-size: 15px; margin: 0 auto; width:424px; padding-top: 10px">
+        <p>
+          Id de Solicitud <span class="variable" style="float: right; color:#012d8a; font-weight: 600">#{{REFERENCE_NUMBER}}</span>
+        </p>
+        <p>
+          <strong>Destinatario:</strong>
+          <span class="variable">{{NAME}} {{LAST_NAME}}</span>
+        </p>
+        <p>DNI / CUIL: <span class="variable">{{DOCUMENT_NUMBER}}</span></p>
+        <p>
+          Monto enviado:
+          <span class="variable">$ {{MONEY_SENT}} {{SENT_CURRENCY}}</span>
+        </p>
+        <p>
+          Monto a recibir:
+          <span class="variable">{{MONEY_RECEIVED}} {{RECEIVED_CURRENCY}}</span>
+        </p>
+        <p>
+          Método de recepción:
+          <span class="variable">{{PAYMENT_METHOD}}</span>
+        </p>
+        <p>
+          CBU / ALIAS: <span class="variable">{{PAYMENT_METHOD_NUMBER}}</span>
+        </p>
+      </div>
+
+    </div>
+
+    <div style="info-text">
+      <p>Para conocer el estado exacto de tu solicitud y seguir su proceso en detalle, puedes visitar la sección
+        <span>"Buscar Solicitud"</span>
+        en la seccion de Centro de Ayuda en nuestra plataforma SwaplyAr.com
+      </p>
+    </div>
+
+
+    <div>
+      <section style="text-align: center; width: 100%; margin-top: 0; padding-top: 0;">
+        <a href="{{BASE_URL}}" style="color: white" class="cta-button">SwaplyAr.com</a>
+      </section>
+    </div>
+    <!-- Links -->
+    <nav>
+      <table align="center" cellpadding="0" cellspacing="0" role="presentation" style="
+          border-top: 1px solid rgb(92, 124, 199);
+          font-size: 18px;
+          padding-bottom: 20px;
+          text-align: center;
+          color: black;
+          width: 100%;
+        ">
+        <tr>
+          <td align="right" style="padding-right: 20px; padding-left: 22px; padding-top: 12px">
+            <a href="{{BASE_URL}}/info/help-center" style="color: black; text-decoration: none">Contactanos</a>
+          </td>
+          <td align="center" style="
+              width: 1px;
+              background-color: rgb(92, 124, 199);
+              position: relative;
+              top: 5px;
+            "></td>
+          <td align="left" style="padding-left: 20px; padding-top: 12px">
+            <a href="{{BASE_URL}}/info/terms-and-conditions" style="color: black; text-decoration: none">Avisos
+              Legales</a>
+          </td>
+        </tr>
+      </table>
+    </nav>
+
+    <section class="confidential-section">
+      Este mensaje puede contener información confidencial. No compartas información sobre esta transacción con
+      terceros. Si no eres el destinatario indicado, notifícaselo al remitente de inmediato y borra este correo
+      electronico de tu sistema.
+      </p>
+    </section>
+
+    <section>
+      <table align="center" cellpadding="0" cellspacing="0" role="presentation"
+        style="margin-top: 20px; text-align: center">
+        <tr>
+          <td align="center" style="padding-right: 21px; padding-left: 17px;">
+            <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1730818197/logo-solosw_b8nke4.png"
+              alt="SwaplyAr" style="width: 60px; height: auto" />
+          </td>
+        </tr>
+      </table>
+    </section>
+
+    <footer>
+      <nav>
+        <table align="center" cellpadding="0" cellspacing="0" role="presentation" style="
+            width: 95%;
+            text-align: center;
+            padding-top: 10px;
+          ">
+          <tr>
+            <td align="center">
+              <a href="https://www.linkedin.com/company/swaplyar/" style="text-decoration: none">
+                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/linkedin_jhsarf.png"
+                  alt="Logo Linkedin" style="width: 15px; height: auto" />
+              </a>
+              <a href="https://www.instagram.com/swaplyar/" style="text-decoration: none">
+                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330494/instagram_ihxf7s.png"
+                  alt="Logo Instagram" style="width: 15px; height: auto; margin-left: 10px" />
+              </a>
+              <a href="" style="text-decoration: none">
+                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330493/facebook_cqn0dm.png"
+                  alt="Logo Facebook" style="width: 15px; height: auto; margin-left: 10px" />
+              </a>
+              <a href="https://api.whatsapp.com/send?phone=5491123832198" style="text-decoration: none">
+                <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/whatsapp_ji3tfh.png"
+                  alt="Logo WhatsApp" style="width: 15px; height: auto; margin-left: 10px" />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td align="right" style="font-size: 10px; color: rgba(203, 196, 188)">
+              {{DATE_HOUR}}
+            </td>
+          </tr>
+        </table>
+      </nav>
+    </footer>
+
+
+
+
+
+
+
+
+    <div class="blue-border"></div>
+  </div>
+</body>
+
 </html>

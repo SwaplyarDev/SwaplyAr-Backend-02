@@ -27,13 +27,13 @@ export class MailerService {
     payload:
       | string
       | {
-          ID?: string;
-          NAME: string;
-          VERIFICATION_CODE: string;
-          BASE_URL: string;
-          LOCATION?: string;
-          EXPIRATION_MINUTES: number;
-        },
+        ID?: string;
+        NAME: string;
+        VERIFICATION_CODE: string;
+        BASE_URL: string;
+        LOCATION?: string;
+        EXPIRATION_MINUTES: number;
+      },
     mailType?: 'register' | 'login',
   ) {
     const nodemailerConfig = this.configService.get<any>('nodemailer');
@@ -68,9 +68,9 @@ export class MailerService {
     const templateFiles =
       mailType === 'register'
         ? [
-            { file: 'welcome_verification_code.hbs', subject: 'Bienvenido a SwaplyAr' },
-            { file: 'plus_rewards_welcome.hbs', subject: 'Tus beneficios SwaplyAr Plus Rewards' },
-          ]
+          { file: 'welcome_verification_code.hbs', subject: 'Bienvenido a SwaplyAr' },
+          { file: 'plus_rewards_welcome.hbs', subject: 'Tus beneficios SwaplyAr Plus Rewards' },
+        ]
         : [{ file: 'login_verification_code.hbs', subject: 'Código de inicio de sesión' }];
 
     for (const template of templateFiles) {
@@ -297,6 +297,32 @@ export class MailerService {
     }
   }
 
+  private getPaymentMethodImg(method: string, currency: string): string {
+    if (method === 'paypal') {
+      return currency === 'USD'
+        ? 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224913/paypal.big_phrzvb.png'
+        : 'https://res.cloudinary.com/dwrhturiy/image/upload/v1726600628/paypal.dark_lgvm7j.png';
+    }
+    if (method === 'payoneer') {
+      if (currency === 'USD') return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224899/payoneer.usd.big_djd07t.png';
+      if (currency === 'EUR') return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224887/payoneer.eur.big_xxdjxd.png';
+    }
+    if (method === 'bank') {
+      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725223550/banco.medium_vy2eqp.webp';
+    }
+    if (method === 'wise') {
+      if (currency === 'USD') return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225432/wise.usd.big_yvnpez.png';
+      if (currency === 'EUR') return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225416/wise.eur.big_etdolw.png';
+    }
+    if (method === 'tether') {
+      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329683/TetherLight_jkyojt.png';
+    }
+    if (method === 'pix') {
+      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329734/Pix1_lib603.png';
+    }
+    return '';
+  }
+
   /**
    * Construye los datos necesarios para renderizar el template de email.
    */
@@ -318,10 +344,13 @@ export class MailerService {
       SENT_CURRENCY: amount.currencySent ?? '',
       AMOUNT_RECEIVED: amount.amountReceived ?? 0,
       RECEIVED_CURRENCY: amount.currencyReceived ?? '',
-      PAYMENT_METHOD: receiver.paymentMethod?.bankName ?? 'N/A',
+      PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
       RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`,
+      PAYMENT_METHOD_IMG: this.getPaymentMethodImg(sender.paymentMethod?.method ?? '', amount.currencySent ?? ''),
+      PAYMENT_RECEIVED_IMG: this.getPaymentMethodImg(receiver.paymentMethod?.method ?? '', amount.currencyReceived ?? ''),
     };
   }
+
 
   async sendReviewPaymentEmail(senderEmail: string, transaction: any) {
     const context = this.buildReviewPaymentTemplateData(transaction);
@@ -375,6 +404,7 @@ export class MailerService {
       AMOUNT_SENT: amount.amountSent ?? 0,
       SENT_CURRENCY: amount.currencySent ?? '',
       PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
+      PAYMENT_METHOD_IMG: this.getPaymentMethodImg(sender.paymentMethod?.method ?? '', amount.currencySent ?? ''),
       AMOUNT_RECEIVED: amount.amountReceived ?? 0,
       RECEIVED_CURRENCY: amount.currencyReceived ?? '',
       RECEIVED_NAME: receiver.firstName ?? 'No especificado',
@@ -383,4 +413,7 @@ export class MailerService {
       MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
     };
   }
+
+
+
 }

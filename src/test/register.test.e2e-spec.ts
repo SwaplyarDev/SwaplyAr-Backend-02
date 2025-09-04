@@ -12,8 +12,6 @@ describe('ENDPOINT DE REGISTRO #api #sanity', () => {
   let mailer: FakeMailerService;
 
   beforeAll(async () => {
-    process.env.DATABASE_TEST_URL = 'postgres://testuser:testpass@localhost:5438/testdb';
-
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -59,7 +57,6 @@ describe('ENDPOINT DE REGISTRO #api #sanity', () => {
     expect(res.body).toHaveProperty('isActive', true);
     expect(res.body).toHaveProperty('isValidated', false);
 
-    // Validar mails enviados
     expect(mailer.sentMails.length).toBe(1);
     expect(mailer.sentMails[0].to).toBe('devdylancrowder@outlook.com');
   });

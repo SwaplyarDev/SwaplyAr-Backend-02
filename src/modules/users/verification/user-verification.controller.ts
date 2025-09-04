@@ -640,7 +640,7 @@ export class UserVerificationController {
     };
   }
 
-  @UseGuards(RolesGuard)
+@UseGuards(RolesGuard)
 @Roles('user')
 @Post('request-resend')
 @ApiOperation({
@@ -702,5 +702,67 @@ async requestResend(@Request() req) {
     },
   };
 }
+
+  @UseGuards(RolesGuard)
+  @Roles('user')
+  @Post('validate-user')
+  @ApiOperation({
+    summary: 'Validar usuario si la verificación está aprobada',
+    description:
+      'Si la verificación del usuario autenticado se encuentra en estado APROBADO, se marcará al usuario como validado (isValidated = true).',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Usuario marcado como verificado correctamente',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Usuario verificado correctamente' },
+        data: {
+          type: 'object',
+          properties: {
+            verification_id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
+            verification_status: { type: 'string', example: 'approved' },
+            isValidated: { type: 'boolean', example: true },
+          },
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
+  @ApiForbiddenResponse({ description: 'Autorización solo para usuarios' })
+  @ApiNotFoundResponse({ description: 'No se encontró verificación para este usuario' })
+  @ApiBadRequestResponse({
+    description: 'La verificación no está en estado aprobado',
+  })
+  async validateUser(@Request() req) {
+    const userId = req.user.id;
+
+    const verification = await this.verificationService.findByUserId(userId);
+
+    if (!verification) {
+      throw new NotFoundException('No se encontró una verificación para este usuario.');
+    }
+
+    if (verification.verification_status !== VerificationStatus.VERIFIED) {
+      throw new BadRequestException(
+        `La verificación no está en estado aprobado. Estado actual: ${verification.verification_status}`,
+      );
+    }
+
+    await this.verificationService.validateUserIfApproved(verification.verification_id);
+
+    return {
+      success: true,
+      message: 'Usuario validado correctamente',
+      data: {
+        verification_id: verification.verification_id,
+        verification_status: verification.verification_status,
+        userValidated: true,
+      },
+    };
+  }
+
 }
 

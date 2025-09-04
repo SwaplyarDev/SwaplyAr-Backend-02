@@ -113,6 +113,7 @@ export class UserVerificationService {
   async findByUserId(userId: string): Promise<UserVerification> {
     const verification = await this.userVerificationRepository.findOne({
       where: { user: { id: userId } },
+      relations: ['user'],
       order: { created_at: 'DESC' },
     });
 
@@ -297,4 +298,33 @@ export class UserVerificationService {
 
     await this.userVerificationRepository.remove(verification);
   }
+
+  async validateUserIfApproved(verificationId: string): Promise<void> {
+  const verification = await this.userVerificationRepository.findOne({
+    where: { verification_id: verificationId },
+    relations: ['user'],
+  });
+
+  if (!verification) {
+    throw new NotFoundException('Verificación no encontrada');
+  }
+
+  // Validar que la verificación esté en estado aprobado
+  if (verification.verification_status !== VerificationStatus.VERIFIED) { // o APPROVED según tu enum
+    throw new BadRequestException(
+      `La verificación no está aprobada. Estado actual: ${verification.verification_status}`,
+    );
+  }
+
+  const user = await this.userRepository.findOne({
+    where: { id: verification.user.id },
+  });
+
+  if (!user) {
+    throw new NotFoundException('Usuario no encontrado');
+  }
+
+  user.userValidated = true; // <- CORRECTO
+  await this.userRepository.save(user);
+}
 }

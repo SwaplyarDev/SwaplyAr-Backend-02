@@ -24,7 +24,7 @@ describe('ENDPOINT DE REGISTRO #api #sanity', () => {
     await app.init();
 
     dataSource = moduleRef.get(DataSource);
-    mailer = moduleRef.get(MailerService) as FakeMailerService;
+    mailer = moduleRef.get(MailerService);
   });
 
   afterAll(async () => {

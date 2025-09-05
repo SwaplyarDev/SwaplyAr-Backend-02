@@ -18,15 +18,16 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
   return {
     type: 'postgres',
     url: databaseUrl,
-    ssl: isProduction
-      ? { rejectUnauthorized: false } // SSL activado en producción
-      : false, // SSL desactivado en desarrollo y test
-    synchronize: !isProduction, // sincroniza esquemas en dev y test
-    dropSchema: isTest, // borra la DB en test
+    ssl: isProduction ? { rejectUnauthorized: false } : false, // SSL solo en producción
+    // En producción no sincronizamos; en dev/test sí para iterar y e2e
+    synchronize: !isProduction,
+    // En test reiniciamos el esquema para pruebas limpias
+    dropSchema: isTest,
+    // Soporte para correr desde ts-node (src) y desde dist
     entities: [
       isCompiled
-        ? join(__dirname, '/../**/*.entity.js') // producción
-        : join(__dirname, '/../**/*.entity.ts'), // desarrollo/test con ts-node
+        ? join(__dirname, '/../**/*.entity.js') // producción (dist)
+        : join(__dirname, '/../**/*.entity.ts'), // desarrollo/test (src)
     ],
   };
 });

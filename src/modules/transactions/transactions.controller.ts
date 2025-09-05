@@ -88,143 +88,35 @@ export class TransactionsController {
             'JSON stringificado con la información de la transacción (CreateTransactionDto)',
           example: JSON.stringify(
             {
-              bankExample: {
-                paymentsId: '123',
-                countryTransaction: 'Argentina',
-                message: 'Transferencia de prueba',
-                financialAccounts: {
-                  senderAccount: {
-                    firstName: 'Juan',
-                    lastName: 'Pérez',
-                    phoneNumber: '12456789',
-                    createdBy: 'fernandeezalan20@gmail.com',
-                    paymentMethod: { platformId: 'bank', method: 'bank' },
-                  },
-                  receiverAccount: {
-                    paymentMethod: {
-                      platformId: 'bank',
-                      method: 'bank',
-                      bank: {
-                        currency: 'ARS',
-                        bankName: 'Banco Galicia',
-                        sendMethodKey: 'CBU',
-                        sendMethodValue: '1234567890123456789012',
-                        documentType: 'DNI',
-                        documentValue: '12345678',
-                      },
+              paymentsId: '126',
+              countryTransaction: 'Argentina',
+              message: 'Transferencia Crypto',
+              financialAccounts: {
+                senderAccount: {
+                  firstName: 'Diego',
+                  lastName: 'Fernández',
+                  phoneNumber: '12456789',
+                  createdBy: 'fernandeezalan20@gmail.com',
+                  paymentMethod: { platformId: 'receiver_crypto', method: 'receiver-crypto' },
+                },
+                receiverAccount: {
+                  paymentMethod: {
+                    platformId: 'receiver_crypto',
+                    method: 'receiver-crypto',
+                    receiverCrypto: {
+                      currency: 'ETH',
+                      network: 'Ethereum',
+                      wallet: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
                     },
                   },
-                },
-                amount: {
-                  amountSent: 1000,
-                  currencySent: 'ARS',
-                  amountReceived: 900,
-                  currencyReceived: 'BRL',
-                  received: false,
                 },
               },
-              pixExample: {
-                paymentsId: '124',
-                countryTransaction: 'Argentina',
-                message: 'Transferencia PIX',
-                financialAccounts: {
-                  senderAccount: {
-                    firstName: 'Carlos',
-                    lastName: 'Lopez',
-                    phoneNumber: '12456789',
-                    createdBy: 'fernandeezalan20@gmail.com',
-                    paymentMethod: { platformId: 'pix', method: 'pix' },
-                  },
-                  receiverAccount: {
-                    paymentMethod: {
-                      platformId: 'pix',
-                      method: 'pix',
-                      pix: {
-                        pixId: 'vb456',
-                        pixKey: 'email',
-                        pixValue: 'lucia@example.com',
-                        cpf: '10987654321',
-                      },
-                    },
-                  },
-                },
-                amount: {
-                  amountSent: 500,
-                  currencySent: 'ARS',
-                  amountReceived: 500,
-                  currencyReceived: 'ARS',
-                  received: true,
-                },
-              },
-              virtualBankExample: {
-                paymentsId: '125',
-                countryTransaction: 'Argentina',
-                message: 'Transferencia Virtual Bank',
-                financialAccounts: {
-                  senderAccount: {
-                    firstName: 'Sofía',
-                    lastName: 'Ruiz',
-                    phoneNumber: '12456789',
-                    createdBy: 'fernandeezalan20@gmail.com',
-                    paymentMethod: {
-                      platformId: 'virtual_bank',
-                      method: 'virtual-bank',
-                    },
-                  },
-                  receiverAccount: {
-                    paymentMethod: {
-                      platformId: 'virtual_bank',
-                      method: 'virtual-bank',
-                      virtualBank: {
-                        currency: 'ARS',
-                        emailAccount: 'pedro@example.com',
-                        transferCode: 'TC654321',
-                      },
-                    },
-                  },
-                },
-                amount: {
-                  amountSent: 1200,
-                  currencySent: 'ARS',
-                  amountReceived: 1200,
-                  currencyReceived: 'ARS',
-                  received: false,
-                },
-              },
-              receiverCryptoExample: {
-                paymentsId: '126',
-                countryTransaction: 'Argentina',
-                message: 'Transferencia Crypto',
-                financialAccounts: {
-                  senderAccount: {
-                    firstName: 'Diego',
-                    lastName: 'Fernández',
-                    phoneNumber: '12456789',
-                    createdBy: 'fernandeezalan20@gmail.com',
-                    paymentMethod: {
-                      platformId: 'receiver_crypto',
-                      method: 'receiver-crypto',
-                    },
-                  },
-                  receiverAccount: {
-                    paymentMethod: {
-                      platformId: 'receiver_crypto',
-                      method: 'receiver-crypto',
-                      receiverCrypto: {
-                        currency: 'ETH',
-                        network: 'Ethereum',
-                        wallet: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-                      },
-                    },
-                  },
-                },
-                amount: {
-                  amountSent: 0.5,
-                  currencySent: 'ETH',
-                  amountReceived: 0.5,
-                  currencyReceived: 'ETH',
-                  received: true,
-                },
+              amount: {
+                amountSent: 0.5,
+                currencySent: 'ETH',
+                amountReceived: 0.5,
+                currencyReceived: 'ETH',
+                received: true,
               },
             },
             null,
@@ -268,16 +160,17 @@ export class TransactionsController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async create(@Body() body: CreateTransactionBody, @UploadedFile() file: Express.Multer.File) {
-    if (!body || Object.keys(body).length === 0) {
-      throw new BadRequestException('El body está vacío');
+    // Validación del body
+    if (!body || !body.createTransactionDto) {
+      throw new BadRequestException('El body o el campo createTransactionDto están vacíos');
     }
 
-    if (!body.createTransactionDto) {
-      throw new BadRequestException(
-        'El campo createTransactionDto es requerido. Body recibido: ' + JSON.stringify(body),
-      );
+    // Validación de archivo obligatorio
+    if (!file) {
+      throw new BadRequestException('El archivo del comprobante es obligatorio');
     }
 
+    // Parseo JSON con try/catch
     let parsedDto: Partial<CreateTransactionDto>;
     try {
       parsedDto = JSON.parse(body.createTransactionDto) as Partial<CreateTransactionDto>;
@@ -285,25 +178,42 @@ export class TransactionsController {
       throw new BadRequestException('El campo createTransactionDto debe ser un JSON válido');
     }
 
+    // Validación de campos obligatorios del DTO
+    const requiredFields: (keyof CreateTransactionDto)[] = [
+      'countryTransaction',
+      'paymentsId',
+      'financialAccounts',
+      'amount',
+    ];
+
+    for (const field of requiredFields) {
+      if (!parsedDto[field]) {
+        throw new BadRequestException(`El campo ${field} es obligatorio`);
+      }
+    }
+
+    // Convierte JSON → DTO
     const createTransactionDto = plainToInstance(CreateTransactionDto, parsedDto);
 
-    const fileData: FileUploadDTO = file
-      ? {
-          buffer: file.buffer,
-          fieldName: file.fieldname,
-          mimeType: file.mimetype,
-          originalName: file.originalname,
-          size: file.size,
-        }
-      : {
-          buffer: Buffer.from(''),
-          fieldName: '',
-          mimeType: '',
-          originalName: '',
-          size: 0,
-        };
+    // Construcción del fileData
+    const fileData: FileUploadDTO = {
+      buffer: file.buffer,
+      fieldName: file.fieldname,
+      mimeType: file.mimetype,
+      originalName: file.originalname,
+      size: file.size,
+    };
 
-    return await this.transactionsService.create(createTransactionDto, fileData);
+    try {
+      // Llamada al servicio
+      return await this.transactionsService.create(createTransactionDto, fileData);
+    } catch (error) {
+      // Captura errores específicos de TypeORM para NOT NULL
+      if (error.code === '23502') {
+        throw new BadRequestException('Faltan campos obligatorios para guardar la transacción');
+      }
+      throw new InternalServerErrorException('Error inesperado al crear la transacción');
+    }
   }
 
   // Obtener historial de estados (público)

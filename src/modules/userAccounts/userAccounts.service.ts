@@ -66,7 +66,7 @@ export class AccountsService {
         specificAccount = this.virtualBankRepo.create({
           accountType: userAccValues.accountType,
           currency: userAccValues.currency,
-          accountId: savedUserAccount.account_id,
+          accountId: savedUserAccount.accountId,
           type: userAccValues.type,
           email: userAccValues.email,
           firstName: userAccValues.firstName,
@@ -109,7 +109,7 @@ export class AccountsService {
   async deleteBankAccount(user: any, bankAccountId: string) {
     // Busca la cuenta principal del usuario
     const userAccount = await this.userAccountRepo.findOne({
-      where: { account_id: bankAccountId, userId: user.id },
+      where: { accountId: bankAccountId, userId: user.id },
     });
 
     if (!userAccount) {
@@ -137,7 +137,7 @@ export class AccountsService {
     }
 
     // Elimina la cuenta principal
-    await this.userAccountRepo.delete({ account_id: bankAccountId });
+    await this.userAccountRepo.delete({ accountId: bankAccountId });
 
     return { message: 'Cuenta eliminada correctamente' };
   }
@@ -155,35 +155,35 @@ export class AccountsService {
     const enrichedAccounts = await Promise.all(
       accounts.map(async (account) => {
         const typeId = account.accountType;
-        const { account_id } = account;
+        const { accountId } = account;
 
         let details: any[] = [];
 
         switch (typeId) {
           case Platform.Bank:
             details = await this.bankAccountRepo.find({
-              where: { userAccount: { account_id } },
+              where: { userAccount: { accountId } },
               relations: ['userAccount'],
             });
             break;
 
           case Platform.Pix:
             details = await this.pixRepo.find({
-              where: { userAccount: { account_id } },
+              where: { userAccount: { accountId } },
               relations: ['userAccount'],
             });
             break;
 
           case Platform.Virtual_Bank:
             details = await this.virtualBankRepo.find({
-              where: { userAccount: { account_id } },
+              where: { userAccount: { accountId } },
               relations: ['userAccount'],
             });
             break;
 
           case Platform.Receiver_Crypto:
             details = await this.receiverCryptoRepo.find({
-              where: { userAccount: { account_id } },
+              where: { userAccount: { accountId } },
               relations: ['userAccount'],
             });
             break;
@@ -194,10 +194,11 @@ export class AccountsService {
 
         // Mapear los detalles de forma segura, evitando undefined
         const mappedDetails = details.map((d) => ({
-          account_id: d.account_id ?? d.bankId ?? d.receiver_crypto ?? d.virtual_bank_id,
+          detailId: d.account_id ?? d.bankId ?? d.receiver_crypto ?? d.virtual_bank_id,
           currency: d.currency,
           type: d.type,
-          accountName: d.accountName ?? d.bank_name,
+          accountName: d.accountName,
+          bankName: d.bankName,
           email: d.email ?? d.email_account,
           firstName: d.firstName,
           lastName: d.lastName,
@@ -235,14 +236,14 @@ export class AccountsService {
     }
 
     //  Si pasamos bankAccountId, filtramos
-    const found = allBanks.find((bank) => bank.details.some((d) => d.account_id === bankAccountId));
+    const found = allBanks.find((bank) => bank.details.some((d) => d.detailId === bankAccountId));
 
     if (!found) {
       throw new NotFoundException('Cuenta no encontrada para este usuario');
     }
 
     //  Filtramos los detalles para devolver solo el que coincide
-    const filteredDetails = found.details.filter((d) => d.account_id === bankAccountId);
+    const filteredDetails = found.details.filter((d) => d.detailId === bankAccountId);
 
     return {
       ...found,

@@ -113,14 +113,18 @@ export class TransactionsService {
     });
 
     if (!transaction) throw new NotFoundException('Transacción no encontrada.');
-    if (!transaction.senderAccount) throw new NotFoundException('Cuenta del remitente no encontrada.');
+    if (!transaction.senderAccount)
+      throw new NotFoundException('Cuenta del remitente no encontrada.');
 
     return transaction;
   }
 
   private validateSenderLastName(senderLastName: string, lastName: string): void {
     const normalize = (str: string) =>
-      str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      str
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
 
     if (normalize(senderLastName) !== normalize(lastName)) {
       throw new UnauthorizedException('Apellido inválido.');
@@ -157,7 +161,10 @@ export class TransactionsService {
   // --------------------------------------------------------------------
   // 🔹 Creación de transacciones
   // --------------------------------------------------------------------
-  async create(createTransactionDto: CreateTransactionDto, file: FileUploadDTO): Promise<TransactionResponseDto> {
+  async create(
+    createTransactionDto: CreateTransactionDto,
+    file: FileUploadDTO,
+  ): Promise<TransactionResponseDto> {
     if (!file) {
       throw new BadRequestException('El comprobante de pago (archivo) es obligatorio.');
     }
@@ -222,7 +229,9 @@ export class TransactionsService {
       }
 
       if (fullTransaction.senderAccount?.createdBy) {
-        fullTransaction.senderAccount.createdBy = String(fullTransaction.senderAccount.createdBy).trim();
+        fullTransaction.senderAccount.createdBy = String(
+          fullTransaction.senderAccount.createdBy,
+        ).trim();
       }
 
       const senderEmail = fullTransaction.senderAccount?.createdBy;
@@ -230,7 +239,9 @@ export class TransactionsService {
         await this.mailerService.sendReviewPaymentEmail(senderEmail, fullTransaction);
       }
 
-      return plainToInstance(TransactionResponseDto, fullTransaction, { excludeExtraneousValues: true });
+      return plainToInstance(TransactionResponseDto, fullTransaction, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       this.logger.error('Error inesperado al crear la transacción', error.stack);
       throw error instanceof HttpException
@@ -280,7 +291,10 @@ export class TransactionsService {
     createdBy: string,
     page = 1,
     pageSize = 10,
-  ): Promise<{ data: TransactionGetResponseDto[]; pagination: { page: number; pageSize: number; totalItems: number; totalPages: number } }> {
+  ): Promise<{
+    data: TransactionGetResponseDto[];
+    pagination: { page: number; pageSize: number; totalItems: number; totalPages: number };
+  }> {
     if (!createdBy?.trim()) {
       throw new ForbiddenException('No se proporcionó un email válido');
     }
@@ -357,7 +371,8 @@ export class TransactionsService {
         },
       });
 
-      if (!transaction) throw new NotFoundException(`No se encontró transacción con id '${transactionId}'`);
+      if (!transaction)
+        throw new NotFoundException(`No se encontró transacción con id '${transactionId}'`);
       if (transaction.senderAccount?.createdBy !== userEmail) {
         throw new ForbiddenException('Acceso no autorizado a esta transacción');
       }

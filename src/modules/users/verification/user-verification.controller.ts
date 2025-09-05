@@ -640,68 +640,71 @@ export class UserVerificationController {
     };
   }
 
-@UseGuards(RolesGuard)
-@Roles('user')
-@Post('request-resend')
-@ApiOperation({
-  summary: 'Solicitar reenvío de datos después de rechazo',
-  description:
-    'Permite a un usuario cambiar el estado de su verificación de RECHAZADO a REENVIAR DATOS para poder re-subir documentos.',
-})
-@ApiResponse({
-  status: HttpStatus.OK,
-  description: 'Solicitud de reenvío registrada correctamente',
-  schema: {
-    type: 'object',
-    properties: {
-      success: { type: 'boolean', example: true },
-      message: { type: 'string', example: 'Solicitud de reenvío de datos registrada correctamente' },
-      data: {
-        type: 'object',
-        properties: {
-          verification_id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
-          verification_status: { type: 'string', example: 'resend-data' },
+  @UseGuards(RolesGuard)
+  @Roles('user')
+  @Post('request-resend')
+  @ApiOperation({
+    summary: 'Solicitar reenvío de datos después de rechazo',
+    description:
+      'Permite a un usuario cambiar el estado de su verificación de RECHAZADO a REENVIAR DATOS para poder re-subir documentos.',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Solicitud de reenvío registrada correctamente',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: {
+          type: 'string',
+          example: 'Solicitud de reenvío de datos registrada correctamente',
+        },
+        data: {
+          type: 'object',
+          properties: {
+            verification_id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
+            verification_status: { type: 'string', example: 'resend-data' },
+          },
         },
       },
     },
-  },
-})
-@ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
-@ApiForbiddenResponse({ description: 'Autorización solo para usuarios' })
-@ApiNotFoundResponse({ description: 'No se encontró una verificación para este usuario' })
-@ApiBadRequestResponse({
-  description: 'Solo es posible solicitar reenvío si la verificación está en estado RECHAZADO.',
-})
-async requestResend(@Request() req) {
-  const userId = req.user.id;
+  })
+  @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
+  @ApiForbiddenResponse({ description: 'Autorización solo para usuarios' })
+  @ApiNotFoundResponse({ description: 'No se encontró una verificación para este usuario' })
+  @ApiBadRequestResponse({
+    description: 'Solo es posible solicitar reenvío si la verificación está en estado RECHAZADO.',
+  })
+  async requestResend(@Request() req) {
+    const userId = req.user.id;
 
-  const verification = await this.verificationService.findByUserId(userId);
+    const verification = await this.verificationService.findByUserId(userId);
 
-  if (!verification) {
-    throw new NotFoundException('No se encontró una verificación para este usuario.');
-  }
+    if (!verification) {
+      throw new NotFoundException('No se encontró una verificación para este usuario.');
+    }
 
-  if (verification.verification_status !== VerificationStatus.REJECTED) {
-    throw new BadRequestException(
-      'Solo es posible solicitar reenvío si la verificación está en estado RECHAZADO.',
+    if (verification.verification_status !== VerificationStatus.REJECTED) {
+      throw new BadRequestException(
+        'Solo es posible solicitar reenvío si la verificación está en estado RECHAZADO.',
+      );
+    }
+
+    verification.verification_status = VerificationStatus.RESEND_DATA;
+    await this.verificationService.updateStatus(
+      verification.verification_id,
+      VerificationStatus.RESEND_DATA,
     );
+
+    return {
+      success: true,
+      message: 'Solicitud de reenvío de datos registrada correctamente',
+      data: {
+        verification_id: verification.verification_id,
+        verification_status: verification.verification_status,
+      },
+    };
   }
-
-  verification.verification_status = VerificationStatus.RESEND_DATA;
-  await this.verificationService.updateStatus(
-  verification.verification_id,
-  VerificationStatus.RESEND_DATA
-);
-
-  return {
-    success: true,
-    message: 'Solicitud de reenvío de datos registrada correctamente',
-    data: {
-      verification_id: verification.verification_id,
-      verification_status: verification.verification_status,
-    },
-  };
-}
 
   @UseGuards(RolesGuard)
   @Roles('user')
@@ -763,6 +766,4 @@ async requestResend(@Request() req) {
       },
     };
   }
-
 }
-

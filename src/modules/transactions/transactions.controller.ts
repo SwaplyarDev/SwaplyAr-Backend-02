@@ -79,54 +79,59 @@ export class TransactionsController {
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-  schema: {
-    type: 'object',
-    properties: {
-      createTransactionDto: {
-        type: 'string',
-        description: 'JSON stringificado con la información de la transacción (CreateTransactionDto)',
-        example: JSON.stringify({
-          paymentsId: "126",
-          countryTransaction: "Argentina",
-          message: "Transferencia Crypto",
-          financialAccounts: {
-            senderAccount: {
-              firstName: "Diego",
-              lastName: "Fernández",
-              phoneNumber: "12456789",
-              createdBy: "fernandeezalan20@gmail.com",
-              paymentMethod: { platformId: "receiver_crypto", method: "receiver-crypto" }
+    schema: {
+      type: 'object',
+      properties: {
+        createTransactionDto: {
+          type: 'string',
+          description:
+            'JSON stringificado con la información de la transacción (CreateTransactionDto)',
+          example: JSON.stringify(
+            {
+              paymentsId: '126',
+              countryTransaction: 'Argentina',
+              message: 'Transferencia Crypto',
+              financialAccounts: {
+                senderAccount: {
+                  firstName: 'Diego',
+                  lastName: 'Fernández',
+                  phoneNumber: '12456789',
+                  createdBy: 'fernandeezalan20@gmail.com',
+                  paymentMethod: { platformId: 'receiver_crypto', method: 'receiver-crypto' },
+                },
+                receiverAccount: {
+                  paymentMethod: {
+                    platformId: 'receiver_crypto',
+                    method: 'receiver-crypto',
+                    receiverCrypto: {
+                      currency: 'ETH',
+                      network: 'Ethereum',
+                      wallet: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+                    },
+                  },
+                },
+              },
+              amount: {
+                amountSent: 0.5,
+                currencySent: 'ETH',
+                amountReceived: 0.5,
+                currencyReceived: 'ETH',
+                received: true,
+              },
             },
-            receiverAccount: {
-              paymentMethod: {
-                platformId: "receiver_crypto",
-                method: "receiver-crypto",
-                receiverCrypto: {
-                  currency: "ETH",
-                  network: "Ethereum",
-                  wallet: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
-                }
-              }
-            }
-          },
-          amount: {
-            amountSent: 0.5,
-            currencySent: "ETH",
-            amountReceived: 0.5,
-            currencyReceived: "ETH",
-            received: true
-          }
-        }, null, 2),
+            null,
+            2,
+          ),
+        },
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Archivo del comprobante de pago (JPG, PNG o PDF)',
+        },
       },
-      file: {
-        type: 'string',
-        format: 'binary',
-        description: 'Archivo del comprobante de pago (JPG, PNG o PDF)',
-      },
+      required: ['createTransactionDto'],
     },
-    required: ['createTransactionDto'],
-  },
-})
+  })
   @ApiResponse({
     status: 201,
     description: '✅ Transacción creada correctamente',
@@ -155,62 +160,61 @@ export class TransactionsController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async create(@Body() body: CreateTransactionBody, @UploadedFile() file: Express.Multer.File) {
-  // Validación del body
-  if (!body || !body.createTransactionDto) {
-    throw new BadRequestException('El body o el campo createTransactionDto están vacíos');
-  }
+    // Validación del body
+    if (!body || !body.createTransactionDto) {
+      throw new BadRequestException('El body o el campo createTransactionDto están vacíos');
+    }
 
-  // Validación de archivo obligatorio
-  if (!file) {
-    throw new BadRequestException('El archivo del comprobante es obligatorio');
-  }
+    // Validación de archivo obligatorio
+    if (!file) {
+      throw new BadRequestException('El archivo del comprobante es obligatorio');
+    }
 
-  // Parseo JSON con try/catch
-  let parsedDto: Partial<CreateTransactionDto>;
-  try {
-    parsedDto = JSON.parse(body.createTransactionDto) as Partial<CreateTransactionDto>;
-  } catch {
-    throw new BadRequestException('El campo createTransactionDto debe ser un JSON válido');
-  }
+    // Parseo JSON con try/catch
+    let parsedDto: Partial<CreateTransactionDto>;
+    try {
+      parsedDto = JSON.parse(body.createTransactionDto) as Partial<CreateTransactionDto>;
+    } catch {
+      throw new BadRequestException('El campo createTransactionDto debe ser un JSON válido');
+    }
 
-  // Validación de campos obligatorios del DTO
-  const requiredFields: (keyof CreateTransactionDto)[] = [
-    'countryTransaction',
-    'paymentsId',
-    'financialAccounts',
-    'amount',
-  ];
+    // Validación de campos obligatorios del DTO
+    const requiredFields: (keyof CreateTransactionDto)[] = [
+      'countryTransaction',
+      'paymentsId',
+      'financialAccounts',
+      'amount',
+    ];
 
-  for (const field of requiredFields) {
-    if (!parsedDto[field]) {
-      throw new BadRequestException(`El campo ${field} es obligatorio`);
+    for (const field of requiredFields) {
+      if (!parsedDto[field]) {
+        throw new BadRequestException(`El campo ${field} es obligatorio`);
+      }
+    }
+
+    // Convierte JSON → DTO
+    const createTransactionDto = plainToInstance(CreateTransactionDto, parsedDto);
+
+    // Construcción del fileData
+    const fileData: FileUploadDTO = {
+      buffer: file.buffer,
+      fieldName: file.fieldname,
+      mimeType: file.mimetype,
+      originalName: file.originalname,
+      size: file.size,
+    };
+
+    try {
+      // Llamada al servicio
+      return await this.transactionsService.create(createTransactionDto, fileData);
+    } catch (error) {
+      // Captura errores específicos de TypeORM para NOT NULL
+      if (error.code === '23502') {
+        throw new BadRequestException('Faltan campos obligatorios para guardar la transacción');
+      }
+      throw new InternalServerErrorException('Error inesperado al crear la transacción');
     }
   }
-
-  // Convierte JSON → DTO
-  const createTransactionDto = plainToInstance(CreateTransactionDto, parsedDto);
-
-  // Construcción del fileData
-  const fileData: FileUploadDTO = {
-    buffer: file.buffer,
-    fieldName: file.fieldname,
-    mimeType: file.mimetype,
-    originalName: file.originalname,
-    size: file.size,
-  };
-
-  try {
-    // Llamada al servicio
-    return await this.transactionsService.create(createTransactionDto, fileData);
-  } catch (error) {
-    // Captura errores específicos de TypeORM para NOT NULL
-    if (error.code === '23502') {
-      throw new BadRequestException('Faltan campos obligatorios para guardar la transacción');
-    }
-    throw new InternalServerErrorException('Error inesperado al crear la transacción');
-  }
-}
-
 
   // Obtener historial de estados (público)
   @Get('status/:id')

@@ -7,8 +7,9 @@ import { UserBank } from './entities/user-bank.entity';
 import { UserVirtualBank } from './entities/user-virtual-bank.entity';
 import { UserReceiverCrypto } from './entities/user-receiver-crypto.entity';
 import { UserPix } from './entities/user-pix.entity';
-import { Platform } from 'src/enum/platform.enum';
+
 import { UserAccValuesDto } from './dto/create-bank-account.dto';
+import { Platform } from 'src/enum/platform.enum';
 
 @Injectable()
 export class AccountsService {
@@ -109,7 +110,6 @@ export class AccountsService {
     // Busca la cuenta principal del usuario
     const userAccount = await this.userAccountRepo.findOne({
       where: { accountId: bankAccountId, userId: user.id },
-
     });
 
     if (!userAccount) {
@@ -237,7 +237,6 @@ export class AccountsService {
 
     //  Si pasamos bankAccountId, filtramos
     const found = allBanks.find((bank) => bank.details.some((d) => d.detailId === bankAccountId));
-
 
     if (!found) {
       throw new NotFoundException('Cuenta no encontrada para este usuario');

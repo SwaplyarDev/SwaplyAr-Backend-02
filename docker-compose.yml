@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  postgres_test:
+    image: postgres:15-alpine
+    container_name: postgres_test_db
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+    ports:
+      - "5438:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_test_data:

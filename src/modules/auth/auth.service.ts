@@ -28,7 +28,7 @@ export class AuthService {
       profile: profile,
       category: profile.category ?? null,
       isValidated: user.isValidated,
-      userValidated: user.userValidated
+      userValidated: user.userValidated,
     };
   }
 

@@ -13,9 +13,9 @@
       }
 
       .blue-border {
-        height: 5px;
+        height: 8px;
         background-color: #012d8a;
-        border-radius: 8px 8px 0 0;
+        border-radius: 5px;
       }
 
       .container {
@@ -38,6 +38,7 @@
         margin: 0;
         padding: 5px 0;
         color: black;
+        font-size: 16px;
       }
       .social-icons a {
         margin: 0 5px;
@@ -54,14 +55,20 @@
         text-decoration: none;
         font-size: 16px;
       }
+
+      .cta-button:hover{
+        color:white;
+        background-color: #0140c5;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <!-- Header -->
+      <section class="blue-border"></section>
       <div
         class="header"
-        style="text-align: right; font-size: 12px; color: #333"
+        style="text-align: right; font-size: 12px; color: #888"
       >
         Fecha de Solicitud: {{DATE}}
       </div>
@@ -83,35 +90,45 @@
       </div>
 
       <div class="info">
-        <h3 style="margin: 0">
-          ¡Transferencia exitosa! Tu dinero fue enviado con éxito
+        <h3 style="margin: 0; color: rgb(18, 17, 17); font-size:26px; font-weight:lighter">
+          ¡Transferencia exitosa! Tu dinero fue enviado con éxito.
         </h3>
       </div>
 
-      <div class="transaction-info" style="padding-top: 10px">
-        <h4>
-          Solicitud <span style="color: #012d8a">{{REFERENCE_NUMBER}}</span> a
-          finalizado
+      <div class="transaction-info" style="padding-top: 10px; color: rgb(18, 17, 17); font-size:20px;">
+        <h4 style=" font-weight:500">
+          Solicitud <span style="color: #012d8a">#{{REFERENCE_NUMBER}}</span> ha
+          finalizado.
         </h4>
         <p>
           Tu solicitud se ha procesado con éxito y pronto podrás disfrutar de tu
           dinero. Agradecemos tu confianza en nosotros.
         </p>
+        <br>
         <p>
           Recuerda que, aunque la mayoría de los pagos se completan en pocas
           horas, en algunos casos pueden tardar hasta 2 días hábiles en
           acreditarse en la cuenta del destinatario.
         </p>
+        <br>
         <p>
           Si tienes algún inconveniente con tu pago, por favor comunícate de
           inmediato a través del chat de tu pedido.
         </p>
       </div>
 
+      <section class="blue-border" style="margin: 20px 2px; height:1px;"></section>
+      <p style="color:#5a5a5a; text-align:center; font-weight:lighter">Deja tu comentario en el siguiente boton, es muy importante para 
+        <br> nosotros para seguir mejorando continuamente</p>
+
+        <div style="text-align:center">
+          <a href="{{BASE_URL}}/auth/verify" class="cta-button">SwaplyAr.com</a>
+        </div>
+        
       <section style="text-align: center; margin-top: 10px">
         <img
           width="200"
-          src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731591185/23_cedent.png"
+          src="https://res.cloudinary.com/dwrhturiy/image/upload/v1732384862/plus-rewards_vmhrmg.png"
           alt="New plus reward logo"
         />
       </section>
@@ -164,7 +181,7 @@
 
       <section
         style="
-          text-align: center;
+          
           font-size: 12px;
           color: #888;
           padding: 10px 20px;
@@ -172,11 +189,9 @@
           margin: 0 auto;
         "
       >
-        <p>
-          Este mensaje puede contener información confidencial. No compartas
-          información sobre esta transacción con terceros. Si no eres el
-          destinatario indicado, notifícaselo al remitente de inmediato y borra
-          este correo electronico de tu sistema.
+        <p style="widht:100%; font-size:10px">
+          Este mensaje puede contener información confidencial. No compartas información sobre esta transacción con terceros. 
+          Si no eres el destinatario indicado, notifícaselo al remitente de inmediato y borra este correo electronico de tu sistema.
         </p>
       </section>
       <!-- Logo -->
@@ -195,6 +210,12 @@
               padding-bottom: 10px;
             "
           >
+
+              <div style="text-align:center">
+                <img class="logo" src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224752/logo-solo_dgx9c5.png"
+                alt="SwaplyAr Logotipo" 
+                style="width: 70px; margin-top: 20px;" />
+              </div>
             <tr>
               <td align="center" style="padding-left: 82px">
                 <a
@@ -204,7 +225,7 @@
                   <img
                     src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/linkedin_jhsarf.png"
                     alt="Logo Linkedin"
-                    style="width: 20px; height: auto"
+                    style="width: 25px; height: auto"
                   />
                 </a>
                 <a
@@ -214,14 +235,14 @@
                   <img
                     src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330494/instagram_ihxf7s.png"
                     alt="Logo Instagram"
-                    style="width: 20px; height: auto; margin-left: 10px"
+                    style="width: 30px; height: auto; margin-left: 10px"
                   />
                 </a>
                 <a href="" style="text-decoration: none">
                   <img
                     src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330493/facebook_cqn0dm.png"
                     alt="Logo Facebook"
-                    style="width: 20px; height: auto; margin-left: 10px"
+                    style="width: 30px; height: auto; margin-left: 10px"
                   />
                 </a>
                 <a
@@ -231,7 +252,7 @@
                   <img
                     src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/whatsapp_ji3tfh.png"
                     alt="Logo WhatsApp"
-                    style="width: 20px; height: auto; margin-left: 10px"
+                    style="width: 30px; height: auto; margin-left: 10px"
                   />
                 </a>
               </td>
@@ -244,6 +265,7 @@
             </tr>
           </table>
         </nav>
+        <section class="blue-border" style="margin-bottom: 20px;"></section>
       </footer>
     </div>
   </body>

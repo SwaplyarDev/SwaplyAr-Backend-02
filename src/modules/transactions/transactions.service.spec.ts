@@ -5,6 +5,8 @@ import { Transaction } from './entities/transaction.entity';
 import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
 import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
+import { MailerService } from '@mailer/mailer.service';
+import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 
 describe('TransactionsService', () => {
   let service: TransactionsService;
@@ -23,23 +25,20 @@ describe('TransactionsService', () => {
           },
         },
         {
-          provide: FinancialAccountsService,
+          provide: getRepositoryToken(AdministracionStatusLog),
           useValue: {
-            create: jest.fn(),
+            createQueryBuilder: jest.fn().mockReturnValue({
+              leftJoin: jest.fn().mockReturnThis(),
+              where: jest.fn().mockReturnThis(),
+              orderBy: jest.fn().mockReturnThis(),
+              getMany: jest.fn().mockResolvedValue([]),
+            }),
           },
         },
-        {
-          provide: AmountsService,
-          useValue: {
-            create: jest.fn(),
-          },
-        },
-        {
-          provide: ProofOfPaymentsService,
-          useValue: {
-            create: jest.fn(),
-          },
-        },
+        { provide: FinancialAccountsService, useValue: { create: jest.fn() } },
+        { provide: AmountsService, useValue: { create: jest.fn() } },
+        { provide: ProofOfPaymentsService, useValue: { create: jest.fn() } },
+        { provide: MailerService, useValue: { sendReviewPaymentEmail: jest.fn() } },
       ],
     }).compile();
 

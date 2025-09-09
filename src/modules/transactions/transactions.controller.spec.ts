@@ -45,7 +45,7 @@ describe('TransactionsController (integración real)', () => {
               ),
             findOne: jest.fn().mockImplementation((options) =>
               Promise.resolve({
-                id: 'tx-123',
+                paymentsId: 'tx-123',
                 countryTransaction: 'Argentina',
                 message: 'Test',
                 createdAt: new Date().toISOString(),
@@ -132,7 +132,7 @@ describe('TransactionsController (integración real)', () => {
 
   it('crea transacción con método de pago virtual-bank', async () => {
     const dto = {
-      id: 'tx-123',
+      paymentsId: 'tx-123',
       countryTransaction: 'Argentina',
       message: 'Test',
       createdBy: 'dev@correo.com',
@@ -155,11 +155,6 @@ describe('TransactionsController (integración real)', () => {
           paymentMethod: {
             platformId: 'virtual_bank',
             method: 'virtual-bank',
-            virtualBank: {
-              currency: 'ARS',
-              emailAccount: 'pedro@gmail.com',
-              transferCode: 'ABC123',
-            },
           },
         },
         receiverAccount: {

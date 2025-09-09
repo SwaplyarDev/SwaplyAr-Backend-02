@@ -68,11 +68,15 @@
   <div class="container">
     <section class="blue-border"></section>
     <!-- Header -->
-    <div class="header" style="text-align: right; font-size: 12px; color: #9A9EA6">@{{MODIFICATION_DATE}} SwaplyAr | Group OA
+    <div class="header" style="text-align: right; font-size: 12px; color: #9A9EA6">
+    {{MODIFICATION_DATE}} 
+    <span style="margin-left: 8px; font-size: 12px; color: rgba(203, 196, 188);">
+    {{DATE_HOUR}}
+    </span>
     </div>
     <div class="header">
       <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" alt="SwaplyAr Logotipo"
-        style="width: 240px ;margin: 20px auto" />
+        style="width: 250px ;margin: 20px 20px" />
     </div>
 
     <!-- Main Content -->
@@ -82,7 +86,7 @@
     </div>
 
     <div style="padding-bottom: 10px" class="info">
-      <div style="width:420px; font-size: 20px; margin: 0 auto; ">
+      <div style="width:420px; font-size: 20px; margin: 0 auto; color: black ">
         Solicitud <strong style="color: #012A8E; font-weight: 600 ;font-size: 20px;"> #{{REFERENCE_NUMBER}}</strong> se modificó con éxito
         </br> ahora sigue su flujo
       </div>
@@ -90,12 +94,12 @@
 
     <div class="transaction-info" style=" margin: 0 auto; width:424px ;padding-top: 10px">
       <p>ID de Solicitud<span style="float: right; font-weight: 600 ;color: #012A8E;">#{{TRANSACTION_ID}}</span></p>
-      <p>Nombre y apellido:<span style="float: right; ;">{{NAME}} {{LAST_NAME}}</span></p>
-      <p>N° Teléfono: <span style="float: right; ;">{{PHONE_NUMBER}}</span></p>
-      <p>Monto Enviado:<span style="float: right; ;">{{AMOUNT_SENT}} {{SENT_CURRENCY}}</span></p>
-      <p>Medio de Pago<span style="float: right;  ">{{PAYMENT_METHOD}}</span></p>
-      <p>Monto a Recibir:<span style="float: right; ;">{{AMOUNT_RECEIVED}} {{RECEIVED_CURRENCY}}</span></p>
-      <p style="border-bottom: 1px solid #012d8a">Destinatario: <span style="float: right; ">{{RECEIVED_NAME}}</span></p>
+      <p>Nombre y apellido:<span style="float: right; font-weight:lighter; color:#292b2e">{{NAME}} {{LAST_NAME}}</span></p>
+      <p>N° Teléfono: <span style="float: right; color:#292b2e ;">{{PHONE_NUMBER}}</span></p>
+      <p>Monto Enviado:<span style="float: right; color:#292b2e;">{{AMOUNT_SENT}} {{SENT_CURRENCY}}</span></p>
+      <p>Medio de Pago<span style="float: right; color:#292b2e  ">{{PAYMENT_METHOD}}</span></p>
+      <p>Monto a Recibir:<span style="float: right; color:#292b2e;">{{AMOUNT_RECEIVED}} {{RECEIVED_CURRENCY}}</span></p>
+      <p style="border-bottom: 1px solid #1b56ec">Destinatario: <span style="float: right; color:#292b2e; ">{{RECEIVED_NAME}}</span></p>
     </div>
 
     <section style=" width: 424px; text-align: justify; padding:5rem 0 ; margin: 0 auto; ">
@@ -125,7 +129,7 @@
                 position: relative;
                 top: 5px;
               "></td>
-          <td align="left" style="padding-left: 20px; padding-top: 12px">
+          <td align="left" style="padding-left: 20px; padding-top: 12px;">
             <a href="{{BASE_URL}}/info/terms-and-conditions" style="color: black; text-decoration: none">Avisos
               Legales</a>
           </td>
@@ -136,7 +140,7 @@
     <!-- Footer -->
     <section>
       <table align="center" cellpadding="0" cellspacing="0" role="presentation"
-        style="margin-top:0; text-align: center">
+        style="margin-top:20px; text-align: center; margin-left:97px">
         <tr>
           <td align="center" style="padding-right: 21px; padding-left: 3.5rem;">
             <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1730818197/logo-solosw_b8nke4.png"
@@ -178,15 +182,15 @@
               </a>
             </td>
           </tr>
-          <tr>
-            <td align="right" style="font-size: 10px; color: rgba(203, 196, 188)">
-              {{DATE_HOUR}}
-            </td>
-          </tr>
+
         </table>
       </nav>
     </footer>
-    <section class="blue-border"></section>
+              <div style="margin-top:25px; margin-left:300px">© 2024 SwaplyAr | Group OA</div> 
+
+          
+          
+    <section style="margin-top:5px" class="blue-border"></section>
   </div>
 </body>
 

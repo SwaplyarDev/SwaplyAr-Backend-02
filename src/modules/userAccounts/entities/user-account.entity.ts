@@ -1,3 +1,4 @@
+import { User } from '@users/entities/user.entity';
 import { Platform } from 'src/enum/platform.enum';
 import {
   Entity,
@@ -5,6 +6,8 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity('user_account')
@@ -33,4 +36,11 @@ export class UserAccount {
     default: true,
   })
   status: boolean;
+
+  @Column({ name: 'first_name', nullable: true })
+  firstName: string;
+
+  @Column({ name: 'last_name', nullable: true })
+  lastName: string;
+
 }

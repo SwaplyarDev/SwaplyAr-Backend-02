@@ -225,7 +225,7 @@ export class TransactionGetByIdDto extends TransactionResponseDto {
   @Type(() => RegretDto)
   @ApiProperty({ type: RegretDto, required: false })
   regret?: RegretDto;
-  
+
   @Expose()
   @ApiProperty({ example: false })
   isNoteVerified: boolean;

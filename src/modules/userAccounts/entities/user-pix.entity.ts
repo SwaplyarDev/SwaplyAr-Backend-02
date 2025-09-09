@@ -20,6 +20,6 @@ export class UserPix {
   accountId: string;
 
   @ManyToOne(() => UserAccount)
-  @JoinColumn({ name: 'account_id', referencedColumnName: 'account_id' })
+  @JoinColumn({ name: 'account_id', referencedColumnName: 'accountId' })
   userAccount: UserAccount;
 }

@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="es">
 
@@ -29,11 +30,30 @@
       border-radius: 20px;
     }
 
+    .blue-border-skinny {
+      height: 1px;
+      background-color: #012ABE;
+      width: 85%;
+      margin: 20px auto;
+      border-radius: 20px;
+    }
+
+    .blue-bold{
+      color: #012d8a;
+      font-weight:bold;
+      margin-right: 8px;
+      margin-left: 8px;
+    }
+
+    .block-blue-bold{
+      display: flex;
+      justify-content: center;
+    }
+
     .title {
       color: #252526;
       text-align: center;
-      font-size: 26px;
-      font-weight: 500;
+      font-size: 16px;
       margin-top: 20px;
     }
 
@@ -66,14 +86,84 @@
       border-radius: 20px;
       text-decoration: none;
       font-size: 16px;
+      font-weight: lighter;
+    }
+
+    .cta-button:hover{
+      color:white;
+      background-color: #0140c5;
     }
 
     .footer {
       font-size: 12px;
       color: #777;
       text-align: center;
-      margin-top: 30px;
+      margin-top: 0px;
       line-height: 150%;
+    }
+
+    .group-OA{
+      display: flex;
+      justify-content: right;
+      text-align: right;
+      margin-top: 40px;
+      margin-right: 20px;
+      margin-bottom: 20px;
+    }
+
+    .logo{
+      height: auto;
+      width: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+
+    .logo-container{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 75px;
+      margin-top: 20px;
+
+    }
+    .logo-s{
+      height: auto;
+      width: 80px;
+      margin-top: 10px;
+    }
+
+    .logo-plus-rewards{
+      height: auto;
+      width: 180px;
+    }
+
+    .vertical-bar{
+      font-size: 25px;
+      color: #4056a7;
+      margin: 0 10px;
+      margin-left: 15px;
+      font-weight: lighter;
+    }
+
+    .central-bar,
+    .logo-vertical-bar {
+      width: 2px;         
+      height: 80px;       
+      background-color: #012ABE ; 
+      margin: 10px 15px;  
+      color:#012ABE      
+}
+
+    a {
+      
+      text-decoration: none;
+      font-weight: 600;
+      text-align: center;
+      font-size: 15px;
+      color:#777
     }
   </style>
 </head>
@@ -84,43 +174,50 @@
 
     <div style="text-align:center">
       <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" 
-           alt="SwaplyAr Logotipo" 
-           style="width: 180px; margin-top: 20px;" />
+            alt="SwaplyAr Logotipo" 
+            style="width: auto; height:60px; margin-top: 20px;" />
     </div>
 
-    <div class="title">Hola, {{NAME}}!</div>
+    <section class="blue-border-skinny"></section>
+
+    <div class="title">Hola, <strong>{{NAME}}</strong></div>
 
     <div class="message">
-      Bienvenido/a a la familia de SwaplyAr. Recibí y envía dinero de cualquier billetera virtual y criptomoneda a tu cuenta bancaria, ya son miles de usuarios que están aprovechando los beneficios de usar SwaplyAr y SwaplyAr Plus Rewards
+      Bienvenido/a a la familia de SwaplyAr. Recibí y envía dinero de cualquier billetera virtual y criptomoneda a tu cuenta bancaria, ya son miles de usuarios que están aprovechando los beneficios de usar 
+      <br>
+      <span class="block-blue-bold"><span class="blue-bold">SwaplyAr</span> y <span class="blue-bold">SwaplyAr Plus Rewards</span></span>
+      <br>
 
-      ¡Intercambia con confianza con la mejor tasa del mercado y en el menor tiempo posible!
-      Para completar tu registro, utiliza el siguiente código de verificación:
-      <h4>Verifica tu correo electrónico para iniciar sesión</h4>
+      ¡Intercambia con confianza con <strong>la mejor tasa del mercado</strong> y en el <strong>menor tiempo posible!</strong>
+
     </div>
 
-    <div class="code-box">{{VERIFICATION_CODE}}</div>
+    <div style="margin-top:20px; display:flex; justify-content:center; margin-bottom:30px">
+    <img   src="https://res.cloudinary.com/dwrhturiy/image/upload/v1739979692/post2-500_rgxcns.png" alt="">
+    </div>
+
 
     <div style="text-align:center">
-      <a href="{{BASE_URL}}/auth/verify" class="cta-button">Verificar mi cuenta</a>
+      <a href="{{BASE_URL}}/auth/verify" class="cta-button">SwaplyAr.com</a>
     </div>
+    
+    <section class="blue-border-skinny" style="text-align:center; margin-top: 30px; margin-bottom 0; width:430px"></section>
 
     <div class="footer">
-      Este código expirará en {{EXPIRATION_MINUTES}} minutos.<br />
-      Si no solicitaste esta cuenta, puedes ignorar este mensaje.
+      <a href="https://www.swaplyar.com/es/centro-de-ayuda">Centro de Ayuda</a> <span class="vertical-bar"> | </span><a href="{{PRIVACY_URL}}">Política y Privacidad</a>
+    </div>
+      
+
+    <div class="logo-container">
+    <img class="logo-s" src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224752/logo-solo_dgx9c5.png"> 
+    <span style="height:100px" class="logo-vertical-bar"> . </span> 
+    <img class="logo-plus-rewards" src="https://res.cloudinary.com/dwrhturiy/image/upload/v1732384862/plus-rewards_vmhrmg.png" alt="">
     </div>
 
-    <section class="blue-border" style="margin-top:20px;"></section>
+  
+    <div class="group-OA">© 2024 SwaplyAr | Group OA.</div>
 
-    <footer style="color: #666" class="footer">
-      <p style="color: #666">
-        Nuestro servicio de atención al cliente nunca lo solicitará. No lea este código en voz alta. Tenga cuidado con los intentos de phishing y siempre
-        verifique el remitente y el dominio <a style="font-weight: 600" href="{{BASE_URL}}">(swaplyar.com)</a> antes de
-        actuar. Si le preocupa la seguridad de su cuenta, visite nuestra página <a href="{{BASE_URL}}/info/help-center"
-          style="font-weight: 600;">de Centro de Ayuda</a> para ponerse en contacto con nosotros.
-      </p>
-    </footer>
-
-    <div class="blue-border"></div>
+    <div style="margin-bottom:20px;" class="blue-border"></div>
   </div>
 </body>
 

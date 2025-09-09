@@ -10,7 +10,7 @@ import {
 @Entity('user_account')
 export class UserAccount {
   @PrimaryGeneratedColumn('uuid', { name: 'account_id' })
-  account_id: string;
+  accountId: string;
 
   @Column({ name: 'account_name', nullable: true })
   accountName: string;

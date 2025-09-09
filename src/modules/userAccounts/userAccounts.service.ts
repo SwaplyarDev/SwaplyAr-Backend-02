@@ -129,8 +129,8 @@ export class AccountsService {
           updatedAt: specificAccount.userAccount.updatedAt,
           userId: specificAccount.userAccount.userId,
           status: specificAccount.userAccount.status,
-          firstName: userAccValues.firstName,
-          lastName: userAccValues.lastName,
+          firstName: savedUserAccount.firstName,
+          lastName: savedUserAccount.lastName,
         };
       }
 

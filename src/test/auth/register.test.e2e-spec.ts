@@ -4,7 +4,7 @@ import { DataSource } from 'typeorm';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '@app/app.module';
 import { MailerService } from '@mailer/mailer.service';
-import { FakeMailerService } from './fake.mailer';
+import { FakeMailerService } from '../mocks/fake.mailer';
 
 describe('ENDPOINT DE REGISTRO #api #sanity', () => {
   let app: INestApplication;
@@ -38,6 +38,7 @@ describe('ENDPOINT DE REGISTRO #api #sanity', () => {
   });
 
   it('Cuando se envían datos válidos, se registra y envía email', async () => {
+    // body
     const user = {
       firstName: 'dylan',
       lastName: 'rojo',
@@ -56,7 +57,6 @@ describe('ENDPOINT DE REGISTRO #api #sanity', () => {
     expect(res.body).toHaveProperty('termsAccepted', true);
     expect(res.body).toHaveProperty('isActive', true);
     expect(res.body).toHaveProperty('isValidated', false);
-
     expect(mailer.sentMails.length).toBe(1);
     expect(mailer.sentMails[0].to).toBe('devdylancrowder@outlook.com');
   });

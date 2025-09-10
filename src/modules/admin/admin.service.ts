@@ -73,6 +73,7 @@ export class AdminService {
         'amount',
         'proofOfPayment',
         'note',
+        'regret'
       ],
       skip: (page - 1) * perPage,
       take: perPage,
@@ -84,6 +85,7 @@ export class AdminService {
       message: tx.message,
       createdAt: tx.createdAt.toISOString(),
       finalStatus: tx.finalStatus,
+      regret: tx.regret && { regretId: tx.regret.id },
       senderAccount: {
         id: tx.senderAccount.id,
         firstName: tx.senderAccount.firstName,
@@ -135,6 +137,7 @@ export class AdminService {
         'amount',
         'proofOfPayment',
         'note',
+        'regret'
       ],
     });
 
@@ -191,6 +194,7 @@ export class AdminService {
       message: transaction.message,
       createdAt: transaction.createdAt.toISOString(),
       finalStatus: transaction.finalStatus,
+      regret: transaction.regret,
       senderAccount: this.removeNulls({
         id: sender.id,
         firstName: sender.firstName,

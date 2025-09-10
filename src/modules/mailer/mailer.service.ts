@@ -419,7 +419,8 @@ export class MailerService {
       ),
       AMOUNT_RECEIVED: amount.amountReceived ?? 0,
       RECEIVED_CURRENCY: amount.currencyReceived ?? '',
-      RECEIVED_NAME:`${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`.trim() || 'No especificado',
+      RECEIVED_NAME:
+        `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`.trim() || 'No especificado',
       BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
       DATE_HOUR: new Date().toLocaleString('es-AR'),
       MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),

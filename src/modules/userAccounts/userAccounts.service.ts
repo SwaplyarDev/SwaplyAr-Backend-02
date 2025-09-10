@@ -37,7 +37,10 @@ export class AccountsService {
         accountName: userAccValues.accountName,
         userId,
         status: true,
+        firstName: userAccValues.firstName,
+        lastName: userAccValues.lastName,
       });
+
       const savedUserAccount = await this.userAccountRepo.save(userAccount);
 
       if (!savedUserAccount) {
@@ -49,7 +52,7 @@ export class AccountsService {
 
       // crea una cuenta de banco
       if (accountType === Platform.Bank) {
-        specificAccount = this.bankAccountRepo.create({
+        const newBank = this.bankAccountRepo.create({
           currency: userAccValues.currency,
           bankName: userAccValues.bankName,
           send_method_key: userAccValues.send_method_key,
@@ -59,11 +62,16 @@ export class AccountsService {
           userAccount: savedUserAccount,
         });
 
-        await this.bankAccountRepo.save(specificAccount);
+        const savedBank = await this.bankAccountRepo.save(newBank);
+
+        specificAccount = await this.bankAccountRepo.findOne({
+          where: { bankId: savedBank.bankId },
+          relations: ['userAccount'],
+        });
 
         //crea una cuenta virtual
       } else if (accountType === Platform.Virtual_Bank) {
-        specificAccount = this.virtualBankRepo.create({
+        const newVirtual = this.virtualBankRepo.create({
           accountType: userAccValues.accountType,
           currency: userAccValues.currency,
           accountId: savedUserAccount.accountId,
@@ -73,7 +81,13 @@ export class AccountsService {
           lastName: userAccValues.lastName,
           userAccount: savedUserAccount,
         });
-        await this.virtualBankRepo.save(specificAccount);
+
+        const savedVirtual = await this.virtualBankRepo.save(newVirtual);
+
+        specificAccount = await this.virtualBankRepo.findOne({
+          where: { virtual_bank_id: savedVirtual.virtual_bank_id },
+          relations: ['userAccount'],
+        });
 
         // crea una cuenta de crypto
       } else if (accountType === Platform.Receiver_Crypto) {
@@ -87,14 +101,33 @@ export class AccountsService {
 
         // crea una cuenta de pix
       } else if (accountType === Platform.Pix) {
-        specificAccount = this.pixRepo.create({
+        const newPix = this.pixRepo.create({
           userAccount: savedUserAccount,
           cpf: userAccValues.cpf,
           pix_value: userAccValues.pix_value,
           pix_key: userAccValues.pix_key,
         });
 
-        await this.pixRepo.save(specificAccount);
+        const savedPix = await this.pixRepo.save(newPix);
+
+        specificAccount = await this.pixRepo.findOne({
+          where: { pix_id: savedPix.pix_id },
+          relations: ['userAccount'],
+        });
+      }
+
+      if ([Platform.Bank, Platform.Virtual_Bank, Platform.Pix].includes(accountType)) {
+        specificAccount.userAccount = {
+          accountId: specificAccount.userAccount.accountId,
+          accountName: specificAccount.userAccount.accountName,
+          accountType: specificAccount.userAccount.accountType,
+          createdAt: specificAccount.userAccount.createdAt,
+          updatedAt: specificAccount.userAccount.updatedAt,
+          userId: specificAccount.userAccount.userId,
+          status: specificAccount.userAccount.status,
+          firstName: savedUserAccount.firstName,
+          lastName: savedUserAccount.lastName,
+        };
       }
 
       return {
@@ -200,8 +233,6 @@ export class AccountsService {
           accountName: d.accountName,
           bankName: d.bankName,
           email: d.email ?? d.email_account,
-          firstName: d.firstName,
-          lastName: d.lastName,
           network: d.network,
           wallet: d.wallet,
           pix_key: d.pix_key,
@@ -211,12 +242,22 @@ export class AccountsService {
           send_method_value: d.send_method_value,
           document_type: d.document_type,
           document_value: d.document_value,
-          userAccount: d.userAccount,
+
+          userAccount: {
+            accountId: d.userAccount.accountId,
+            accountName: d.userAccount.accountName,
+            accountType: d.userAccount.accountType,
+            createdAt: d.userAccount.createdAt,
+            updatedAt: d.userAccount.updatedAt,
+            userId: d.userAccount.userId,
+            status: d.userAccount.status,
+            firstName: d.userAccount.firstName,
+            lastName: d.userAccount.lastName,
+          },
         }));
 
         return {
           accountName: account.accountName,
-
           payment_type: typeId,
           details: mappedDetails,
         };

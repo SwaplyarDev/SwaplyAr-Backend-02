@@ -129,6 +129,14 @@ export class AccountReceiverDto {
   id: string;
 
   @Expose()
+  @ApiProperty({ name: 'firstName', example: 'Juan' })
+  firstName: string;
+
+  @Expose()
+  @ApiProperty({ name: 'lastName', example: 'Pérez' })
+  lastName: string;
+
+  @Expose()
   @Type(() => PaymentMethodReceiverDto)
   @ApiProperty({ name: 'paymentMethod', type: PaymentMethodReceiverDto })
   paymentMethod: PaymentMethodReceiverDto;

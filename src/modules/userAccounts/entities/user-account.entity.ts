@@ -42,5 +42,4 @@ export class UserAccount {
 
   @Column({ name: 'last_name', nullable: true })
   lastName: string;
-
 }

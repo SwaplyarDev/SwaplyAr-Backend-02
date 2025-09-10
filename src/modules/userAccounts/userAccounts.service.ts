@@ -36,10 +36,9 @@ export class AccountsService {
         accountType: accountType,
         accountName: userAccValues.accountName,
         userId,
-        status: true,     
+        status: true,
         firstName: userAccValues.firstName,
         lastName: userAccValues.lastName,
-        
       });
 
       const savedUserAccount = await this.userAccountRepo.save(userAccount);
@@ -53,7 +52,6 @@ export class AccountsService {
 
       // crea una cuenta de banco
       if (accountType === Platform.Bank) {
-
         const newBank = this.bankAccountRepo.create({
           currency: userAccValues.currency,
           bankName: userAccValues.bankName,
@@ -67,13 +65,12 @@ export class AccountsService {
         const savedBank = await this.bankAccountRepo.save(newBank);
 
         specificAccount = await this.bankAccountRepo.findOne({
-        where: { bankId: savedBank.bankId },
-        relations: ['userAccount'],
+          where: { bankId: savedBank.bankId },
+          relations: ['userAccount'],
         });
 
         //crea una cuenta virtual
       } else if (accountType === Platform.Virtual_Bank) {
-
         const newVirtual = this.virtualBankRepo.create({
           accountType: userAccValues.accountType,
           currency: userAccValues.currency,
@@ -90,7 +87,7 @@ export class AccountsService {
         specificAccount = await this.virtualBankRepo.findOne({
           where: { virtual_bank_id: savedVirtual.virtual_bank_id },
           relations: ['userAccount'],
-      });
+        });
 
         // crea una cuenta de crypto
       } else if (accountType === Platform.Receiver_Crypto) {
@@ -119,7 +116,6 @@ export class AccountsService {
         });
       }
 
-      
       if ([Platform.Bank, Platform.Virtual_Bank, Platform.Pix].includes(accountType)) {
         specificAccount.userAccount = {
           accountId: specificAccount.userAccount.accountId,
@@ -140,7 +136,7 @@ export class AccountsService {
     } catch (err) {
       this.logger.error('Error creating bank:', err);
       throw new BadRequestException('Error creating bank account');
-    } 
+    }
   }
 
   async deleteBankAccount(user: any, bankAccountId: string) {
@@ -257,8 +253,7 @@ export class AccountsService {
             status: d.userAccount.status,
             firstName: d.userAccount.firstName,
             lastName: d.userAccount.lastName,
-          }
-
+          },
         }));
 
         return {

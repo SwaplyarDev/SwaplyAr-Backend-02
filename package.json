@@ -25,9 +25,12 @@
     "test:e2e": "cross-env NODE_ENV=test DATABASE_TEST_URL=postgres://testuser:testpass@localhost:5438/testdb jest --config jest-e2e.json",
     "test:e2e:sanity": "cross-env NODE_ENV=test DATABASE_TEST_URL=postgres://testuser:testpass@localhost:5438/testdb jest --config jest-e2e.json -t '#tra'",
     "prepare": "node -e \"if (process.env.NODE_ENV==='production') process.exit(0);\" || husky install",
-    "migration:generate": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -d src/database/data-source.ts",
-    "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/database/data-source.ts",
-    "migration:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d src/database/data-source.ts"
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts",
+    "mig:gen": "npm run typeorm -- migration:generate",
+    "mig:create": "npm run typeorm -- migration:create",
+    "mig:run": "npm run typeorm -- migration:run",
+    "mig:revert": "npm run typeorm -- migration:revert",
+    "mig:show": "npm run typeorm -- migration:show"
   },
   "dependencies": {
     "@nestjs/cli": "^11.0.0",

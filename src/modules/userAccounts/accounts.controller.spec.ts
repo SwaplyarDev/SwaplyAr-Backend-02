@@ -23,7 +23,6 @@ describe('AccountsController', () => {
   const mockRequest = { user: { id: 'user-uuid-123' } };
 
   const createBankAccountDto: CreateBankAccountDto = {
-    accountType: Platform.Bank,
     userAccValues: {
       firstName: 'Juan',
       lastName: 'Pérez',
@@ -37,7 +36,6 @@ describe('AccountsController', () => {
 
   const expectCreateUserBankCalled = () => {
     expect(mockAccountsService.createUserBan).toHaveBeenCalledWith(
-      createBankAccountDto.accountType,
       createBankAccountDto.userAccValues,
       mockRequest.user.id,
     );

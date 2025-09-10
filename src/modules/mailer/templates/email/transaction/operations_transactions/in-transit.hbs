@@ -21,8 +21,9 @@
       }
       .blue-border {
         border: 5px solid #012d8a;
-        width: 75%;
+        width: 100%;
         margin: 0 auto;
+        border-radius: 5px;
       }
       .header {
         text-align: center;
@@ -31,16 +32,16 @@
       .date {
         text-align: right;
         font-size: 12px;
-        color: #333;
-        margin-top: 20px;
+        color: #b1aaaa;
+        margin-top: 10px;
       }
       .logo {
-        width: 150px;
+        width: 250px;
         display: block;
-        margin: 0 auto;
+        margin: 0 40px;
       }
       .img-center {
-        max-width: 50%;
+        max-width: 70%;
         height: auto;
         display: block;
         margin: 0 auto;
@@ -54,15 +55,16 @@
       }
       .content h3 {
         font-size: 19px;
-        color: #012d8a;
+        color: #000;
         margin: 10px 0;
       }
       .details {
         text-align: left;
         margin: 10px 0;
+        color: #1d1c1c;
       }
       .details p {
-        line-height: 1.6;
+        border-bottom: 1px solid #012d8a;
         margin: 5px 0;
         position: relative;
         padding-bottom: 5px;
@@ -74,7 +76,6 @@
         left: 0;
         right: 0;
         height: 1px;
-        background-color: #000;
       }
       .variable {
         float: right;
@@ -86,13 +87,14 @@
         background-color: #012d8a;
         color: white;
         text-decoration: none;
-        border-radius: 5px;
+        border-radius: 20px;
         font-size: 16px;
-        margin: 10px 0;
+        margin: 20px 0;
         transition: background-color 0.3s ease;
       }
       .button:hover {
         background-color: #0056b3;
+        color:#fff;
       }
       .footer {
         text-align: center;
@@ -104,14 +106,19 @@
         display: flex;
         justify-content: space-between;
         margin-bottom: 10px;
+        
       }
       .footer-links a {
         text-align: center;
         flex: 1;
+        color:#888;
+        text-decoration: none;
+        font-size: 14px;
+        margin-top: 10px;
       }
       .footer-logo {
-        width: 40px;
-        margin: 10px auto;
+        width: 60px;
+        margin: 20px auto;
       }
     </style>
   </head>
@@ -128,12 +135,12 @@
       <div class="content">
         <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725225314/rewards1_hme3sh.png"
           alt="Personaje" class="img-center" />
-        <h2>Tu transferencia está en camino 🚀</h2>
-        <h3>
-          Número de referencia<br />{{REFERENCE_NUMBER}}
+        <h2 style="font-weight: 400; margin-top:50px; ">Tu transferencia está en camino 🚀</h2>
+        <h3 style="font-weight:400; margin-bottom:30px;">
+          Número de referencia: <span style="font-weight:bolder; color: #0c399c; ">#{{REFERENCE_NUMBER}}</span>
         </h3>
         <div class="details">
-          <p><strong>Remitente:</strong> <span class="variable">{{SENDER_NAME}} {{SENDER_LASTNAME}}</span></p>
+          <p style="padding-top: 5px; border-top: 1px solid #0c399c;"><strong>Remitente:</strong> <span class="variable">{{SENDER_NAME}} {{SENDER_LASTNAME}}</span></p>
           <p><strong>Destinatario:</strong> <span class="variable">{{RECEIVER_NAME}} {{RECEIVER_LASTNAME}}</span></p>
           <p>Monto enviado: <span class="variable">{{MONEY_SENT}} {{SENT_CURRENCY}}</span></p>
           <p>Monto a recibir: <span class="variable">{{MONEY_RECEIVED}} {{RECEIVED_CURRENCY}}</span></p>
@@ -162,19 +169,67 @@
             <p>Wallet: <span class="variable">{{CRYPTO_WALLET}}</span></p>
           {{/if}}
         </div>
-        <p>Estamos procesando tu transacción. Recibirás una notificación cuando se complete ✅</p>
-        <a href="https://swaplyar.vercel.app" class="button">Ir a SwaplyAr</a>
-        <a href="https://swaplyar.vercel.app/info/help-center" class="button">Centro de Ayuda</a>
+        <p style="color:#998c8c; margin-top:25px; font-size:10px">Estamos procesando tu transacción. Recibirás una notificación cuando se complete.</p>
+        <a href="https://www.swaplyar.com/es/inicio" class="button">Ir a SwaplyAr</a>
       </div>
+
+
       <div class="footer">
+        <div class="thin-blue-border" style="height:1px; width:100%; border-top:1px solid #0c399c"></div>
         <div class="footer-links">
-          <a href="#">Contáctanos</a>
-          <a href="#">Aviso Legal</a>
+          <a href="">Contáctanos</a>
+          <div style="border-left: 1px solid #0c399c; height:30px; "></div>
+          <a href="">Aviso Legal</a>
         </div>
-        <p>© 2024 SwaplyAr.</p>
+      
         <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224752/logo-solo_dgx9c5.png"
           alt="Footer Logotipo" class="footer-logo" />
       </div>
+
+<table cellpadding="0" cellspacing="0" border="0" align="center">
+      <tr>
+              <td style="text-align: center; padding: 10px 0">
+                <a
+                  href="https://www.linkedin.com/company/swaplyar/"
+                  style="text-decoration: none"
+                >
+                  <img
+                    src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/linkedin_jhsarf.png"
+                    alt="Logo Linkedin"
+                    style="width: 25px; height: auto"
+                  />
+                </a>
+                <a
+                  href="https://www.instagram.com/swaplyar/"
+                  style="text-decoration: none"
+                >
+                  <img
+                    src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330494/instagram_ihxf7s.png"
+                    alt="Logo Instagram"
+                    style="width: 30px; height: auto; margin-left: 10px"
+                  />
+                </a>
+                <a href="" style="text-decoration: none">
+                  <img
+                    src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330493/facebook_cqn0dm.png"
+                    alt="Logo Facebook"
+                    style="width: 30px; height: auto; margin-left: 10px"
+                  />
+                </a>
+                <a
+                  href="https://api.whatsapp.com/send?phone=5491123832198"
+                  style="text-decoration: none"
+                >
+                  <img
+                    src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/whatsapp_ji3tfh.png"
+                    alt="Logo WhatsApp"
+                    style="width: 30px; height: auto; margin-left: 10px"
+                  />
+                </a>
+              </td>
+            </tr>
+</table>
+      <p style="justify-content:end; display:flex">© 2024 SwaplyAr.</p>
       <div class="blue-border"></div>
     </div>
   </body>

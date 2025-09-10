@@ -88,7 +88,6 @@ export class TransactionsController {
             'JSON stringificado con la información de la transacción (CreateTransactionDto)',
           example: JSON.stringify(
             {
-              paymentsId: '126',
               countryTransaction: 'Argentina',
               message: 'Transferencia Crypto',
               financialAccounts: {
@@ -181,7 +180,6 @@ export class TransactionsController {
     // Validación de campos obligatorios del DTO
     const requiredFields: (keyof CreateTransactionDto)[] = [
       'countryTransaction',
-      'paymentsId',
       'financialAccounts',
       'amount',
     ];

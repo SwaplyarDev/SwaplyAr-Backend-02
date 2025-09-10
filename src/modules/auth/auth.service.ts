@@ -50,7 +50,6 @@ export class AuthService {
   }
 
   async refreshAccessToken(refreshToken: string) {
-    console.log('🧪 Buscando usuario con refreshToken:', refreshToken);
     const user = await this.userRepo.findOne({
       where: { refreshToken },
       relations: ['profile'],

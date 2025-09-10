@@ -6,15 +6,6 @@ import { Type } from 'class-transformer';
 
 export class CreateTransactionDto {
   @ApiProperty({
-    name: 'paymentsId',
-    description: 'ID único del pago o transacción',
-    example: '123',
-  })
-  @IsString({ message: 'paymentsId debe ser un texto' })
-  @IsNotEmpty({ message: 'paymentsId es obligatorio' })
-  paymentsId: string;
-
-  @ApiProperty({
     name: 'countryTransaction',
     description: 'País donde se realiza la transacción',
     example: 'Argentina',

@@ -64,7 +64,7 @@ describe('ENDPOINT DE TRANSACCIONES #api #tra', () => {
 
   it('Cuando se envían datos válidos y un archivo, se crea la transacción y se envía email', async () => {
     const createTransactionDto = {
-      paymentsId: '123',
+      // paymentsId: '123', // eliminado: no se almacena en la DB ni es requerido
       countryTransaction: 'Argentina',
       message: 'Transferencia de prueba',
       financialAccounts: {
@@ -123,5 +123,6 @@ describe('ENDPOINT DE TRANSACCIONES #api #tra', () => {
     expect(body.senderAccount).toHaveProperty('firstName', 'Juan');
     expect(body.receiverAccount.paymentMethod.bank).toHaveProperty('bankName', 'Banco Galicia');
     expect(body.amount).toHaveProperty('amountSent', '1000.00');
+    expect(body).not.toHaveProperty('paymentsId'); // opcional: confirma que no se devuelve
   });
 });

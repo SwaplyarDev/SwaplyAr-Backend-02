@@ -73,7 +73,7 @@ export class AdminService {
         'amount',
         'proofOfPayment',
         'note',
-        'regret'
+        'regret',
       ],
       skip: (page - 1) * perPage,
       take: perPage,
@@ -137,7 +137,7 @@ export class AdminService {
         'amount',
         'proofOfPayment',
         'note',
-        'regret'
+        'regret',
       ],
     });
 

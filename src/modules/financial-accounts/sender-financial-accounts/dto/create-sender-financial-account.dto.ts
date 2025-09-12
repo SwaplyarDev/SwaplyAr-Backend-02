@@ -1,3 +1,4 @@
+import { IsPhoneNumberValid } from '@common/decorators/phone-number.decorator';
 import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -17,20 +18,21 @@ export class CreateSenderFinancialAccountDto {
   @ApiProperty({
     description: 'Correo electrónico',
     example: 'nahuel@example.com',
-    required: false,
+    required: true,
   })
   @IsEmail()
-  @IsOptional()
+  @IsNotEmpty()
   createdBy: string;
 
   @ApiProperty({
-    description: 'Número de teléfono',
-    example: '1122334455',
-    required: false,
+    description: 'Número de teléfono en formato internacional. Ej: +56912345678',
+    example: '+573001234567',
+    required: true,
   })
   @IsString()
-  @IsOptional()
-  phoneNumber?: string;
+  @IsNotEmpty()
+  @IsPhoneNumberValid({ message: 'Número inválido según su código de país. Use formato +<código_pais><numero>.' })
+  phoneNumber: string;
 
   @ApiProperty()
   @ValidateNested()

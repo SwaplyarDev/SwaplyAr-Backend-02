@@ -43,6 +43,8 @@ import {
 } from './dto/transaction-response.dto';
 import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
 import { JwtService } from '@nestjs/jwt';
+import { validateOrReject, ValidationError } from 'class-validator';
+import { IsPhoneNumberValid } from '@common/decorators/phone-number.decorator';
 
 interface CreateTransactionBody {
   createTransactionDto: string;
@@ -54,6 +56,15 @@ interface RequestWithUser extends Request {
     email: string;
     [key: string]: unknown;
   };
+}
+
+class PhoneNumberValidator {
+  @IsPhoneNumberValid({ message: 'Número inválido según su código de país. Use formato +<código_pais><numero>.' })
+  phoneNumber: string;
+
+  constructor(phoneNumber: string) {
+    this.phoneNumber = phoneNumber;
+  }
 }
 
 @ApiTags('Transacciones')
@@ -192,6 +203,20 @@ export class TransactionsController {
 
     // Convierte JSON → DTO
     const createTransactionDto = plainToInstance(CreateTransactionDto, parsedDto);
+
+    const senderDto = createTransactionDto.financialAccounts.senderAccount;
+
+try {
+  const phoneValidator = new PhoneNumberValidator(senderDto.phoneNumber);
+  await validateOrReject(phoneValidator);
+} catch (errors) {
+  // Extraer solo mensajes de error
+  const msg = Array.isArray(errors)
+    ? errors.map(err => Object.values(err.constraints || {})).flat()
+    : [errors.message];
+
+  throw new BadRequestException({ message: 'Validation failed', errors: msg });
+}
 
     // Construcción del fileData
     const fileData: FileUploadDTO = {

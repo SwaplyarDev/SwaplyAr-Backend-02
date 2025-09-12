@@ -27,9 +27,15 @@ import { UpdateStarDto } from '@discounts/dto/update-star.dto';
 import { DiscountCode } from '@users/entities/discount-code.entity';
 import { UserDiscount } from '@users/entities/user-discount.entity';
 import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
+import { UserRole } from 'src/enum/user-role.enum';
 
-const ADMIN_ROLES = ['admin', 'super_admin'] as const;
-const ALL_USER_ROLES = ['user', 'admin', 'super_admin'] as const;
+/*const ADMIN_ROLES = ['admin', 'super_admin'] as const;
+const ALL_USER_ROLES = ['user', 'admin', 'super_admin'] as const;*/
+
+//AGREGADO PARA LA TAREA.
+const ADMIN_ROLES = [UserRole.Admin, UserRole.SuperAdmin];
+const ALL_USER_ROLES = [UserRole.User, UserRole.Admin, UserRole.SuperAdmin];
+
 
 interface DataResponse<T> {
   data: T;

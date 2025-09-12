@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  OneToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { User } from '@users/entities/user.entity';
@@ -27,11 +27,8 @@ export class UserDiscount {
   @JoinColumn({ name: 'discount_code_id' })
   discountCode: DiscountCode;
 
-  @OneToOne(() => Transaction, (transaction) => transaction.userDiscount, {
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'transaction_id' })
-  transaction?: Transaction;
+  @OneToMany(() => Transaction, (transaction) => transaction.userDiscount)
+  transactions: Transaction[];
 
   @Column({ name: 'is_used', default: false })
   isUsed: boolean;

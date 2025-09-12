@@ -20,7 +20,7 @@ export class Regret {
   description: string;
 
   @OneToOne(() => Transaction, (transaction) => transaction.regret, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'transaction_id' })  
+  @JoinColumn({ name: 'transaction_id' })
   transaction: Transaction;
 
   @OneToOne(() => ProofOfPayment, { nullable: true, onDelete: 'SET NULL' })

@@ -43,7 +43,7 @@ import {
 } from './dto/transaction-response.dto';
 import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
 import { JwtService } from '@nestjs/jwt';
-import { validateOrReject, ValidationError } from 'class-validator';
+import { validateOrReject } from 'class-validator';
 import { IsPhoneNumberValid } from '@common/decorators/phone-number.decorator';
 
 interface CreateTransactionBody {
@@ -211,13 +211,29 @@ export class TransactionsController {
     try {
       const phoneValidator = new PhoneNumberValidator(senderDto.phoneNumber);
       await validateOrReject(phoneValidator);
-    } catch (errors) {
-      // Extraer solo mensajes de error
-      const msg = Array.isArray(errors)
-        ? errors.map((err) => Object.values(err.constraints || {})).flat()
-        : [errors.message];
+    } catch (errors: unknown) {
+      // Extraer solo mensajes de error de forma segura
+      const msgs: string[] = Array.isArray(errors)
+        ? (errors as unknown[]).flatMap((err) => {
+            if (
+              err &&
+              typeof err === 'object' &&
+              'constraints' in err &&
+              (err as Record<string, unknown>).constraints &&
+              typeof (err as Record<string, unknown>).constraints === 'object'
+            ) {
+              return Object.values(
+                (err as Record<string, unknown>).constraints as Record<string, string>,
+              );
+            }
+            if (err instanceof Error) return [err.message];
+            return ['Error de validación desconocido'];
+          })
+        : errors instanceof Error
+          ? [errors.message]
+          : ['Error de validación desconocido'];
 
-      throw new BadRequestException({ message: 'Validation failed', errors: msg });
+      throw new BadRequestException({ message: 'Validation failed', errors: msgs });
     }
 
     // Construcción del fileData
@@ -232,9 +248,14 @@ export class TransactionsController {
     try {
       // Llamada al servicio
       return await this.transactionsService.create(createTransactionDto, fileData);
-    } catch (error) {
-      // Captura errores específicos de TypeORM para NOT NULL
-      if (error.code === '23502') {
+    } catch (error: unknown) {
+      // Captura errores específicos de Postgres (ej.: NOT NULL violation 23502)
+      let pgCode: string | undefined;
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const codeVal = (error as Record<string, unknown>)['code'];
+        if (typeof codeVal === 'string') pgCode = codeVal;
+      }
+      if (pgCode === '23502') {
         throw new BadRequestException('Faltan campos obligatorios para guardar la transacción');
       }
       throw new InternalServerErrorException('Error inesperado al crear la transacción');
@@ -313,7 +334,6 @@ export class TransactionsController {
   }
 
   // Obtener transacción por ID con autorización
-  @Get(':transaction_id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')

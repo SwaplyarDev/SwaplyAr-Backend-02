@@ -31,7 +31,9 @@ export class CreateSenderFinancialAccountDto {
   })
   @IsString()
   @IsNotEmpty()
-  @IsPhoneNumberValid({ message: 'Número inválido según su código de país. Use formato +<código_pais><numero>.' })
+  @IsPhoneNumberValid({
+    message: 'Número inválido según su código de país. Use formato +<código_pais><numero>.',
+  })
   phoneNumber: string;
 
   @ApiProperty()

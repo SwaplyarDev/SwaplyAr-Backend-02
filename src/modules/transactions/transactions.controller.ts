@@ -59,7 +59,9 @@ interface RequestWithUser extends Request {
 }
 
 class PhoneNumberValidator {
-  @IsPhoneNumberValid({ message: 'Número inválido según su código de país. Use formato +<código_pais><numero>.' })
+  @IsPhoneNumberValid({
+    message: 'Número inválido según su código de país. Use formato +<código_pais><numero>.',
+  })
   phoneNumber: string;
 
   constructor(phoneNumber: string) {
@@ -206,17 +208,17 @@ export class TransactionsController {
 
     const senderDto = createTransactionDto.financialAccounts.senderAccount;
 
-try {
-  const phoneValidator = new PhoneNumberValidator(senderDto.phoneNumber);
-  await validateOrReject(phoneValidator);
-} catch (errors) {
-  // Extraer solo mensajes de error
-  const msg = Array.isArray(errors)
-    ? errors.map(err => Object.values(err.constraints || {})).flat()
-    : [errors.message];
+    try {
+      const phoneValidator = new PhoneNumberValidator(senderDto.phoneNumber);
+      await validateOrReject(phoneValidator);
+    } catch (errors) {
+      // Extraer solo mensajes de error
+      const msg = Array.isArray(errors)
+        ? errors.map((err) => Object.values(err.constraints || {})).flat()
+        : [errors.message];
 
-  throw new BadRequestException({ message: 'Validation failed', errors: msg });
-}
+      throw new BadRequestException({ message: 'Validation failed', errors: msg });
+    }
 
     // Construcción del fileData
     const fileData: FileUploadDTO = {

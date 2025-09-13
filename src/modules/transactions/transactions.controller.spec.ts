@@ -193,7 +193,7 @@ describe('TransactionsController (integración real)', () => {
       },
     };
 
-  const file = createMockFile();
+    const file = createMockFile();
 
     const result = await controller.create({ createTransactionDto: JSON.stringify(dto) }, file);
 

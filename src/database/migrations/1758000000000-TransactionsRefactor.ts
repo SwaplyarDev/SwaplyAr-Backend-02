@@ -22,22 +22,16 @@ export class TransactionsRefactor1758000000000 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "transactions" DROP CONSTRAINT IF EXISTS "REL_cdee4818a64ef6555829c23f51"`,
     );
-    await queryRunner.query(
-      `ALTER TABLE "transactions" DROP COLUMN IF EXISTS "payments_id"`,
-    );
+    await queryRunner.query(`ALTER TABLE "transactions" DROP COLUMN IF EXISTS "payments_id"`);
 
     // 3) transactions: agregar columnas desnormalizadas de monto
-    await queryRunner.query(
-      `ALTER TABLE "transactions" ADD "amount_value" numeric(18,2)`,
-    );
+    await queryRunner.query(`ALTER TABLE "transactions" ADD "amount_value" numeric(18,2)`);
     await queryRunner.query(
       `ALTER TABLE "transactions" ADD "amount_currency" character varying(3)`,
     );
 
     // 4) transactions: agregar user_discount_id + índice + FK
-    await queryRunner.query(
-      `ALTER TABLE "transactions" ADD "user_discount_id" uuid`,
-    );
+    await queryRunner.query(`ALTER TABLE "transactions" ADD "user_discount_id" uuid`);
     await queryRunner.query(
       `CREATE INDEX "IDX_transactions_user_discount_id" ON "transactions" ("user_discount_id")`,
     );
@@ -52,9 +46,7 @@ export class TransactionsRefactor1758000000000 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "user_discounts" DROP CONSTRAINT IF EXISTS "REL_9ff3f6733494645af3a5bd0cc7"`,
     );
-    await queryRunner.query(
-      `ALTER TABLE "user_discounts" DROP COLUMN IF EXISTS "transaction_id"`,
-    );
+    await queryRunner.query(`ALTER TABLE "user_discounts" DROP COLUMN IF EXISTS "transaction_id"`);
 
     // 6) Índices compuestos para listados
     await queryRunner.query(
@@ -67,12 +59,8 @@ export class TransactionsRefactor1758000000000 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Revertir índices compuestos
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "IDX_transactions_final_created_at"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "IDX_transactions_sender_created_at"`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_transactions_final_created_at"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_transactions_sender_created_at"`);
 
     // Restaurar columna transaction_id en user_discounts y sus constraints
     await queryRunner.query(
@@ -89,25 +77,15 @@ export class TransactionsRefactor1758000000000 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "transactions" DROP CONSTRAINT IF EXISTS "FK_transactions_user_discount"`,
     );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "IDX_transactions_user_discount_id"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "transactions" DROP COLUMN IF EXISTS "user_discount_id"`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_transactions_user_discount_id"`);
+    await queryRunner.query(`ALTER TABLE "transactions" DROP COLUMN IF EXISTS "user_discount_id"`);
 
     // Remover columnas desnormalizadas de monto en transactions
-    await queryRunner.query(
-      `ALTER TABLE "transactions" DROP COLUMN IF EXISTS "amount_currency"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "transactions" DROP COLUMN IF EXISTS "amount_value"`,
-    );
+    await queryRunner.query(`ALTER TABLE "transactions" DROP COLUMN IF EXISTS "amount_currency"`);
+    await queryRunner.query(`ALTER TABLE "transactions" DROP COLUMN IF EXISTS "amount_value"`);
 
     // Restaurar payments_id en transactions y sus constraints
-    await queryRunner.query(
-      `ALTER TABLE "transactions" ADD "payments_id" uuid`,
-    );
+    await queryRunner.query(`ALTER TABLE "transactions" ADD "payments_id" uuid`);
     await queryRunner.query(
       `ALTER TABLE "transactions" ADD CONSTRAINT "REL_cdee4818a64ef6555829c23f51" UNIQUE ("payments_id")`,
     );
@@ -119,9 +97,7 @@ export class TransactionsRefactor1758000000000 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "proof_of_payments" DROP CONSTRAINT IF EXISTS "FK_proof_payments_transaction"`,
     );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "IDX_proof_of_payments_transaction_id"`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_proof_of_payments_transaction_id"`);
     await queryRunner.query(
       `ALTER TABLE "proof_of_payments" DROP COLUMN IF EXISTS "transaction_id"`,
     );

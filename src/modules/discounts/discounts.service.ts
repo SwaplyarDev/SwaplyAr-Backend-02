@@ -102,7 +102,7 @@ export class DiscountService {
 
     const result = await this.userDiscountRepo.findOne({
       where: { id: userDiscount.id },
-      relations: ['user', 'discountCode', 'transaction'],
+      relations: ['user', 'discountCode', 'transactions'],
     });
 
     if (!result) throw new NotFoundException('Descuento de usuario no encontrado tras la creación');
@@ -133,7 +133,7 @@ export class DiscountService {
       .createQueryBuilder('ud')
       .leftJoinAndSelect('ud.user', 'user')
       .leftJoinAndSelect('ud.discountCode', 'code')
-      .leftJoinAndSelect('ud.transaction', 'transaction');
+      .leftJoinAndSelect('ud.transactions', 'transaction');
     this.applyUserDiscountsFilter(qb, filterDto);
     return qb.getMany();
   }
@@ -149,7 +149,7 @@ export class DiscountService {
       .createQueryBuilder('ud')
       .leftJoinAndSelect('ud.user', 'user')
       .leftJoinAndSelect('ud.discountCode', 'code')
-      .leftJoinAndSelect('ud.transaction', 'transaction')
+      .leftJoinAndSelect('ud.transactions', 'transaction')
       .where('user.id = :userId', { userId });
     this.applyUserDiscountsFilter(qb, filterDto);
     return qb.getMany();
@@ -161,7 +161,7 @@ export class DiscountService {
       .createQueryBuilder('ud')
       .leftJoinAndSelect('ud.user', 'user')
       .leftJoinAndSelect('ud.discountCode', 'code')
-      .leftJoinAndSelect('ud.transaction', 'transaction')
+      .leftJoinAndSelect('ud.transactions', 'transaction')
       .where('user.id = :id', { id });
 
     const ud = await qd.getMany();
@@ -180,7 +180,7 @@ export class DiscountService {
   async getUserDiscountById(id: string, userId: string, userRole?: string): Promise<UserDiscount> {
     const ud = await this.userDiscountRepo.findOne({
       where: { id },
-      relations: ['user', 'discountCode', 'transaction'],
+      relations: ['user', 'discountCode', 'transactions'],
     });
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
     if (ud.user.id !== userId && !['admin', 'super_admin'].includes(userRole || '')) {
@@ -201,12 +201,14 @@ export class DiscountService {
     const ud = await this.getUserDiscountById(id, userId);
     const transaction = await this.findTransactionByIdOrThrow(dto.transactionId);
     ud.isUsed = true;
-    ud.transaction = transaction;
     ud.usedAt = new Date();
+    // Asociar el descuento a la transacción (lado ManyToOne está en Transaction)
+    transaction.userDiscount = ud;
+    await this.transactionRepo.save(transaction);
     await this.userDiscountRepo.save(ud);
     const updatedUd = await this.userDiscountRepo.findOne({
       where: { id: ud.id },
-      relations: ['user', 'discountCode', 'transaction'],
+      relations: ['user', 'discountCode', 'transactions'],
     });
     if (!updatedUd)
       throw new NotFoundException('Descuento de usuario no encontrado tras actualizar');
@@ -372,9 +374,9 @@ export class DiscountService {
     return this.userDiscountRepo.create({
       user,
       discountCode,
-      transaction: transaction ?? undefined,
       isUsed: !!transaction,
       usedAt: transaction ? new Date() : undefined,
+      ...(transaction ? { transactions: [transaction] } : {}),
     });
   }
 

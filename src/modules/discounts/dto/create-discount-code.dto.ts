@@ -2,7 +2,6 @@
 
 import { IsNotEmpty, IsString, IsInt, Min, Max, IsISO8601, Length, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 
 export class CreateDiscountCodeDto {
 
@@ -54,8 +53,7 @@ export class CreateDiscountCodeDto {
 
   @IsNotEmpty ()
   @IsISO8601 ({}, { message: 'La fecha debe estar en formato ISO8601' })
-  @Type (() => Date) 
-  validFrom: Date;
+  validFrom: string;
   
 }
 

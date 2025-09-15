@@ -90,7 +90,7 @@ export class AccountsController {
       },
     },
   })
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('user')
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -120,7 +120,7 @@ export class AccountsController {
     description: 'Cuenta no encontrada o no pertenece al usuario',
   })
   @ApiResponse({ status: 403, description: 'No autorizado' })
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('user', 'admin')
   @Delete()
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {
@@ -128,7 +128,7 @@ export class AccountsController {
   }
 
   // GET todas las cuentas de banco de un user
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('user')
   @Get()
   @ApiBearerAuth()
@@ -173,7 +173,7 @@ export class AccountsController {
       ],
     },
   })
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @Get('/admin/findId')
   async findOneById(@Query('userId') userId: string) {
@@ -222,7 +222,7 @@ export class AccountsController {
       example: { message: 'Cuenta no encontrada para este usuario' },
     },
   })
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @Get('/admin/findUserBank')
   async findOneUserBank(

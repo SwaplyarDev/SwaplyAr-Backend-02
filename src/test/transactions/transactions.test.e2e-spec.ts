@@ -3,9 +3,9 @@ import * as request from 'supertest';
 import { DataSource } from 'typeorm';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '@app/app.module';
-import { MailerService } from '@app/modules/mailer/mailer.service';
 import * as path from 'path';
 import * as fs from 'fs';
+import { MailerService } from '@mailer/mailer.service';
 
 jest.setTimeout(30000);
 
@@ -71,7 +71,7 @@ describe('ENDPOINT DE TRANSACCIONES #api #tra', () => {
         senderAccount: {
           firstName: 'Juan',
           lastName: 'Pérez',
-          phoneNumber: '+54124567892',
+          phoneNumber: '+5491123456789',
           createdBy: 'devdylancrowder@outlook.com',
           paymentMethod: {
             platformId: 'bank',
@@ -121,7 +121,7 @@ describe('ENDPOINT DE TRANSACCIONES #api #tra', () => {
     expect(body).toHaveProperty('message', 'Transferencia de prueba');
     expect(body).toHaveProperty('finalStatus', 'pending');
     expect(body.senderAccount).toHaveProperty('firstName', 'Juan');
-    expect(body.receiverAccount.paymentMethod.bank).toHaveProperty('bankName', 'Banco Galicia');
+    expect(body.receiverAccount.paymentMethod).toHaveProperty('bankName', 'Banco Galicia');
     expect(body.amount).toHaveProperty('amountSent', '1000.00');
     expect(body).not.toHaveProperty('paymentsId'); // opcional: confirma que no se devuelve
   });

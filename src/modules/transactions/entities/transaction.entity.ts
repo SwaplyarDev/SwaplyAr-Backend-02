@@ -10,8 +10,10 @@ import {
   ManyToOne,
   JoinColumn,
   OneToOne,
+  OneToMany,
   BeforeInsert,
   PrimaryColumn,
+  Index,
 } from 'typeorm';
 
 import { customAlphabet } from 'nanoid';
@@ -35,15 +37,18 @@ export class Transaction {
     this.id = nanoidCustom(); // genera un string de 10 caracteres sin "-" ni "_"
   }
 
+  @Index('idx_transactions_country_transaction')
   @Column({ name: 'country_transaction' })
   countryTransaction: string;
 
   @Column({ name: 'message', nullable: true })
   message: string;
 
+  @Index('idx_transactions_created_at')
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;
 
+  @Index('idx_transactions_final_status')
   @Column({
     type: 'enum',
     enum: AdminStatus,
@@ -52,32 +57,50 @@ export class Transaction {
   })
   finalStatus: AdminStatus;
 
-  @ManyToOne(() => SenderFinancialAccount, (sender) => sender.transactions)
+  @Index('idx_transactions_sender_account_id')
+  @ManyToOne(() => SenderFinancialAccount, (sender) => sender.transactions, {
+    onDelete: 'RESTRICT',
+  })
   @JoinColumn({ name: 'sender_account_id' })
   senderAccount: SenderFinancialAccount;
 
-  @ManyToOne(() => ReceiverFinancialAccount, (receiver) => receiver.transactions)
+  @Index('idx_transactions_receiver_account_id')
+  @ManyToOne(() => ReceiverFinancialAccount, (receiver) => receiver.transactions, {
+    onDelete: 'RESTRICT',
+  })
   @JoinColumn({ name: 'receiver_account_id' })
   receiverAccount: ReceiverFinancialAccount;
 
-  @OneToOne(() => Note, (note) => note.transaction)
+  // Mantener OneToOne pero opcional y sin obligar existencia
+  @OneToOne(() => Note, (note) => note.transaction, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'note_id' })
-  note: Note;
+  note?: Note | null;
 
-  @OneToOne(() => Regret, (regret) => regret.transaction)
+  @OneToOne(() => Regret, (regret) => regret.transaction, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'regret_id' })
-  regret: Regret;
+  regret?: Regret | null;
 
-  @OneToOne(() => ProofOfPayment, (proof) => proof.transaction)
-  @JoinColumn({ name: 'payments_id' })
-  proofOfPayment: ProofOfPayment;
+  // Cambiar a OneToMany (una transacción puede tener varios comprobantes)
+  @OneToMany(() => ProofOfPayment, (proof) => proof.transaction, { cascade: true })
+  proofsOfPayment?: ProofOfPayment[];
 
+  // Mantener relación con Amount, pero agregar columnas desnormalizadas para consultas rápidas
   @OneToOne(() => Amount)
   @JoinColumn({ name: 'amount_id' })
   amount: Amount;
 
-  @OneToOne(() => UserDiscount, (userDiscount) => userDiscount.transaction)
-  userDiscount: UserDiscount;
+  @Column({ type: 'decimal', precision: 18, scale: 2, name: 'amount_value', nullable: true })
+  amountValue?: string;
+
+  @Column({ type: 'varchar', length: 3, name: 'amount_currency', nullable: true })
+  amountCurrency?: string;
+
+  // UserDiscount pasa a ManyToOne (el mismo descuento puede aplicarse en varias transacciones)
+  @ManyToOne(() => UserDiscount, (userDiscount) => userDiscount.transactions, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'user_discount_id' })
+  userDiscount?: UserDiscount | null;
 
   @Column({ default: false })
   isNoteVerified: boolean;

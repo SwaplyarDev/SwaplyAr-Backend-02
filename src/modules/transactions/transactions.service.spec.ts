@@ -7,6 +7,7 @@ import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 import { MailerService } from '@mailer/mailer.service';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
+import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 
 describe('TransactionsService', () => {
   let service: TransactionsService;
@@ -22,6 +23,12 @@ describe('TransactionsService', () => {
             save: jest.fn(),
             find: jest.fn(),
             findOne: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(ProofOfPayment),
+          useValue: {
+            save: jest.fn(),
           },
         },
         {

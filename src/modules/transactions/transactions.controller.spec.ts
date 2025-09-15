@@ -2,10 +2,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TransactionsController } from './transactions.controller';
 import { TransactionsService } from './transactions.service';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { plainToInstance } from 'class-transformer';
 import { Transaction } from './entities/transaction.entity';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { Readable } from 'stream';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
@@ -13,6 +10,8 @@ import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 import { MailerService } from '@mailer/mailer.service';
 import { JwtService } from '@nestjs/jwt';
+import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
+import { getRepositoryToken } from '@nestjs/typeorm';
 
 describe('TransactionsController (integración real)', () => {
   let controller: TransactionsController;
@@ -23,57 +22,61 @@ describe('TransactionsController (integración real)', () => {
       providers: [
         TransactionsService,
         {
+          provide: getRepositoryToken(AdministracionStatusLog),
+          useValue: {
+            createQueryBuilder: jest.fn().mockReturnValue({
+              leftJoin: jest.fn().mockReturnThis(),
+              where: jest.fn().mockReturnThis(),
+              orderBy: jest.fn().mockReturnThis(),
+              getMany: jest.fn().mockResolvedValue([]),
+            }),
+          },
+        },
+        {
+          provide: getRepositoryToken(ProofOfPayment),
+          useValue: {
+            save: jest.fn(),
+          },
+        },
+        {
           provide: getRepositoryToken(Transaction),
           useValue: {
-            create: jest.fn().mockImplementation((dto) => ({
-              ...dto,
-              senderAccount: dto.financialAccounts?.senderAccount || {
+            create: jest.fn().mockImplementation((obj: unknown) => obj),
+            save: jest
+              .fn()
+              .mockImplementation((transaction: unknown) =>
+                Promise.resolve({ ...(transaction as object), id: 'tx-123' }),
+              ),
+            findOne: jest.fn().mockResolvedValue({
+              id: 'tx-123',
+              countryTransaction: 'Argentina',
+              message: 'Test',
+              createdAt: new Date().toISOString(),
+              senderAccount: {
                 firstName: 'Pedro',
                 lastName: 'Gomez',
                 paymentMethod: { platformId: 'virtual_bank' },
               },
-              receiverAccount: dto.financialAccounts?.receiverAccount || {
+              receiverAccount: {
                 firstName: 'Juan',
                 lastName: 'Pérez',
                 paymentMethod: { bankName: 'Banco Galicia' },
               },
-            })),
-            save: jest
-              .fn()
-              .mockImplementation((transaction) =>
-                Promise.resolve({ ...transaction, id: 'tx-123' }),
-              ),
-            findOne: jest.fn().mockImplementation((options) =>
-              Promise.resolve({
-                // paymentsId: 'tx-123', // eliminado
-                id: 'tx-123',
-                countryTransaction: 'Argentina',
-                message: 'Test',
-                createdAt: new Date().toISOString(),
-                senderAccount: {
-                  firstName: 'Pedro',
-                  lastName: 'Gomez',
-                  paymentMethod: { platformId: 'virtual_bank' },
-                },
-                receiverAccount: {
-                  firstName: 'Juan',
-                  lastName: 'Pérez',
-                  paymentMethod: { bankName: 'Banco Galicia' },
-                },
-                amount: {
-                  id: 'amount-123',
-                  amountSent: 5000,
-                  amountReceived: 5000,
-                  currencySent: 'ARS',
-                  currencyReceived: 'ARS',
-                },
-                proofOfPayment: {
+              amount: {
+                id: 'amount-123',
+                amountSent: 5000,
+                amountReceived: 5000,
+                currencySent: 'ARS',
+                currencyReceived: 'ARS',
+              },
+              proofsOfPayment: [
+                {
                   id: 'proof-123',
-                  type: 'image',
-                  url: 'https://example.com/proof.jpg',
+                  imgUrl: 'https://example.com/proof.jpg',
+                  createAt: new Date().toISOString(),
                 },
-              }),
-            ),
+              ],
+            }),
           },
         },
         { provide: getRepositoryToken(AdministracionStatusLog), useValue: {} },
@@ -81,9 +84,20 @@ describe('TransactionsController (integración real)', () => {
           provide: FinancialAccountsService,
           useValue: {
             create: jest.fn().mockResolvedValue({
-              id: 'account-123',
-              firstName: 'Mock',
-              lastName: 'User',
+              sender: {
+                id: 'sender-123',
+                firstName: 'Pedro',
+                lastName: 'Gomez',
+                createdBy: 'dev@correo.com',
+                phoneNumber: '12456789',
+                paymentMethod: { id: 'pm-s-1', platformId: 'virtual_bank', method: 'virtual-bank' },
+              },
+              receiver: {
+                id: 'receiver-123',
+                firstName: 'Juan',
+                lastName: 'Pérez',
+                paymentMethod: { id: 'pm-r-1', bankName: 'Banco Galicia', method: 'bank' },
+              },
             }),
           },
         },
@@ -104,12 +118,12 @@ describe('TransactionsController (integración real)', () => {
           useValue: {
             create: jest.fn().mockResolvedValue({
               id: 'proof-123',
-              type: 'image',
-              url: 'https://example.com/proof.jpg',
+              imgUrl: 'https://example.com/proof.jpg',
+              createAt: new Date(),
             }),
           },
         },
-        { provide: MailerService, useValue: {} },
+        { provide: MailerService, useValue: { sendReviewPaymentEmail: jest.fn() } },
         { provide: JwtService, useValue: { sign: jest.fn() } },
       ],
     }).compile();
@@ -179,7 +193,6 @@ describe('TransactionsController (integración real)', () => {
       },
     };
 
-    const expectedDto = plainToInstance(CreateTransactionDto, dto);
     const file = createMockFile();
 
     const result = await controller.create({ createTransactionDto: JSON.stringify(dto) }, file);

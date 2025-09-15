@@ -25,48 +25,54 @@ import { FinancialAccountsService } from '@financial-accounts/financial-accounts
 import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 import { MailerService } from '@mailer/mailer.service';
+import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 
 // -----------------------------
 // Helper: Mapeo de métodos de pago
 // -----------------------------
-function mapReceiverPaymentMethod(paymentMethod: any) {
-  if (!paymentMethod) return { tipo: 'Desconocido' };
+function mapReceiverPaymentMethod(paymentMethod: unknown) {
+  if (!paymentMethod || typeof paymentMethod !== 'object') return { tipo: 'Desconocido' };
+  const pm = paymentMethod as Record<string, unknown>;
 
-  if (paymentMethod.pixKey) {
+  if (typeof pm['pixKey'] === 'string') {
     return {
       tipo: 'Pix',
-      clave: paymentMethod.pixKey,
-      valor: paymentMethod.pixValue,
-      cpf: paymentMethod.cpf,
+      clave: pm['pixKey'],
+      valor: typeof pm['pixValue'] === 'string' ? pm['pixValue'] : undefined,
+      cpf: typeof pm['cpf'] === 'string' ? pm['cpf'] : undefined,
     };
   }
 
-  if (paymentMethod.wallet && paymentMethod.currency && paymentMethod.network) {
+  if (
+    typeof pm['wallet'] === 'string' &&
+    typeof pm['currency'] === 'string' &&
+    typeof pm['network'] === 'string'
+  ) {
     return {
       tipo: 'Cripto',
-      moneda: paymentMethod.currency,
-      red: paymentMethod.network,
-      wallet: paymentMethod.wallet,
+      moneda: pm['currency'],
+      red: pm['network'],
+      wallet: pm['wallet'],
     };
   }
 
-  if (paymentMethod.emailAccount && paymentMethod.transferCode) {
+  if (typeof pm['emailAccount'] === 'string' && typeof pm['transferCode'] === 'string') {
     return {
       tipo: 'Banco Virtual',
-      moneda: paymentMethod.currency,
-      email: paymentMethod.emailAccount,
-      codigoTransferencia: paymentMethod.transferCode,
+      moneda: typeof pm['currency'] === 'string' ? pm['currency'] : undefined,
+      email: pm['emailAccount'],
+      codigoTransferencia: pm['transferCode'],
     };
   }
 
-  if (paymentMethod.bankName) {
+  if (typeof pm['bankName'] === 'string') {
     return {
       tipo: 'Banco',
-      banco: paymentMethod.bankName,
-      moneda: paymentMethod.currency,
-      claveEnvio: paymentMethod.sendMethodKey,
-      cuenta: paymentMethod.sendMethodValue,
-      documento: paymentMethod.documentValue,
+      banco: pm['bankName'],
+      moneda: typeof pm['currency'] === 'string' ? pm['currency'] : undefined,
+      claveEnvio: typeof pm['sendMethodKey'] === 'string' ? pm['sendMethodKey'] : undefined,
+      cuenta: typeof pm['sendMethodValue'] === 'string' ? pm['sendMethodValue'] : undefined,
+      documento: typeof pm['documentValue'] === 'string' ? pm['documentValue'] : undefined,
     };
   }
 
@@ -83,6 +89,10 @@ export class TransactionsService {
 
     @InjectRepository(AdministracionStatusLog)
     private readonly statusLogRepository: Repository<AdministracionStatusLog>,
+
+    // Repositorio del lado dueño de la relación (ManyToOne)
+    @InjectRepository(ProofOfPayment)
+    private readonly proofOfPaymentRepository: Repository<ProofOfPayment>,
 
     private readonly financialAccountService: FinancialAccountsService,
     private readonly amountService: AmountsService,
@@ -101,7 +111,9 @@ export class TransactionsService {
     try {
       return await fn();
     } catch (err) {
-      this.logger.error(`${errorMessage}: ${err.message}`, err.stack);
+      const isError = err instanceof Error;
+      const msg = isError && err.message ? `: ${err.message}` : '';
+      this.logger.error(`${errorMessage}${msg}`, isError ? err.stack : undefined);
       throw new ExceptionClass(errorMessage);
     }
   }
@@ -190,20 +202,30 @@ export class TransactionsService {
         BadRequestException,
       );
 
+      // 1) Guardar transacción (sin intentar setear OneToMany)
+      const txEntity = this.transactionsRepository.create({
+        countryTransaction: createTransactionDto.countryTransaction,
+        message: createTransactionDto.message,
+        createdAt,
+        senderAccount: financialAccounts.sender,
+        receiverAccount: financialAccounts.receiver,
+        amount,
+        // desnormalización para listados rápidos
+        amountValue: String(amount.amountSent),
+        amountCurrency: amount.currencySent,
+      });
+
       const savedTransaction = await this.safeExecute(
-        () =>
-          this.transactionsRepository.save(
-            this.transactionsRepository.create({
-              countryTransaction: createTransactionDto.countryTransaction,
-              message: createTransactionDto.message,
-              createdAt,
-              senderAccount: financialAccounts.sender,
-              receiverAccount: financialAccounts.receiver,
-              amount,
-              proofOfPayment,
-            }),
-          ),
+        () => this.transactionsRepository.save(txEntity),
         'Error al guardar la transacción',
+        InternalServerErrorException,
+      );
+
+      // 2) Enlazar el comprobante al lado dueño (ManyToOne)
+      proofOfPayment.transaction = savedTransaction;
+      await this.safeExecute(
+        () => this.proofOfPaymentRepository.save(proofOfPayment),
+        'Error al asociar comprobante a la transacción',
         InternalServerErrorException,
       );
 
@@ -217,7 +239,7 @@ export class TransactionsService {
               'receiverAccount',
               'receiverAccount.paymentMethod',
               'amount',
-              'proofOfPayment',
+              'proofsOfPayment', // <- actualizado
             ],
           }),
         'Error al recuperar la transacción completa',
@@ -243,7 +265,10 @@ export class TransactionsService {
         excludeExtraneousValues: true,
       });
     } catch (error) {
-      this.logger.error('Error inesperado al crear la transacción', error.stack);
+      this.logger.error(
+        'Error inesperado al crear la transacción',
+        error instanceof Error ? error.stack : undefined,
+      );
       throw error instanceof HttpException
         ? error
         : new InternalServerErrorException('Error inesperado al crear la transacción.');
@@ -279,7 +304,7 @@ export class TransactionsService {
         senderAccount: true,
         receiverAccount: true,
         amount: true,
-        proofOfPayment: true,
+        proofsOfPayment: true, // <- actualizado
       },
     });
   }
@@ -306,8 +331,8 @@ export class TransactionsService {
       relations: {
         senderAccount: { paymentMethod: true },
         receiverAccount: { paymentMethod: true },
-        proofOfPayment: true,
-        amount: true,
+        proofsOfPayment: true, // <- actualizado
+        amount: true, // Nota: se puede eliminar más adelante y usar amountValue/amountCurrency
         regret: true,
       },
       where: { senderAccount: { createdBy } },
@@ -340,9 +365,11 @@ export class TransactionsService {
           id: tx.receiverAccount.id,
           paymentMethod: mapReceiverPaymentMethod(tx.receiverAccount.paymentMethod),
         },
-        proofOfPayment: tx.proofOfPayment
-          ? { id: tx.proofOfPayment.id, imgUrl: tx.proofOfPayment.imgUrl }
-          : undefined,
+        // Compatibilidad con DTO actual: exponer solo el primer comprobante
+        proofOfPayment:
+          tx.proofsOfPayment && tx.proofsOfPayment.length > 0
+            ? { id: tx.proofsOfPayment[0].id, imgUrl: tx.proofsOfPayment[0].imgUrl }
+            : undefined,
         amount: {
           id: tx.amount.id,
           amountSent: tx.amount.amountSent,
@@ -350,6 +377,8 @@ export class TransactionsService {
           currencyReceived: tx.amount.currencyReceived,
           amountReceived: tx.amount.amountReceived,
         },
+        // Alternativa futura sin join:
+        // amountSummary: { value: tx.amountValue, currency: tx.amountCurrency }
       }),
     );
 
@@ -367,7 +396,7 @@ export class TransactionsService {
           senderAccount: { paymentMethod: true },
           receiverAccount: { paymentMethod: true },
           amount: true,
-          proofOfPayment: true,
+          proofsOfPayment: true, // <- actualizado
         },
       });
 
@@ -379,7 +408,10 @@ export class TransactionsService {
 
       return transaction;
     } catch (error) {
-      this.logger.error(`Error al obtener transacción ${transactionId}`, error.stack);
+      this.logger.error(
+        `Error al obtener transacción ${transactionId}`,
+        error instanceof Error ? error.stack : undefined,
+      );
       if (error instanceof ForbiddenException || error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException('Error inesperado al obtener la transacción');
     }

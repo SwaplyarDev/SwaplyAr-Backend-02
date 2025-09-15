@@ -2,7 +2,7 @@ import { registerDecorator, ValidationOptions, ValidationArguments } from 'class
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 export function IsPhoneNumberValid(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isPhoneNumberValid',
       target: object.constructor,

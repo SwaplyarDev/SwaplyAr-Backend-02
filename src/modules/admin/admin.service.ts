@@ -6,6 +6,7 @@ import { AdministracionStatusLog } from './entities/administracion-status-log.en
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
+import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 import { BankService } from '../financial-accounts/payment-methods/bank/bank.service';
 import { UpdateBankDto } from '../financial-accounts/payment-methods/bank/dto/create-bank.dto';
 import { AdministracionMaster } from './entities/administracion-master.entity';
@@ -15,7 +16,7 @@ import { User } from '@users/entities/user.entity';
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { DiscountService } from '@discounts/discounts.service';
 import { UpdateStarDto } from '@discounts/dto/update-star.dto';
-import { TransactionGetResponseDto } from '@transactions/dto/transaction-response.dto';
+// import { TransactionGetResponseDto } from '@transactions/dto/transaction-response.dto';
 import {
   TransactionAdminResponseDto,
   TransactionByIdAdminResponseDto,
@@ -38,6 +39,8 @@ export class AdminService {
     private readonly discountService: DiscountService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(ProofOfPayment)
+    private readonly proofOfPaymentRepository: Repository<ProofOfPayment>,
   ) {}
 
   private convertAdminStatusToTransactionStatus(status: AdminStatus): AdminStatus {
@@ -71,9 +74,9 @@ export class AdminService {
         'receiverAccount',
         'receiverAccount.paymentMethod',
         'amount',
-        'proofOfPayment',
+        'proofsOfPayment',
         'note',
-        'regret'
+        'regret',
       ],
       skip: (page - 1) * perPage,
       take: perPage,
@@ -102,8 +105,9 @@ export class AdminService {
         id: tx.receiverAccount.id,
         paymentMethod: tx.receiverAccount.paymentMethod,
       },
-      note: tx.note && { note_id: tx.note.note_id },
-      proofOfPayment: tx.proofOfPayment,
+      note: tx.note ? { note_id: tx.note.note_id } : undefined,
+      proofOfPayment:
+        tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment[0] : undefined,
       amount: tx.amount,
       isNoteVerified: tx.isNoteVerified,
       noteVerificationExpiresAt: tx.noteVerificationExpiresAt
@@ -135,9 +139,9 @@ export class AdminService {
         'receiverAccount',
         'receiverAccount.paymentMethod',
         'amount',
-        'proofOfPayment',
+        'proofsOfPayment',
         'note',
-        'regret'
+        'regret',
       ],
     });
 
@@ -150,26 +154,26 @@ export class AdminService {
     return transaction; // sin map ni filtrado
   }
 
-  private removeNulls(obj: any): any {
+  private removeNulls = (obj: unknown): unknown => {
     if (obj === null || obj === undefined) return undefined;
 
     if (Array.isArray(obj)) {
-      return obj.map(this.removeNulls).filter((v) => v !== undefined);
+      const cleaned = obj
+        .map((v) => this.removeNulls(v))
+        .filter((v): v is Exclude<unknown, undefined> => v !== undefined);
+      return cleaned;
     }
 
     if (typeof obj === 'object') {
-      const newObj: any = {};
-      Object.keys(obj).forEach((key) => {
-        const value = this.removeNulls(obj[key]);
-        if (value !== undefined) {
-          newObj[key] = value;
-        }
-      });
-      return Object.keys(newObj).length ? newObj : undefined;
+      const rec = obj as Record<string, unknown>;
+      const entries = Object.entries(rec)
+        .map(([k, v]) => [k, this.removeNulls(v)] as const)
+        .filter(([, v]) => v !== undefined);
+      return entries.length ? Object.fromEntries(entries) : undefined;
     }
 
     return obj;
-  }
+  };
 
   formatTransaction(transaction: Transaction): TransactionByIdAdminResponseDto {
     // ⬅️ Corregido el tipo de entrada
@@ -208,7 +212,10 @@ export class AdminService {
         paymentMethod: receiver.paymentMethod, // Igual que arriba
       },
       note: formattedNote, // Usamos el objeto de nota formateado
-      proofOfPayment: transaction.proofOfPayment,
+      proofOfPayment:
+        transaction.proofsOfPayment && transaction.proofsOfPayment.length > 0
+          ? transaction.proofsOfPayment[0]
+          : undefined,
       amount: transaction.amount,
       isNoteVerified: transaction.isNoteVerified,
       noteVerificationExpiresAt: transaction.noteVerificationExpiresAt?.toISOString(),
@@ -390,9 +397,7 @@ export class AdminService {
       };
     }
 
-    if (updatedTransaction) {
-      delete (updatedTransaction as any).userId; // Eliminar userId manualmente
-    }
+    // No es necesario eliminar campos inexistentes del objeto Transaction
 
     return {
       message: 'Estado actualizado',
@@ -417,7 +422,7 @@ export class AdminService {
       throw new Error('Se requiere transactionId en la solicitud');
     }
     let url: string | undefined;
-    let proofOfPayment: any = undefined;
+    let proofOfPayment: ProofOfPayment | undefined = undefined;
     if (file && file.buffer) {
       const fileName = `voucher_${transactionId}_${Date.now()}`;
       const dto: FileUploadDTO = {
@@ -463,10 +468,13 @@ export class AdminService {
     } else {
       throw new Error('Se requiere un archivo o comprobante válido en la solicitud');
     }
-    await this.transactionsRepository.update(
-      { id: transactionId },
-      { proofOfPayment: proofOfPayment },
-    );
+    // Asociar el comprobante a la transacción en el lado dueño (ManyToOne)
+    const tx = await this.transactionsRepository.findOne({ where: { id: transactionId } });
+    if (!tx) {
+      throw new NotFoundException('Transacción no encontrada.');
+    }
+    proofOfPayment.transaction = tx;
+    await this.proofOfPaymentRepository.save(proofOfPayment);
     return { message: 'Comprobante cargado', url };
   }
 
@@ -480,7 +488,7 @@ export class AdminService {
   /* -------------------------------------------------------------------------- */
   /*                              PLACEHOLDERS                                  */
   /* -------------------------------------------------------------------------- */
-  async updateAdminTransaction(id: string, payload: any) {
+  async updateAdminTransaction(id: string, payload: Partial<Transaction>) {
     // TODO: lógica de actualización
     await this.transactionsRepository.update({ id }, payload);
     return { message: 'Transacción administrativa actualizada' };
@@ -494,19 +502,28 @@ export class AdminService {
     if (!transaction) {
       throw new Error('Transacción no encontrada.');
     }
-    const receiver = transaction.receiverAccount as any;
+    const receiver = transaction.receiverAccount;
     if (!receiver) {
       throw new Error('No se encontró receiver asociado a la transacción.');
     }
     // Obtener el banco asociado al receiver
-    const paymentMethod = receiver.paymentMethod;
+    const paymentMethod = receiver.paymentMethod as { id: string; method?: string } | undefined;
     if (!paymentMethod || paymentMethod.method !== 'bank') {
       throw new Error('No se encontró banco asociado al receiver.');
     }
-    const bank = paymentMethod;
+    const bankId: string = paymentMethod.id;
     // Actualizar el banco usando BankService
-    const updateBankDto: UpdateBankDto = { ...payload };
-    await this.bankService.update(bank.id, updateBankDto);
+    const { bankName, currency, sendMethodKey, sendMethodValue, documentType, documentValue } =
+      (payload as Partial<UpdateBankDto>) || {};
+    const updateBankDto: UpdateBankDto = {
+      ...(bankName ? { bankName } : {}),
+      ...(currency ? { currency } : {}),
+      ...(sendMethodKey ? { sendMethodKey } : {}),
+      ...(sendMethodValue ? { sendMethodValue } : {}),
+      ...(documentType ? { documentType } : {}),
+      ...(documentValue ? { documentValue } : {}),
+    } as UpdateBankDto;
+    await this.bankService.update(bankId, updateBankDto);
     // Devolver la transacción actualizada
     const updated = await this.transactionsRepository.findOne({
       where: { id },
@@ -515,25 +532,31 @@ export class AdminService {
     return updated;
   }
 
-  async updateTransaction(id: string, payload: any) {
+  async updateTransaction(id: string, payload: unknown) {
     const transaction = await this.transactionsRepository.findOne({
       where: { id },
       relations: {
         senderAccount: true,
         receiverAccount: true,
         amount: true,
-        proofOfPayment: true,
+        proofsOfPayment: true,
       },
     });
     if (!transaction) {
       throw new Error('Transacción no encontrada.');
     }
-    // Actualizar solo los campos enviados
-    Object.keys(payload).forEach((key) => {
-      if (key in transaction) {
-        transaction[key] = payload[key];
-      }
-    });
+    // Actualizar solo campos permitidos y con validación básica
+    const p = (payload as Record<string, unknown>) || {};
+    if (typeof p.message === 'string') transaction.message = p.message;
+    if (typeof p.isNoteVerified === 'boolean') transaction.isNoteVerified = p.isNoteVerified;
+    const ns = p.noteVerificationExpiresAt;
+    if (typeof ns === 'string' || ns instanceof Date) {
+      transaction.noteVerificationExpiresAt = ns instanceof Date ? ns : new Date(ns);
+    }
+    const fs = p.finalStatus;
+    if (typeof fs === 'string' && Object.values(AdminStatus).includes(fs as AdminStatus)) {
+      transaction.finalStatus = fs as AdminStatus;
+    }
     await this.transactionsRepository.save(transaction);
     // Devolver la transacción actualizada
     const updated = await this.transactionsRepository.findOne({
@@ -542,7 +565,7 @@ export class AdminService {
         senderAccount: true,
         receiverAccount: true,
         amount: true,
-        proofOfPayment: true,
+        proofsOfPayment: true,
       },
     });
     return updated;
@@ -559,7 +582,7 @@ export class AdminService {
     userEmail: string | null,
     page = 1,
     perPage = 6,
-    filters: Record<string, any> = {},
+    filters: Record<string, string | number | boolean | Date> = {},
   ): Promise<{
     meta: {
       totalPages: number;
@@ -575,7 +598,7 @@ export class AdminService {
       .leftJoinAndSelect('transaction.senderAccount', 'senderAccount')
       .leftJoinAndSelect('transaction.receiverAccount', 'receiverAccount')
       .leftJoinAndSelect('transaction.amount', 'amount')
-      .leftJoinAndSelect('transaction.proofOfPayment', 'proofOfPayment');
+      .leftJoinAndSelect('transaction.proofsOfPayment', 'proofsOfPayment');
 
     // Filtro por email (si no es admin)
     if (userEmail) {
@@ -590,18 +613,18 @@ export class AdminService {
       if (value === undefined || value === null || value === '') return;
       // Ejemplo: status, beginTransaction, etc
       if (key === 'status') {
-        qb.andWhere('transaction.finalStatus = :status', { status: value });
+        qb.andWhere('transaction.finalStatus = :status', { status: value as string });
       } else if (key === 'beginTransaction') {
         qb.andWhere('transaction.beginTransaction >= :beginTransaction', {
-          beginTransaction: value,
+          beginTransaction: value as Date,
         });
       } else if (key === 'endTransaction') {
         qb.andWhere('transaction.endTransaction <= :endTransaction', {
-          endTransaction: value,
+          endTransaction: value as Date,
         });
       } else {
         // Filtro genérico por campo en transaction
-        qb.andWhere(`transaction.${key} = :${key}`, { [key]: value });
+        qb.andWhere(`transaction.${key} = :${key}`, { [key]: value as string | number | boolean });
       }
     });
 

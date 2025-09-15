@@ -3,7 +3,7 @@ import { Column, Entity, Index, PrimaryGeneratedColumn, TableInheritance } from 
 
 @Entity('payment_methods')
 @TableInheritance({ column: { type: 'varchar', name: 'method' } })
-@Index(['platformId', 'method'])
+@Index('idx_payment_methods_platform_method', ['platformId', 'method'])
 export class PaymentMethod {
   @PrimaryGeneratedColumn('uuid', { name: 'payment_method_id' })
   id: string;
@@ -11,6 +11,7 @@ export class PaymentMethod {
   @Column({ name: 'platform', type: 'enum', enum: Platform })
   platformId: Platform;
 
-  @Column()
+  @Index('idx_payment_methods_method')
+  @Column({ length: 50 })
   method: string;
 }

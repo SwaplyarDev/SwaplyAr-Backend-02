@@ -27,9 +27,7 @@ import { UpdateStarDto } from '@discounts/dto/update-star.dto';
 import { DiscountCode } from '@users/entities/discount-code.entity';
 import { UserDiscount } from '@users/entities/user-discount.entity';
 import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
-
-const ADMIN_ROLES = ['admin', 'super_admin'] as const;
-const ALL_USER_ROLES = ['user', 'admin', 'super_admin'] as const;
+import { UserRole } from 'src/enum/user-role.enum';
 
 interface DataResponse<T> {
   data: T;
@@ -43,7 +41,7 @@ export class DiscountsController {
   constructor(private readonly discountService: DiscountService) {}
 
   @Post('codes')
-  @Roles(...ADMIN_ROLES)
+  @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Crear un nuevo código de descuento global' })
   @ApiResponse({
     status: 201,
@@ -62,7 +60,7 @@ export class DiscountsController {
   }
 
   @Post('user-discounts')
-  @Roles(...ADMIN_ROLES)
+  @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Crear nuevo descuento de usuario' })
   @ApiResponse({
     status: 201,
@@ -81,7 +79,7 @@ export class DiscountsController {
   }
 
   @Get('existing-codes')
-  @Roles(...ALL_USER_ROLES)
+  @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Obtener todos los códigos de descuento globales' })
   @ApiResponse({
     status: 200,
@@ -97,7 +95,7 @@ export class DiscountsController {
   }
 
   @Get('existing-codes/:id')
-  @Roles(...ALL_USER_ROLES)
+  @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Obtener un código de descuento global por ID' })
   @ApiResponse({
     status: 200,
@@ -116,7 +114,7 @@ export class DiscountsController {
   }
 
   @Get('user-discounts')
-  @Roles(...ADMIN_ROLES)
+  @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({
     summary: 'Obtener descuentos de todos los usuarios con filtro opcional',
   })
@@ -136,7 +134,7 @@ export class DiscountsController {
   }
 
   @Get('user-discounts/me')
-  @Roles(...ALL_USER_ROLES)
+  @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Obtener descuentos del usuario autenticado' })
   @ApiResponse({
     status: 200,
@@ -154,8 +152,7 @@ export class DiscountsController {
   }
 
   @Get('user-discounts/:id')
-  //@Roles(...ALL_USER_ROLES)
-  @Roles(...ADMIN_ROLES)
+  @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Obtener un descuento de usuario por su ID' })
   @ApiResponse({
     status: 200,
@@ -178,7 +175,7 @@ export class DiscountsController {
   }
 
   @Put('user-discounts/:id')
-  @Roles(...ALL_USER_ROLES)
+  @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Actualizar un descuento de usuario por ID' })
   @ApiResponse({ status: 200, description: 'Descuento actualizado' })
   @ApiResponse({ status: 404, description: 'Descuento no encontrado' })
@@ -196,7 +193,7 @@ export class DiscountsController {
   }
 
   @Delete('user-discounts/:id')
-  @Roles(...ADMIN_ROLES)
+  @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Eliminar un descuento de usuario por ID' })
   @ApiResponse({ status: 200, description: 'Descuento eliminado' })
   @ApiResponse({ status: 404, description: 'Descuento no encontrado' })
@@ -212,7 +209,7 @@ export class DiscountsController {
    *  RECOMPENSAS
    */
   @Put('update-star')
-  @Roles(...ADMIN_ROLES)
+  @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Actualizar recompensas de usuario (estrellas)' })
   @ApiOkResponse({
     description: 'Recompensa actualizada, devuelve true si se completó un ciclo',
@@ -256,7 +253,7 @@ export class DiscountsController {
   }
 
   @Get('stars')
-  @Roles(...ALL_USER_ROLES)
+  @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({
     summary: 'Obtener recompensas del usuario (cantidad y estrellas)',
   })
@@ -286,7 +283,7 @@ export class DiscountsController {
   }
 
   @Get('stars/:userId')
-  @Roles(...ADMIN_ROLES)
+  @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({
     summary: 'Obtener recompensas del usuario (cantidad y estrellas) por ID de usuario',
   })

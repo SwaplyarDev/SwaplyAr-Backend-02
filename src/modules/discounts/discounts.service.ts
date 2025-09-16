@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import { UpdateStarDto } from '@discounts/dto/update-star.dto';
 import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
 import { AdminStatus } from 'src/enum/admin-status.enum';
+import { UserRole } from 'src/enum/user-role.enum';
 
 export class DiscountService {
   constructor(
@@ -97,6 +98,15 @@ export class DiscountService {
       ? await this.findTransactionByIdOrThrow(dto.transactionId)
       : null;
 
+    const existing = await this.userDiscountRepo.findOne({
+      where: { user: { id: user.id }, discountCode: { id: discountCode.id } },
+    });
+    if (existing) {
+      throw new BadRequestException(
+        `El usuario ya tiene asignado el código de descuento '${discountCode.code}'`,
+      );
+    }
+
     const userDiscount = this.createUserDiscountEntity(user, discountCode, transaction);
     await this.userDiscountRepo.save(userDiscount);
 
@@ -156,7 +166,7 @@ export class DiscountService {
   }
 
   /* Obtiene descuentos de un usuario específico por su user_id */
-  async getUserDiscountsByUserId(id: string, userRole?: string): Promise<UserDiscount[]> {
+  async getUserDiscountsByUserId(id: string, userRole?: UserRole): Promise<UserDiscount[]> {
     const qd = this.userDiscountRepo
       .createQueryBuilder('ud')
       .leftJoinAndSelect('ud.user', 'user')
@@ -167,24 +177,35 @@ export class DiscountService {
     const ud = await qd.getMany();
 
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
-    if (!['admin', 'super_admin'].includes(userRole || '')) {
-      throw new ForbiddenException('No tiene permiso para acceder a este descuento');
+
+    if (![UserRole.Admin, UserRole.SuperAdmin].includes(userRole ?? UserRole.User)) {
+
+      throw new ForbiddenException ('No tiene permiso para acceder a este descuento');
+
     }
 
     return ud;
+
   }
 
   /**
    * Obtiene un descuento de usuario por ID, verifica propiedad y devuelve toda la información relevante.
    */
-  async getUserDiscountById(id: string, userId: string, userRole?: string): Promise<UserDiscount> {
+  async getUserDiscountById(id: string, userId: string, userRole?: UserRole): Promise<UserDiscount> {
+
     const ud = await this.userDiscountRepo.findOne({
       where: { id },
       relations: ['user', 'discountCode', 'transactions'],
     });
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
-    if (ud.user.id !== userId && !['admin', 'super_admin'].includes(userRole || '')) {
+    /*if (ud.user.id !== userId && !['admin', 'super_admin'].includes(userRole || '')) {
       throw new ForbiddenException('No tiene permiso para acceder a este descuento');
+    }*/
+
+    if (ud.user.id !== userId && (userRole !== UserRole.Admin && userRole !== UserRole.SuperAdmin)) {
+
+      throw new ForbiddenException ('No tiene permiso para acceder a este descuento');
+
     }
 
     return ud;
@@ -199,7 +220,18 @@ export class DiscountService {
     userId: string,
   ): Promise<UserDiscount> {
     const ud = await this.getUserDiscountById(id, userId);
+
     const transaction = await this.findTransactionByIdOrThrow(dto.transactionId);
+
+    const existingTx = await this.userDiscountRepo.findOne({
+    where: { transactions: { id: transaction.id } },
+    });
+    if (existingTx && existingTx.id !== ud.id) {
+      throw new BadRequestException(
+        `La transacción con ID '${transaction.id}' ya está asociada a otro descuento`,
+      );
+    }
+
     ud.isUsed = true;
     ud.usedAt = new Date();
     // Asociar el descuento a la transacción (lado ManyToOne está en Transaction)

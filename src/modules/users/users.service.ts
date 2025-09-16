@@ -13,6 +13,7 @@ import { UserProfile } from '@users/entities/user-profile.entity';
 import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
 
 import { UserSocials } from './entities/user-socials.entity';
+import { UserRole } from 'src/enum/user-role.enum';
 
 @Injectable()
 export class UsersService {
@@ -57,7 +58,9 @@ export class UsersService {
 
       user.profile = userProfile;
       user.termsAccepted = userDto.termsAccepted ?? false;
-      user.role = 'user';
+      /*user.role = 'user';*/
+
+      user.role = UserRole.User;//AGREGADO PARA LA TAREA
       user.rewardsLedger = new UserRewardsLedger();
 
       return await this.userRepository.save(user);
@@ -93,13 +96,25 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async updateUserRole(userId: string, role: 'user' | 'admin' | 'super_admin'): Promise<User> {
+  /*async updateUserRole(userId: string, role: 'user' | 'admin' | 'super_admin'): Promise<User> {
     const user = await this.findById(userId);
     if (!user) {
       throw new NotFoundException('Usuario no encontrado');
-    }
+    }*/
+
+   //AGREGADO PARA LA TAREA.
+   async updateUserRole(
+    userId: string,
+    role: UserRole,
+   ): Promise<User> {
+     const user = await this.findById(userId);
+    if (!user) {
+     throw new NotFoundException('Usuario no encontrado');
+    } 
 
     user.role = role;
     return this.userRepository.save(user);
+
   }
+
 }

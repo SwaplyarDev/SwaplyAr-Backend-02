@@ -18,6 +18,7 @@ import { UserVerification } from '@users/entities/user-verification.entity';
 import { RefreshToken } from '@users/entities/resfresh-token.entity';
 import { Exclude } from 'class-transformer';
 import { OtpCode } from '@auth/entities/otp-code.entity';
+import { UserRole } from 'src/enum/user-role.enum';
 
 @Entity('users')
 export class User {
@@ -82,13 +83,25 @@ export class User {
   })
   rewardsLedger: UserRewardsLedger;
 
-  @Column({
+  /*@Column({
     type: 'enum',
     enum: ['user', 'admin', 'super_admin'],
     default: 'user',
     name: 'user_role',
   })
-  role: 'user' | 'admin' | 'super_admin';
+  role: 'user' | 'admin' | 'super_admin';*/
+
+  
+  //AGREGADO PARA LA TAREA
+  @Column ({
+
+  type: 'enum',
+  enum: UserRole,
+  default: UserRole.User,
+  name: 'user_role',
+
+  })
+  role: UserRole;
 
   @Column({ name: 'terms_accepted', default: false })
   termsAccepted: boolean;

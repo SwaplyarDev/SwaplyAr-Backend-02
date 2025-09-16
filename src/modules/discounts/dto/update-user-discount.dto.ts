@@ -1,10 +1,29 @@
-import { IsString, MaxLength, MinLength } from 'class-validator';
+
+
+import { IsString, Length, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateUserDiscountDto {
-  @ApiProperty({ description: 'ID de la transacción que utiliza el descuento' })
-  @IsString()
-  @MinLength(10, { message: 'El ID de la transacción debe tener al menos 10 caracteres.' })
-  @MaxLength(10, { message: 'El ID de la transacción no puede exceder los 10 caracteres.' })
+
+  @ApiProperty ({
+
+    description: 'ID de la transacción que utiliza el descuento (exactamente 10 caracteres alfanuméricos)',
+    example: 'vzGua5nfRo',
+
+  })
+  @IsString ({ message: 'transactionId debe ser un string' })
+
+  @Length (10, 10, {
+
+    message: 'transactionId debe tener exactamente 10 caracteres',
+
+  })
+
+  @Matches (/^[a-zA-Z0-9]+$/, {
+
+    message: 'transactionId solo puede contener letras y números',
+
+  })
   transactionId: string;
+  
 }

@@ -45,6 +45,7 @@ import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
 import { JwtService } from '@nestjs/jwt';
 import { validateOrReject } from 'class-validator';
 import { IsPhoneNumberValid } from '@common/decorators/phone-number.decorator';
+import { VirtualBankType } from 'src/enum/virtual-bank.enum';
 
 interface CreateTransactionBody {
   createTransactionDto: string;
@@ -92,58 +93,66 @@ export class TransactionsController {
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        createTransactionDto: {
-          type: 'string',
-          description:
-            'JSON stringificado con la información de la transacción (CreateTransactionDto)',
-          example: JSON.stringify(
-            {
-              countryTransaction: 'Argentina',
-              message: 'Transferencia Crypto',
-              financialAccounts: {
-                senderAccount: {
-                  firstName: 'Diego',
-                  lastName: 'Fernández',
-                  phoneNumber: '12456789',
-                  createdBy: 'fernandeezalan20@gmail.com',
-                  paymentMethod: { platformId: 'receiver_crypto', method: 'receiver-crypto' },
-                },
-                receiverAccount: {
-                  paymentMethod: {
-                    platformId: 'receiver_crypto',
-                    method: 'receiver-crypto',
-                    receiverCrypto: {
-                      currency: 'ETH',
-                      network: 'Ethereum',
-                      wallet: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-                    },
-                  },
-                },
+  schema: {
+    type: 'object',
+    properties: {
+      createTransactionDto: {
+        type: 'string',
+        description:
+          'JSON stringificado con la información de la transacción (CreateTransactionDto)',
+        example: JSON.stringify(
+          {
+            countryTransaction: "Argentina",
+            message: "Transferencia de prueba",
+            financialAccounts: {
+              senderAccount: {
+                firstName: "Juan",
+                lastName: "Pérez",
+                phoneNumber: "+5491123456789",
+                createdBy: "coronajonhatan@gmail.com",
+                paymentMethod: {
+                  platformId: "bank",
+                  method: "bank"
+                }
               },
-              amount: {
-                amountSent: 0.5,
-                currencySent: 'ETH',
-                amountReceived: 0.5,
-                currencyReceived: 'ETH',
-                received: true,
-              },
+              receiverAccount: {
+                firstName: "Alan",
+                lastName: "Fernandez",
+                paymentMethod: {
+                  platformId: "bank",
+                  method: "bank",
+                  bank: {
+                    currency: "ARS",
+                    bankName: "Banco Galicia",
+                    sendMethodKey: "CBU",
+                    sendMethodValue: "1234567890123456789012",
+                    documentType: "DNI",
+                    documentValue: "12345678"
+                  }
+                }
+              }
             },
-            null,
-            2,
-          ),
-        },
-        file: {
-          type: 'string',
-          format: 'binary',
-          description: 'Archivo del comprobante de pago (JPG, PNG o PDF)',
-        },
+            amount: {
+              amountSent: 1000,
+              currencySent: "ARS",
+              amountReceived: 900,
+              currencyReceived: "BRL",
+              received: false
+            }
+          },
+          null,
+          2
+        )
       },
-      required: ['createTransactionDto'],
+      file: {
+        type: 'string',
+        format: 'binary',
+        description: 'Archivo del comprobante de pago (JPG, PNG o PDF)',
+      },
     },
-  })
+    required: ['createTransactionDto'],
+  },
+})
   @ApiResponse({
     status: 201,
     description: '✅ Transacción creada correctamente',
@@ -205,6 +214,25 @@ export class TransactionsController {
 
     // Convierte JSON → DTO
     const createTransactionDto = plainToInstance(CreateTransactionDto, parsedDto);
+
+    const senderPaymentMethod = createTransactionDto.financialAccounts.senderAccount.paymentMethod;
+    const receiverPaymentMethod = createTransactionDto.financialAccounts.receiverAccount.paymentMethod;
+
+// Función auxiliar para validar type
+const validateVirtualBankType = (pm: typeof senderPaymentMethod | typeof receiverPaymentMethod) => {
+  if (pm.method === 'virtual-bank') {
+    if (!pm.type) {
+      throw new BadRequestException('El campo "type" es obligatorio para virtual-bank');
+    }
+    // Asegurarse de que el type sea válido según tu enum
+    if (!Object.values(VirtualBankType).includes(pm.type as VirtualBankType)) {
+      throw new BadRequestException('El campo "type" no es válido para virtual-bank');
+    }
+  }
+};
+
+validateVirtualBankType(senderPaymentMethod);
+validateVirtualBankType(receiverPaymentMethod);
 
     const senderDto = createTransactionDto.financialAccounts.senderAccount;
 

@@ -6,6 +6,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ValidateNested, IsEnum, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Platform } from 'src/enum/platform.enum';
+import { VirtualBankType } from 'src/enum/virtual-bank.enum';
 
 export class CreatePaymentMethodDto {
   @ApiProperty({ description: 'ID de la plataforma', example: 'bank' })
@@ -39,4 +40,14 @@ export class CreatePaymentMethodDto {
   @ValidateNested()
   @Type(() => CreateVirtualBankDto)
   virtualBank?: CreateVirtualBankDto;
+
+@ApiProperty({
+    description: 'Tipo de virtual bank (solo aplica si method = virtual-bank)',
+    example: VirtualBankType.PayPal,
+    required: false,
+    enum: VirtualBankType,
+  })
+  @IsOptional()
+  @IsEnum(VirtualBankType, { message: 'type debe ser uno de los valores permitidos en VirtualBankType' })
+  type?: VirtualBankType;
 }

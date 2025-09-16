@@ -188,7 +188,7 @@ export class DiscountsController {
 
     status: 200,
     description: 'Historial de descuentos del usuario',
-    type: [UserDiscount],
+    type: [UserDiscountHistoryDto],
 
   })
 

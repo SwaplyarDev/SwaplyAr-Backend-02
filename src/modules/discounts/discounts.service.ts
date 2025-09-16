@@ -294,7 +294,7 @@ export class DiscountService {
     usedAt: ud.usedAt,
 
   }));
-  
+
 }    
 
   /**

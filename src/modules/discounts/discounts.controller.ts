@@ -28,6 +28,7 @@ import { DiscountCode } from '@users/entities/discount-code.entity';
 import { UserDiscount } from '@users/entities/user-discount.entity';
 import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
 import { UserRole } from 'src/enum/user-role.enum';
+import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
 
 interface DataResponse<T> {
   data: T;
@@ -151,6 +152,59 @@ export class DiscountsController {
     return { data: discounts };
   }
 
+  //AGREGADO PARA LA TAREA.
+  @Get ('user-history')
+  @Roles (UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
+
+  @ApiOperation ({ summary: 'Obtener historial de cupones usados del usuario autenticado' })
+
+  @ApiResponse ({
+
+  status: 200,
+  description: 'Listado del historial de cupones usados',
+  type: [UserDiscountHistoryDto],
+
+  })
+
+  @ApiResponse ({ status: 401, description: 'No autenticado' })
+  @HttpCode (HttpStatus.OK)
+  async getMyDiscountHistory (@User () user: UserEntity): Promise<DataResponse<UserDiscountHistoryDto[]>> {
+
+  const history = await this.discountService.getUserDiscountHistory (user.id);
+  return { data: history };
+
+  }
+
+  @Get ('user-history/:userId')
+  @Roles (UserRole.Admin, UserRole.SuperAdmin)
+
+  @ApiOperation ({
+
+    summary: 'Obtener historial de cupones de un usuario específico (Admin)',
+
+  })
+
+  @ApiResponse ({
+
+    status: 200,
+    description: 'Historial de descuentos del usuario',
+    type: [UserDiscount],
+
+  })
+
+  @HttpCode (HttpStatus.OK)
+
+  async getUserDiscountHistoryByAdmin (
+
+    @Param('userId') userId: string,
+
+  ): Promise<DataResponse<UserDiscountHistoryDto []>> {
+
+    const history = await this.discountService.getUserDiscountHistoryByAdmin (userId);
+    return { data: history };
+
+  }
+  
   @Get('user-discounts/:id')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Obtener un descuento de usuario por su ID' })

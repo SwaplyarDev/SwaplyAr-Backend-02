@@ -14,4 +14,7 @@ export class PaymentMethod {
   @Index('idx_payment_methods_method')
   @Column({ length: 50 })
   method: string;
+
+  @Column({ name: 'type', type: 'varchar', length: 50, nullable: true })
+  type?: string | null;
 }

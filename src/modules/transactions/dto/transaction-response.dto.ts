@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { RegretDto } from '@transactions/regrets/dto/regret-response-dto';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';
-import { Expose, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { IsEmail, IsOptional, IsString } from 'class-validator';
 
 export class PaymentMethodSenderDto {
@@ -16,6 +16,11 @@ export class PaymentMethodSenderDto {
   @Expose()
   @ApiProperty({ name: 'method', example: 'bank' })
   method: string;
+
+  @Expose()
+  @ApiProperty({ name: 'type', example: 'virtual', required: false })
+  @Transform(({ value }) => (value ? value : undefined)) 
+  type?: string;
 }
 
 export class PaymentMethodReceiverDto {
@@ -94,6 +99,11 @@ export class PaymentMethodReceiverDto {
     required: false,
   })
   transferCode?: string;
+
+  @Expose()
+  @ApiProperty({ name: 'type', example: 'virtual', required: false })
+  @Transform(({ value }) => (value ? value : undefined)) // solo muestra si tiene valor
+  type?: string;
 }
 
 export class AccountSenderDto {

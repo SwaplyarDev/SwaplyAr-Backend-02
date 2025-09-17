@@ -13,6 +13,7 @@ import { UpdateStarDto } from '@discounts/dto/update-star.dto';
 import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
 import { AdminStatus } from 'src/enum/admin-status.enum';
 import { UserRole } from 'src/enum/user-role.enum';
+import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
 
 export class DiscountService {
   constructor(
@@ -246,6 +247,55 @@ export class DiscountService {
       throw new NotFoundException('Descuento de usuario no encontrado tras actualizar');
     return updatedUd;
   }
+
+  // AGREGADO PARA LA TAREA
+  async getUserDiscountHistory (userId: string): Promise<UserDiscountHistoryDto[]> {
+
+    const userDiscounts = await this.userDiscountRepo.find ({
+
+      where: { user: { id: userId }, isUsed: true },
+      relations: ['discountCode'],
+      order: { createdAt: 'DESC' },
+
+    });
+
+    return userDiscounts.map ((ud) => ({
+
+      id: ud.id,
+      code: ud.discountCode.code,
+      value: ud.discountCode.value,
+      currencyCode: ud.discountCode.currencyCode,
+      isUsed: ud.isUsed,
+      createdAt: ud.createdAt,
+      usedAt: ud.usedAt,
+
+    }));
+  
+  }
+
+  async getUserDiscountHistoryByAdmin (userId: string): Promise<UserDiscountHistoryDto[]> {
+
+  const userDiscounts = await this.userDiscountRepo.find ({
+
+    where: { user: { id: userId }, isUsed: true },
+    relations: ['discountCode'],
+    order: { createdAt: 'DESC' },
+
+  });
+
+  return userDiscounts.map ((ud) => ({
+
+    id: ud.id,
+    code: ud.discountCode.code,
+    value: ud.discountCode.value,
+    currencyCode: ud.discountCode.currencyCode,
+    isUsed: ud.isUsed,
+    createdAt: ud.createdAt,
+    usedAt: ud.usedAt,
+
+  }));
+
+}    
 
   /**
    * Elimina un descuento de usuario y devuelve un mensaje de confirmación.

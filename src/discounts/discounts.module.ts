@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DiscountCode } from '@users/entities/discount-code.entity';
+import { DiscountCode } from '@discounts/entities/discount-code.entity';
 import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { User } from '@users/entities/user.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';

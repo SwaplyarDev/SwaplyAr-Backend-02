@@ -1,5 +1,5 @@
 import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { DiscountCode } from '@users/entities/discount-code.entity';
+import { DiscountCode } from '@discounts/entities/discount-code.entity';
 import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { User } from '@users/entities/user.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
@@ -78,7 +78,7 @@ export class DiscountService {
    * Crea un nuevo descuento de usuario basado en un código existente
    * Devuelve el descuento creado junto a los detalles relevantes.
    */
-  async createUserDiscount(dto: CreateUserDiscountDto): Promise<UserDiscount> {
+  /*async createUserDiscount(dto: CreateUserDiscountDto): Promise<UserDiscount> {
     const user = await this.findUserByIdOrThrow(dto.userId);
 
     let discountCode: DiscountCode | null = null;
@@ -119,7 +119,7 @@ export class DiscountService {
     if (!result) throw new NotFoundException('Descuento de usuario no encontrado tras la creación');
 
     return result;
-  }
+  }*/
 
   /**
    * Obtiene todos los códigos de descuento globales, incluyendo detalles.

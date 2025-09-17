@@ -23,8 +23,8 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { User } from '@common/user.decorator';
 import { User as UserEntity } from '@users/entities/user.entity';
 import { CreateDiscountCodeDto } from 'src/discounts/dto/create-discount-code.dto';
-import { UpdateStarDto } from 'src/discounts/dto/update-star.dto';
-import { DiscountCode } from '@users/entities/discount-code.entity';
+import { UpdateStarDto } from '@discounts/dto/update-star.dto';
+import { DiscountCode } from '@discounts/entities/discount-code.entity';
 import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from '@discounts/entities/user-rewards-ledger.entity';
 import { UserRole } from 'src/enum/user-role.enum';
@@ -60,7 +60,7 @@ export class DiscountsController {
     return { data: code };
   }
 
-  @Post('user-discounts')
+  /*@Post('user-discounts')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Crear nuevo descuento de usuario' })
   @ApiResponse({
@@ -77,7 +77,7 @@ export class DiscountsController {
   ): Promise<DataResponse<UserDiscount>> {
     const discount = await this.discountService.createUserDiscount(dto);
     return { data: discount };
-  }
+  }*/
 
   @Get('existing-codes')
   @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)

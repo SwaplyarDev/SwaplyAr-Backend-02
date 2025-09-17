@@ -24,6 +24,7 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
+import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
 
 @ApiTags('Cuentas de Usuario')
 @ApiBearerAuth()
@@ -32,73 +33,139 @@ import {
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
-  // CREAR una cuenta de banco
-  @ApiOperation({
-    summary: 'Crear una cuenta bancaria para el usuario autenticado',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Cuenta bancaria creada correctamente',
-    schema: {
-      example: {
-        message: 'bank created',
-        bank: {
-          id: 'uuid',
-          typeAccount: 'bank',
-          formData: {
-            /* ... */
-          },
-          userAccValues: {
-            first_name: 'Juan',
-            last_name: 'Pérez',
-            identification: '12345678',
-            currency: 'ARS',
-            account_name: 'Cuenta Principal',
-            account_type: 1,
-          },
+// CREAR una cuenta de usuario con FinancialAccount
+@ApiOperation({
+  summary: 'Crear una cuenta financiera para el usuario autenticado',
+})
+@ApiResponse({
+  status: 201,
+  description: 'Cuenta financiera creada correctamente',
+  schema: {
+    example: {
+      message: 'Cuenta financiera creada correctamente',
+      bank: {
+        accountId: '78b4e3de-5398-4c18-ae8a-3dfce357b244',
+        accountName: 'Cuenta Principal',
+        createdAt: '2025-09-17T14:00:06.955Z',
+        updatedAt: '2025-09-17T14:00:07.017Z',
+        status: true,
+        user: {
+          id: '995ea470-6b62-4e51-ba03-714ad82b866e'
         },
-      },
-    },
-  })
-  @ApiBody({
-    description: 'Datos para crear la cuenta bancaria',
-    type: CreateBankAccountDto,
-    examples: {
-      ejemplo1: {
-        summary: 'Ejemplo de request',
-        value: {
-          typeAccount: 'bank',
-          formData: {
-            currency: 'ARS',
-            bank_name: 'Banco Nación',
-            send_method_key: 'CBU',
-            send_method_value: '1234567890123456789012',
-            document_type: 'DNI',
-            document_value: '12345678',
-            alias: 'juan.nacion',
-            branch: 'Sucursal Centro',
-          },
-          userAccValues: {
-            first_name: 'Juan',
-            last_name: 'Pérez',
-            identification: '12345678',
-            currency: 'ARS',
-            account_name: 'Cuenta Principal',
-            account_type: 1,
-          },
-        },
-      },
-    },
-  })
-  @UseGuards(RolesGuard)
-  @Roles('user')
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  async create(@Request() req, @Body() dto: CreateBankAccountDto) {
-    const userId = req.user.id;
-    const newBank = await this.accountsService.createUserBan(dto.userAccValues, userId);
-    return { message: 'Banco creado correctamente', bank: newBank };
+        financialAccount: {
+          id: '893f12be-49af-49a7-b79b-28a86d0a3a02',
+          firstName: 'Juan',
+          lastName: 'Pérez',
+          paymentMethod: {
+            id: '813caab6-c193-48d4-93c9-dc63ead4c284',
+            platformId: 'bank', // o 'pix', 'receiver-crypto', 'virtual-bank'
+            method: 'bank',     // o 'pix', 'receiver-crypto', 'virtual-bank'
+            type: null,         // solo para virtual-bank si aplica
+            currency: 'ARS',    // solo para bank, pix o crypto según corresponda
+            network: null,      // solo para crypto
+            wallet: null,       // solo para crypto
+            emailAccount: null, // solo para virtual-bank
+            transferCode: null  // solo para virtual-bank
+          }
+        }
+      }
+    }
   }
+})
+@ApiBody({
+  description: 'Datos para crear la cuenta financiera',
+  type: CreatePaymentMethodDto,
+  examples: {
+    bankExample: {
+      summary: 'Cuenta bancaria',
+      value: {
+        platformId: 'bank',
+        method: 'bank',
+        bank: {
+          currency: 'ARS',
+          bankName: 'Banco Nación',
+          sendMethodKey: 'CBU',
+          sendMethodValue: '1234567890123456789012',
+          documentType: 'DNI',
+          documentValue: '87654321'
+        },
+        firstName: 'Juan',
+        lastName: 'Pérez',
+        accountName: 'Cuenta Principal'
+      }
+    },
+    pixExample: {
+      summary: 'Cuenta PIX',
+      value: {
+        platformId: 'pix',
+        method: 'pix',
+        pix: {
+          pixId: '001',
+          pixKey: 'ABC123',
+          pixValue: '1234567890',
+          cpf: '12345678901'
+        },
+        firstName: 'Juan',
+        lastName: 'Pérez',
+        accountName: 'Cuenta PIX Principal'
+      }
+    },
+    virtualBankExample: {
+      summary: 'Cuenta Virtual Bank',
+      value: {
+        platformId: 'virtual_bank',
+        method: 'virtual-bank',
+        virtualBank: {
+          currency: 'ARS',
+          emailAccount: 'nahuel@gmail.com',
+          transferCode: 'XYZ123'
+        },
+        type: 'PayPal',
+        firstName: 'Juan',
+        lastName: 'Pérez',
+        accountName: 'Cuenta Virtual Principal'
+      }
+    },
+    cryptoExample: {
+      summary: 'Cuenta Crypto',
+      value: {
+        platformId: 'receiver_crypto',
+        method: 'receiver-crypto',
+        receiverCrypto: {
+          currency: 'BTC',
+          network: 'Bitcoin',
+          wallet: '1A2b3C4d5E6f7G8h9I0J'
+        },
+        firstName: 'Juan',
+        lastName: 'Pérez',
+        accountName: 'Cuenta Crypto Principal'
+      }
+    }
+  }
+})
+@UseGuards(RolesGuard)
+@Roles('user')
+@Post()
+@HttpCode(HttpStatus.CREATED)
+async create(
+  @Request() req,
+  @Body() body: CreatePaymentMethodDto & { firstName?: string; lastName?: string; accountName: string },
+) {
+  const userId = req.user.id;
+
+  const { firstName, lastName, accountName, ...createPaymentMethodDto } = body;
+  const accountData = { firstName, lastName, accountName };
+
+  const newAccount = await this.accountsService.createUserAccountWithFinancial(
+    userId,
+    createPaymentMethodDto,
+    accountData,
+  );
+
+
+  return { message: 'Cuenta financiera creada correctamente', bank: newAccount };
+}
+
 
   // DELETE una cuenta de banco
   @ApiOperation({
@@ -124,7 +191,7 @@ export class AccountsController {
   @Roles('user', 'admin')
   @Delete()
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {
-    return this.accountsService.deleteBankAccount(req.user, dto.bankAccountId);
+    return this.accountsService.deleteUserAccount(req.user, dto.bankAccountId);
   }
 
   // GET todas las cuentas de banco de un user
@@ -139,7 +206,7 @@ export class AccountsController {
       'El usuario debe estar logueado y tener el rol `user` para poder acceder a este endpoint.',
   })
   async findAll(@Request() req) {
-    return this.accountsService.findAllBanks(req.user.id);
+    return this.accountsService.findAllAccount(req.user.id);
   }
 
   // GET todas las cuentas de banco de un user por admin
@@ -177,7 +244,7 @@ export class AccountsController {
   @Roles('admin')
   @Get('/admin/findId')
   async findOneById(@Query('userId') userId: string) {
-    return this.accountsService.findAllBanks(userId);
+    return this.accountsService.findAllAccount(userId);
   }
 
   // GET una cuenta de banco de un user por admin
@@ -229,6 +296,6 @@ export class AccountsController {
     @Query('userId') userId: string,
     @Query('bankAccountId') bankAccountId: string,
   ) {
-    return this.accountsService.findOneUserBank(userId, bankAccountId);
+    //return this.accountsService.findOneUserBank(userId, bankAccountId);
   }
 }

@@ -20,7 +20,7 @@
       "@mailer/*": [ "src/modules/mailer/*" ],
       "@admin/*": [ "src/modules/admin/*" ],
       "@otp/*": [ "src/modules/otp/*" ],
-      "@discounts/*": [ "src/modules/discounts/*" ],
+      "@discounts/*": [ "src/discounts/*" ],
       "@common/*": ["src/common/*"],
     },
     "incremental": true,

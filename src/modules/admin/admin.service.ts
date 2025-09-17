@@ -14,8 +14,8 @@ import { AdminStatus } from '../../enum/admin-status.enum';
 import { User } from '@users/entities/user.entity';
 
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
-import { DiscountService } from '@discounts/discounts.service';
-import { UpdateStarDto } from '@discounts/dto/update-star.dto';
+import { DiscountService } from '@discounts/services/discounts.service';
+import { UpdateStarDto } from 'src/discounts/dto/update-star.dto';
 // import { TransactionGetResponseDto } from '@transactions/dto/transaction-response.dto';
 import {
   TransactionAdminResponseDto,

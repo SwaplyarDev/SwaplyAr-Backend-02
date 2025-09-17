@@ -1,19 +1,19 @@
 import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { DiscountCode } from '@users/entities/discount-code.entity';
-import { UserDiscount } from '@users/entities/user-discount.entity';
+import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { User } from '@users/entities/user.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
-import { CreateUserDiscountDto } from './dto/create-user-discount.dto';
-import { FilterTypeEnum, FilterUserDiscountsDto } from './dto/filter-user-discounts.dto';
-import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
-import { CreateDiscountCodeDto } from './dto/create-discount-code.dto';
+import { CreateUserDiscountDto } from '../dto/create-user-discount.dto';
+import { FilterTypeEnum, FilterUserDiscountsDto } from '../dto/filter-user-discounts.dto';
+import { UpdateUserDiscountDto } from '../dto/update-user-discount.dto';
+import { CreateDiscountCodeDto } from '../dto/create-discount-code.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UpdateStarDto } from '@discounts/dto/update-star.dto';
-import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
+import { UpdateStarDto } from 'src/discounts/dto/update-star.dto';
+import { UserRewardsLedger } from '@discounts/entities/user-rewards-ledger.entity';
 import { AdminStatus } from 'src/enum/admin-status.enum';
 import { UserRole } from 'src/enum/user-role.enum';
-import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
+import { UserDiscountHistoryDto } from '../dto/user-discount-history.dto';
 
 export class DiscountService {
   constructor(

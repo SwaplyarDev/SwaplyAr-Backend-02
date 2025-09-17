@@ -13,22 +13,22 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
-import { DiscountService } from './discounts.service';
-import { CreateUserDiscountDto } from './dto/create-user-discount.dto';
-import { FilterUserDiscountsDto } from './dto/filter-user-discounts.dto';
-import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
+import { DiscountService } from '../services/discounts.service';
+import { CreateUserDiscountDto } from '../dto/create-user-discount.dto';
+import { FilterUserDiscountsDto } from '../dto/filter-user-discounts.dto';
+import { UpdateUserDiscountDto } from '../dto/update-user-discount.dto';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { User } from '@common/user.decorator';
 import { User as UserEntity } from '@users/entities/user.entity';
-import { CreateDiscountCodeDto } from '@discounts/dto/create-discount-code.dto';
-import { UpdateStarDto } from '@discounts/dto/update-star.dto';
+import { CreateDiscountCodeDto } from 'src/discounts/dto/create-discount-code.dto';
+import { UpdateStarDto } from 'src/discounts/dto/update-star.dto';
 import { DiscountCode } from '@users/entities/discount-code.entity';
-import { UserDiscount } from '@users/entities/user-discount.entity';
-import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
+import { UserDiscount } from '@discounts/entities/user-discount.entity';
+import { UserRewardsLedger } from '@discounts/entities/user-rewards-ledger.entity';
 import { UserRole } from 'src/enum/user-role.enum';
-import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
+import { UserDiscountHistoryDto } from '../dto/user-discount-history.dto';
 
 interface DataResponse<T> {
   data: T;

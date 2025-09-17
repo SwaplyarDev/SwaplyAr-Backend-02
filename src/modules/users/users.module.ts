@@ -9,7 +9,7 @@ import { UserSocials } from './entities/user-socials.entity';
 import { UserCategory } from './entities/user-category.entity';
 
 import { OtpModule } from '@otp/otp.module';
-import { DiscountModule } from '@discounts/discounts.module';
+import { DiscountModule } from 'src/discounts/discounts.module';
 import { ProfileModule } from './profile/profile.module';
 
 @Module({

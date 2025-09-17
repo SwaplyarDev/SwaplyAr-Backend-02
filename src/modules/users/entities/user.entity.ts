@@ -11,9 +11,9 @@ import { UserAlternativeEmail } from '@users/entities/user-alternative-email.ent
 import { UserLocation } from '@users/entities/user-location.entity';
 import { UserContact } from '@users/entities/user-contact.entity';
 import { UserQuestion } from '@users/entities/user-question.entity';
-import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
+import { UserRewardsLedger } from '@discounts/entities/user-rewards-ledger.entity';
 import { UserBan } from '@users/entities/user-ban.entity';
-import { UserDiscount } from '@users/entities/user-discount.entity';
+import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { UserVerification } from '@users/entities/user-verification.entity';
 import { RefreshToken } from '@users/entities/resfresh-token.entity';
 import { Exclude } from 'class-transformer';

@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { UserAccount } from './entities/user-account.entity';
 import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
 import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
+import { CreateUserAccountResponseDto } from './dto/user-account-response.dto';
 
 @Injectable()
 export class AccountsService {
@@ -78,7 +79,7 @@ async createUserAccountWithFinancial(
   return { message: 'Cuenta eliminada correctamente' };
 }
 
-async findAllAccount(userId: string) {
+async findAllAccount(userId: string):Promise<CreateUserAccountResponseDto[]> {
   // 1️⃣ Buscar todas las cuentas del usuario con su FinancialAccount y PaymentMethod
   const accounts = await this.userAccountRepo.find({
     where: {  userId, },
@@ -104,11 +105,11 @@ async findAllAccount(userId: string) {
               ? {
                   platformId: financial.paymentMethod.platformId,
                   method: financial.paymentMethod.method,
-                  type: financial.paymentMethod.type,
+                  ...(financial.paymentMethod.type !== null && { type: financial.paymentMethod.type }),
                 }
-              : null,
+              : undefined,
           }
-        : null,
+        : undefined,
       userAccount: {
         accountId: account.accountId,
         accountName: account.accountName,
@@ -120,28 +121,23 @@ async findAllAccount(userId: string) {
     };
   });
 
-  return enrichedAccounts;
+  return enrichedAccounts as CreateUserAccountResponseDto[];
 }
 
+async findAllUserAccounts(userId: string): Promise<CreateUserAccountResponseDto[]> {
+  const allBanks = await this.findAllAccount(userId);
+  return allBanks;
+}
 
-  // filtrar cuenta de banco especifica mediante id del usuario e id del banco
-  async findOneUserAccount(userId: string, AccountId?: string) {
-    // Traemos todas las cuentas del usuario
-   const allBanks = await this.findAllAccount(userId);
+async findOneUserAccount(
+  userId: string,
+  accountId: string
+): Promise<CreateUserAccountResponseDto> {
+  const allBanks = await this.findAllAccount(userId);
 
-  if (!AccountId) {
-    // Si no se pasa ID, devolvemos todas las cuentas
-    return allBanks;
-  }
+  const found = allBanks.find(acc => acc.userAccount.accountId === accountId);
+  if (!found) throw new NotFoundException('Cuenta no encontrada para este usuario');
 
-  // Filtramos por accountId (UserAccount)
-  const found = allBanks.find((account) => account.userAccount.accountId === AccountId);
-
-  if (!found) {
-    throw new NotFoundException('Cuenta no encontrada para este usuario');
-  }
-
-  // Devolvemos solo la cuenta encontrada
   return found;
 }
 }

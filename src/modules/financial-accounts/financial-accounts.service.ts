@@ -43,9 +43,9 @@ async createSingleFinancialAccount(
     const paymentMethod = await this.paymentMethodService.create({
       platformId: createPaymentMethodDto.platformId,
       method: createPaymentMethodDto.method,
-      type: createPaymentMethodDto.type,
       bank: createPaymentMethodDto.bank,
       pix: createPaymentMethodDto.pix,
+      type: createPaymentMethodDto.type,
       receiverCrypto: createPaymentMethodDto.receiverCrypto,
       virtualBank: createPaymentMethodDto.virtualBank,
 });
@@ -59,7 +59,15 @@ async createSingleFinancialAccount(
 
     const savedFinancialAccount = await this.financialAccountRepo.save(financialAccount);
 
-    return savedFinancialAccount;
+    const response = {
+  ...savedFinancialAccount,
+  paymentMethod: {
+    ...savedFinancialAccount.paymentMethod,
+    type: savedFinancialAccount.paymentMethod.type ?? undefined,
+  },
+};
+
+return response;
   } catch (err) {
     throw new BadRequestException(`Error creando la cuenta financiera: ${err.message}`);
   }

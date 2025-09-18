@@ -10,9 +10,8 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { AccountsService } from './userAccounts.service';
-import { DeleteBankAccountDto } from './dto/delete-bank-account.dto';
+import { DeleteBankAccountDto } from './dto/delete-user-account.dto';
 import { JwtAuthGuard } from 'src/common/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -25,6 +24,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
+import { CreateUserAccountResponseDto } from './dto/user-account-response.dto';
 
 @ApiTags('Cuentas de Usuario')
 @ApiBearerAuth()
@@ -191,7 +191,7 @@ async create(
   @Roles('user', 'admin')
   @Delete()
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {
-    return this.accountsService.deleteUserAccount(req.user, dto.bankAccountId);
+    return this.accountsService.deleteUserAccount(req.user, dto.AccountId);
   }
 
   // GET todas las cuentas de banco de un user
@@ -243,7 +243,7 @@ async create(
   @UseGuards(RolesGuard)
   @Roles('admin')
   @Get('/admin/findId')
-  async findOneById(@Query('userId') userId: string) {
+  async findOneById(@Query('userId') userId: string): Promise<CreateUserAccountResponseDto[]> {
     return this.accountsService.findAllAccount(userId);
   }
 
@@ -295,7 +295,7 @@ async create(
   async findOneUserBank(
     @Query('userId') userId: string,
     @Query('bankAccountId') bankAccountId: string,
-  ) {
-    //return this.accountsService.findOneUserBank(userId, bankAccountId);
+  ): Promise<CreateUserAccountResponseDto> {
+    return this.accountsService.findOneUserAccount(userId, bankAccountId);
   }
 }

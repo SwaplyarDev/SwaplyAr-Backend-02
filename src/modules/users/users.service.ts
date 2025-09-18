@@ -58,9 +58,7 @@ export class UsersService {
 
       user.profile = userProfile;
       user.termsAccepted = userDto.termsAccepted ?? false;
-      /*user.role = 'user';*/
-
-      user.role = UserRole.User;//AGREGADO PARA LA TAREA
+      user.role = UserRole.User;
       user.rewardsLedger = new UserRewardsLedger();
 
       return await this.userRepository.save(user);

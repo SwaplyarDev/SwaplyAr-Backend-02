@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { DiscountService } from '../services/discounts.service';
@@ -56,28 +57,10 @@ export class DiscountsController {
   async createDiscountCode(
     @Body() dto: CreateDiscountCodeDto,
   ): Promise<DataResponse<DiscountCode>> {
-    const code = await this.discountService.createDiscountCode(dto);
+    const userId = dto.userId; 
+    const code = await this.discountService.createDiscountCode(dto, dto.userId);
     return { data: code };
   }
-
-  /*@Post('user-discounts')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
-  @ApiOperation({ summary: 'Crear nuevo descuento de usuario' })
-  @ApiResponse({
-    status: 201,
-    description: 'Descuento creado exitosamente',
-    type: UserDiscount,
-  })
-  @ApiResponse({ status: 400, description: 'Parámetros inválidos' })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
-  @HttpCode(HttpStatus.CREATED)
-  async createUserDiscountForUser(
-    @Body() dto: CreateUserDiscountDto,
-  ): Promise<DataResponse<UserDiscount>> {
-    const discount = await this.discountService.createUserDiscount(dto);
-    return { data: discount };
-  }*/
 
   @Get('existing-codes')
   @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
@@ -152,7 +135,6 @@ export class DiscountsController {
     return { data: discounts };
   }
 
-  //AGREGADO PARA LA TAREA.
   @Get ('user-history')
   @Roles (UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
 
@@ -160,18 +142,19 @@ export class DiscountsController {
 
   @ApiResponse ({
 
-  status: 200,
-  description: 'Listado del historial de cupones usados',
-  type: [UserDiscountHistoryDto],
+    status: 200,
+    description: 'Listado del historial de cupones usados',
+    type: [UserDiscountHistoryDto],
 
   })
 
   @ApiResponse ({ status: 401, description: 'No autenticado' })
   @HttpCode (HttpStatus.OK)
-  async getMyDiscountHistory (@User () user: UserEntity): Promise<DataResponse<UserDiscountHistoryDto[]>> {
+  
+  async getMyDiscountHistory (@User () user: UserEntity): Promise<DataResponse<UserDiscountHistoryDto []>> {
 
-  const history = await this.discountService.getUserDiscountHistory (user.id);
-  return { data: history };
+    const history = await this.discountService.getUserDiscountHistory (user.id);
+    return { data: history };
 
   }
 

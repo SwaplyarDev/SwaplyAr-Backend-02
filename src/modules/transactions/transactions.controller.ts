@@ -37,6 +37,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Transaction } from './entities/transaction.entity';
 import {
+
   TransactionGetByIdDto,
   TransactionGetResponseDto,
   TransactionResponseDto,
@@ -126,8 +127,6 @@ export class TransactionsController {
                     bankName: "Banco Galicia",
                     sendMethodKey: "CBU",
                     sendMethodValue: "1234567890123456789012",
-                    documentType: "DNI",
-                    documentValue: "12345678"
                   }
                 }
               }
@@ -137,8 +136,10 @@ export class TransactionsController {
               currencySent: "ARS",
               amountReceived: 900,
               currencyReceived: "BRL",
-              received: false
-            }
+            },
+            userDiscount: {
+              id: "uuid-discount-1234"
+            }  
           },
           null,
           2

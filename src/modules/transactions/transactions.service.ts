@@ -14,7 +14,7 @@ import { plainToInstance } from 'class-transformer';
 
 import { Transaction } from './entities/transaction.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { TransactionGetResponseDto, TransactionResponseDto } from './dto/transaction-response.dto';
+import { ReceiverAccountDto, SenderAccountDto, TransactionGetResponseDto, TransactionResponseDto } from './dto/transaction-response.dto';
 
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
@@ -26,6 +26,7 @@ import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 import { MailerService } from '@mailer/mailer.service';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
+import { UserDiscount } from '@discounts/entities/user-discount.entity';
 
 // -----------------------------
 // Helper: Mapeo de métodos de pago
@@ -86,6 +87,9 @@ export class TransactionsService {
   constructor(
     @InjectRepository(Transaction)
     private readonly transactionsRepository: Repository<Transaction>,
+
+    @InjectRepository(UserDiscount)   // <--- Agregado
+    private readonly userDiscountRepository: Repository<UserDiscount>,
 
     @InjectRepository(AdministracionStatusLog)
     private readonly statusLogRepository: Repository<AdministracionStatusLog>,
@@ -195,6 +199,48 @@ export class TransactionsService {
         'Error al crear el monto',
         BadRequestException,
       );
+      
+      let userDiscount: UserDiscount | null = null;
+
+      if (createTransactionDto.userDiscountId) {
+
+        userDiscount = await this.safeExecute (
+
+          async () => {
+
+            const ud = await this.userDiscountRepository.findOne ({
+
+              where: { id: createTransactionDto.userDiscountId },
+              relations: ['discountCode'],
+
+            });
+
+            if (!ud) throw new NotFoundException('UserDiscount no encontrado');
+            if (ud.isUsed) throw new BadRequestException('El cupón ya fue usado');
+
+            return ud;
+          },
+
+          'Error al validar el descuento',
+          BadRequestException,
+
+        );
+
+        const newAmountReceived =
+        amount.amountSent - userDiscount.discountCode.value;
+        amount.amountReceived = newAmountReceived;
+
+        this.amountService.update (amount.id, {
+
+          amountReceived: newAmountReceived,
+
+        });
+
+        userDiscount.isUsed = true;
+        userDiscount.usedAt = new Date();
+        await this.userDiscountRepository.save (userDiscount);
+
+      }
 
       const proofOfPayment = await this.safeExecute(
         () => this.proofOfPaymentService.create(file),
@@ -213,6 +259,7 @@ export class TransactionsService {
         // desnormalización para listados rápidos
         amountValue: String(amount.amountSent),
         amountCurrency: amount.currencySent,
+        userDiscount,
       });
 
       const savedTransaction = await this.safeExecute(
@@ -240,6 +287,7 @@ export class TransactionsService {
               'receiverAccount.paymentMethod',
               'amount',
               'proofsOfPayment', // <- actualizado
+              'userDiscount',
             ],
           }),
         'Error al recuperar la transacción completa',
@@ -261,9 +309,22 @@ export class TransactionsService {
         await this.mailerService.sendReviewPaymentEmail(senderEmail, fullTransaction);
       }
 
-      return plainToInstance(TransactionResponseDto, fullTransaction, {
+      return plainToInstance(
+      TransactionResponseDto,
+      {
+        ...fullTransaction,
+        financialAccounts: {
+      senderAccount: plainToInstance(SenderAccountDto, fullTransaction.senderAccount, {
         excludeExtraneousValues: true,
-      });
+      }),
+      receiverAccount: plainToInstance(ReceiverAccountDto, fullTransaction.receiverAccount, {
+        excludeExtraneousValues: true,
+      }),
+    },
+      },
+      { excludeExtraneousValues: true },
+    );
+
     } catch (error) {
       this.logger.error(
         'Error inesperado al crear la transacción',
@@ -397,6 +458,7 @@ export class TransactionsService {
           receiverAccount: { paymentMethod: true },
           amount: true,
           proofsOfPayment: true, // <- actualizado
+          userDiscount: { discountCode: true }, 
         },
       });
 

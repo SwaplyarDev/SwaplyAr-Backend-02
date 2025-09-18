@@ -30,23 +30,42 @@ export class DiscountService {
   ) {}
 
   /**
-   * Crea un código de descuento global y devuelve el código completo.
+   * Crea un código de descuento global, un descuento de usuario sin usar y sin fecha y devuelve el código completo.
    */
-  async createDiscountCode(dto: CreateDiscountCodeDto): Promise<DiscountCode> {
-    const exists = await this.discountCodeRepo.findOne({
-      where: { code: dto.code },
-    });
-    if (exists) {
-      throw new BadRequestException(`El código '${dto.code}' ya existe`);
+  async createDiscountCode (dto: CreateDiscountCodeDto, userId: string): Promise<DiscountCode> {
+
+    let discountCode = await this.discountCodeRepo.findOne ({ where: { code: dto.code } });
+
+    if (!discountCode) {
+ 
+      discountCode = this.discountCodeRepo.create ({
+
+        code: dto.code,
+        value: dto.value,
+        currencyCode: dto.currencyCode,
+        validFrom: new Date (dto.validFrom),
+
+      });
+
+      await this.discountCodeRepo.save (discountCode);
+
     }
-    const discountCode = this.discountCodeRepo.create({
-      code: dto.code,
-      value: dto.value,
-      currencyCode: dto.currencyCode,
-      validFrom: new Date(dto.validFrom),
+   
+    await this.discountCodeRepo.save (discountCode);
+    const user = await this.userRepo.findOne ({ where: { id: userId } });
+    if (!user) throw new NotFoundException ('Usuario no encontrado');
+
+    const userDiscount = this.userDiscountRepo.create ({
+      
+      user,
+      discountCode,
+      isUsed: false, 
+
     });
-    await this.discountCodeRepo.save(discountCode);
+
+    await this.userDiscountRepo.save (userDiscount);
     return discountCode;
+
   }
   /**
    * Crea y asigna un descuento de sistema (bienvenida, verificación, etc.) para un usuario.

@@ -4,12 +4,20 @@ import { SenderFinancialAccountsService } from './sender-financial-accounts/send
 import { ReceiverFinancialAccountsService } from './receiver-financial-accounts/receiver-financial-accounts.service';
 import { UpdateSenderFinancialAccountDto } from './sender-financial-accounts/dto/update-sender-financial-account.dto';
 import { UpdateReceiverFinancialAccountDto } from './receiver-financial-accounts/dto/update-receiver-financial-account.dto';
+import { CreatePaymentMethodDto } from './payment-methods/dto/create-payment-method.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { PaymentMethodService } from './payment-methods/payment-method.service';
+import { FinancialAccount } from './entities/financial-account.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class FinancialAccountsService {
-  constructor(
-    private readonly senderService: SenderFinancialAccountsService,
-    private readonly receiverService: ReceiverFinancialAccountsService,
+    constructor(
+    private readonly senderService: SenderFinancialAccountsService,       
+    private readonly receiverService: ReceiverFinancialAccountsService,  
+    private readonly paymentMethodService: PaymentMethodService,         
+    @InjectRepository(FinancialAccount)
+    private readonly financialAccountRepo: Repository<FinancialAccount>, 
   ) {}
 
   async create(createFinancialAccountDto: CreateFinancialAccountDto) {
@@ -25,6 +33,45 @@ export class FinancialAccountsService {
 
     return { sender: senderClean, receiver };
   }
+
+async createSingleFinancialAccount(
+  createPaymentMethodDto: CreatePaymentMethodDto,
+  accountData: { firstName?: string; lastName?: string },
+) {
+  try {
+    // 1️⃣ Crear PaymentMethod
+    const paymentMethod = await this.paymentMethodService.create({
+      platformId: createPaymentMethodDto.platformId,
+      method: createPaymentMethodDto.method,
+      bank: createPaymentMethodDto.bank,
+      pix: createPaymentMethodDto.pix,
+      type: createPaymentMethodDto.type,
+      receiverCrypto: createPaymentMethodDto.receiverCrypto,
+      virtualBank: createPaymentMethodDto.virtualBank,
+});
+
+    // 2️⃣ Crear FinancialAccount
+    const financialAccount = this.financialAccountRepo.create({
+      firstName: accountData.firstName,
+      lastName: accountData.lastName,
+      paymentMethod: paymentMethod,
+    });
+
+    const savedFinancialAccount = await this.financialAccountRepo.save(financialAccount);
+
+    const response = {
+  ...savedFinancialAccount,
+  paymentMethod: {
+    ...savedFinancialAccount.paymentMethod,
+    type: savedFinancialAccount.paymentMethod.type ?? undefined,
+  },
+};
+
+return response;
+  } catch (err) {
+    throw new BadRequestException(`Error creando la cuenta financiera: ${err.message}`);
+  }
+}
 
   async findAllReceiver() {
     return await this.receiverService.findAll();
@@ -104,13 +151,20 @@ export class FinancialAccountsService {
     return await this.receiverService.update(id, dto);
   }
 
-  async deleteById(id: string): Promise<void> {
-    const senderDeleted = await this.senderService.delete(id);
-    if (senderDeleted) return;
+async deleteById(id: string): Promise<void> {
 
-    const receiverDeleted = await this.receiverService.delete(id);
-    if (receiverDeleted) return;
+  const senderDeleted = await this.senderService.delete(id);
+  if (senderDeleted) return;
 
-    throw new NotFoundException(`No se encontró ninguna cuenta con el ID: ${id}`);
+  const receiverDeleted = await this.receiverService.delete(id);
+  if (receiverDeleted) return;
+
+  const financialAccount = await this.financialAccountRepo.findOneBy({ id });
+  if (!financialAccount) {
+    throw new NotFoundException(`No se encontró ninguna cuenta financiera con el ID: ${id}`);
   }
+
+  await this.financialAccountRepo.delete({ id });
+}
+
 }

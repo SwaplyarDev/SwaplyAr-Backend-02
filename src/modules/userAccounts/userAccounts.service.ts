@@ -3,292 +3,131 @@ import { Injectable, BadRequestException, Logger, NotFoundException } from '@nes
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserAccount } from './entities/user-account.entity';
-import { UserBank } from './entities/user-bank.entity';
-import { UserVirtualBank } from './entities/user-virtual-bank.entity';
-import { UserReceiverCrypto } from './entities/user-receiver-crypto.entity';
-import { UserPix } from './entities/user-pix.entity';
-
-import { UserAccValuesDto } from './dto/create-bank-account.dto';
-import { Platform } from 'src/enum/platform.enum';
+import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
+import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
+import { CreateUserAccountResponseDto } from './dto/user-account-response.dto';
 
 @Injectable()
 export class AccountsService {
   private readonly logger = new Logger(AccountsService.name);
 
   constructor(
-    @InjectRepository(UserAccount)
-    private readonly userAccountRepo: Repository<UserAccount>,
-    @InjectRepository(UserBank)
-    private readonly bankAccountRepo: Repository<UserBank>,
-    @InjectRepository(UserVirtualBank)
-    private readonly virtualBankRepo: Repository<UserVirtualBank>,
-    @InjectRepository(UserReceiverCrypto)
-    private readonly receiverCryptoRepo: Repository<UserReceiverCrypto>,
-    @InjectRepository(UserPix)
-    private readonly pixRepo: Repository<UserPix>,
-  ) {}
+  @InjectRepository(UserAccount)
+  private readonly userAccountRepo: Repository<UserAccount>,
+  private readonly financialAccountsService: FinancialAccountsService, // servicio que crea FinancialAccount + PaymentMethod
+) {}
 
-  async createUserBan(userAccValues: UserAccValuesDto, userId: string) {
-    try {
-      const accountType = userAccValues.accountType;
-
-      const userAccount = this.userAccountRepo.create({
-        accountType: accountType,
-        accountName: userAccValues.accountName,
-        userId,
-        status: true,
-        firstName: userAccValues.firstName,
-        lastName: userAccValues.lastName,
-      });
-
-      const savedUserAccount = await this.userAccountRepo.save(userAccount);
-
-      if (!savedUserAccount) {
-        throw new BadRequestException('Error al crear la cuenta');
-      }
-      // busca un tipo de cuenta para poder registrarla en una tabla
-      // ejemplo: si es igual a virtual_bank la busca en la tabla y crea una nueva
-      let specificAccount;
-
-      // crea una cuenta de banco
-      if (accountType === Platform.Bank) {
-        const newBank = this.bankAccountRepo.create({
-          currency: userAccValues.currency,
-          bankName: userAccValues.bankName,
-          send_method_key: userAccValues.send_method_key,
-          send_method_value: userAccValues.send_method_value,
-          document_type: userAccValues.document_type,
-          document_value: userAccValues.document_value,
-          userAccount: savedUserAccount,
-        });
-
-        const savedBank = await this.bankAccountRepo.save(newBank);
-
-        specificAccount = await this.bankAccountRepo.findOne({
-          where: { bankId: savedBank.bankId },
-          relations: ['userAccount'],
-        });
-
-        //crea una cuenta virtual
-      } else if (accountType === Platform.Virtual_Bank) {
-        const newVirtual = this.virtualBankRepo.create({
-          accountType: userAccValues.accountType,
-          currency: userAccValues.currency,
-          accountId: savedUserAccount.accountId,
-          type: userAccValues.type,
-          email: userAccValues.email,
-          firstName: userAccValues.firstName,
-          lastName: userAccValues.lastName,
-          userAccount: savedUserAccount,
-        });
-
-        const savedVirtual = await this.virtualBankRepo.save(newVirtual);
-
-        specificAccount = await this.virtualBankRepo.findOne({
-          where: { virtual_bank_id: savedVirtual.virtual_bank_id },
-          relations: ['userAccount'],
-        });
-
-        // crea una cuenta de crypto
-      } else if (accountType === Platform.Receiver_Crypto) {
-        specificAccount = this.receiverCryptoRepo.create({
-          currency: userAccValues.currency,
-          network: userAccValues.network,
-          wallet: userAccValues.wallet,
-          userAccount: savedUserAccount,
-        });
-        await this.receiverCryptoRepo.save(specificAccount);
-
-        // crea una cuenta de pix
-      } else if (accountType === Platform.Pix) {
-        const newPix = this.pixRepo.create({
-          userAccount: savedUserAccount,
-          cpf: userAccValues.cpf,
-          pix_value: userAccValues.pix_value,
-          pix_key: userAccValues.pix_key,
-        });
-
-        const savedPix = await this.pixRepo.save(newPix);
-
-        specificAccount = await this.pixRepo.findOne({
-          where: { pix_id: savedPix.pix_id },
-          relations: ['userAccount'],
-        });
-      }
-
-      if ([Platform.Bank, Platform.Virtual_Bank, Platform.Pix].includes(accountType)) {
-        specificAccount.userAccount = {
-          accountId: specificAccount.userAccount.accountId,
-          accountName: specificAccount.userAccount.accountName,
-          accountType: specificAccount.userAccount.accountType,
-          createdAt: specificAccount.userAccount.createdAt,
-          updatedAt: specificAccount.userAccount.updatedAt,
-          userId: specificAccount.userAccount.userId,
-          status: specificAccount.userAccount.status,
-          firstName: savedUserAccount.firstName,
-          lastName: savedUserAccount.lastName,
-        };
-      }
-
-      return {
-        details: specificAccount,
-      };
-    } catch (err) {
-      this.logger.error('Error creating bank:', err);
-      throw new BadRequestException('Error creating bank account');
-    }
-  }
-
-  async deleteBankAccount(user: any, bankAccountId: string) {
-    // Busca la cuenta principal del usuario
-    const userAccount = await this.userAccountRepo.findOne({
-      where: { accountId: bankAccountId, userId: user.id },
+async createUserAccountWithFinancial(
+  userId: string,
+  createPaymentMethodDto: CreatePaymentMethodDto,
+  accountData: { accountName?: string; firstName?: string; lastName?: string },
+) {
+  try {
+    const userAccount = this.userAccountRepo.create({
+      accountName: accountData.accountName,
+      userId,
+      status: true,
     });
 
-    if (!userAccount) {
-      throw new BadRequestException('Cuenta no encontrada o no pertenece al usuario');
-    }
+    const savedUserAccount = await this.userAccountRepo.save(userAccount);
 
-    // Elimina solo en la tabla específica según el tipo de cuenta
-    switch (userAccount.accountType) {
-      case Platform.Bank:
-        await this.bankAccountRepo.delete({ accountId: bankAccountId });
-        break;
-      case Platform.Pix:
-        await this.pixRepo.delete({ accountId: bankAccountId });
-        break;
-      case Platform.Virtual_Bank:
-        await this.virtualBankRepo.delete({ accountId: bankAccountId });
-        break;
-      case Platform.Receiver_Crypto:
-        await this.receiverCryptoRepo.delete({
-          accountId: bankAccountId,
-        });
-        break;
-      default:
-        throw new BadRequestException('Tipo de cuenta no soportado');
-    }
-
-    // Elimina la cuenta principal
-    await this.userAccountRepo.delete({ accountId: bankAccountId });
-
-    return { message: 'Cuenta eliminada correctamente' };
-  }
-
-  async findAllBanks(user: string) {
-    // Buscar todas las cuentas del usuario
-    const accounts = await this.userAccountRepo.find({
-      where: { userId: user },
-    });
-
-    if (!accounts || accounts.length === 0) {
-      throw new NotFoundException('No se encontraron cuentas registradas');
-    }
-
-    const enrichedAccounts = await Promise.all(
-      accounts.map(async (account) => {
-        const typeId = account.accountType;
-        const { accountId } = account;
-
-        let details: any[] = [];
-
-        switch (typeId) {
-          case Platform.Bank:
-            details = await this.bankAccountRepo.find({
-              where: { userAccount: { accountId } },
-              relations: ['userAccount'],
-            });
-            break;
-
-          case Platform.Pix:
-            details = await this.pixRepo.find({
-              where: { userAccount: { accountId } },
-              relations: ['userAccount'],
-            });
-            break;
-
-          case Platform.Virtual_Bank:
-            details = await this.virtualBankRepo.find({
-              where: { userAccount: { accountId } },
-              relations: ['userAccount'],
-            });
-            break;
-
-          case Platform.Receiver_Crypto:
-            details = await this.receiverCryptoRepo.find({
-              where: { userAccount: { accountId } },
-              relations: ['userAccount'],
-            });
-            break;
-
-          default:
-            details = [{ message: 'Tipo no soportado' }];
-        }
-
-        // Mapear los detalles de forma segura, evitando undefined
-        const mappedDetails = details.map((d) => ({
-          detailId: d.account_id ?? d.bankId ?? d.receiver_crypto ?? d.virtual_bank_id,
-          currency: d.currency,
-          type: d.type,
-          accountName: d.accountName,
-          bankName: d.bankName,
-          email: d.email ?? d.email_account,
-          network: d.network,
-          wallet: d.wallet,
-          pix_key: d.pix_key,
-          pix_value: d.pix_value,
-          cpf: d.cpf,
-          send_method_key: d.send_method_key,
-          send_method_value: d.send_method_value,
-          document_type: d.document_type,
-          document_value: d.document_value,
-
-          userAccount: {
-            accountId: d.userAccount.accountId,
-            accountName: d.userAccount.accountName,
-            accountType: d.userAccount.accountType,
-            createdAt: d.userAccount.createdAt,
-            updatedAt: d.userAccount.updatedAt,
-            userId: d.userAccount.userId,
-            status: d.userAccount.status,
-            firstName: d.userAccount.firstName,
-            lastName: d.userAccount.lastName,
-          },
-        }));
-
-        return {
-          accountName: account.accountName,
-          payment_type: typeId,
-          details: mappedDetails,
-        };
-      }),
+    const financialAccount = await this.financialAccountsService.createSingleFinancialAccount(
+      createPaymentMethodDto,
+      { firstName: accountData.firstName, lastName: accountData.lastName },
     );
 
-    return enrichedAccounts;
+    savedUserAccount.financialAccount = financialAccount;
+    await this.userAccountRepo.save(savedUserAccount);
+
+    return savedUserAccount;
+  } catch (err) {
+    throw new BadRequestException(`Error creando UserAccount: ${err.message}`);
+  }
+}
+
+  async deleteUserAccount(user: any, accountId: string) {
+  const userAccount = await this.userAccountRepo.findOne({
+  where: {
+    accountId: accountId,
+    userId: user.id,
+  },
+  relations: ['financialAccount'], // para traer la FinancialAccount asociada
+});
+
+  if (!userAccount) {
+    throw new BadRequestException('Cuenta no encontrada o no pertenece al usuario');
   }
 
-  // filtrar cuenta de banco especifica mediante id del usuario e id del banco
-  async findOneUserBank(userId: string, bankAccountId?: string) {
-    // Traemos todas las cuentas del usuario
-    const allBanks = await this.findAllBanks(userId);
+  // Eliminar FinancialAccount asociada
+  if (userAccount.financialAccount) {
+    await this.financialAccountsService.deleteById(userAccount.financialAccount.id);
+  } 
 
-    if (!bankAccountId) {
-      return allBanks;
-    }
+  // Eliminar UserAccount
+  await this.userAccountRepo.delete({ accountId });
 
-    //  Si pasamos bankAccountId, filtramos
-    const found = allBanks.find((bank) => bank.details.some((d) => d.detailId === bankAccountId));
+  return { message: 'Cuenta eliminada correctamente' };
+}
 
-    if (!found) {
-      throw new NotFoundException('Cuenta no encontrada para este usuario');
-    }
+async findAllAccount(userId: string):Promise<CreateUserAccountResponseDto[]> {
+  // 1️⃣ Buscar todas las cuentas del usuario con su FinancialAccount y PaymentMethod
+  const accounts = await this.userAccountRepo.find({
+    where: {  userId, },
+    relations: ['financialAccount', 'financialAccount.paymentMethod'],
+  });
 
-    //  Filtramos los detalles para devolver solo el que coincide
-    const filteredDetails = found.details.filter((d) => d.detailId === bankAccountId);
+  if (!accounts || accounts.length === 0) {
+    throw new NotFoundException('No se encontraron cuentas registradas');
+  }
+
+  // 2️⃣ Mapear los datos
+  const enrichedAccounts = accounts.map((account) => {
+    const financial = account.financialAccount;
 
     return {
-      ...found,
-      details: filteredDetails,
+      accountName: account.accountName,
+      financialAccount: financial
+        ? {
+            id: financial.id,
+            firstName: financial.firstName,
+            lastName: financial.lastName,
+            paymentMethod: financial.paymentMethod
+              ? {
+                  platformId: financial.paymentMethod.platformId,
+                  method: financial.paymentMethod.method,
+                  ...(financial.paymentMethod.type !== null && { type: financial.paymentMethod.type }),
+                }
+              : undefined,
+          }
+        : undefined,
+      userAccount: {
+        accountId: account.accountId,
+        accountName: account.accountName,
+        createdAt: account.createdAt,
+        updatedAt: account.updatedAt,
+        status: account.status,
+        userId: account.userId,
+      },
     };
-  }
+  });
+
+  return enrichedAccounts as CreateUserAccountResponseDto[];
+}
+
+async findAllUserAccounts(userId: string): Promise<CreateUserAccountResponseDto[]> {
+  const allBanks = await this.findAllAccount(userId);
+  return allBanks;
+}
+
+async findOneUserAccount(
+  userId: string,
+  accountId: string
+): Promise<CreateUserAccountResponseDto> {
+  const allBanks = await this.findAllAccount(userId);
+
+  const found = allBanks.find(acc => acc.userAccount.accountId === accountId);
+  if (!found) throw new NotFoundException('Cuenta no encontrada para este usuario');
+
+  return found;
+}
 }

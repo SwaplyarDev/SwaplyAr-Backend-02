@@ -3,15 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountsController } from './userAccounts.controller';
 import { AccountsService } from './userAccounts.service';
 import { UserAccount } from './entities/user-account.entity';
-import { UserBank } from './entities/user-bank.entity';
-import { UserReceiverCrypto } from './entities/user-receiver-crypto.entity';
-import { UserVirtualBank } from './entities/user-virtual-bank.entity';
-
-import { UserPix } from './entities/user-pix.entity';
+import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserAccount, UserBank, UserVirtualBank, UserReceiverCrypto, UserPix]),
+    TypeOrmModule.forFeature([UserAccount]),
+    FinancialAccountsModule, 
   ],
   controllers: [AccountsController],
   providers: [AccountsService],

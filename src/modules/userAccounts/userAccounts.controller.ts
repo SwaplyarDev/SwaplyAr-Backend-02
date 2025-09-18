@@ -177,7 +177,7 @@ async create(
     examples: {
       ejemplo1: {
         summary: 'Ejemplo de request',
-        value: { bankAccountId: 'uuid-de-la-cuenta' },
+        value: { AccountId: 'uuid-de-la-cuenta' },
       },
     },
   })

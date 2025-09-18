@@ -46,8 +46,6 @@ async createUserAccountWithFinancial(
 }
 
   async deleteUserAccount(user: any, accountId: string) {
-  console.log('🔹 Intentando eliminar cuenta - userId:', user.id, 'accountId:', accountId);
-
   const userAccount = await this.userAccountRepo.findOne({
   where: {
     accountId: accountId,
@@ -57,25 +55,17 @@ async createUserAccountWithFinancial(
 });
 
   if (!userAccount) {
-    console.log('❌ No se encontró la cuenta para este usuario.');
     throw new BadRequestException('Cuenta no encontrada o no pertenece al usuario');
   }
 
-  console.log('✅ UserAccount encontrado:', userAccount);
-
   // Eliminar FinancialAccount asociada
   if (userAccount.financialAccount) {
-    console.log('🔹 Eliminando FinancialAccount asociada:', userAccount.financialAccount.id);
     await this.financialAccountsService.deleteById(userAccount.financialAccount.id);
-  } else {
-    console.log('⚠️ No hay FinancialAccount asociada.');
-  }
+  } 
 
   // Eliminar UserAccount
-  console.log('🔹 Eliminando UserAccount:', accountId);
   await this.userAccountRepo.delete({ accountId });
 
-  console.log('✅ Cuenta eliminada correctamente');
   return { message: 'Cuenta eliminada correctamente' };
 }
 

@@ -152,7 +152,6 @@ return response;
   }
 
 async deleteById(id: string): Promise<void> {
-  console.log('Eliminar FinancialAccount - id:', id);
 
   const senderDeleted = await this.senderService.delete(id);
   if (senderDeleted) return;
@@ -166,7 +165,6 @@ async deleteById(id: string): Promise<void> {
   }
 
   await this.financialAccountRepo.delete({ id });
-  console.log('FinancialAccount eliminada:', id);
 }
 
 }

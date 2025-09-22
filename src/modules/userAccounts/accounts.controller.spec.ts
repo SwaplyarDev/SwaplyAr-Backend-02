@@ -3,8 +3,8 @@ import { AccountsController } from './userAccounts.controller';
 import { AccountsService } from './userAccounts.service';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
-import { CreateBankAccountDto } from './dto/create-bank-account.dto';
-import { DeleteBankAccountDto } from './dto/delete-bank-account.dto';
+import { CreateUserAccountDto } from './dto/create-user-account.dto';
+import { DeleteBankAccountDto } from './dto/delete-user-account.dto';
 import { BadRequestException } from '@nestjs/common';
 import { Platform } from 'src/enum/platform.enum';
 
@@ -22,7 +22,7 @@ describe('AccountsController', () => {
 
   const mockRequest = { user: { id: 'user-uuid-123' } };
 
-  const createBankAccountDto: CreateBankAccountDto = {
+  const createBankAccountDto: CreateUserAccountDto = {
     userAccValues: {
       firstName: 'Juan',
       lastName: 'Pérez',
@@ -32,7 +32,7 @@ describe('AccountsController', () => {
     },
   };
 
-  const deleteDto: DeleteBankAccountDto = { bankAccountId: 'bank-uuid-123' };
+  const deleteDto: DeleteBankAccountDto = { userAccountId: 'bank-uuid-123' };
 
   const expectCreateUserBankCalled = () => {
     expect(mockAccountsService.createUserBan).toHaveBeenCalledWith(

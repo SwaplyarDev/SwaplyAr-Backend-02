@@ -35,10 +35,10 @@ class UserAccountResponseDto {
   accountName: string;
 
   @IsString()
-  createdAt: Date; // ISO string, o Date si lo quieres transformar
+  createdAt: Date;
 
   @IsString()
-  updatedAt: Date; // ISO string, o Date si lo quieres transformar
+  updatedAt: Date; 
 
   @IsBoolean()
   status: boolean;

@@ -25,6 +25,7 @@ import {
 } from '@nestjs/swagger';
 import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
 import { CreateUserAccountResponseDto } from './dto/user-account-response.dto';
+import { CreateUserAccountDto } from './dto/create-user-account.dto';
 
 @ApiTags('Cuentas de Usuario')
 @ApiBearerAuth()
@@ -42,39 +43,37 @@ export class AccountsController {
   description: 'Cuenta financiera creada correctamente',
   schema: {
     example: {
-      message: 'Cuenta financiera creada correctamente',
-      bank: {
-        accountId: '78b4e3de-5398-4c18-ae8a-3dfce357b244',
-        accountName: 'Cuenta Principal',
-        createdAt: '2025-09-17T14:00:06.955Z',
-        updatedAt: '2025-09-17T14:00:07.017Z',
-        status: true,
-        user: {
-          id: '995ea470-6b62-4e51-ba03-714ad82b866e'
-        },
-        financialAccount: {
-          id: '893f12be-49af-49a7-b79b-28a86d0a3a02',
-          firstName: 'Juan',
-          lastName: 'Pérez',
-          paymentMethod: {
-            id: '813caab6-c193-48d4-93c9-dc63ead4c284',
-            platformId: 'bank', // o 'pix', 'receiver-crypto', 'virtual-bank'
-            method: 'bank',     // o 'pix', 'receiver-crypto', 'virtual-bank'
-            type: null,         // solo para virtual-bank si aplica
-            currency: 'ARS',    // solo para bank, pix o crypto según corresponda
-            network: null,      // solo para crypto
-            wallet: null,       // solo para crypto
-            emailAccount: null, // solo para virtual-bank
-            transferCode: null  // solo para virtual-bank
-          }
-        }
+  "message": "Cuenta financiera creada correctamente",
+  "bank": {
+    "accountId": "29e11aa2-4f5f-45c4-aac9-52da305c5313",
+    "accountName": "Cuenta Principal",
+    "createdAt": "2025-09-19T14:06:28.075Z",
+    "updatedAt": "2025-09-19T14:06:28.113Z",
+    "status": true,
+    "userId": "e98d5deb-02f5-4466-8aaa-0ae638836422",
+    "financialAccount": {
+      "id": "a8fcf65d-1cfc-4100-b5be-ce5c014520bf",
+      "firstName": "Juan",
+      "lastName": "Pérez",
+      "paymentMethod": {
+        "id": "af2927b8-c901-4bc9-93fe-5f1cf58a516e",
+        "platformId": "bank",
+        "method": "bank",
+        "currency": "ARS",
+        "bankName": "Banco Nación",
+        "sendMethodKey": "CBU",
+        "sendMethodValue": "1234567890123456789012",
+        "documentType": "DNI",
+        "documentValue": "87654321"
       }
     }
+  }
+}
   }
 })
 @ApiBody({
   description: 'Datos para crear la cuenta financiera',
-  type: CreatePaymentMethodDto,
+  type: CreateUserAccountDto,
   examples: {
     bankExample: {
       summary: 'Cuenta bancaria',
@@ -120,7 +119,7 @@ export class AccountsController {
           emailAccount: 'nahuel@gmail.com',
           transferCode: 'XYZ123'
         },
-        type: 'PayPal',
+        type: 'paypal',
         firstName: 'Juan',
         lastName: 'Pérez',
         accountName: 'Cuenta Virtual Principal'
@@ -143,13 +142,25 @@ export class AccountsController {
     }
   }
 })
+@ApiResponse({
+  status: 400,
+  description: 'Solicitud inválida. Asegúrate de que los datos de entrada sean correctos y válidos.',
+})
+@ApiResponse({
+  status: 401,
+  description: 'No autorizado. Se requiere un token de autenticación válido.',
+})
+@ApiResponse({
+  status: 403,
+  description: 'Prohibido. El usuario no tiene los permisos necesarios para crear una cuenta financiera.',
+})
 @UseGuards(RolesGuard)
 @Roles('user')
 @Post()
 @HttpCode(HttpStatus.CREATED)
 async create(
   @Request() req,
-  @Body() body: CreatePaymentMethodDto & { firstName?: string; lastName?: string; accountName: string },
+ @Body() body: CreateUserAccountDto,
 ) {
   const userId = req.user.id;
 
@@ -177,7 +188,7 @@ async create(
     examples: {
       ejemplo1: {
         summary: 'Ejemplo de request',
-        value: { AccountId: 'uuid-de-la-cuenta' },
+        value: { userAccountId: 'uuid-de-la-cuenta' },
       },
     },
   })
@@ -191,7 +202,7 @@ async create(
   @Roles('user', 'admin')
   @Delete()
   async delete(@Request() req, @Body() dto: DeleteBankAccountDto) {
-    return this.accountsService.deleteUserAccount(req.user, dto.AccountId);
+    return this.accountsService.deleteUserAccount(req.user, dto.userAccountId);
   }
 
   // GET todas las cuentas de banco de un user

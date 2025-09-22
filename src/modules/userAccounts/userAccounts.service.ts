@@ -92,14 +92,16 @@ async findAllAccount(userId: string):Promise<CreateUserAccountResponseDto[]> {
             firstName: financial.firstName,
             lastName: financial.lastName,
             paymentMethod: financial.paymentMethod
-              ? {
-                  platformId: financial.paymentMethod.platformId,
-                  method: financial.paymentMethod.method,
-                  ...(financial.paymentMethod.type !== null && { type: financial.paymentMethod.type }),
-                }
-              : undefined,
-          }
-        : undefined,
+          ? (() => {
+              const { type, ...rest } = financial.paymentMethod; // quitamos type
+              return {
+                ...rest,
+                ...(type ? { type } : {}), // solo agregamos si tiene valor
+              };
+            })()
+          : undefined,
+      }
+    : undefined,
       userAccount: {
         accountId: account.accountId,
         accountName: account.accountName,

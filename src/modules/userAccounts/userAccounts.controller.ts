@@ -135,8 +135,6 @@ export class AccountsController {
           network: 'Bitcoin',
           wallet: '1A2b3C4d5E6f7G8h9I0J'
         },
-        firstName: 'Juan',
-        lastName: 'Pérez',
         accountName: 'Cuenta Crypto Principal'
       }
     }

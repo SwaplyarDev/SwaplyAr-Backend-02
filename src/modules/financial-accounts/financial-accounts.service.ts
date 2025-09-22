@@ -52,10 +52,16 @@ async createSingleFinancialAccount(
 
     // 2️⃣ Crear FinancialAccount
     const financialAccount = this.financialAccountRepo.create({
-      firstName: accountData.firstName,
-      lastName: accountData.lastName,
-      paymentMethod: paymentMethod,
-    });
+  firstName:
+    paymentMethod.method === 'receiver-crypto'
+      ? ''
+      : accountData.firstName ?? (() => { throw new BadRequestException('firstName es obligatorio'); })(),
+  lastName:
+    paymentMethod.method === 'receiver-crypto'
+      ? ''
+      : accountData.lastName ?? (() => { throw new BadRequestException('lastName es obligatorio'); })(),
+  paymentMethod,
+});
 
     const savedFinancialAccount = await this.financialAccountRepo.save(financialAccount);
 

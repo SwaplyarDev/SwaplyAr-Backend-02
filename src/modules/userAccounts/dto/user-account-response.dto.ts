@@ -8,19 +8,22 @@ class PaymentMethodResponseDto {
   @IsString()
   method: string;
 
+  @IsOptional()
   @IsString()
-  type: string;
+  type?: string;
 }
 
 class FinancialAccountResponseDto {
   @IsUUID()
   id: string;
 
+  @IsOptional() // <-- opcional solo para crypto
   @IsString()
-  firstName: string;
+  firstName?: string;
 
+  @IsOptional() // <-- opcional solo para crypto
   @IsString()
-  lastName: string;
+  lastName?: string;
 
   @ValidateNested()
   @Type(() => PaymentMethodResponseDto)
@@ -35,10 +38,10 @@ class UserAccountResponseDto {
   accountName: string;
 
   @IsString()
-  createdAt: Date; // ISO string, o Date si lo quieres transformar
+  createdAt: Date;
 
   @IsString()
-  updatedAt: Date; // ISO string, o Date si lo quieres transformar
+  updatedAt: Date; 
 
   @IsBoolean()
   status: boolean;

@@ -8,11 +8,9 @@ export class CreateUserAccountDto extends CreatePaymentMethodDto {
 
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
   firstName?: string;
 
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
   lastName?: string;
 }

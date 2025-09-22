@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmpty, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmpty, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateVirtualBankDto {
   @ApiProperty({ description: 'Moneda', example: 'ARS' })
@@ -17,6 +17,6 @@ export class CreateVirtualBankDto {
 
   @ApiProperty({ description: 'Codigo de transferencia', example: '123' })
   @IsString()
-  @IsNotEmpty()
-  transferCode: string;
+  @IsOptional() // ahora es opcional
+  transferCode?: string;
 }

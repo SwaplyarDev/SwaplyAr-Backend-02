@@ -13,11 +13,7 @@ export class AmountsService {
   ) {}
   async create(createAmountDto: CreateAmountDto) {
     const newAmount = this.amountsRepository.create({
-      /*...createAmountDto,*/
-      amountSent: createAmountDto.amountSent,
-      currencySent: createAmountDto.currencySent,
-      amountReceived: createAmountDto.amountReceived ?? createAmountDto.amountSent,
-      currencyReceived: createAmountDto.currencyReceived || 'BRL',
+      ...createAmountDto,
       received: false,
     });
     //una vez completada la transacción, se cambia el estado a true de received

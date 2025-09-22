@@ -94,53 +94,6 @@ export class DiscountService {
   }
 
   /**
-   * Crea un nuevo descuento de usuario basado en un código existente
-   * Devuelve el descuento creado junto a los detalles relevantes.
-   */
-  /*async createUserDiscount(dto: CreateUserDiscountDto): Promise<UserDiscount> {
-    const user = await this.findUserByIdOrThrow(dto.userId);
-
-    let discountCode: DiscountCode | null = null;
-    if (dto.codeId) {
-      discountCode = await this.findDiscountCodeByIdOrThrow(dto.codeId);
-    } else if (dto.code) {
-      discountCode = await this.discountCodeRepo.findOne({
-        where: { code: dto.code },
-      });
-      if (!discountCode) {
-        throw new NotFoundException(`Código de descuento '${dto.code}' no encontrado`);
-      }
-    } else {
-      throw new BadRequestException('Debe proporcionar codeId o code');
-    }
-
-    const transaction = dto.transactionId
-      ? await this.findTransactionByIdOrThrow(dto.transactionId)
-      : null;
-
-    const existing = await this.userDiscountRepo.findOne({
-      where: { user: { id: user.id }, discountCode: { id: discountCode.id } },
-    });
-    if (existing) {
-      throw new BadRequestException(
-        `El usuario ya tiene asignado el código de descuento '${discountCode.code}'`,
-      );
-    }
-
-    const userDiscount = this.createUserDiscountEntity(user, discountCode, transaction);
-    await this.userDiscountRepo.save(userDiscount);
-
-    const result = await this.userDiscountRepo.findOne({
-      where: { id: userDiscount.id },
-      relations: ['user', 'discountCode', 'transactions'],
-    });
-
-    if (!result) throw new NotFoundException('Descuento de usuario no encontrado tras la creación');
-
-    return result;
-  }*/
-
-  /**
    * Obtiene todos los códigos de descuento globales, incluyendo detalles.
    */
   async getAllDiscountCodes(): Promise<DiscountCode[]> {
@@ -267,7 +220,6 @@ export class DiscountService {
     return updatedUd;
   }
 
-  // AGREGADO PARA LA TAREA
   async getUserDiscountHistory (userId: string): Promise<UserDiscountHistoryDto[]> {
 
     const userDiscounts = await this.userDiscountRepo.find ({

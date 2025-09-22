@@ -226,16 +226,6 @@ export class TransactionsService {
 
         );
 
-        const newAmountReceived =
-        amount.amountSent - userDiscount.discountCode.value;
-        amount.amountReceived = newAmountReceived;
-
-        this.amountService.update (amount.id, {
-
-          amountReceived: newAmountReceived,
-
-        });
-
         userDiscount.isUsed = true;
         userDiscount.usedAt = new Date();
         await this.userDiscountRepository.save (userDiscount);

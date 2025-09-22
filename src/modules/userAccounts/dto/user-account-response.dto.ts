@@ -8,19 +8,22 @@ class PaymentMethodResponseDto {
   @IsString()
   method: string;
 
+  @IsOptional()
   @IsString()
-  type: string;
+  type?: string;
 }
 
 class FinancialAccountResponseDto {
   @IsUUID()
   id: string;
 
+  @IsOptional() // <-- opcional solo para crypto
   @IsString()
-  firstName: string;
+  firstName?: string;
 
+  @IsOptional() // <-- opcional solo para crypto
   @IsString()
-  lastName: string;
+  lastName?: string;
 
   @ValidateNested()
   @Type(() => PaymentMethodResponseDto)

@@ -19,7 +19,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { AddVoucherDto } from './dto/add-voucher.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { JwtAuthGuard } from '../../common/jwt-auth.guard';
-import { User } from '../../common/user.decorator';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
 import { AdminStatus } from '../../enum/admin-status.enum';
@@ -37,13 +36,11 @@ import {
 import { User as UserEntity } from '@users/entities/user.entity';
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { MailerService } from '../mailer/mailer.service';
-import { Transaction } from 'typeorm';
 import {
   TransactionAdminResponseDto,
   TransactionByIdAdminResponseDto,
 } from './dto/get-transaction-response.dto';
-import { RolesGuard } from '@common/guards/roles.guard';
-import { Roles } from '@common/decorators/roles.decorator';
+
 
 @ApiTags('Admin')
 @ApiBearerAuth()

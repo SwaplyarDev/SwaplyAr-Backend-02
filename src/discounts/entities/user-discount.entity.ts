@@ -7,6 +7,7 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  ManyToMany,
 } from 'typeorm';
 import { User } from '@users/entities/user.entity';
 import { DiscountCode } from './discount-code.entity';
@@ -27,7 +28,7 @@ export class UserDiscount {
   @JoinColumn({ name: 'discount_code_id' })
   discountCode: DiscountCode;
 
-  @OneToMany(() => Transaction, (transaction) => transaction.userDiscount)
+  @ManyToMany(() => Transaction, (transaction) => transaction.userDiscounts)
   transactions: Transaction[];
 
   @Column({ name: 'is_used', default: false })

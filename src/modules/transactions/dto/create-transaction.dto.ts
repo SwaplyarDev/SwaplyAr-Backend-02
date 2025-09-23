@@ -45,19 +45,6 @@ export class CreateTransactionDto {
 
   @ApiProperty ({
 
-    name: 'userDiscountId',
-    description: 'Identificador del descuento aplicado a la transacción',
-    example: '550e8400-e29b-41d4-a716-446655440000',
-    required: false,
-
-  })
-
-  @IsOptional ()
-  @IsUUID ('4', { message: 'userDiscountId debe ser un UUID válido' })
-  userDiscountId?: string;
-
-  @ApiProperty ({
-
     name: 'userDiscountIds',
     description: 'Array de identificadores de descuentos aplicables a la transacción (opcional)',
     example: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001'],

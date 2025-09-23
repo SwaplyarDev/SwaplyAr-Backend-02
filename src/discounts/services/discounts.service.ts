@@ -208,7 +208,7 @@ export class DiscountService {
     ud.isUsed = true;
     ud.usedAt = new Date();
     // Asociar el descuento a la transacción (lado ManyToOne está en Transaction)
-    transaction.userDiscount = ud;
+    transaction.userDiscounts = [...(transaction.userDiscounts ?? []), ud];
     await this.transactionRepo.save(transaction);
     await this.userDiscountRepo.save(ud);
     const updatedUd = await this.userDiscountRepo.findOne({

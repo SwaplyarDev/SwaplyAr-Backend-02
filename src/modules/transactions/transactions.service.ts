@@ -182,7 +182,6 @@ export class TransactionsService {
     file: FileUploadDTO,
   ): Promise<TransactionResponseDto> {
 
-    /*console.log('userDiscountIds recibidos:', createTransactionDto.userDiscountIds);*/
     if (!file) {
       throw new BadRequestException('El comprobante de pago (archivo) es obligatorio.');
     }
@@ -202,7 +201,6 @@ export class TransactionsService {
         BadRequestException,
       );
       
-      let userDiscount: UserDiscount | null = null;
       let userDiscounts: UserDiscount [] = [];
 
       if (createTransactionDto.userDiscountIds && createTransactionDto.userDiscountIds.length > 0) {
@@ -230,11 +228,6 @@ export class TransactionsService {
         }
       }
 
-     
-      if (userDiscounts.length === 1) {
-        userDiscount = userDiscounts[0];
-      }
-
       const proofOfPayment = await this.safeExecute(
         () => this.proofOfPaymentService.create(file),
         'Error al subir comprobante de pago',
@@ -252,7 +245,6 @@ export class TransactionsService {
         // desnormalización para listados rápidos
         amountValue: String(amount.amountSent),
         amountCurrency: amount.currencySent,
-        userDiscount,
         userDiscounts,
       });
 
@@ -281,8 +273,6 @@ export class TransactionsService {
               'receiverAccount.paymentMethod',
               'amount',
               'proofsOfPayment', // <- actualizado
-              'userDiscount',
-              'userDiscount.discountCode',
               'userDiscounts',
               'userDiscounts.discountCode',
             ],
@@ -295,6 +285,11 @@ export class TransactionsService {
         throw new NotFoundException('La transacción no se encontró después de ser creada.');
       }
 
+      console.log('fullTransaction.userDiscounts:', fullTransaction.userDiscounts);
+
+
+      const userDiscountIds = fullTransaction.userDiscounts?.map(ud => ud.id) ?? [];
+
       if (fullTransaction.senderAccount?.createdBy) {
         fullTransaction.senderAccount.createdBy = String(
           fullTransaction.senderAccount.createdBy,
@@ -306,6 +301,7 @@ export class TransactionsService {
         await this.mailerService.sendReviewPaymentEmail(senderEmail, fullTransaction);
       }
 
+      console.log('userDiscountIds:', userDiscountIds);
       return plainToInstance(
       TransactionResponseDto,
       {
@@ -318,6 +314,7 @@ export class TransactionsService {
         excludeExtraneousValues: true,
       }),
     },
+    userDiscounts: fullTransaction.userDiscounts, 
       },
       { excludeExtraneousValues: true },
     );
@@ -455,7 +452,6 @@ export class TransactionsService {
       receiverAccount: { paymentMethod: true },
       amount: true,
       proofsOfPayment: true,
-      userDiscount: { discountCode: true },
       userDiscounts: { discountCode: true },
 
     },
@@ -477,30 +473,17 @@ export class TransactionsService {
 
 const discounts = transaction.userDiscounts ?? [];
 
-if (discounts.length === 1) {
-  dto.userDiscount = {
-    id: discounts[0].id,
-    code: discounts[0].discountCode?.code,
-    value: discounts[0].discountCode?.value,
-    usedAt: discounts[0].usedAt,
-  };
-  dto.userDiscounts = [];
-} else if (discounts.length > 1) {
-  dto.userDiscount = null;
   dto.userDiscounts = discounts.map((ud) => ({
     id: ud.id,
     code: ud.discountCode?.code,
     value: ud.discountCode?.value,
     usedAt: ud.usedAt,
   }));
-} else {
-  dto.userDiscount = null;
-  dto.userDiscounts = [];
-}
+
 
   return dto; 
-}
 
+ }
   async findOne(id: string, options?: FindOneOptions<Transaction>): Promise<Transaction> {
     const transaction = await this.transactionsRepository.findOne({ where: { id }, ...options });
     if (!transaction) throw new NotFoundException(`Transacción con ID ${id} no encontrada`);

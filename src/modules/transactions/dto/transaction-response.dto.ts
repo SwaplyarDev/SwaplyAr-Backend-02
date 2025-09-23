@@ -188,6 +188,7 @@ export class AmountResponseDto {
 }
 
 export class TransactionResponseDto {
+  @Expose()
   @ApiProperty({ name: 'id', example: 'Sq5k0DMwf4' })
   id: string;
 
@@ -284,7 +285,6 @@ export class TransactionGetByIdDto {
   @ApiProperty({ name: 'message', example: 'Transferencia de prueba' })
   message: string;
 
-
   @ApiProperty({ name: 'createdAt', example: '2025-08-11T14:51:28.841Z' })
   createdAt: string;
 
@@ -327,14 +327,6 @@ export class TransactionGetByIdDto {
 
   @ApiProperty({ example: false })
   isNoteVerified: boolean;
-
-  @ApiProperty ({
-    required: false,
-    description: 'Información completa del descuento aplicado',
-
-  })
-
- userDiscount?: UserDiscountGetDto | null;
 
   @ApiProperty({
     required: false,

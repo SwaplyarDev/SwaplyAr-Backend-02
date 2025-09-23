@@ -97,13 +97,6 @@ export class Transaction {
   @Column({ type: 'varchar', length: 3, name: 'amount_currency', nullable: true })
   amountCurrency?: string;
 
-  // UserDiscount pasa a ManyToOne (el mismo descuento puede aplicarse en varias transacciones)
-  @ManyToOne(() => UserDiscount, (userDiscount) => userDiscount.transactions, {
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'user_discount_id' })
-  userDiscount?: UserDiscount | null;
-
   @ManyToMany(() => UserDiscount)
   @JoinTable({
     name: 'transaction_user_discounts',

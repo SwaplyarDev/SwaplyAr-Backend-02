@@ -14,6 +14,8 @@ import {
   BeforeInsert,
   PrimaryColumn,
   Index,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 
 import { customAlphabet } from 'nanoid';
@@ -101,6 +103,14 @@ export class Transaction {
   })
   @JoinColumn({ name: 'user_discount_id' })
   userDiscount?: UserDiscount | null;
+
+  @ManyToMany(() => UserDiscount)
+  @JoinTable({
+    name: 'transaction_user_discounts',
+    joinColumn: { name: 'transaction_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'user_discount_id', referencedColumnName: 'id' },
+  })
+  userDiscounts?: UserDiscount[];
 
   @Column({ default: false })
   isNoteVerified: boolean;

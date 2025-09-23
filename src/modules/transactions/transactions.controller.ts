@@ -38,9 +38,12 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { Transaction } from './entities/transaction.entity';
 import {
 
+  ReceiverAccountDto,
+  SenderAccountDto,
   TransactionGetByIdDto,
   TransactionGetResponseDto,
   TransactionResponseDto,
+  UserDiscountGetDto,
 } from './dto/transaction-response.dto';
 import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -399,20 +402,10 @@ validateVirtualBankType(receiverPaymentMethod);
     @Request() req: RequestWithUser,
   ): Promise<TransactionGetByIdDto> {
     const userEmail = req.user.email;
-
+    
     try {
-      const transaction: Transaction = await this.transactionsService.getTransactionByEmail(
-        transactionId,
-        userEmail,
-      );
-
-      // Convierte Transaction → TransactionGetByIdDto y elimina los nulls automáticamente
-      const dto = plainToInstance(TransactionGetByIdDto, transaction, {
-        excludeExtraneousValues: true, // Solo expone los campos con @Expose
-      });
-
-      return dto;
-    } catch (error) {
+      return await this.transactionsService.getTransactionByEmail(transactionId, userEmail);
+    }catch (error) {
       if (error instanceof ForbiddenException) {
         throw new ForbiddenException(error.message || 'Acceso no autorizado');
       }
@@ -422,4 +415,4 @@ validateVirtualBankType(receiverPaymentMethod);
       throw new InternalServerErrorException('Error inesperado al obtener la transacción');
     }
   }
-}
+} 

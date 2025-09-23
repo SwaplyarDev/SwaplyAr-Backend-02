@@ -235,19 +235,19 @@ export class TransactionResponseDto {
   @ApiProperty({ name: 'amount', type: AmountResponseDto })
   amount: AmountResponseDto;
 
-  @Expose ()
-  @Transform (({ obj }) => obj.userDiscount ? { id: obj.userDiscount.id } : null)
-
-  @ApiProperty ({
-
-    name: 'userDiscount',
-    required: false,
-    description: 'ID del descuento aplicado',
-    example: { id: '2eb60341-af65-4708-a874-ebcd210045e6' },
-
+  @Expose()
+  @Transform(({ obj }) => 
+    obj.userDiscounts?.length 
+      ? obj.userDiscounts.map(ud => ud.id) 
+      : []
+  )
+  @ApiProperty({
+    name: 'userDiscounts',
+    description: 'IDs de los descuentos aplicados',
+    example: ['uuid-1', 'uuid-2'],
+    isArray: true,
   })
-  
-  userDiscount?: { id: string } | null;
+  userDiscounts?: string[];
 
 }
 
@@ -258,13 +258,11 @@ export class UserDiscountGetDto {
   id: string;
 
   @Expose()
-  @Transform(({ obj }) => obj.discountCode?.code)
-  @ApiProperty({ example: 'HENRY2025' })
+  @ApiProperty({ example: 'WELCOME-TT8U49' })
   code: string;
 
   @Expose()
-  @Transform(({ obj }) => obj.discountCode?.value)
-  @ApiProperty({ example: 50 })
+  @ApiProperty({ example: 5 })
   value: number;
 
   @Expose()
@@ -285,6 +283,7 @@ export class TransactionGetByIdDto {
   @Expose()
   @ApiProperty({ name: 'message', example: 'Transferencia de prueba' })
   message: string;
+
 
   @ApiProperty({ name: 'createdAt', example: '2025-08-11T14:51:28.841Z' })
   createdAt: string;
@@ -329,18 +328,19 @@ export class TransactionGetByIdDto {
   @ApiProperty({ example: false })
   isNoteVerified: boolean;
 
-  @Expose ()
-  @Type (() => UserDiscountGetDto)
-
   @ApiProperty ({
-
-    type: () => UserDiscountGetDto,
     required: false,
     description: 'Información completa del descuento aplicado',
 
   })
 
  userDiscount?: UserDiscountGetDto | null;
+
+  @ApiProperty({
+    required: false,
+    description: 'Lista completa de descuentos aplicados',
+  })
+  userDiscounts?: UserDiscountGetDto[];
 
 }
 

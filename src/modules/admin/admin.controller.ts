@@ -330,6 +330,36 @@ export class AdminController {
     }
   }
 
+  @ApiOperation({ summary: 'Obtener transacciones por createdBy (email) del remitente' })
+@ApiResponse({
+  status: 200,
+  description: 'Transacciones encontradas',
+  type: [TransactionByIdAdminResponseDto],
+})
+@ApiResponse({ status: 404, description: '❌ No se encontraron transacciones con ese email' })
+@Get('transactions/sender/:email')
+async getTransactionsByCreatedBy(
+  @Param('email') email: string,
+): Promise<{ data?: TransactionByIdAdminResponseDto[]; message?: string }> {
+  try {
+    if (!email) {
+      return { message: 'El email (createdBy) es requerido.' };
+    }
+
+    const transactions = await this.adminService.getTransactionsByCreatedBy(email);
+
+    return {
+      data: transactions.map((tx) => this.adminService.formatTransaction(tx)),
+    };
+  } catch (error) {
+    if (error instanceof NotFoundException) {
+      return { message: 'No se encontraron transacciones con ese email.' };
+    }
+    throw error;
+  }
+}
+
+
   @ApiOperation({ summary: 'Actualizar el estado de una transacción por tipo' })
   @ApiResponse({
     status: 200,

@@ -14,12 +14,14 @@ import {
   BeforeInsert,
   PrimaryColumn,
   Index,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 
 import { customAlphabet } from 'nanoid';
 import { Note } from '@transactions/notes/entities/note.entity';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';
-import { UserDiscount } from '@users/entities/user-discount.entity';
+import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { AdminStatus } from 'src/enum/admin-status.enum';
 
 export const nanoidCustom = customAlphabet(
@@ -95,12 +97,13 @@ export class Transaction {
   @Column({ type: 'varchar', length: 3, name: 'amount_currency', nullable: true })
   amountCurrency?: string;
 
-  // UserDiscount pasa a ManyToOne (el mismo descuento puede aplicarse en varias transacciones)
-  @ManyToOne(() => UserDiscount, (userDiscount) => userDiscount.transactions, {
-    onDelete: 'SET NULL',
+  @ManyToMany(() => UserDiscount)
+  @JoinTable({
+    name: 'transaction_user_discounts',
+    joinColumn: { name: 'transaction_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'user_discount_id', referencedColumnName: 'id' },
   })
-  @JoinColumn({ name: 'user_discount_id' })
-  userDiscount?: UserDiscount | null;
+  userDiscounts?: UserDiscount[];
 
   @Column({ default: false })
   isNoteVerified: boolean;

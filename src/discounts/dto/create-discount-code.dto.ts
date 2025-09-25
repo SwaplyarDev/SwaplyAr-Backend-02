@@ -54,6 +54,17 @@ export class CreateDiscountCodeDto {
   @IsNotEmpty ()
   @IsISO8601 ({}, { message: 'La fecha debe estar en formato ISO8601' })
   validFrom: string;
+
+  @ApiProperty ({
+
+    description: 'ID del usuario al que se le asignará el descuento (solo Admin/SuperAdmin)',
+    example: 'uuid-user-1234',
+
+  })
+
+  @IsNotEmpty ()
+  @IsString ()
+  userId: string; 
   
 }
 

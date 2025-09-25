@@ -23,7 +23,7 @@ import { UserVerificationModule } from '@users/verification/user-verification.mo
 import { QuestionsModule } from '../modules/questions/questions.module';
 
 import { ContactModule } from 'src/modules/contacts/contacts.module';
-import { DiscountModule } from '@discounts/discounts.module';
+import { DiscountModule } from 'src/discounts/discounts.module';
 import { QualificationModule } from 'src/modules/qualifications/qualifications.module';
 
 @Module({

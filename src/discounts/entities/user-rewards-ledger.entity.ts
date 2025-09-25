@@ -6,7 +6,7 @@ import {
   Column,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User } from '../../modules/users/entities/user.entity';
 
 @Entity('user_rewards_ledger')
 export class UserRewardsLedger {

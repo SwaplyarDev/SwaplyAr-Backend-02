@@ -1,3 +1,4 @@
+import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { RegretDto } from '@transactions/regrets/dto/regret-response-dto';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';
@@ -139,14 +140,6 @@ export class AccountReceiverDto {
   id: string;
 
   @Expose()
-  @ApiProperty({ name: 'firstName', example: 'Juan' })
-  firstName: string;
-
-  @Expose()
-  @ApiProperty({ name: 'lastName', example: 'Pérez' })
-  lastName: string;
-
-  @Expose()
   @Type(() => PaymentMethodReceiverDto)
   @ApiProperty({ name: 'paymentMethod', type: PaymentMethodReceiverDto })
   paymentMethod: PaymentMethodReceiverDto;
@@ -171,7 +164,6 @@ export class ProofOfPaymentResponseDto {
 }
 
 export class AmountResponseDto {
-  @Expose()
   @ApiProperty({ name: 'id', example: 'ba1196da-7e71-4710-8f44-2df28a31875e' })
   id: string;
 
@@ -191,7 +183,6 @@ export class AmountResponseDto {
   @ApiProperty({ name: 'currencyReceived', example: 'BRL' })
   currencyReceived: string;
 
-  @Expose()
   @ApiProperty({ name: 'received', example: false })
   received: boolean;
 }
@@ -209,23 +200,31 @@ export class TransactionResponseDto {
   @ApiProperty({ name: 'message', example: 'Transferencia de prueba' })
   message: string;
 
-  @Expose()
   @ApiProperty({ name: 'createdAt', example: '2025-08-11T14:51:28.841Z' })
   createdAt: string;
 
-  @Expose()
   @ApiProperty({ name: 'finalStatus', example: 'pending' })
   finalStatus: string;
 
-  @Expose()
-  @Type(() => AccountSenderDto)
-  @ApiProperty({ name: 'senderAccount', type: AccountSenderDto })
-  senderAccount: AccountSenderDto;
+  @Expose ()
 
-  @Expose()
-  @Type(() => AccountReceiverDto)
-  @ApiProperty({ name: 'receiverAccount', type: AccountReceiverDto })
-  receiverAccount: AccountReceiverDto;
+  @ApiProperty ({
+
+    name: 'financialAccounts',
+    type: () => ({
+      senderAccount: { type: AccountSenderDto },
+      receiverAccount: { type: AccountReceiverDto },
+    
+    }),
+
+  })
+
+  financialAccounts: {
+  
+    senderAccount: AccountSenderDto;
+    receiverAccount: AccountReceiverDto;
+    
+  };
 
   @Expose()
   @Type(() => ProofOfPaymentResponseDto)
@@ -236,21 +235,110 @@ export class TransactionResponseDto {
   @Type(() => AmountResponseDto)
   @ApiProperty({ name: 'amount', type: AmountResponseDto })
   amount: AmountResponseDto;
+
+  @Expose()
+  @Transform(({ obj }) => 
+    obj.userDiscounts?.length 
+      ? obj.userDiscounts.map(ud => ud.id) 
+      : []
+  )
+  @ApiProperty({
+    name: 'userDiscounts',
+    description: 'IDs de los descuentos aplicados',
+    example: ['uuid-1', 'uuid-2'],
+    isArray: true,
+  })
+  userDiscounts?: string[];
+
 }
 
-export class TransactionGetByIdDto extends TransactionResponseDto {
+export class UserDiscountGetDto {
+
   @Expose()
+  @ApiProperty({ example: 'uuid-discount-1234' })
+  id: string;
+
+  @Expose()
+  @ApiProperty({ example: 'WELCOME-TT8U49' })
+  code: string;
+
+  @Expose()
+  @ApiProperty({ example: 5 })
+  value: number;
+
+  @Expose()
+  @ApiProperty({ example: '2025-09-17T14:32:00.000Z', required: false })
+  usedAt?: Date;
+
+}
+
+export class TransactionGetByIdDto {
+  @Expose()
+  @ApiProperty ({ name: 'id', example: 'Sq5k0DMwf4' })
+  id: string;
+
+  @Expose()
+  @ApiProperty({ name: 'countryTransaction', example: 'Argentina' })
+  countryTransaction: string;
+
+  @Expose()
+  @ApiProperty({ name: 'message', example: 'Transferencia de prueba' })
+  message: string;
+
+  @ApiProperty({ name: 'createdAt', example: '2025-08-11T14:51:28.841Z' })
+  createdAt: string;
+
+  @ApiProperty({ name: 'finalStatus', example: 'pending' })
+  finalStatus: string;
+
+  @Expose ()
+
+  @ApiProperty ({
+
+    name: 'financialAccounts',
+    type: () => ({
+      senderAccount: { type: AccountSenderDto },
+      receiverAccount: { type: AccountReceiverDto },
+    
+    }),
+
+  })
+
+  financialAccounts: {
+  
+    senderAccount: AccountSenderDto;
+    receiverAccount: AccountReceiverDto;
+    
+  };
+
+  @Expose()
+  @Type(() => ProofOfPaymentResponseDto)
+  @ApiProperty({ name: 'proofOfPayment', type: ProofOfPaymentResponseDto })
+  proofOfPayment: ProofOfPaymentResponseDto;
+
+  @Expose()
+  @Type(() => AmountResponseDto)
+  @ApiProperty({ name: 'amount', type: AmountResponseDto })
+  amount: AmountResponseDto;
+  
   @Type(() => RegretDto)
   @ApiProperty({ type: RegretDto, required: false })
   regret?: RegretDto;
 
-  @Expose()
   @ApiProperty({ example: false })
   isNoteVerified: boolean;
+
+  @ApiProperty({
+    required: false,
+    description: 'Lista completa de descuentos aplicados',
+  })
+  userDiscounts?: UserDiscountGetDto[];
+
 }
 
 export class PaymentMethodGetReceiverDto {
   // Bank
+  @Expose()
   @ApiProperty({
     description: 'ID del método de pago (Bank)',
     example: '75e91e4b-a6dd-43b8-a386-0bf5a336957b',
@@ -260,6 +348,7 @@ export class PaymentMethodGetReceiverDto {
   @IsString()
   id?: string;
 
+  @Expose()
   @ApiProperty({
     description: 'ID de la plataforma (Bank)',
     example: 'bank',
@@ -269,6 +358,7 @@ export class PaymentMethodGetReceiverDto {
   @IsString()
   platformId?: string;
 
+  @Expose()
   @ApiProperty({
     description: 'Método (Bank, PIX, Crypto, VirtualBank)',
     example: 'bank',
@@ -278,6 +368,7 @@ export class PaymentMethodGetReceiverDto {
   @IsString()
   method?: string;
 
+  @Expose()
   @ApiProperty({
     description: 'Moneda (Bank, Crypto, VirtualBank)',
     example: 'ARS',
@@ -287,6 +378,7 @@ export class PaymentMethodGetReceiverDto {
   @IsString()
   currency?: string;
 
+  @Expose()
   @ApiProperty({
     description: 'Nombre del banco (Bank)',
     example: 'Banco Galicia',
@@ -296,6 +388,7 @@ export class PaymentMethodGetReceiverDto {
   @IsString()
   bankName?: string;
 
+  @Expose()
   @ApiProperty({
     description: 'Clave de envío (CBU, alias, PIX)',
     example: 'CBU',
@@ -305,6 +398,7 @@ export class PaymentMethodGetReceiverDto {
   @IsString()
   sendMethodKey?: string;
 
+  @Expose()
   @ApiProperty({
     description: 'Valor de la clave de envío',
     example: '1234567890123456789012',
@@ -315,6 +409,7 @@ export class PaymentMethodGetReceiverDto {
   sendMethodValue?: string;
 
   // PIX
+  @Expose()
   @ApiProperty({
     description: 'ID del banco virtual (PIX)',
     example: '123',
@@ -324,6 +419,7 @@ export class PaymentMethodGetReceiverDto {
   @IsString()
   pixId?: string;
 
+  @Expose()
   @ApiProperty({
     description: 'Clave del PIX',
     example: '123',
@@ -333,6 +429,7 @@ export class PaymentMethodGetReceiverDto {
   @IsString()
   pixKey?: string;
 
+  @Expose()
   @ApiProperty({
     description: 'Valor del PIX',
     example: '123',
@@ -342,12 +439,14 @@ export class PaymentMethodGetReceiverDto {
   @IsString()
   pixValue?: string;
 
+  @Expose()
   @ApiProperty({ description: 'CPF (PIX)', example: '123', required: false })
   @IsOptional()
   @IsString()
   cpf?: string;
 
   // Crypto
+  @Expose()
   @ApiProperty({
     description: 'Red (Crypto)',
     example: 'Ethereum',
@@ -357,6 +456,7 @@ export class PaymentMethodGetReceiverDto {
   @IsString()
   network?: string;
 
+  @Expose()
   @ApiProperty({
     description: 'Wallet (Crypto)',
     example: '0x123...',
@@ -367,6 +467,7 @@ export class PaymentMethodGetReceiverDto {
   wallet?: string;
 
   // Virtual Bank
+  @Expose()
   @ApiProperty({
     description: 'Email de la cuenta (Virtual Bank)',
     example: 'nahuel@gmail.com',
@@ -376,6 +477,7 @@ export class PaymentMethodGetReceiverDto {
   @IsString()
   emailAccount?: string;
 
+  @Expose()
   @ApiProperty({
     description: 'Código de transferencia (Virtual Bank)',
     example: '123',
@@ -387,32 +489,45 @@ export class PaymentMethodGetReceiverDto {
 }
 
 export class SenderAccountDto {
+
+  @Expose ()
   @ApiProperty({ example: '47964345-930b-4eec-b221-42ad423ac760' })
   id: string;
 
+  @Expose ()
   @ApiProperty({ example: 'Juan' })
   firstName: string;
 
+  @Expose ()
   @ApiProperty({ example: 'Pérez' })
   lastName: string;
 
+  @Expose ()
   @ApiProperty({ example: 'example@gmail.com' })
   @IsEmail()
   createdBy: string;
 
+  @Expose ()
   @ApiProperty({ example: 'Pérez' })
   phoneNumber: string;
 
+  @Expose()
+  @Type(() => PaymentMethodSenderDto) // 
   @ApiProperty({ type: PaymentMethodSenderDto })
   paymentMethod: PaymentMethodSenderDto;
 }
 
 export class ReceiverAccountDto {
+
+  @Expose () 
   @ApiProperty({ example: 'e28f2e9f-b436-42cf-888c-c161739c8565' })
   id: string;
 
+  @Expose() 
+  @Type(() => PaymentMethodGetReceiverDto) // 
   @ApiProperty({ type: PaymentMethodGetReceiverDto })
   paymentMethod: PaymentMethodGetReceiverDto;
+
 }
 
 export class ProofOfPaymentDto {
@@ -466,4 +581,5 @@ export class TransactionGetResponseDto {
 
   @ApiProperty({ type: AmountDto })
   amount: AmountDto;
+  
 }

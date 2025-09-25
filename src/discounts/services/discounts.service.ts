@@ -1,19 +1,19 @@
 import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { DiscountCode } from '@users/entities/discount-code.entity';
-import { UserDiscount } from '@users/entities/user-discount.entity';
+import { DiscountCode } from '@discounts/entities/discount-code.entity';
+import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { User } from '@users/entities/user.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
-import { CreateUserDiscountDto } from './dto/create-user-discount.dto';
-import { FilterTypeEnum, FilterUserDiscountsDto } from './dto/filter-user-discounts.dto';
-import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
-import { CreateDiscountCodeDto } from './dto/create-discount-code.dto';
+import { CreateUserDiscountDto } from '../dto/create-user-discount.dto';
+import { FilterTypeEnum, FilterUserDiscountsDto } from '../dto/filter-user-discounts.dto';
+import { UpdateUserDiscountDto } from '../dto/update-user-discount.dto';
+import { CreateDiscountCodeDto } from '../dto/create-discount-code.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UpdateStarDto } from '@discounts/dto/update-star.dto';
-import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
+import { UpdateStarDto } from 'src/discounts/dto/update-star.dto';
+import { UserRewardsLedger } from '@discounts/entities/user-rewards-ledger.entity';
 import { AdminStatus } from 'src/enum/admin-status.enum';
 import { UserRole } from 'src/enum/user-role.enum';
-import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
+import { UserDiscountHistoryDto } from '../dto/user-discount-history.dto';
 
 export class DiscountService {
   constructor(
@@ -30,23 +30,42 @@ export class DiscountService {
   ) {}
 
   /**
-   * Crea un código de descuento global y devuelve el código completo.
+   * Crea un código de descuento global, un descuento de usuario sin usar y sin fecha y devuelve el código completo.
    */
-  async createDiscountCode(dto: CreateDiscountCodeDto): Promise<DiscountCode> {
-    const exists = await this.discountCodeRepo.findOne({
-      where: { code: dto.code },
-    });
-    if (exists) {
-      throw new BadRequestException(`El código '${dto.code}' ya existe`);
+  async createDiscountCode (dto: CreateDiscountCodeDto, userId: string): Promise<DiscountCode> {
+
+    let discountCode = await this.discountCodeRepo.findOne ({ where: { code: dto.code } });
+
+    if (!discountCode) {
+ 
+      discountCode = this.discountCodeRepo.create ({
+
+        code: dto.code,
+        value: dto.value,
+        currencyCode: dto.currencyCode,
+        validFrom: new Date (dto.validFrom),
+
+      });
+
+      await this.discountCodeRepo.save (discountCode);
+
     }
-    const discountCode = this.discountCodeRepo.create({
-      code: dto.code,
-      value: dto.value,
-      currencyCode: dto.currencyCode,
-      validFrom: new Date(dto.validFrom),
+   
+    await this.discountCodeRepo.save (discountCode);
+    const user = await this.userRepo.findOne ({ where: { id: userId } });
+    if (!user) throw new NotFoundException ('Usuario no encontrado');
+
+    const userDiscount = this.userDiscountRepo.create ({
+      
+      user,
+      discountCode,
+      isUsed: false, 
+
     });
-    await this.discountCodeRepo.save(discountCode);
+
+    await this.userDiscountRepo.save (userDiscount);
     return discountCode;
+
   }
   /**
    * Crea y asigna un descuento de sistema (bienvenida, verificación, etc.) para un usuario.
@@ -72,53 +91,6 @@ export class DiscountService {
     await this.userDiscountRepo.save(userDiscount);
 
     return userDiscount.id;
-  }
-
-  /**
-   * Crea un nuevo descuento de usuario basado en un código existente
-   * Devuelve el descuento creado junto a los detalles relevantes.
-   */
-  async createUserDiscount(dto: CreateUserDiscountDto): Promise<UserDiscount> {
-    const user = await this.findUserByIdOrThrow(dto.userId);
-
-    let discountCode: DiscountCode | null = null;
-    if (dto.codeId) {
-      discountCode = await this.findDiscountCodeByIdOrThrow(dto.codeId);
-    } else if (dto.code) {
-      discountCode = await this.discountCodeRepo.findOne({
-        where: { code: dto.code },
-      });
-      if (!discountCode) {
-        throw new NotFoundException(`Código de descuento '${dto.code}' no encontrado`);
-      }
-    } else {
-      throw new BadRequestException('Debe proporcionar codeId o code');
-    }
-
-    const transaction = dto.transactionId
-      ? await this.findTransactionByIdOrThrow(dto.transactionId)
-      : null;
-
-    const existing = await this.userDiscountRepo.findOne({
-      where: { user: { id: user.id }, discountCode: { id: discountCode.id } },
-    });
-    if (existing) {
-      throw new BadRequestException(
-        `El usuario ya tiene asignado el código de descuento '${discountCode.code}'`,
-      );
-    }
-
-    const userDiscount = this.createUserDiscountEntity(user, discountCode, transaction);
-    await this.userDiscountRepo.save(userDiscount);
-
-    const result = await this.userDiscountRepo.findOne({
-      where: { id: userDiscount.id },
-      relations: ['user', 'discountCode', 'transactions'],
-    });
-
-    if (!result) throw new NotFoundException('Descuento de usuario no encontrado tras la creación');
-
-    return result;
   }
 
   /**
@@ -236,7 +208,7 @@ export class DiscountService {
     ud.isUsed = true;
     ud.usedAt = new Date();
     // Asociar el descuento a la transacción (lado ManyToOne está en Transaction)
-    transaction.userDiscount = ud;
+    transaction.userDiscounts = [...(transaction.userDiscounts ?? []), ud];
     await this.transactionRepo.save(transaction);
     await this.userDiscountRepo.save(ud);
     const updatedUd = await this.userDiscountRepo.findOne({
@@ -248,7 +220,6 @@ export class DiscountService {
     return updatedUd;
   }
 
-  // AGREGADO PARA LA TAREA
   async getUserDiscountHistory (userId: string): Promise<UserDiscountHistoryDto[]> {
 
     const userDiscounts = await this.userDiscountRepo.find ({

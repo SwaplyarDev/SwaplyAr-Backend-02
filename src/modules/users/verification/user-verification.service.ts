@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import { UserVerification, VerificationStatus } from '../entities/user-verification.entity';
 import { User } from '../entities/user.entity';
 import { CloudinaryService } from '../../../service/cloudinary/cloudinary.service';
-import { DiscountService } from '@discounts/discounts.service';
+import { DiscountService } from '@discounts/services/discounts.service';
 import { CreateVerificationResponseDto } from './dto/create-verification-response.dto';
 import { UserVerificationAttempt } from '@users/entities/user-verification-attempt.entity';
 

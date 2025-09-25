@@ -1,7 +1,7 @@
 import { CreateAmountDto } from '@transactions/amounts/dto/create-amount.dto';
 import { CreateFinancialAccountDto } from './../../financial-accounts/dto/create-financial-accounts.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, ValidateNested, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, ValidateNested, IsOptional, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateTransactionDto {
@@ -42,4 +42,19 @@ export class CreateTransactionDto {
   @Type(() => CreateAmountDto)
   @IsNotEmpty({ message: 'amount es obligatorio' })
   amount: CreateAmountDto;
+
+  @ApiProperty ({
+
+    name: 'userDiscountIds',
+    description: 'Array de identificadores de descuentos aplicables a la transacción (opcional)',
+    example: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001'],
+    required: false,
+    type: [String],
+
+  })
+
+  @IsOptional ()
+  @IsUUID ('4', { each: true, message: 'Cada userDiscountId debe ser un UUID válido' })
+  userDiscountIds?: string [];
+
 }

@@ -28,7 +28,7 @@ import { OtpService } from '@otp/otp.service';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
-import { DiscountService } from '@discounts/discounts.service';
+import { DiscountService } from '@discounts/services/discounts.service';
 
 @ApiTags('Usuarios')
 @Controller('users')

@@ -37,9 +37,13 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Transaction } from './entities/transaction.entity';
 import {
+
+  ReceiverAccountDto,
+  SenderAccountDto,
   TransactionGetByIdDto,
   TransactionGetResponseDto,
   TransactionResponseDto,
+  UserDiscountGetDto,
 } from './dto/transaction-response.dto';
 import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -126,8 +130,6 @@ export class TransactionsController {
                     bankName: "Banco Galicia",
                     sendMethodKey: "CBU",
                     sendMethodValue: "1234567890123456789012",
-                    documentType: "DNI",
-                    documentValue: "12345678"
                   }
                 }
               }
@@ -137,8 +139,11 @@ export class TransactionsController {
               currencySent: "ARS",
               amountReceived: 900,
               currencyReceived: "BRL",
-              received: false
-            }
+            },
+            userDiscountIds: [
+                '550e8400-e29b-41d4-a716-446655440000',
+                '550e8400-e29b-41d4-a716-446655440001'
+              ]             
           },
           null,
           2
@@ -398,20 +403,10 @@ validateVirtualBankType(receiverPaymentMethod);
     @Request() req: RequestWithUser,
   ): Promise<TransactionGetByIdDto> {
     const userEmail = req.user.email;
-
+    
     try {
-      const transaction: Transaction = await this.transactionsService.getTransactionByEmail(
-        transactionId,
-        userEmail,
-      );
-
-      // Convierte Transaction → TransactionGetByIdDto y elimina los nulls automáticamente
-      const dto = plainToInstance(TransactionGetByIdDto, transaction, {
-        excludeExtraneousValues: true, // Solo expone los campos con @Expose
-      });
-
-      return dto;
-    } catch (error) {
+      return await this.transactionsService.getTransactionByEmail(transactionId, userEmail);
+    }catch (error) {
       if (error instanceof ForbiddenException) {
         throw new ForbiddenException(error.message || 'Acceso no autorizado');
       }
@@ -421,4 +416,4 @@ validateVirtualBankType(receiverPaymentMethod);
       throw new InternalServerErrorException('Error inesperado al obtener la transacción');
     }
   }
-}
+} 

@@ -11,24 +11,25 @@ import {
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
-import { DiscountService } from './discounts.service';
-import { CreateUserDiscountDto } from './dto/create-user-discount.dto';
-import { FilterUserDiscountsDto } from './dto/filter-user-discounts.dto';
-import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
+import { DiscountService } from '../services/discounts.service';
+import { CreateUserDiscountDto } from '../dto/create-user-discount.dto';
+import { FilterUserDiscountsDto } from '../dto/filter-user-discounts.dto';
+import { UpdateUserDiscountDto } from '../dto/update-user-discount.dto';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { User } from '@common/user.decorator';
 import { User as UserEntity } from '@users/entities/user.entity';
-import { CreateDiscountCodeDto } from '@discounts/dto/create-discount-code.dto';
+import { CreateDiscountCodeDto } from 'src/discounts/dto/create-discount-code.dto';
 import { UpdateStarDto } from '@discounts/dto/update-star.dto';
-import { DiscountCode } from '@users/entities/discount-code.entity';
-import { UserDiscount } from '@users/entities/user-discount.entity';
-import { UserRewardsLedger } from '@users/entities/user-rewards-ledger.entity';
+import { DiscountCode } from '@discounts/entities/discount-code.entity';
+import { UserDiscount } from '@discounts/entities/user-discount.entity';
+import { UserRewardsLedger } from '@discounts/entities/user-rewards-ledger.entity';
 import { UserRole } from 'src/enum/user-role.enum';
-import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
+import { UserDiscountHistoryDto } from '../dto/user-discount-history.dto';
 
 interface DataResponse<T> {
   data: T;
@@ -56,27 +57,9 @@ export class DiscountsController {
   async createDiscountCode(
     @Body() dto: CreateDiscountCodeDto,
   ): Promise<DataResponse<DiscountCode>> {
-    const code = await this.discountService.createDiscountCode(dto);
+    const userId = dto.userId; 
+    const code = await this.discountService.createDiscountCode(dto, dto.userId);
     return { data: code };
-  }
-
-  @Post('user-discounts')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
-  @ApiOperation({ summary: 'Crear nuevo descuento de usuario' })
-  @ApiResponse({
-    status: 201,
-    description: 'Descuento creado exitosamente',
-    type: UserDiscount,
-  })
-  @ApiResponse({ status: 400, description: 'Parámetros inválidos' })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
-  @HttpCode(HttpStatus.CREATED)
-  async createUserDiscountForUser(
-    @Body() dto: CreateUserDiscountDto,
-  ): Promise<DataResponse<UserDiscount>> {
-    const discount = await this.discountService.createUserDiscount(dto);
-    return { data: discount };
   }
 
   @Get('existing-codes')
@@ -152,7 +135,6 @@ export class DiscountsController {
     return { data: discounts };
   }
 
-  //AGREGADO PARA LA TAREA.
   @Get ('user-history')
   @Roles (UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
 
@@ -160,18 +142,19 @@ export class DiscountsController {
 
   @ApiResponse ({
 
-  status: 200,
-  description: 'Listado del historial de cupones usados',
-  type: [UserDiscountHistoryDto],
+    status: 200,
+    description: 'Listado del historial de cupones usados',
+    type: [UserDiscountHistoryDto],
 
   })
 
   @ApiResponse ({ status: 401, description: 'No autenticado' })
   @HttpCode (HttpStatus.OK)
-  async getMyDiscountHistory (@User () user: UserEntity): Promise<DataResponse<UserDiscountHistoryDto[]>> {
+  
+  async getMyDiscountHistory (@User () user: UserEntity): Promise<DataResponse<UserDiscountHistoryDto []>> {
 
-  const history = await this.discountService.getUserDiscountHistory (user.id);
-  return { data: history };
+    const history = await this.discountService.getUserDiscountHistory (user.id);
+    return { data: history };
 
   }
 

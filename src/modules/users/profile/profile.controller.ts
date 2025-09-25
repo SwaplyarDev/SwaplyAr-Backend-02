@@ -13,30 +13,198 @@ import {
   Body,
   Delete,
   UploadedFile,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { User } from '@users/entities/user.entity';
 import { UserProfile } from '@users/entities/user-profile.entity';
 
 import { UpdateEmailDto } from './dto/email.profile.dto';
 import { UpdatePhoneDto } from './dto/phone.profile.dto';
-import { UpdateUserLocationDto } from './dto/location.profile.dto';
-import { UpdateNicknameDto } from './dto/nickname.profile.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateUserProfileDto } from './dto/udpate-profile.dto';
 
 @ApiTags('Perfiles')
 @Controller('users/profiles')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
+
   /**
-   * GET /profile/
-   * Obtiene todos los perfiles de usuarios existentes.
-   * Solo rol 'admin'o 'super_admin' pueden solicitar ver todos los perfiles de usuarios existentes.
+   * GET /users/profiles/my-profile
+   * Retorna toda la información del perfil del usuario autenticado.
    */
+  @Get('my-profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Perfil obtenido correctamente' })
+  @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
+  async getMyProfile(@Req() req: any) {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new UnauthorizedException('Usuario no autenticado');
+    }
+
+    const profile = await this.profileService.getUserProfileById(userId);
+
+    return {
+      message: 'Perfil obtenido correctamente',
+      result: profile,
+    };
+  }
+
+  /**
+   * PUT /profile/my-profile
+   * Actualiza el perfil del usuario autenticado.
+   * Solo se modifican los campos enviados en el body.
+   */
+  @Put('my-profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Actualizar perfil del usuario autenticado',
+    description:
+      'Permite a un usuario autenticado actualizar su perfil. ' +
+      'Los campos no enviados en el body no se modifican.',
+  })
+  @ApiBody({ type: UpdateUserProfileDto })
+  @ApiResponse({ status: 200, description: 'Perfil actualizado correctamente' })
+  @ApiResponse({ status: 400, description: 'Solicitud inválida o datos incompletos' })
+  @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
+  async updateUserProfile(
+    @Req() req: any,
+    @Body() updateUserProfileDto: UpdateUserProfileDto,
+  ) {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new UnauthorizedException('Usuario no autenticado'); 
+    }
+
+    try {
+      const updatedProfile = await this.profileService.updateUserProfile(
+        userId,
+        updateUserProfileDto,
+      );
+
+      return {
+        message: 'Perfil actualizado correctamente',
+        result: updatedProfile,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error; // 400
+      }
+
+      console.error('Error al actualizar perfil:', error);
+      throw new InternalServerErrorException(
+        'Error interno al actualizar el perfil',
+      ); 
+    }
+  }
+
+  /**
+   * PUT /profile/my-profile/picture
+   * Actualiza la foto de perfil del usuario autenticado.
+   */
+  @Put('my-profile/picture')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Actualizar foto de perfil del usuario autenticado',
+    description: 'Permite subir y actualizar la imagen de perfil de un usuario autenticado.',
+  })
+  @ApiBody({
+    description: 'Archivo de imagen a subir',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Archivo de imagen',
+        },
+      },
+      required: ['file'],
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Imagen actualizada correctamente' })
+  @ApiResponse({ status: 400, description: 'Archivo no enviado o usuario no autenticado' })
+  @ApiResponse({ status: 401, description: 'Usuario no autenticado' })
+  @ApiResponse({ status: 500, description: 'Error interno al subir la imagen' })
+  async updateProfilePicture(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: any,
+  ) {
+    const userId = req.user?.id;
+
+    // Validación de usuario autenticado
+    if (!userId) {
+      throw new BadRequestException('Usuario no autenticado');
+    }
+
+    // Validación de archivo
+    if (!file || !file.buffer) {
+      throw new BadRequestException('Se requiere una imagen en la solicitud');
+    }
+
+    try {
+      const result = await this.profileService.updateUserPictureById(userId, file);
+      return { message: 'Imagen actualizada correctamente', result };
+    } catch (error) {
+      console.error('Error al subir la imagen:', error);
+
+      // Detecta errores específicos si tu servicio lanza alguno
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException('Error interno al subir la imagen');
+    }
+  }
+
+   /**
+   * UPDATE /profile/my-profile/email
+   * Actualiza el email del perfil del usuario autenticado.
+   * Requiere autenticación de un usuario.
+   */
+  @Put('my-profile/email')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar email del perfil autenticado' })
+  @ApiResponse({ status: 200, description: 'Email actualizado correctamente' })
+  async updateUserProfileEmailController(@Req() req, @Body() updateEmailDto: UpdateEmailDto) {
+    const userId = req.user.id;
+    return this.profileService.updateEmail(userId, updateEmailDto.email);
+  }
+
+  /**
+   * UPDATE /profile/my-profile/phone
+   * Actualiza el numero telefónico del perfil del usuario autenticado.
+   * Requiere autenticación de un usuario.
+   */
+  @Put('my-profile/phone')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar telefono del perfil autenticado' })
+  @ApiResponse({ status: 200, description: 'Email actualizado correctamente' })
+  async updateUserProfilePhoneController(@Req() req, @Body() updatePhoneDto: UpdatePhoneDto) {
+    const userId = req.user.id;
+    console.log(userId);
+
+    return this.profileService.updatePhone(userId, updatePhoneDto.phone);
+  }
+  /** 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'super_admin')
@@ -51,11 +219,7 @@ export class ProfileController {
   async findAll() {
     return this.profileService.findAll();
   }
-  /**
-   * GET /users/profile/my-profile
-   * Obtiene el perfil del usuario autenticado mediante el JWT.
-   * Requiere autenticación.
-   */
+
   @Get('/my-profile')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'super_admin')
@@ -83,11 +247,7 @@ export class ProfileController {
     }
   }
 
-  /**
-   * GET /profile/my-profile/email
-   * Obtiene el perfil de un usuario específico según su email.
-   * Requiere autenticación.
-   */
+
   @Get('my-profile/email')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -113,90 +273,6 @@ export class ProfileController {
     }
   }
 
-  /**
-   * PUT /profile/my-profile/nickname
-   * Actualiza el apodo del perfil del usuario autenticado.
-   * Requiere autenticación.
-   */
-  @Put('my-profile/nickname')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Actualizar nickname del perfil autenticado' })
-  @ApiResponse({
-    status: 200,
-    description: 'Nickname actualizado correctamente',
-  })
-  async updateUserProfileNicknameController(
-    @Req() req,
-    @Body() updateNicknameDto: UpdateNicknameDto,
-  ) {
-    const userId = req.user.id;
-
-    return this.profileService.updateNickname(userId, updateNicknameDto.nickName);
-  }
-
-  /**
-   * UPDATE /profile/my-profile/email
-   * Actualiza el email del perfil del usuario autenticado.
-   * Requiere autenticación de un usuario.
-   */
-  @Put('my-profile/email')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
-  @UseInterceptors(ClassSerializerInterceptor)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Actualizar email del perfil autenticado' })
-  @ApiResponse({ status: 200, description: 'Email actualizado correctamente' })
-  async updateUserProfileEmailController(@Req() req, @Body() updateEmailDto: UpdateEmailDto) {
-    const userId = req.user.id;
-    return this.profileService.updateEmail(userId, updateEmailDto.email);
-  }
-
-  /**
-   * UPDATE /profile/my-profile/phone
-   * Actualiza el numero telefónico del perfil del usuario autenticado.
-   * Requiere autenticación de un usuario.
-   */
-  @Put('my-profile/phone')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Actualizar email del perfil autenticado' })
-  @ApiResponse({ status: 200, description: 'Email actualizado correctamente' })
-  async updateUserProfilePhoneController(@Req() req, @Body() updatePhoneDto: UpdatePhoneDto) {
-    const userId = req.user.id;
-    console.log(userId);
-
-    return this.profileService.updatePhone(userId, updatePhoneDto.phone);
-  }
-  /**
-   * UPDATE /profile/my-profile/location
-   * Actualiza el ID de la ubicacion de un usuario autenticado.
-   * Requiere autenticación de un usuario.
-   */
-  @Put('my-profile/location')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Actualizar ubicación del perfil autenticado' })
-  @ApiResponse({
-    status: 200,
-    description: 'Ubicación actualizada correctamente',
-  })
-  async updateUserProfileLocationController(
-    @Req() req: any,
-    @Body() updateUserLocationDto: UpdateUserLocationDto,
-  ) {
-    const userId = req.user.id;
-
-    return this.profileService.updateLocation(userId, updateUserLocationDto);
-  }
-
-  /**
-   * DELETE /
-   * Elimina el perfil de un usuario por su id.
-   */
   @Delete('/')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'super_admin')
@@ -210,27 +286,5 @@ export class ProfileController {
   async deleteProfileController(@Req() req: any, @Query('id') id: string) {
     return this.profileService.deleteUserById(id);
   }
-
-  @Put('my-profile/picture')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('file'))
-  async updateProfilePicture(@UploadedFile() file: Express.Multer.File, @Req() req: any) {
-    const userId = req.user?.id;
-
-    if (!userId) {
-      throw new BadRequestException('Usuario no autenticado');
-    }
-
-    if (!file || !file.buffer) {
-      throw new BadRequestException('Se requiere una imagen en la solicitud');
-    }
-
-    try {
-      const result = await this.profileService.updateUserPictureById(userId, file);
-      return { message: 'Imagen actualizada correctamente', result };
-    } catch (error) {
-      console.log('error', error);
-      throw new InternalServerErrorException('Error al subir la imagen');
-    }
-  }
+*/
 }

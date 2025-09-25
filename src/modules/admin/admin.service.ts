@@ -221,6 +221,30 @@ export class AdminService {
       noteVerificationExpiresAt: transaction.noteVerificationExpiresAt?.toISOString(),
     } as TransactionByIdAdminResponseDto;
   }
+
+
+  async getTransactionsByCreatedBy(email: string): Promise<Transaction[]> {
+  const transactions = await this.transactionsRepository.find({
+    where: { senderAccount: { createdBy: email } }, 
+    relations: [
+      'senderAccount',
+      'senderAccount.paymentMethod',
+      'receiverAccount',
+      'receiverAccount.paymentMethod',
+      'amount',
+      'proofsOfPayment',
+      'note',
+      'regret',
+    ],
+  });
+
+  if (!transactions || transactions.length === 0) {
+    throw new NotFoundException('No se encontraron transacciones con ese email.');
+  }
+
+  return transactions;
+}
+
   /* -------------------------------------------------------------------------- */
   /*                        STATUS HISTORY FOR A TX                              */
   /* -------------------------------------------------------------------------- */

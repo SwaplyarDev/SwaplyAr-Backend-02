@@ -7,11 +7,10 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserProfile } from '@users/entities/user-profile.entity';
 import { Repository } from 'typeorm';
-import { UpdateUserLocationDto } from './dto/location.profile.dto';
 import { UserLocation } from '@users/entities/user-location.entity';
-
 import { FileUploadService } from 'src/modules/file-upload/file-upload.service';
 import { FileUploadDTO } from 'src/modules/file-upload/dto/file-upload.dto';
+import { UpdateUserProfileDto } from './dto/udpate-profile.dto';
 
 @Injectable()
 export class ProfileService {
@@ -23,6 +22,20 @@ export class ProfileService {
 
     private readonly fileUploadService: FileUploadService,
   ) {}
+
+  async getUserProfileById(userId: string) {
+  const profile = await this.profileRepository.findOne({
+    where: { user: { id: userId } },
+    relations: ['user', 'user.locations'], // Trae también la ubicación u otras relaciones
+  });
+
+  if (!profile) {
+    throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
+  }
+
+  return profile;
+}
+
 
   // Obtener todos los usuarios registrado siendo ADMIN
   async findAll(): Promise<any[]> {
@@ -130,44 +143,6 @@ export class ProfileService {
     return this.profileRepository.save(profile);
   }
 
-  // actualiza la localizacion del usuario logeado
-  async updateLocation(userId: string, locationDto: UpdateUserLocationDto): Promise<UserProfile> {
-    const profile = await this.profileRepository.findOne({
-      where: { user: { id: userId } },
-      relations: ['user', 'user.locations'],
-    });
-
-    if (!profile) {
-      throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
-    }
-
-    const user = profile.user;
-    let userLocation = user.locations?.[0] ?? null;
-
-    if (userLocation) {
-      if (locationDto.country !== undefined) {
-        userLocation.country = locationDto.country;
-      }
-      if (locationDto.department !== undefined) {
-        userLocation.department = locationDto.department;
-      }
-      if (locationDto.date !== undefined) {
-        userLocation.date = new Date(locationDto.date);
-      }
-    } else {
-      userLocation = this.locationRepository.create({
-        country: locationDto.country,
-        department: locationDto.department,
-        date: locationDto.date ? new Date(locationDto.date) : new Date(),
-        user,
-      });
-    }
-
-    await this.locationRepository.save(userLocation);
-
-    return profile;
-  }
-
   async deleteUserById(id: string) {
     const profile = await this.profileRepository.findOne({
       where: { user: { id } },
@@ -181,6 +156,62 @@ export class ProfileService {
 
     return { message: 'User profile deleted successfully!' };
   }
+
+  async updateUserProfile(
+  userId: string,
+  updateDto: UpdateUserProfileDto,
+): Promise<UserProfile> {
+  const profile = await this.profileRepository.findOne({
+    where: { user: { id: userId } },
+    relations: ['user', 'user.locations'],
+  });
+
+  if (!profile) {
+    throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
+  }
+
+  // 🔹 Actualizar nickname si viene en el DTO
+  if (updateDto.nickname !== undefined) {
+    profile.nickName = updateDto.nickname;
+  }
+
+  // 🔹 Actualizar ubicación si viene en el DTO
+  if (updateDto.location) {
+    const user = profile.user;
+    let userLocation = user.locations?.[0] ?? null;
+
+    if (userLocation) {
+      if (updateDto.location.country !== undefined) {
+        userLocation.country = updateDto.location.country;
+      }
+      if (updateDto.location.department !== undefined) {
+        userLocation.department = updateDto.location.department;
+      }
+      if (updateDto.location.postalCode !== undefined) {
+        userLocation.postalCode = updateDto.location.postalCode;
+      }
+      if (updateDto.location.date !== undefined) {
+        userLocation.date = new Date(updateDto.location.date);
+      }
+    } else {
+      userLocation = this.locationRepository.create({
+        country: updateDto.location.country,
+        department: updateDto.location.department,
+        postalCode: updateDto.location.postalCode,
+        date: updateDto.location.date ? new Date(updateDto.location.date) : new Date(),
+        user,
+      });
+    }
+
+    await this.locationRepository.save(userLocation);
+  }
+
+  // 🔹 Guardar cambios generales en el perfil
+  await this.profileRepository.save(profile);
+
+  return profile;
+}
+
 
   // actualizar imagen del perfil
   async updateUserPictureById(userId: string, file: Express.Multer.File) {

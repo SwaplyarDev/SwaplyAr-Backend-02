@@ -18,6 +18,9 @@ export class UserLocation {
   @Column({ name: 'department' })
   department: string;
 
+  @Column({ name: 'postal_code' })
+  postalCode: string;
+
   @Column({ name: 'date', type: 'timestamp with time zone' })
   date: Date;
 }

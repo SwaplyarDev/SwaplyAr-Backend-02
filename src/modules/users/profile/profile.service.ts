@@ -23,10 +23,23 @@ export class ProfileService {
     private readonly fileUploadService: FileUploadService,
   ) {}
 
+  // Obtener todos los usuarios registrados (ADMIN)
+async findAll() {
+  const profiles = await this.profileRepository.find({
+    relations: ['user', 'user.locations'], 
+  });
+
+  if (!profiles || profiles.length === 0) {
+    throw new NotFoundException(`No se encontraron usuarios`);
+  }
+
+  return profiles;
+}
+
   async getUserProfileById(userId: string) {
   const profile = await this.profileRepository.findOne({
     where: { user: { id: userId } },
-    relations: ['user', 'user.locations'], // Trae también la ubicación u otras relaciones
+    relations: ['user', 'user.locations'], 
   });
 
   if (!profile) {
@@ -37,67 +50,20 @@ export class ProfileService {
 }
 
 
-  // Obtener todos los usuarios registrado siendo ADMIN
-  async findAll(): Promise<any[]> {
-    const perfiles = await this.profileRepository.find({
-      relations: ['user'],
-    });
+  // Obtener un usuario mediante su email dentro de profile
+async findByEmail(email: string) {
+  const profile = await this.profileRepository.findOne({
+    where: { email }, // email de UserProfile
+    relations: ['user', 'user.locations'], // incluir relaciones necesarias
+  });
 
-    if (!perfiles || perfiles.length === 0) {
-      throw new NotFoundException(`No se encontraron usuarios`);
-    }
-
-    return perfiles.map((profile) => {
-      const { role, createdAt, termsAccepted, isValidated } = profile.user;
-      //filtro
-      return {
-        id: profile.id,
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        email: profile.email,
-        phone: profile.phone,
-        gender: profile.gender,
-        profilePictureUrl: profile.profilePictureUrl,
-        user: {
-          role,
-          createdAt,
-          termsAccepted,
-          isValidated,
-        },
-      };
-    });
+  if (!profile) {
+    throw new NotFoundException(`El usuario con email ${email} no existe`);
   }
 
-  //Obtener un usuario mediante su ID ADMIN
-  async findById(id: string): Promise<UserProfile | null> {
-    const profile = await this.profileRepository.findOneBy({ id });
-    if (!profile) {
-      throw new NotFoundException(`El usuario con el id ${id} no existe`);
-    }
-    return profile;
-  }
+  return profile;
+}
 
-  // Obtener un usuario mediante su email
-  async findByEmail(email: string): Promise<UserProfile> {
-    const profile = await this.profileRepository.findOneBy({ email });
-    if (!profile) {
-      throw new NotFoundException(`El usuario con email ${email} no existe`);
-    }
-    return profile;
-  }
-  //Controlador para actualizar el nickname de un perfil de usuario
-  async updateNickname(userId: string, nickName: string): Promise<UserProfile> {
-    const profile = await this.profileRepository.findOne({
-      where: { user: { id: userId } },
-      relations: ['user'],
-    });
-    if (!profile) {
-      throw new NotFoundException(`Perfil con ID ${userId} no encontrado`);
-    }
-
-    profile.nickName = nickName;
-    return this.profileRepository.save(profile);
-  }
 
   //Cambiar el email del usuario registrado ADMIN
   async updateEmail(userId: string, newEmail: string): Promise<UserProfile> {
@@ -157,10 +123,10 @@ export class ProfileService {
     return { message: 'User profile deleted successfully!' };
   }
 
-  async updateUserProfile(
+async updateUserProfile(
   userId: string,
   updateDto: UpdateUserProfileDto,
-): Promise<UserProfile> {
+): Promise<UserProfile> {  // ya no puede ser null
   const profile = await this.profileRepository.findOne({
     where: { user: { id: userId } },
     relations: ['user', 'user.locations'],
@@ -209,8 +175,20 @@ export class ProfileService {
   // 🔹 Guardar cambios generales en el perfil
   await this.profileRepository.save(profile);
 
-  return profile;
+  // 🔹 Recargar perfil para asegurar que las relaciones estén actualizadas
+  const updatedProfile = await this.profileRepository.findOne({
+    where: { id: profile.id },
+    relations: ['user', 'user.locations'],
+  });
+
+  if (!updatedProfile) {
+    // Esto casi nunca ocurre, pero es una garantía de seguridad
+    throw new NotFoundException(`No se pudo cargar el perfil actualizado`);
+  }
+
+  return updatedProfile;
 }
+
 
 
   // actualizar imagen del perfil

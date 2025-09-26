@@ -38,7 +38,6 @@ export class User {
   })
   alternativeEmails: UserAlternativeEmail[];
 
-  @Exclude()
   @OneToMany(() => UserLocation, (userLocation) => userLocation.user, {
     cascade: true,
   })

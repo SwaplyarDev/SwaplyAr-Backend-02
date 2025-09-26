@@ -11,8 +11,12 @@ import { BankModule } from '@financial-accounts/payment-methods/bank/bank.module
 import { UsersModule } from '@users/users.module';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 import { MailerModule } from '@mailer/mailer.module';
-import { DiscountModule } from 'src/discounts/discounts.module';
+import { DiscountModule } from '@discounts/discounts.module';
 import { User } from '@users/entities/user.entity';
+import { ProfileService } from '@users/profile/profile.service';
+import { UserLocation } from '@users/entities/user-location.entity';
+import { UserProfile } from '@users/entities/user-profile.entity';
+import { AdminProfileController } from './profiles/admin-profile.controller';
 
 @Module({
   imports: [
@@ -22,6 +26,8 @@ import { User } from '@users/entities/user.entity';
       AdministracionMaster,
       User,
       ProofOfPayment,
+      UserProfile, 
+      UserLocation,
     ]),
     FileUploadModule,
     ProofOfPaymentsModule,
@@ -30,8 +36,8 @@ import { User } from '@users/entities/user.entity';
     MailerModule,
     DiscountModule,
   ],
-  controllers: [AdminController],
-  providers: [AdminService],
+  controllers: [AdminController, AdminProfileController],
+  providers: [AdminService,ProfileService],
   exports: [AdminService],
 })
 export class AdminModule {}

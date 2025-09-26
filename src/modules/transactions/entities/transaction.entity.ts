@@ -97,13 +97,13 @@ export class Transaction {
   @Column({ type: 'varchar', length: 3, name: 'amount_currency', nullable: true })
   amountCurrency?: string;
 
-  @ManyToMany(() => UserDiscount)
+  @ManyToMany(() => UserDiscount, (ud) => ud.transactions)
   @JoinTable({
     name: 'transaction_user_discounts',
     joinColumn: { name: 'transaction_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'user_discount_id', referencedColumnName: 'id' },
   })
-  userDiscounts?: UserDiscount[];
+  userDiscounts: UserDiscount[];
 
   @Column({ default: false })
   isNoteVerified: boolean;

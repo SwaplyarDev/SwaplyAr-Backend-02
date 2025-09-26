@@ -408,6 +408,26 @@ export class PaymentMethodGetReceiverDto {
   @IsString()
   sendMethodValue?: string;
 
+  @Expose()
+  @ApiProperty({
+    description: 'Tipo de documento (Bank)',
+    example: 'DNI',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  documentType?: string;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Número de documento (Bank)',
+    example: '12345678',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  documentValue?: string;
+
   // PIX
   @Expose()
   @ApiProperty({
@@ -583,3 +603,4 @@ export class TransactionGetResponseDto {
   amount: AmountDto;
   
 }
+

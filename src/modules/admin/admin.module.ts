@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AdminController } from './admin.controller';
-import { AdminService } from './admin.service';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { AdministracionStatusLog } from './entities/administracion-status-log.entity';
 import { AdministracionMaster } from './entities/administracion-master.entity';
@@ -17,6 +15,8 @@ import { ProfileService } from '@users/profile/profile.service';
 import { UserLocation } from '@users/entities/user-location.entity';
 import { UserProfile } from '@users/entities/user-profile.entity';
 import { AdminProfileController } from './profiles/admin-profile.controller';
+import { AdminTransactionController } from './transaction/admin-transaction.controller';
+import { AdminTransactionService } from './transaction/admin-transaction.service'; // <-- import service
 
 @Module({
   imports: [
@@ -26,7 +26,7 @@ import { AdminProfileController } from './profiles/admin-profile.controller';
       AdministracionMaster,
       User,
       ProofOfPayment,
-      UserProfile, 
+      UserProfile,
       UserLocation,
     ]),
     FileUploadModule,
@@ -36,8 +36,14 @@ import { AdminProfileController } from './profiles/admin-profile.controller';
     MailerModule,
     DiscountModule,
   ],
-  controllers: [AdminController, AdminProfileController],
-  providers: [AdminService,ProfileService],
-  exports: [AdminService],
+  controllers: [
+    AdminProfileController,
+    AdminTransactionController,
+  ],
+  providers: [
+    ProfileService,
+    AdminTransactionService,
+  ],
+  exports: [],
 })
 export class AdminModule {}

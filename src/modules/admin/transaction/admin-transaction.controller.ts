@@ -14,14 +14,7 @@ import {
   Request,
   NotFoundException,
 } from '@nestjs/common';
-import { AdminService } from './admin.service';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { AddVoucherDto } from './dto/add-voucher.dto';
-import { UpdateStatusDto } from './dto/update-status.dto';
-import { JwtAuthGuard } from '../../common/jwt-auth.guard';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
-import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
-import { AdminStatus } from '../../enum/admin-status.enum';
+
 import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
 import {
   ApiOperation,
@@ -33,22 +26,28 @@ import {
   ApiConsumes,
   ApiQuery,
 } from '@nestjs/swagger';
-import { User as UserEntity } from '@users/entities/user.entity';
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
-import { MailerService } from '../mailer/mailer.service';
-import {
-  TransactionAdminResponseDto,
-  TransactionByIdAdminResponseDto,
-} from './dto/get-transaction-response.dto';
+import { JwtAuthGuard } from '@common/jwt-auth.guard';
+import { AdminRoleGuard } from '@common/guards/admin-role.guard';
+import { MailerService } from '@mailer/mailer.service';
+import { TransactionAdminResponseDto, TransactionByIdAdminResponseDto } from './dto/get-transaction-response.dto';
+import { AdminTransactionService } from './admin-transaction.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { AddVoucherDto } from './dto/add-voucher.dto';
+import { AdminStatus } from 'src/enum/admin-status.enum';
+import { UpdateStatusDto } from './dto/update-status.dto';
+import { User } from '@users/entities/user.entity';
+import { UpdateTransactionDto } from './dto/update-transaction.dto';
 
 
-@ApiTags('Admin')
+
+@ApiTags('Transacciones (Admin)')
 @ApiBearerAuth()
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminRoleGuard)
-export class AdminController {
+export class AdminTransactionController {
   constructor(
-    private readonly adminService: AdminService,
+    private readonly adminService: AdminTransactionService,
     private readonly mailerService: MailerService,
   ) {}
 
@@ -261,7 +260,7 @@ export class AdminController {
     @Body('status') status: AdminStatus,
     @Body('message') message: string,
     @Body('additionalData') additionalData: Record<string, any>,
-    @Request() req: { user: UserEntity },
+    @Request() req: { user: User },
   ) {
     const result = await this.adminService.updateTransactionStatusByType(
       id,
@@ -395,7 +394,7 @@ async getTransactionsByCreatedBy(
     @Param('status') status: AdminStatus,
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
     body: UpdateStatusDto & any,
-    @Request() req: { user: UserEntity },
+    @Request() req: { user: User },
   ) {
     const transactionId = body.transactionId;
     if (!transactionId) {

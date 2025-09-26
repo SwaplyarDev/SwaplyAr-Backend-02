@@ -1,6 +1,6 @@
-import { AdminStatus } from '../../../enum/admin-status.enum';
 import { IsNotEmpty, IsUUID, IsEnum, IsOptional, IsString, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { AdminStatus } from 'src/enum/admin-status.enum';
 
 export class CreateAdministracionStatusLogDto {
   @ApiProperty({ description: 'ID de la transaccion', example: '1234567890' })

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { TransactionGetResponseDto } from '@transactions/dto/transaction-response.dto';
 import { Expose, Type } from 'class-transformer';
-import { TransactionGetResponseDto } from '../../transactions/dto/transaction-response.dto';
 
 class NoteDto {
   @Expose()

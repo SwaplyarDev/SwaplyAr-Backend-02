@@ -1,5 +1,4 @@
-import { Roles } from '@common/decorators/roles.decorator';
-import { RolesGuard } from '@common/guards/roles.guard';
+import { AdminRoleGuard } from '@common/guards/admin-role.guard';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import {
   BadRequestException,
@@ -20,8 +19,7 @@ import { ProfileService } from '@users/profile/profile.service';
 
 @ApiTags('Perfiles (Admin)')
 @Controller('admin/profiles')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin', 'super_admin')
+@UseGuards(JwtAuthGuard, AdminRoleGuard)
 @ApiBearerAuth()
 @UseInterceptors(ClassSerializerInterceptor)
 export class AdminProfileController {

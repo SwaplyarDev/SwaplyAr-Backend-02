@@ -1,30 +1,27 @@
 import { Injectable, NotFoundException, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindManyOptions } from 'typeorm';
-import { Transaction } from '../../modules/transactions/entities/transaction.entity';
-import { AdministracionStatusLog } from './entities/administracion-status-log.entity';
-import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
-import { FileUploadService } from '../file-upload/file-upload.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
-import { BankService } from '../financial-accounts/payment-methods/bank/bank.service';
-import { UpdateBankDto } from '../financial-accounts/payment-methods/bank/dto/create-bank.dto';
-import { AdministracionMaster } from './entities/administracion-master.entity';
-import { AdminStatus } from '../../enum/admin-status.enum';
-import { User } from '@users/entities/user.entity';
+
 
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { DiscountService } from '@discounts/services/discounts.service';
 import { UpdateStarDto } from 'src/discounts/dto/update-star.dto';
+import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
+import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
+import { BankService } from '@financial-accounts/payment-methods/bank/bank.service';
+import { User } from '@users/entities/user.entity';
+import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Transaction } from '@transactions/entities/transaction.entity';
+import { FileUploadDTO } from 'src/modules/file-upload/dto/file-upload.dto';
+import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
+import { TransactionAdminResponseDto, TransactionByIdAdminResponseDto } from './dto/get-transaction-response.dto';
 // import { TransactionGetResponseDto } from '@transactions/dto/transaction-response.dto';
-import {
-  TransactionAdminResponseDto,
-  TransactionByIdAdminResponseDto,
-} from './dto/get-transaction-response.dto';
 
 @Injectable()
-export class AdminService {
-  private readonly logger = new Logger(AdminService.name);
+export class AdminTransactionService {
+  private readonly logger = new Logger(AdminTransactionService.name);
 
   constructor(
     @InjectRepository(Transaction)
@@ -33,7 +30,6 @@ export class AdminService {
     private readonly statusLogRepository: Repository<AdministracionStatusLog>,
     @InjectRepository(AdministracionMaster)
     private readonly adminMasterRepository: Repository<AdministracionMaster>,
-    private readonly fileUploadService: FileUploadService,
     private readonly proofOfPaymentService: ProofOfPaymentsService,
     private readonly bankService: BankService,
     private readonly discountService: DiscountService,

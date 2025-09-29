@@ -17,6 +17,7 @@ import { UserProfile } from '@users/entities/user-profile.entity';
 import { AdminProfileController } from './profiles/admin-profile.controller';
 import { AdminTransactionController } from './transaction/admin-transaction.controller';
 import { AdminTransactionService } from './transaction/admin-transaction.service'; // <-- import service
+import { UserSocials } from '@users/entities/user-socials.entity';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AdminTransactionService } from './transaction/admin-transaction.service
       ProofOfPayment,
       UserProfile,
       UserLocation,
+      UserSocials
     ]),
     FileUploadModule,
     ProofOfPaymentsModule,

@@ -11,6 +11,8 @@ import { UserLocation } from '@users/entities/user-location.entity';
 import { FileUploadService } from 'src/modules/file-upload/file-upload.service';
 import { FileUploadDTO } from 'src/modules/file-upload/dto/file-upload.dto';
 import { UpdateUserProfileDto } from './dto/udpate-profile.dto';
+import { UserSocials } from '@users/entities/user-socials.entity';
+import { UpdateUserSocialsDto } from './dto/update-user-socials.dto';
 
 @Injectable()
 export class ProfileService {
@@ -19,6 +21,8 @@ export class ProfileService {
     private readonly profileRepository: Repository<UserProfile>,
     @InjectRepository(UserLocation)
     private readonly locationRepository: Repository<UserLocation>,
+    @InjectRepository(UserSocials)
+    private readonly socialsRepository: Repository<UserSocials>,
 
     private readonly fileUploadService: FileUploadService,
   ) {}
@@ -39,7 +43,7 @@ async findAll() {
   async getUserProfileById(userId: string) {
   const profile = await this.profileRepository.findOne({
     where: { user: { id: userId } },
-    relations: ['user', 'user.locations'], 
+    relations: ['user', 'user.locations', 'socials' ], 
   });
 
   if (!profile) {
@@ -223,4 +227,36 @@ async updateUserProfile(
 
     return { imgUrl };
   }
+
+  async updateUserSocials(
+  userId: string,
+  socialsDto: UpdateUserSocialsDto,
+): Promise<UserSocials> {
+  // Buscar el perfil y cargar las relaciones de socials
+  const profile = await this.profileRepository.findOne({
+    where: { user: { id: userId } },
+    relations: ['socials'],
+  });
+
+  if (!profile) {
+    throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
+  }
+
+  let socials = profile.socials;
+
+  // Si no existen, crear nueva entidad
+  if (!socials) {
+    socials = this.socialsRepository.create({ userProfile: profile });
+  }
+
+  // Actualizar solo los campos enviados
+  Object.keys(socialsDto).forEach((key) => {
+    if (socialsDto[key] !== undefined) {
+      socials[key] = socialsDto[key];
+    }
+  });
+
+  // Guardar
+  return this.socialsRepository.save(socials);
+}
 }

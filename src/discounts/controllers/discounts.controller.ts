@@ -117,21 +117,44 @@ export class DiscountsController {
     return { data: discounts };
   }
 
-  @Get('user-discounts/me')
+  @Get('user-discounts/available/me')
   @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
-  @ApiOperation({ summary: 'Obtener descuentos del usuario autenticado' })
+  @ApiOperation({
+  summary: 'Obtener descuentos disponibles del usuario autenticado',
+  description:
+    'Este endpoint devuelve únicamente los descuentos activos y no utilizados (isUsed = false) del usuario autenticado. El parámetro filterType fue eliminado.',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Listado de descuentos del usuario',
-    type: [UserDiscount],
+    description: 'Listado de descuentos disponibles del usuario',
+    schema: {
+      example: {
+        data: [
+          {
+            id: '38ed61fd-24c1-40c2-8ccd-c1f4458f3037',
+            discountCode: {
+              id: '1a9dad84-1f94-4355-bd4c-2c8b1ef2bdd1',
+              code: 'WELCOME-TT8U49',
+              value: 3,
+              currencyCode: 'USD',
+              validFrom: '2025-09-17T16:36:50.529Z',
+              createdAt: '2025-09-17T16:36:50.534Z',
+            },
+            isUsed: false,
+            createdAt: '2025-09-17T16:36:50.570Z',
+            usedAt: null,
+            updatedAt: '2025-09-26T16:56:49.573Z',
+          },
+        ],
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @HttpCode(HttpStatus.OK)
-  async getMyUserDiscounts(
-    @Query() filterDto: FilterUserDiscountsDto,
+  async getmyAvailableUserDiscounts (
     @User() user: UserEntity,
   ): Promise<DataResponse<UserDiscount[]>> {
-    const discounts = await this.discountService.getUserDiscounts(filterDto, user.id);
+    const discounts = await this.discountService.getAvailableUserDiscounts(user.id);
     return { data: discounts };
   }
 
@@ -158,7 +181,7 @@ export class DiscountsController {
 
   }
 
-  @Get ('user-history/:userId')
+  @Get ('user-history/admin/:userId')
   @Roles (UserRole.Admin, UserRole.SuperAdmin)
 
   @ApiOperation ({
@@ -211,8 +234,8 @@ export class DiscountsController {
     return { data: discount };
   }
 
-  @Put('user-discounts/:id')
-  @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
+  @Put('user-discounts/admin/:id')
+  @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Actualizar un descuento de usuario por ID' })
   @ApiResponse({ status: 200, description: 'Descuento actualizado' })
   @ApiResponse({ status: 404, description: 'Descuento no encontrado' })
@@ -229,7 +252,7 @@ export class DiscountsController {
     return { data: undefined };
   }
 
-  @Delete('user-discounts/:id')
+  @Delete('user-discounts/admin/:id')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Eliminar un descuento de usuario por ID' })
   @ApiResponse({ status: 200, description: 'Descuento eliminado' })

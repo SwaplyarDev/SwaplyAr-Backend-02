@@ -27,19 +27,6 @@ export class ProfileService {
     private readonly fileUploadService: FileUploadService,
   ) {}
 
-  // Obtener todos los usuarios registrados (ADMIN)
-async findAll() {
-  const profiles = await this.profileRepository.find({
-    relations: ['user', 'user.locations'], 
-  });
-
-  if (!profiles || profiles.length === 0) {
-    throw new NotFoundException(`No se encontraron usuarios`);
-  }
-
-  return profiles;
-}
-
   async getUserProfileById(userId: string) {
   const profile = await this.profileRepository.findOne({
     where: { user: { id: userId } },
@@ -113,19 +100,6 @@ async findByEmail(email: string) {
     return this.profileRepository.save(profile);
   }
 
-  async deleteUserById(id: string) {
-    const profile = await this.profileRepository.findOne({
-      where: { user: { id } },
-    });
-
-    if (!profile) {
-      throw new NotFoundException(`Perfil con ID de usuario ${id} no encontrado`);
-    }
-
-    await this.profileRepository.remove(profile);
-
-    return { message: 'User profile deleted successfully!' };
-  }
 
 async updateUserProfile(
   userId: string,

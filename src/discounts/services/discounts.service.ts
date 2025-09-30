@@ -122,20 +122,18 @@ export class DiscountService {
   }
 
   /**
-   * Obtiene descuentos de un usuario específico con el detalle completo de las relaciones.
+   * Obtiene descuentos disponibles de un usuario específico.
    */
-  async getUserDiscounts(
-    filterDto: FilterUserDiscountsDto,
+  async getAvailableUserDiscounts(
     userId: string,
   ): Promise<UserDiscount[]> {
     const qb = this.userDiscountRepo
       .createQueryBuilder('ud')
-      .leftJoinAndSelect('ud.user', 'user')
+      .leftJoin('ud.user', 'user')
       .leftJoinAndSelect('ud.discountCode', 'code')
-      .leftJoinAndSelect('ud.transactions', 'transaction')
-      .where('user.id = :userId', { userId });
-    this.applyUserDiscountsFilter(qb, filterDto);
-    return qb.getMany();
+      .where('user.id = :userId', { userId })
+      .andWhere('ud.isUsed = :isUsed', { isUsed: false });
+      return qb.getMany();
   }
 
   /* Obtiene descuentos de un usuario específico por su user_id */

@@ -37,7 +37,7 @@ export class UserDiscount {
   createdAt: Date;
 
   @Column({ type: 'timestamp with time zone', name: 'used_at', nullable: true })
-  usedAt?: Date;
+  usedAt?: Date | null;
 
   @UpdateDateColumn({ type: 'timestamp with time zone', name: 'updated_at' })
   updatedAt: Date;

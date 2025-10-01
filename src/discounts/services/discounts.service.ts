@@ -183,38 +183,59 @@ export class DiscountService {
   }
 
   /**
-   * Marca un descuento como usado, asocia la transacción y devuelve el descuento actualizado.
-   */
+  * Alterna el estado de un descuento de usuario:
+  * - Si no estaba usado → marcar como usado y asociar a la transacción indicada en el DTO.
+  * - Si estaba usado → desmarcar, borrar usedAt y desasociar de la transacción.
+  */
   async updateUserDiscount(
     id: string,
     dto: UpdateUserDiscountDto,
     userId: string,
-  ): Promise<UserDiscount> {
+  ): Promise<UserDiscount> {   
     const ud = await this.getUserDiscountById(id, userId);
 
-    const transaction = await this.findTransactionByIdOrThrow(dto.transactionId);
+    if (!ud.isUsed) {
+      ud.isUsed = true;
+      ud.usedAt = new Date();
 
-    const existingTx = await this.userDiscountRepo.findOne({
-    where: { transactions: { id: transaction.id } },
-    });
-    if (existingTx && existingTx.id !== ud.id) {
-      throw new BadRequestException(
-        `La transacción con ID '${transaction.id}' ya está asociada a otro descuento`,
-      );
+      if (dto.transactionId) {
+        const transaction = await this.transactionRepo.findOne({
+          where: { id: dto.transactionId },
+        });
+
+        if (!transaction) {
+          throw new NotFoundException('Transacción no encontrada');
+        }
+
+        const alreadyLinked = ud.transactions?.some(
+          t => t.id === transaction.id,
+        );
+        if (!alreadyLinked) {
+          ud.transactions = [...(ud.transactions || []), transaction];
+        }
+      }
+    } else {
+      ud.isUsed = false;
+      ud.usedAt = null;
+
+      if (dto.transactionId && ud.transactions?.length) {
+        ud.transactions = ud.transactions.filter(
+          t => t.id !== dto.transactionId,
+       );
+      }
     }
 
-    ud.isUsed = true;
-    ud.usedAt = new Date();
-    // Asociar el descuento a la transacción (lado ManyToOne está en Transaction)
-    transaction.userDiscounts = [...(transaction.userDiscounts ?? []), ud];
-    await this.transactionRepo.save(transaction);
     await this.userDiscountRepo.save(ud);
+
     const updatedUd = await this.userDiscountRepo.findOne({
       where: { id: ud.id },
       relations: ['user', 'discountCode', 'transactions'],
     });
-    if (!updatedUd)
+
+    if (!updatedUd) {
       throw new NotFoundException('Descuento de usuario no encontrado tras actualizar');
+    }
+
     return updatedUd;
   }
 

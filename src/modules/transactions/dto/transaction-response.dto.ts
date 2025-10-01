@@ -268,7 +268,7 @@ export class UserDiscountGetDto {
 
   @Expose()
   @ApiProperty({ example: '2025-09-17T14:32:00.000Z', required: false })
-  usedAt?: Date;
+  usedAt?: Date | null;
 
 }
 

@@ -66,7 +66,7 @@ export class UserDiscountHistoryDto {
 
   })
 
-  usedAt?: Date;
+  usedAt?: Date | null;
   
 }
 

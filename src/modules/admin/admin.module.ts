@@ -19,6 +19,8 @@ import { AdminTransactionController } from './transaction/admin-transaction.cont
 import { AdminTransactionService } from './transaction/admin-transaction.service'; // <-- import service
 import { UserSocials } from '@users/entities/user-socials.entity';
 import { AdminProfileService } from './profiles/admin-profile.service';
+import { AdminUserController } from './users/user-admin.controller';
+import { AdminUserService } from './users/user-admin.service';
 
 @Module({
   imports: [
@@ -42,11 +44,13 @@ import { AdminProfileService } from './profiles/admin-profile.service';
   controllers: [
     AdminProfileController,
     AdminTransactionController,
+    AdminUserController
   ],
   providers: [
     ProfileService,
     AdminTransactionService,
-    AdminProfileService
+    AdminProfileService,
+    AdminUserService
   ],
   exports: [],
 })

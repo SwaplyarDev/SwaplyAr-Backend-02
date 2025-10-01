@@ -1,4 +1,4 @@
-import { UpdateAdminProfileDto } from '@admin/dto/update-admin-profile.dto';
+import { UpdateAdminProfileDto } from '@admin/profiles/dto/update-admin-profile.dto';
 import {
   BadRequestException,
   ConflictException,

@@ -19,9 +19,9 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { UserProfile } from '@users/entities/user-profile.entity';
 import { ProfileService } from '@users/profile/profile.service';
 import { AdminProfileService } from './admin-profile.service';
-import { UpdateAdminProfileDto } from '@admin/dto/update-admin-profile.dto';
-import { AdminProfileResponseDto } from '@admin/dto/admin-profile-response.dto';
-import { UpdateAdminProfileResponseDto } from '@admin/dto/update-admin-profile-response.dto';
+import { UpdateAdminProfileDto } from '@admin/profiles/dto/update-admin-profile.dto';
+import { AdminProfileResponseDto } from '@admin/profiles/dto/admin-profile-response.dto';
+import { UpdateAdminProfileResponseDto } from '@admin/profiles/dto/update-admin-profile-response.dto';
 
 
 

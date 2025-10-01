@@ -349,7 +349,7 @@ export class UserVerificationController {
           ? {
               firstName: v.user.profile.firstName,
               lastName: v.user.profile.lastName,
-              email: 'usuario@ejemplo.com',
+              email: v.user.profile.email,
             }
           : null,
         documents,
@@ -472,7 +472,7 @@ export class UserVerificationController {
           ? {
               firstName: profile.firstName,
               lastName: profile.lastName,
-              email: 'usuario@ejemplo.com',
+              email: profile.email
             }
           : null,
         documents,

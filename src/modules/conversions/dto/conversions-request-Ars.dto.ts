@@ -3,7 +3,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
 import { ConversionRequestDto } from './conversions-request.dto';
-import { ArsOperationType } from '../../enum/ars-operation-type.enum';
+import { ArsOperationType } from '../../../enum/ars-operation-type.enum';
 
 export class ConversionArsRequestDto extends ConversionRequestDto {
   @ApiProperty({

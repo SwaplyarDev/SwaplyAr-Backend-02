@@ -1,19 +1,21 @@
 
 
-import { Body, Controller, HttpCode, Post, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Post, BadRequestException, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConversionsService } from '../services/conversions.service';
 import { ConversionRequestDto } from '../dto/conversions-request.dto';
 import { ConversionResponseDto } from '../dto/conversions-response.dto';
 import { ConversionArsRequestDto } from '../dto/conversions-request-Ars.dto';
 
-@ApiTags('Conversions')
 @Controller('conversions')
+@ApiTags('Conversions')
+
 export class ConversionsController {
-  constructor(private readonly conversionsService: ConversionsService) {}
+  constructor(
+    private readonly conversionsService: ConversionsService,
+  ) {}
 
   @Post()
-  @HttpCode(200)
   @ApiOperation({ summary: 'Convertir divisas y/o monedas (excepto USD/EUR → ARS)' })
   @ApiResponse({ status: 200, type: ConversionResponseDto })
   async convert(@Body() request: ConversionRequestDto) {
@@ -27,7 +29,6 @@ export class ConversionsController {
   }
 
   @Post('ars')
-  @HttpCode(200)
   @ApiOperation({ summary: 'Convertir USD/EUR → ARS con modalidad (Compra/Venta)' })
   @ApiResponse({ status: 200, type: ConversionResponseDto })
   async convertArs(@Body() request: ConversionArsRequestDto) {
@@ -40,14 +41,3 @@ export class ConversionsController {
     return this.conversionsService.convertArs(request);
   }
 }
-
-
-
-
-
-
-
-
-
-
-

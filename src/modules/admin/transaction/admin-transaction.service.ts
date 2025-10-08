@@ -6,8 +6,7 @@ import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/p
 
 
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
-import { DiscountService } from '@discounts/services/discounts.service';
-import { UpdateStarDto } from 'src/discounts/dto/update-star.dto';
+import { DiscountService } from 'src/modules/discounts/discounts.service';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
 import { BankService } from '@financial-accounts/payment-methods/bank/bank.service';
@@ -17,6 +16,7 @@ import { Transaction } from '@transactions/entities/transaction.entity';
 import { FileUploadDTO } from 'src/modules/file-upload/dto/file-upload.dto';
 import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
 import { TransactionAdminResponseDto, TransactionByIdAdminResponseDto } from './dto/get-transaction-response.dto';
+import { UpdateStarDto } from 'src/modules/discounts/dto/update-star.dto';
 // import { TransactionGetResponseDto } from '@transactions/dto/transaction-response.dto';
 
 @Injectable()

@@ -14,108 +14,34 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
-import { DiscountService } from '../services/discounts.service';
-import { CreateUserDiscountDto } from '../dto/create-user-discount.dto';
-import { FilterUserDiscountsDto } from '../dto/filter-user-discounts.dto';
-import { UpdateUserDiscountDto } from '../dto/update-user-discount.dto';
+import { DiscountService } from './discounts.service';
+import { CreateUserDiscountDto } from './dto/create-user-discount.dto';
+import { FilterUserDiscountsDto } from '../admin/discounts/dto/filter-user-discounts.dto';
+import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { User } from '@common/user.decorator';
 import { User as UserEntity } from '@users/entities/user.entity';
-import { CreateDiscountCodeDto } from 'src/discounts/dto/create-discount-code.dto';
-import { UpdateStarDto } from '@discounts/dto/update-star.dto';
-import { DiscountCode } from '@discounts/entities/discount-code.entity';
-import { UserDiscount } from '@discounts/entities/user-discount.entity';
-import { UserRewardsLedger } from '@discounts/entities/user-rewards-ledger.entity';
 import { UserRole } from 'src/enum/user-role.enum';
-import { UserDiscountHistoryDto } from '../dto/user-discount-history.dto';
+import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
+import { DiscountCode } from './entities/discount-code.entity';
+import { CreateDiscountCodeDto } from '../admin/discounts/dto/create-discount-code.dto';
+import { UserDiscount } from './entities/user-discount.entity';
+import { UpdateStarDto } from './dto/update-star.dto';
+import { UserRewardsLedger } from './entities/user-rewards-ledger.entity';
 
 interface DataResponse<T> {
   data: T;
 }
 
 @Controller('discounts')
-@ApiTags('discounts')
+@ApiTags('Descuentos')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DiscountsController {
   constructor(private readonly discountService: DiscountService) {}
 
-  @Post('codes')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
-  @ApiOperation({ summary: 'Crear un nuevo código de descuento global' })
-  @ApiResponse({
-    status: 201,
-    description: 'Código creado correctamente',
-    type: DiscountCode,
-  })
-  @ApiResponse({ status: 400, description: 'Parámetros inválidos' })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
-  @HttpCode(HttpStatus.CREATED)
-  async createDiscountCode(
-    @Body() dto: CreateDiscountCodeDto,
-  ): Promise<DataResponse<DiscountCode>> {
-    const userId = dto.userId; 
-    const code = await this.discountService.createDiscountCode(dto, dto.userId);
-    return { data: code };
-  }
-
-  @Get('existing-codes')
-  @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
-  @ApiOperation({ summary: 'Obtener todos los códigos de descuento globales' })
-  @ApiResponse({
-    status: 200,
-    description: 'Listado de códigos',
-    type: [DiscountCode],
-  })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
-  @HttpCode(HttpStatus.OK)
-  async getAllDiscountCodes(): Promise<DataResponse<DiscountCode[]>> {
-    const codes = await this.discountService.getAllDiscountCodes();
-    return { data: codes };
-  }
-
-  @Get('existing-codes/:id')
-  @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
-  @ApiOperation({ summary: 'Obtener un código de descuento global por ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Código encontrado',
-    type: DiscountCode,
-  })
-  @ApiResponse({ status: 404, description: 'Código no encontrado' })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
-  @HttpCode(HttpStatus.OK)
-  async getDiscountCodeById(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<DataResponse<DiscountCode>> {
-    const code = await this.discountService.getDiscountByCodeId(id);
-    return { data: code };
-  }
-
-  @Get('user-discounts')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
-  @ApiOperation({
-    summary: 'Obtener descuentos de todos los usuarios con filtro opcional',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Listado de descuentos de usuarios',
-    type: [UserDiscount],
-  })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
-  @HttpCode(HttpStatus.OK)
-  async getAllUserDiscounts(
-    @Query() filterDto: FilterUserDiscountsDto,
-  ): Promise<DataResponse<UserDiscount[]>> {
-    const discounts = await this.discountService.getAllUserDiscounts(filterDto);
-    return { data: discounts };
-  }
 
   @Get('user-discounts/available/me')
   @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
@@ -160,79 +86,22 @@ export class DiscountsController {
 
   @Get ('user-history')
   @Roles (UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
-
   @ApiOperation ({ summary: 'Obtener historial de cupones usados del usuario autenticado' })
-
   @ApiResponse ({
-
     status: 200,
     description: 'Listado del historial de cupones usados',
     type: [UserDiscountHistoryDto],
-
   })
-
   @ApiResponse ({ status: 401, description: 'No autenticado' })
   @HttpCode (HttpStatus.OK)
-  
   async getMyDiscountHistory (@User () user: UserEntity): Promise<DataResponse<UserDiscountHistoryDto []>> {
 
     const history = await this.discountService.getUserDiscountHistory (user.id);
     return { data: history };
 
   }
-
-  @Get ('user-history/admin/:userId')
-  @Roles (UserRole.Admin, UserRole.SuperAdmin)
-
-  @ApiOperation ({
-
-    summary: 'Obtener historial de cupones de un usuario específico (Admin)',
-
-  })
-
-  @ApiResponse ({
-
-    status: 200,
-    description: 'Historial de descuentos del usuario',
-    type: [UserDiscountHistoryDto],
-
-  })
-
-  @HttpCode (HttpStatus.OK)
-
-  async getUserDiscountHistoryByAdmin (
-
-    @Param('userId') userId: string,
-
-  ): Promise<DataResponse<UserDiscountHistoryDto []>> {
-
-    const history = await this.discountService.getUserDiscountHistoryByAdmin (userId);
-    return { data: history };
-
-  }
   
-  @Get('user-discounts/:id')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
-  @ApiOperation({ summary: 'Obtener un descuento de usuario por su ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Descuento encontrado',
-    type: UserDiscount,
-  })
-  @ApiResponse({ status: 404, description: 'Descuento no encontrado' })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
-  @HttpCode(HttpStatus.OK)
-  async getUserDiscountById(
-    @Param('id', ParseUUIDPipe) id: string,
-    @User() user: UserEntity,
-  ): Promise<DataResponse<UserDiscount[]>> {
-    const discount = await this.discountService.getUserDiscountsByUserId(
-      id,
-      user.role, // <-- rol de admin, super-admin aquí
-    );
-    return { data: discount };
-  }
+  
 
   @Put('user-discounts/admin/:id')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)

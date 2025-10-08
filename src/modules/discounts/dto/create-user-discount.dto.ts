@@ -2,7 +2,7 @@
 
 import { IsString, IsOptional, IsUUID, Length, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ExclusiveCodeOrCodeId } from '../../common/validators/exclusive-code-or-codeId.validator';
+import { ExclusiveCodeOrCodeId } from '@common/validators/exclusive-code-or-codeId.validator';
 
 @ExclusiveCodeOrCodeId ({ message: 'Debe proporcionar codeId o code, pero no ambos' })
 

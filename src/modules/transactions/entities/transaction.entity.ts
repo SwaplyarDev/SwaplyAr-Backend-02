@@ -21,8 +21,8 @@ import {
 import { customAlphabet } from 'nanoid';
 import { Note } from '@transactions/notes/entities/note.entity';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';
-import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { AdminStatus } from 'src/enum/admin-status.enum';
+import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 
 export const nanoidCustom = customAlphabet(
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',

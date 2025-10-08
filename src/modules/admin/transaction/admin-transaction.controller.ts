@@ -64,6 +64,30 @@ export class AdminTransactionController {
     type: Number,
     description: 'Cantidad de elementos por página (por defecto 10)',
   })
+  @ApiQuery({
+    name: 'country',
+    required: false,
+    type: String,
+    description: 'Filtra por país de la transacción (por ejemplo: Argentina, Brasil)',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    type: String,
+    description: 'Filtra por estado final de la transacción (pending, completed, failed, etc.)',
+  })
+  @ApiQuery({
+    name: 'method',
+    required: false,
+    type: String,
+    description: 'Filtra por método de pago (por ejemplo: bank, pix, paypal)',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Busca texto en el mensaje o en el nombre del usuario',
+  })
   @ApiResponse({
     status: 200,
     description: 'Transacciones obtenidas correctamente',
@@ -86,9 +110,20 @@ export class AdminTransactionController {
   async getAllTransactions(
     @Query('page') page = 1,
     @Query('perPage') perPage = 10,
+    @Query('country') country?: string,
+    @Query('status') status?: string,
+    @Query('method') method?: string,
+    @Query('search') search?: string,
   ): Promise<{ meta: any; data: TransactionAdminResponseDto[] }> {
-    return this.adminService.findAllTransactions(Number(page), Number(perPage));
-  }
+  return this.adminService.findAllTransactions({
+    page: Number(page),
+    perPage: Number(perPage),
+    country,
+    status,
+    method,
+    search,
+  });
+}
 
   @ApiOperation({ summary: 'Agregar comprobante a una transacción' })
   @ApiConsumes('multipart/form-data')

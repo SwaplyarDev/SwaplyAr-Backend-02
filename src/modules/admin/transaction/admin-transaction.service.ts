@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions } from 'typeorm';
+import { Repository, FindManyOptions, Between, ILike } from 'typeorm';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 
@@ -17,7 +17,6 @@ import { Transaction } from '@transactions/entities/transaction.entity';
 import { FileUploadDTO } from 'src/modules/file-upload/dto/file-upload.dto';
 import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
 import { TransactionAdminResponseDto, TransactionByIdAdminResponseDto } from './dto/get-transaction-response.dto';
-// import { TransactionGetResponseDto } from '@transactions/dto/transaction-response.dto';
 
 @Injectable()
 export class AdminTransactionService {
@@ -59,68 +58,102 @@ export class AdminTransactionService {
   /* -------------------------------------------------------------------------- */
   /*                                 FIND ALL                                   */
   /* -------------------------------------------------------------------------- */
-  async findAllTransactions(
-    page: number = 1,
-    perPage: number = 10,
-  ): Promise<{ meta: any; data: TransactionAdminResponseDto[] }> {
-    const [transactions, total] = await this.transactionsRepository.findAndCount({
-      relations: [
-        'senderAccount',
-        'senderAccount.paymentMethod',
-        'receiverAccount',
-        'receiverAccount.paymentMethod',
-        'amount',
-        'proofsOfPayment',
-        'note',
-        'regret',
-      ],
-      skip: (page - 1) * perPage,
-      take: perPage,
-    });
+async findAllTransactions(filters: {
+  page: number;
+  perPage: number;
+  country?: string;
+  status?: string;
+  method?: string;
+  search?: string;
+}): Promise<{ meta: any; data: TransactionAdminResponseDto[] }> {
+  const { page, perPage, country, status, method, search } = filters;
 
-    const data = transactions.map((tx) => ({
-      id: tx.id,
-      countryTransaction: tx.countryTransaction,
-      message: tx.message,
-      createdAt: tx.createdAt.toISOString(),
-      finalStatus: tx.finalStatus,
-      regret: tx.regret && { regretId: tx.regret.id },
-      senderAccount: {
-        id: tx.senderAccount.id,
-        firstName: tx.senderAccount.firstName,
-        lastName: tx.senderAccount.lastName,
-        createdBy: tx.senderAccount.createdBy,
-        phoneNumber: tx.senderAccount.phoneNumber,
-        paymentMethod: {
-          id: tx.senderAccount.paymentMethod.id,
-          platformId: tx.senderAccount.paymentMethod.platformId,
-          method: tx.senderAccount.paymentMethod.method,
-        },
-      },
-      receiverAccount: {
-        id: tx.receiverAccount.id,
-        paymentMethod: tx.receiverAccount.paymentMethod,
-      },
-      note: tx.note ? { note_id: tx.note.note_id } : undefined,
-      proofOfPayment:
-        tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment[0] : undefined,
-      amount: tx.amount,
-      isNoteVerified: tx.isNoteVerified,
-      noteVerificationExpiresAt: tx.noteVerificationExpiresAt
-        ? tx.noteVerificationExpiresAt.toISOString()
-        : '',
-    }));
+  const query = this.transactionsRepository.createQueryBuilder('tx')
+    .leftJoinAndSelect('tx.senderAccount', 'senderAccount')
+    .leftJoinAndSelect('senderAccount.paymentMethod', 'senderPaymentMethod')
+    .leftJoinAndSelect('tx.receiverAccount', 'receiverAccount')
+    .leftJoinAndSelect('receiverAccount.paymentMethod', 'receiverPaymentMethod')
+    .leftJoinAndSelect('tx.amount', 'amount')
+    .leftJoinAndSelect('tx.proofsOfPayment', 'proofsOfPayment')
+    .leftJoinAndSelect('tx.note', 'note')
+    .leftJoinAndSelect('tx.regret', 'regret')
+    .orderBy('tx.createdAt', 'DESC')
+    .skip((page - 1) * perPage)
+    .take(perPage);
 
-    return {
-      meta: {
-        totalPages: Math.ceil(total / perPage),
-        page,
-        perPage,
-        totalTransactions: total,
-      },
-      data,
-    };
+  // 📍 Filtros
+  if (country) {
+  query.andWhere('LOWER(tx.countryTransaction) = LOWER(:country)', { country });
   }
+  if (status) query.andWhere('tx.finalStatus = :status', { status });
+  if (method) {
+    query.andWhere(
+      '(senderPaymentMethod.method = :method OR receiverPaymentMethod.method = :method)',
+      { method },
+    );
+  }
+
+  // 🔍 Búsqueda por nombre o apellido del senderAccount
+  if (search) {
+  const searchPattern = search
+  .replace(/a/gi, '[aá]')
+  .replace(/e/gi, '[eé]')
+  .replace(/i/gi, '[ií]')
+  .replace(/o/gi, '[oó]')
+  .replace(/u/gi, '[uú]');
+
+  query.andWhere(
+  `(senderAccount.first_name ~* :pattern OR senderAccount.last_name ~* :pattern OR CONCAT(senderAccount.first_name, ' ', senderAccount.last_name) ~* :pattern)`,
+  { pattern: searchPattern }
+  );
+  }
+
+  const [transactions, total] = await query.getManyAndCount();
+
+  const data = transactions.map((tx) => ({
+    id: tx.id,
+    countryTransaction: tx.countryTransaction,
+    message: tx.message,
+    createdAt: tx.createdAt.toISOString(),
+    finalStatus: tx.finalStatus,
+    regret: tx.regret && { regretId: tx.regret.id },
+    senderAccount: {
+      id: tx.senderAccount.id,
+      firstName: tx.senderAccount.firstName,
+      lastName: tx.senderAccount.lastName,
+      createdBy: tx.senderAccount.createdBy,
+      phoneNumber: tx.senderAccount.phoneNumber,
+      paymentMethod: {
+        id: tx.senderAccount.paymentMethod.id,
+        platformId: tx.senderAccount.paymentMethod.platformId,
+        method: tx.senderAccount.paymentMethod.method,
+      },
+    },
+    receiverAccount: {
+      id: tx.receiverAccount.id,
+      paymentMethod: tx.receiverAccount.paymentMethod,
+    },
+    note: tx.note ? { note_id: tx.note.note_id } : undefined,
+    proofOfPayment:
+      tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment[0] : undefined,
+    amount: tx.amount,
+    isNoteVerified: tx.isNoteVerified,
+    noteVerificationExpiresAt: tx.noteVerificationExpiresAt
+      ? tx.noteVerificationExpiresAt.toISOString()
+      : '',
+  }));
+
+  return {
+    meta: {
+      totalPages: Math.ceil(total / perPage),
+      page,
+      perPage,
+      totalTransactions: total,
+    },
+    data,
+  };
+}
+
 
   /* -------------------------------------------------------------------------- */
   /*                         GET TRANSACTION BY ID                              */

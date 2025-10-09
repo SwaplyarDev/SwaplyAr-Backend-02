@@ -9,7 +9,7 @@ import { BankModule } from '@financial-accounts/payment-methods/bank/bank.module
 import { UsersModule } from '@users/users.module';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 import { MailerModule } from '@mailer/mailer.module';
-import { DiscountModule } from '@discounts/discounts.module';
+import { DiscountModule } from 'src/modules/discounts/discounts.module';
 import { User } from '@users/entities/user.entity';
 import { ProfileService } from '@users/profile/profile.service';
 import { UserLocation } from '@users/entities/user-location.entity';
@@ -21,6 +21,12 @@ import { UserSocials } from '@users/entities/user-socials.entity';
 import { AdminProfileService } from './profiles/admin-profile.service';
 import { AdminUserController } from './users/user-admin.controller';
 import { AdminUserService } from './users/user-admin.service';
+import { Admin } from 'typeorm';
+import { AdminDiscountService } from './discounts/admin-discount.service';
+import { AdminDiscountsController } from './discounts/admin-discount.controller';
+import { DiscountCode } from '../discounts/entities/discount-code.entity';
+import { UserDiscount } from '../discounts/entities/user-discount.entity';
+import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.entity';
 
 @Module({
   imports: [
@@ -32,7 +38,10 @@ import { AdminUserService } from './users/user-admin.service';
       ProofOfPayment,
       UserProfile,
       UserLocation,
-      UserSocials
+      UserSocials,
+      UserDiscount,
+      DiscountCode,
+      UserRewardsLedger
     ]),
     FileUploadModule,
     ProofOfPaymentsModule,
@@ -44,13 +53,15 @@ import { AdminUserService } from './users/user-admin.service';
   controllers: [
     AdminProfileController,
     AdminTransactionController,
-    AdminUserController
+    AdminUserController,
+    AdminDiscountsController
   ],
   providers: [
     ProfileService,
     AdminTransactionService,
     AdminProfileService,
-    AdminUserService
+    AdminUserService,
+    AdminDiscountService
   ],
   exports: [],
 })

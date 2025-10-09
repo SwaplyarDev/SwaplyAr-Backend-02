@@ -17,7 +17,7 @@ import {
   ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
 import { OtpService } from '@otp/otp.service';
-import { DiscountService } from '@discounts/services/discounts.service';
+import { DiscountService } from 'src/modules/discounts/discounts.service';
 
 @ApiTags('Usuarios')
 @Controller('users')

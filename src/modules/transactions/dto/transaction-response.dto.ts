@@ -1,4 +1,3 @@
-import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { RegretDto } from '@transactions/regrets/dto/regret-response-dto';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';

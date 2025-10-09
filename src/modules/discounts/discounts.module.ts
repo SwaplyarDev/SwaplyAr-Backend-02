@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DiscountCode } from '@discounts/entities/discount-code.entity';
-import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { User } from '@users/entities/user.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
-import { DiscountService } from './services/discounts.service';
-import { DiscountsController } from './controllers/discounts.controller';
+import { DiscountService } from './discounts.service';
+import { DiscountsController } from './discounts.controller';
 import { AuthModule } from '@auth/auth.module';
-import { UserRewardsLedger } from '@discounts/entities/user-rewards-ledger.entity';
+import { DiscountCode } from './entities/discount-code.entity';
+import { UserDiscount } from './entities/user-discount.entity';
+import { UserRewardsLedger } from './entities/user-rewards-ledger.entity';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([DiscountCode, UserDiscount, User, Transaction, UserRewardsLedger]),

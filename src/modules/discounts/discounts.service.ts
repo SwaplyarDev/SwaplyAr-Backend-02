@@ -1,19 +1,19 @@
 import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { DiscountCode } from '@discounts/entities/discount-code.entity';
-import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { User } from '@users/entities/user.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
-import { CreateUserDiscountDto } from '../dto/create-user-discount.dto';
-import { FilterTypeEnum, FilterUserDiscountsDto } from '../dto/filter-user-discounts.dto';
-import { UpdateUserDiscountDto } from '../dto/update-user-discount.dto';
-import { CreateDiscountCodeDto } from '../dto/create-discount-code.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UpdateStarDto } from 'src/discounts/dto/update-star.dto';
-import { UserRewardsLedger } from '@discounts/entities/user-rewards-ledger.entity';
 import { AdminStatus } from 'src/enum/admin-status.enum';
 import { UserRole } from 'src/enum/user-role.enum';
-import { UserDiscountHistoryDto } from '../dto/user-discount-history.dto';
+import { DiscountCode } from './entities/discount-code.entity';
+import { UserDiscount } from './entities/user-discount.entity';
+import { UserRewardsLedger } from './entities/user-rewards-ledger.entity';
+import { CreateDiscountCodeDto } from '../admin/discounts/dto/create-discount-code.dto';
+import { FilterTypeEnum, FilterUserDiscountsDto } from '../admin/discounts/dto/filter-user-discounts.dto';
+import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
+import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
+import { UpdateStarDto } from './dto/update-star.dto';
+
 
 export class DiscountService {
   constructor(
@@ -29,44 +29,6 @@ export class DiscountService {
     private readonly rewardsLedgerRepo: Repository<UserRewardsLedger>,
   ) {}
 
-  /**
-   * Crea un código de descuento global, un descuento de usuario sin usar y sin fecha y devuelve el código completo.
-   */
-  async createDiscountCode (dto: CreateDiscountCodeDto, userId: string): Promise<DiscountCode> {
-
-    let discountCode = await this.discountCodeRepo.findOne ({ where: { code: dto.code } });
-
-    if (!discountCode) {
- 
-      discountCode = this.discountCodeRepo.create ({
-
-        code: dto.code,
-        value: dto.value,
-        currencyCode: dto.currencyCode,
-        validFrom: new Date (dto.validFrom),
-
-      });
-
-      await this.discountCodeRepo.save (discountCode);
-
-    }
-   
-    await this.discountCodeRepo.save (discountCode);
-    const user = await this.userRepo.findOne ({ where: { id: userId } });
-    if (!user) throw new NotFoundException ('Usuario no encontrado');
-
-    const userDiscount = this.userDiscountRepo.create ({
-      
-      user,
-      discountCode,
-      isUsed: false, 
-
-    });
-
-    await this.userDiscountRepo.save (userDiscount);
-    return discountCode;
-
-  }
   /**
    * Crea y asigna un descuento de sistema (bienvenida, verificación, etc.) para un usuario.
    * @param user Usuario destinatario.
@@ -91,21 +53,6 @@ export class DiscountService {
     await this.userDiscountRepo.save(userDiscount);
 
     return userDiscount.id;
-  }
-
-  /**
-   * Obtiene todos los códigos de descuento globales, incluyendo detalles.
-   */
-  async getAllDiscountCodes(): Promise<DiscountCode[]> {
-    return await this.discountCodeRepo.find();
-  }
-
-  /**
-   * Obtiene un código de descuento global por su ID, incluyendo mensaje adicional si no se encuentra.
-   */
-  async getDiscountByCodeId(id: string): Promise<DiscountCode> {
-    const code = await this.findDiscountCodeByIdOrThrow(id);
-    return code;
   }
 
   /**

@@ -26,7 +26,7 @@ import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 import { MailerService } from '@mailer/mailer.service';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
-import { UserDiscount } from '@discounts/entities/user-discount.entity';
+import { UserDiscount } from '../discounts/entities/user-discount.entity';
 
 // -----------------------------
 // Helper: Mapeo de métodos de pago

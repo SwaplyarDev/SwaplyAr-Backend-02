@@ -11,15 +11,15 @@ import { UserAlternativeEmail } from '@users/entities/user-alternative-email.ent
 import { UserLocation } from '@users/entities/user-location.entity';
 import { UserContact } from '@users/entities/user-contact.entity';
 import { UserQuestion } from '@users/entities/user-question.entity';
-import { UserRewardsLedger } from '@discounts/entities/user-rewards-ledger.entity';
 import { UserBan } from '@users/entities/user-ban.entity';
-import { UserDiscount } from '@discounts/entities/user-discount.entity';
 import { UserVerification } from '@users/entities/user-verification.entity';
 import { RefreshToken } from '@users/entities/resfresh-token.entity';
 import { Exclude } from 'class-transformer';
 import { OtpCode } from '@auth/entities/otp-code.entity';
 import { UserRole } from 'src/enum/user-role.enum';
 import { UserAccount } from 'src/modules/userAccounts/entities/user-account.entity';
+import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
+import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
 
 @Entity('users')
 export class User {

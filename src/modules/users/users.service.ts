@@ -10,10 +10,9 @@ import { User } from '@users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { RegisterUserDto } from '@users/dto/register-user.dto';
 import { UserProfile } from '@users/entities/user-profile.entity';
-import { UserRewardsLedger } from '@discounts/entities/user-rewards-ledger.entity';
-
 import { UserSocials } from './entities/user-socials.entity';
 import { UserRole } from 'src/enum/user-role.enum';
+import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.entity';
 
 @Injectable()
 export class UsersService {

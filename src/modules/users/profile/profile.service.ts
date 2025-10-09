@@ -28,33 +28,31 @@ export class ProfileService {
   ) {}
 
   async getUserProfileById(userId: string) {
-  const profile = await this.profileRepository.findOne({
-    where: { user: { id: userId } },
-    relations: ['user', 'user.locations', 'socials' ], 
-  });
+    const profile = await this.profileRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user', 'user.locations', 'socials'],
+    });
 
-  if (!profile) {
-    throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
+    if (!profile) {
+      throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
+    }
+
+    return profile;
   }
-
-  return profile;
-}
-
 
   // Obtener un usuario mediante su email dentro de profile
-async findByEmail(email: string) {
-  const profile = await this.profileRepository.findOne({
-    where: { email }, // email de UserProfile
-    relations: ['user', 'user.locations'], // incluir relaciones necesarias
-  });
+  async findByEmail(email: string) {
+    const profile = await this.profileRepository.findOne({
+      where: { email }, // email de UserProfile
+      relations: ['user', 'user.locations'], // incluir relaciones necesarias
+    });
 
-  if (!profile) {
-    throw new NotFoundException(`El usuario con email ${email} no existe`);
+    if (!profile) {
+      throw new NotFoundException(`El usuario con email ${email} no existe`);
+    }
+
+    return profile;
   }
-
-  return profile;
-}
-
 
   //Cambiar el email del usuario registrado ADMIN
   async updateEmail(userId: string, newEmail: string): Promise<UserProfile> {
@@ -100,74 +98,69 @@ async findByEmail(email: string) {
     return this.profileRepository.save(profile);
   }
 
+  async updateUserProfile(userId: string, updateDto: UpdateUserProfileDto): Promise<UserProfile> {
+    // ya no puede ser null
+    const profile = await this.profileRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user', 'user.locations'],
+    });
 
-async updateUserProfile(
-  userId: string,
-  updateDto: UpdateUserProfileDto,
-): Promise<UserProfile> {  // ya no puede ser null
-  const profile = await this.profileRepository.findOne({
-    where: { user: { id: userId } },
-    relations: ['user', 'user.locations'],
-  });
-
-  if (!profile) {
-    throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
-  }
-
-  // 🔹 Actualizar nickname si viene en el DTO
-  if (updateDto.nickname !== undefined) {
-    profile.nickName = updateDto.nickname;
-  }
-
-  // 🔹 Actualizar ubicación si viene en el DTO
-  if (updateDto.location) {
-    const user = profile.user;
-    let userLocation = user.locations?.[0] ?? null;
-
-    if (userLocation) {
-      if (updateDto.location.country !== undefined) {
-        userLocation.country = updateDto.location.country;
-      }
-      if (updateDto.location.department !== undefined) {
-        userLocation.department = updateDto.location.department;
-      }
-      if (updateDto.location.postalCode !== undefined) {
-        userLocation.postalCode = updateDto.location.postalCode;
-      }
-      if (updateDto.location.date !== undefined) {
-        userLocation.date = new Date(updateDto.location.date);
-      }
-    } else {
-      userLocation = this.locationRepository.create({
-        country: updateDto.location.country,
-        department: updateDto.location.department,
-        postalCode: updateDto.location.postalCode,
-        date: updateDto.location.date ? new Date(updateDto.location.date) : new Date(),
-        user,
-      });
+    if (!profile) {
+      throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
     }
 
-    await this.locationRepository.save(userLocation);
+    // 🔹 Actualizar nickname si viene en el DTO
+    if (updateDto.nickname !== undefined) {
+      profile.nickName = updateDto.nickname;
+    }
+
+    // 🔹 Actualizar ubicación si viene en el DTO
+    if (updateDto.location) {
+      const user = profile.user;
+      let userLocation = user.locations?.[0] ?? null;
+
+      if (userLocation) {
+        if (updateDto.location.country !== undefined) {
+          userLocation.country = updateDto.location.country;
+        }
+        if (updateDto.location.department !== undefined) {
+          userLocation.department = updateDto.location.department;
+        }
+        if (updateDto.location.postalCode !== undefined) {
+          userLocation.postalCode = updateDto.location.postalCode;
+        }
+        if (updateDto.location.date !== undefined) {
+          userLocation.date = new Date(updateDto.location.date);
+        }
+      } else {
+        userLocation = this.locationRepository.create({
+          country: updateDto.location.country,
+          department: updateDto.location.department,
+          postalCode: updateDto.location.postalCode,
+          date: updateDto.location.date ? new Date(updateDto.location.date) : new Date(),
+          user,
+        });
+      }
+
+      await this.locationRepository.save(userLocation);
+    }
+
+    // 🔹 Guardar cambios generales en el perfil
+    await this.profileRepository.save(profile);
+
+    // 🔹 Recargar perfil para asegurar que las relaciones estén actualizadas
+    const updatedProfile = await this.profileRepository.findOne({
+      where: { id: profile.id },
+      relations: ['user', 'user.locations'],
+    });
+
+    if (!updatedProfile) {
+      // Esto casi nunca ocurre, pero es una garantía de seguridad
+      throw new NotFoundException(`No se pudo cargar el perfil actualizado`);
+    }
+
+    return updatedProfile;
   }
-
-  // 🔹 Guardar cambios generales en el perfil
-  await this.profileRepository.save(profile);
-
-  // 🔹 Recargar perfil para asegurar que las relaciones estén actualizadas
-  const updatedProfile = await this.profileRepository.findOne({
-    where: { id: profile.id },
-    relations: ['user', 'user.locations'],
-  });
-
-  if (!updatedProfile) {
-    // Esto casi nunca ocurre, pero es una garantía de seguridad
-    throw new NotFoundException(`No se pudo cargar el perfil actualizado`);
-  }
-
-  return updatedProfile;
-}
-
-
 
   // actualizar imagen del perfil
   async updateUserPictureById(userId: string, file: Express.Multer.File) {
@@ -202,35 +195,32 @@ async updateUserProfile(
     return { imgUrl };
   }
 
-  async updateUserSocials(
-  userId: string,
-  socialsDto: UpdateUserSocialsDto,
-): Promise<UserSocials> {
-  // Buscar el perfil y cargar las relaciones de socials
-  const profile = await this.profileRepository.findOne({
-    where: { user: { id: userId } },
-    relations: ['socials'],
-  });
+  async updateUserSocials(userId: string, socialsDto: UpdateUserSocialsDto): Promise<UserSocials> {
+    // Buscar el perfil y cargar las relaciones de socials
+    const profile = await this.profileRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['socials'],
+    });
 
-  if (!profile) {
-    throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
-  }
-
-  let socials = profile.socials;
-
-  // Si no existen, crear nueva entidad
-  if (!socials) {
-    socials = this.socialsRepository.create({ userProfile: profile });
-  }
-
-  // Actualizar solo los campos enviados
-  Object.keys(socialsDto).forEach((key) => {
-    if (socialsDto[key] !== undefined) {
-      socials[key] = socialsDto[key];
+    if (!profile) {
+      throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
     }
-  });
 
-  // Guardar
-  return this.socialsRepository.save(socials);
-}
+    let socials = profile.socials;
+
+    // Si no existen, crear nueva entidad
+    if (!socials) {
+      socials = this.socialsRepository.create({ userProfile: profile });
+    }
+
+    // Actualizar solo los campos enviados
+    Object.keys(socialsDto).forEach((key) => {
+      if (socialsDto[key] !== undefined) {
+        socials[key] = socialsDto[key];
+      }
+    });
+
+    // Guardar
+    return this.socialsRepository.save(socials);
+  }
 }

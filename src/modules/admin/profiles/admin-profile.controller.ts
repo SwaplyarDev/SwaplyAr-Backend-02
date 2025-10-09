@@ -23,15 +23,13 @@ import { UpdateAdminProfileDto } from '@admin/profiles/dto/update-admin-profile.
 import { AdminProfileResponseDto } from '@admin/profiles/dto/admin-profile-response.dto';
 import { UpdateAdminProfileResponseDto } from '@admin/profiles/dto/update-admin-profile-response.dto';
 
-
-
 @ApiTags('Perfiles (Admin)')
 @Controller('admin/profiles')
 @UseGuards(JwtAuthGuard, AdminRoleGuard)
 @ApiBearerAuth()
 @UseInterceptors(ClassSerializerInterceptor)
 export class AdminProfileController {
-    constructor(
+  constructor(
     private readonly profileService: ProfileService,
     private readonly adminProfileService: AdminProfileService,
   ) {}
@@ -42,16 +40,17 @@ export class AdminProfileController {
   @Get()
   @ApiOperation({ summary: 'Listar todos los perfiles de usuario (solo admin)' })
   @ApiResponse({
-  status: 200,
-  description: 'Listado de perfiles de usuario', type: AdminProfileResponseDto
-})
-@ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
-@ApiResponse({ status: 403, description: 'No autorizado, Solo para Administradores' })
-async findAll() {
-  const profiles = await this.adminProfileService.findAll();
+    status: 200,
+    description: 'Listado de perfiles de usuario',
+    type: AdminProfileResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
+  @ApiResponse({ status: 403, description: 'No autorizado, Solo para Administradores' })
+  async findAll() {
+    const profiles = await this.adminProfileService.findAll();
 
-    return profiles
-}
+    return profiles;
+  }
 
   /**
    * GET /admin/profiles/by-id
@@ -60,68 +59,68 @@ async findAll() {
   @Get('by-id')
   @ApiOperation({ summary: 'Obtener perfil de usuario por ID (solo admin)' })
   @ApiResponse({
-  status: 200,
-  description: 'Perfil encontrado',
-  schema: {
-    example: {
-      message: 'Perfil obtenido correctamente',
-      result: {
-        id: 'e997eb7b-dc81-4a3b-91f4-784bd76da2d2',
-        user: {
-          id: 'f3282e57-aaa6-4263-9b17-7db1992d4d76',
-          locations: [
-            {
-              id: 'ea5af371-d47f-4f8e-8771-05f1234446ac',
-              country: 'Colombia',
-              department: 'Bogota',
-              postalCode: '007111',
-              date: '2025-09-25T00:00:00.000Z'
-            }
-          ],
-          role: 'admin',
-          termsAccepted: true,
-          createdAt: '2025-09-25T14:42:52.378Z',
-          validatedAt: null,
-          isActive: true,
-          isValidated: false,
-          userValidated: false
+    status: 200,
+    description: 'Perfil encontrado',
+    schema: {
+      example: {
+        message: 'Perfil obtenido correctamente',
+        result: {
+          id: 'e997eb7b-dc81-4a3b-91f4-784bd76da2d2',
+          user: {
+            id: 'f3282e57-aaa6-4263-9b17-7db1992d4d76',
+            locations: [
+              {
+                id: 'ea5af371-d47f-4f8e-8771-05f1234446ac',
+                country: 'Colombia',
+                department: 'Bogota',
+                postalCode: '007111',
+                date: '2025-09-25T00:00:00.000Z',
+              },
+            ],
+            role: 'admin',
+            termsAccepted: true,
+            createdAt: '2025-09-25T14:42:52.378Z',
+            validatedAt: null,
+            isActive: true,
+            isValidated: false,
+            userValidated: false,
+          },
+          firstName: 'Jonhatan',
+          lastName: 'Pérez',
+          nickName: 'JPDev',
+          email: 'jacpman1992@gmail.com',
+          identification: null,
+          phone: '+573001112233',
+          birthday: null,
+          age: null,
+          gender: 'M',
+          lastActivity: null,
+          socials: null,
+          profilePictureUrl: null,
         },
-        firstName: 'Jonhatan',
-        lastName: 'Pérez',
-        nickName: 'JPDev',
-        email: 'jacpman1992@gmail.com',
-        identification: null,
-        phone: '+573001112233',
-        birthday: null,
-        age: null,
-        gender: 'M',
-        lastActivity: null,
-        socials: null,
-        profilePictureUrl: null
-      }
-    }
-  }
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
   @ApiResponse({ status: 403, description: 'No autorizado, Solo para Administradores' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
   async findById(@Query('userId') userId: string) {
     if (!userId) {
-         throw new UnauthorizedException('Id de usuario no existe');
-       }
-   
-       const profile = await this.profileService.getUserProfileById(userId);
-   
-      const userWithoutToken = { ...profile.user };
-      delete userWithoutToken.refreshToken;
+      throw new UnauthorizedException('Id de usuario no existe');
+    }
 
-  return {
-    message: 'Perfil obtenido correctamente',
-    result: {
-      ...profile,
-      user: userWithoutToken,
-    },
-  };
+    const profile = await this.profileService.getUserProfileById(userId);
+
+    const userWithoutToken = { ...profile.user };
+    delete userWithoutToken.refreshToken;
+
+    return {
+      message: 'Perfil obtenido correctamente',
+      result: {
+        ...profile,
+        user: userWithoutToken,
+      },
+    };
   }
 
   /**
@@ -130,79 +129,82 @@ async findAll() {
    */
   @Get('by-email')
   @ApiOperation({ summary: 'Obtener perfil de usuario por email (solo admin)' })
-    @ApiResponse({
-  status: 200,
-  description: 'Perfil encontrado',
-  schema: {
-    example: {
-      message: 'Perfil obtenido correctamente',
-      result: {
-        id: 'e997eb7b-dc81-4a3b-91f4-784bd76da2d2',
-        user: {
-          id: 'f3282e57-aaa6-4263-9b17-7db1992d4d76',
-          locations: [
-            {
-              id: 'ea5af371-d47f-4f8e-8771-05f1234446ac',
-              country: 'Colombia',
-              department: 'Bogota',
-              postalCode: '007111',
-              date: '2025-09-25T00:00:00.000Z'
-            }
-          ],
-          role: 'admin',
-          termsAccepted: true,
-          createdAt: '2025-09-25T14:42:52.378Z',
-          validatedAt: null,
-          isActive: true,
-          isValidated: false,
-          userValidated: false
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil encontrado',
+    schema: {
+      example: {
+        message: 'Perfil obtenido correctamente',
+        result: {
+          id: 'e997eb7b-dc81-4a3b-91f4-784bd76da2d2',
+          user: {
+            id: 'f3282e57-aaa6-4263-9b17-7db1992d4d76',
+            locations: [
+              {
+                id: 'ea5af371-d47f-4f8e-8771-05f1234446ac',
+                country: 'Colombia',
+                department: 'Bogota',
+                postalCode: '007111',
+                date: '2025-09-25T00:00:00.000Z',
+              },
+            ],
+            role: 'admin',
+            termsAccepted: true,
+            createdAt: '2025-09-25T14:42:52.378Z',
+            validatedAt: null,
+            isActive: true,
+            isValidated: false,
+            userValidated: false,
+          },
+          firstName: 'Jonhatan',
+          lastName: 'Pérez',
+          nickName: 'JPDev',
+          email: 'jacpman1992@gmail.com',
+          identification: null,
+          phone: '+573001112233',
+          birthday: null,
+          age: null,
+          gender: 'M',
+          lastActivity: null,
+          socials: null,
+          profilePictureUrl: null,
         },
-        firstName: 'Jonhatan',
-        lastName: 'Pérez',
-        nickName: 'JPDev',
-        email: 'jacpman1992@gmail.com',
-        identification: null,
-        phone: '+573001112233',
-        birthday: null,
-        age: null,
-        gender: 'M',
-        lastActivity: null,
-        socials: null,
-        profilePictureUrl: null
-      }
-    }
-  }
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
   @ApiResponse({ status: 403, description: 'No autorizado, Solo para Administradores' })
   @ApiResponse({ status: 404, description: 'Email del usuario no encontrado' })
-  async findByEmail(@Query('email') email: string)
-  {
-   if (!email) {
-         throw new UnauthorizedException('El email es requerido');
-       }
+  async findByEmail(@Query('email') email: string) {
+    if (!email) {
+      throw new UnauthorizedException('El email es requerido');
+    }
 
     const profile = await this.profileService.findByEmail(email);
 
     const userWithoutToken = { ...profile.user };
     delete userWithoutToken.refreshToken;
 
-  return {
-    message: 'Perfil obtenido correctamente',
-    result: {
-      ...profile,
-      user: userWithoutToken,
-    },
-  };
+    return {
+      message: 'Perfil obtenido correctamente',
+      result: {
+        ...profile,
+        user: userWithoutToken,
+      },
+    };
   }
 
-   /**
+  /**
    * PATCH /admin/profiles/:id
    * Modificar datos básicos del perfil (solo admin)
    */
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar datos de un perfil (solo admin)' })
-  @ApiResponse({ status: 200, description: 'Perfil actualizado correctamente', type:UpdateAdminProfileResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil actualizado correctamente',
+    type: UpdateAdminProfileResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Campos inválidos o no se enviaron' })
   @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
   @ApiResponse({ status: 403, description: 'No autorizado, solo para administradores' })
@@ -217,7 +219,7 @@ async findAll() {
       throw new NotFoundException('Perfil no encontrado');
     }
 
-    return profile
+    return profile;
   }
 
   /**
@@ -235,6 +237,6 @@ async findAll() {
     }
     await this.adminProfileService.deleteUserById(userId);
 
-    return 'Perfil de usuario eliminado correctamente'
+    return 'Perfil de usuario eliminado correctamente';
   }
 }

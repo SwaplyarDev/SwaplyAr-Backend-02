@@ -4,7 +4,7 @@ import { IsNumber } from 'class-validator';
 
 export class CreateAmountDto {
   @ApiProperty({ description: 'Cantidad enviada', example: 100 })
-  @Type(() => Number)         // 👈 convierte string a number
+  @Type(() => Number) // 👈 convierte string a number
   @IsNumber()
   amountSent: number;
 

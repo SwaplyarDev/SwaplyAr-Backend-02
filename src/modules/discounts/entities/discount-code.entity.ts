@@ -9,21 +9,16 @@ export class DiscountCode {
   @Column({ unique: true, name: 'code' })
   code: string;
 
-  @Column ('numeric', {
-
+  @Column('numeric', {
     precision: 15,
     scale: 2,
     name: 'value',
 
     transformer: {
-
       to: (value: number) => value,
       from: (value: string): number => Number(value),
-
     },
-
   })
-
   value: number;
 
   @Column({ name: 'currency_code' })

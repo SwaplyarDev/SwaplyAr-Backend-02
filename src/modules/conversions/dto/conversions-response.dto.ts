@@ -1,5 +1,3 @@
-
-
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ConversionResponseDto {
@@ -18,6 +16,9 @@ export class ConversionResponseDto {
   @ApiProperty({ example: 0.8539001438, description: 'Tasa de conversión usada en el cálculo' })
   rateUsed: number;
 
-  @ApiProperty({ example: 'Conversión realizada correctamente ...', description: 'Mensaje informativo' })
+  @ApiProperty({
+    example: 'Conversión realizada correctamente ...',
+    description: 'Mensaje informativo',
+  })
   message: string;
 }

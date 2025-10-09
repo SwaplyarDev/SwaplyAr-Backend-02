@@ -1,11 +1,11 @@
-import { 
+import {
   Controller,
   Patch,
   Param,
   Body,
   UseGuards,
   UseInterceptors,
-  ClassSerializerInterceptor 
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { AdminRoleGuard } from '@common/guards/admin-role.guard';
@@ -17,16 +17,13 @@ import { AdminUserService } from './user-admin.service';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status-dto';
 
-
 @ApiTags('Usuarios (Admin)')
 @Controller('admin/user')
 @UseGuards(JwtAuthGuard, AdminRoleGuard)
 @ApiBearerAuth()
 @UseInterceptors(ClassSerializerInterceptor)
 export class AdminUserController {
-  constructor(
-    private readonly userAdminService: AdminUserService,
-  ) {}
+  constructor(private readonly userAdminService: AdminUserService) {}
 
   @Patch(':userId/role')
   @UseInterceptors(ClassSerializerInterceptor)
@@ -37,26 +34,22 @@ export class AdminUserController {
     type: 'string',
   })
   @ApiResponse({
-  status: 200,
-  description: 'Rol de usuario actualizado correctamente',
-  schema: {
-    example: {
-      userId: '7c6e9c4a-8f32-4d89-9a20-bf5d8a1c9f45',
-      role: 'admin',
+    status: 200,
+    description: 'Rol de usuario actualizado correctamente',
+    schema: {
+      example: {
+        userId: '7c6e9c4a-8f32-4d89-9a20-bf5d8a1c9f45',
+        role: 'admin',
+      },
     },
-  },
   })
   @ApiResponse({ status: 400, description: 'Campo inválido o no se envio' })
   @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
   @ApiResponse({ status: 403, description: 'No autorizado, Solo para Administradores' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  async updateUserRole(
-    @Param('userId') userId: string,
-    @Body() updateRoleDto: UpdateUserRoleDto,
-  ) {
+  async updateUserRole(@Param('userId') userId: string, @Body() updateRoleDto: UpdateUserRoleDto) {
     return this.userAdminService.updateUserRole(userId, updateRoleDto.role);
   }
-
 
   @Patch(':userId/status')
   @ApiOperation({ summary: 'Actualizar el estado de un usuario (activo/inactivo)' })
@@ -69,11 +62,11 @@ export class AdminUserController {
     status: 200,
     description: 'Estado del usuario actualizado correctamente',
     schema: {
-    example: {
-      userId: '7c6e9c4a-8f32-4d89-9a20-bf5d8a1c9f45',
-      isActive: 'true',
+      example: {
+        userId: '7c6e9c4a-8f32-4d89-9a20-bf5d8a1c9f45',
+        isActive: 'true',
+      },
     },
-  },
   })
   @ApiResponse({ status: 400, description: 'Campo inválido o no se envio' })
   @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })

@@ -12,12 +12,12 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class FinancialAccountsService {
-    constructor(
-    private readonly senderService: SenderFinancialAccountsService,       
-    private readonly receiverService: ReceiverFinancialAccountsService,  
-    private readonly paymentMethodService: PaymentMethodService,         
+  constructor(
+    private readonly senderService: SenderFinancialAccountsService,
+    private readonly receiverService: ReceiverFinancialAccountsService,
+    private readonly paymentMethodService: PaymentMethodService,
     @InjectRepository(FinancialAccount)
-    private readonly financialAccountRepo: Repository<FinancialAccount>, 
+    private readonly financialAccountRepo: Repository<FinancialAccount>,
   ) {}
 
   async create(createFinancialAccountDto: CreateFinancialAccountDto) {
@@ -34,50 +34,56 @@ export class FinancialAccountsService {
     return { sender: senderClean, receiver };
   }
 
-async createSingleFinancialAccount(
-  createPaymentMethodDto: CreatePaymentMethodDto,
-  accountData: { firstName?: string; lastName?: string },
-) {
-  try {
-    // 1️⃣ Crear PaymentMethod
-    const paymentMethod = await this.paymentMethodService.create({
-      platformId: createPaymentMethodDto.platformId,
-      method: createPaymentMethodDto.method,
-      bank: createPaymentMethodDto.bank,
-      pix: createPaymentMethodDto.pix,
-      type: createPaymentMethodDto.type,
-      receiverCrypto: createPaymentMethodDto.receiverCrypto,
-      virtualBank: createPaymentMethodDto.virtualBank,
-});
+  async createSingleFinancialAccount(
+    createPaymentMethodDto: CreatePaymentMethodDto,
+    accountData: { firstName?: string; lastName?: string },
+  ) {
+    try {
+      // 1️⃣ Crear PaymentMethod
+      const paymentMethod = await this.paymentMethodService.create({
+        platformId: createPaymentMethodDto.platformId,
+        method: createPaymentMethodDto.method,
+        bank: createPaymentMethodDto.bank,
+        pix: createPaymentMethodDto.pix,
+        type: createPaymentMethodDto.type,
+        receiverCrypto: createPaymentMethodDto.receiverCrypto,
+        virtualBank: createPaymentMethodDto.virtualBank,
+      });
 
-    // 2️⃣ Crear FinancialAccount
-    const financialAccount = this.financialAccountRepo.create({
-  firstName:
-    paymentMethod.method === 'receiver-crypto'
-      ? ''
-      : accountData.firstName ?? (() => { throw new BadRequestException('firstName es obligatorio'); })(),
-  lastName:
-    paymentMethod.method === 'receiver-crypto'
-      ? ''
-      : accountData.lastName ?? (() => { throw new BadRequestException('lastName es obligatorio'); })(),
-  paymentMethod,
-});
+      // 2️⃣ Crear FinancialAccount
+      const financialAccount = this.financialAccountRepo.create({
+        firstName:
+          paymentMethod.method === 'receiver-crypto'
+            ? ''
+            : (accountData.firstName ??
+              (() => {
+                throw new BadRequestException('firstName es obligatorio');
+              })()),
+        lastName:
+          paymentMethod.method === 'receiver-crypto'
+            ? ''
+            : (accountData.lastName ??
+              (() => {
+                throw new BadRequestException('lastName es obligatorio');
+              })()),
+        paymentMethod,
+      });
 
-    const savedFinancialAccount = await this.financialAccountRepo.save(financialAccount);
+      const savedFinancialAccount = await this.financialAccountRepo.save(financialAccount);
 
-    const response = {
-  ...savedFinancialAccount,
-  paymentMethod: {
-    ...savedFinancialAccount.paymentMethod,
-    type: savedFinancialAccount.paymentMethod.type ?? undefined,
-  },
-};
+      const response = {
+        ...savedFinancialAccount,
+        paymentMethod: {
+          ...savedFinancialAccount.paymentMethod,
+          type: savedFinancialAccount.paymentMethod.type ?? undefined,
+        },
+      };
 
-return response;
-  } catch (err) {
-    throw new BadRequestException(`Error creando la cuenta financiera: ${err.message}`);
+      return response;
+    } catch (err) {
+      throw new BadRequestException(`Error creando la cuenta financiera: ${err.message}`);
+    }
   }
-}
 
   async findAllReceiver() {
     return await this.receiverService.findAll();
@@ -157,20 +163,18 @@ return response;
     return await this.receiverService.update(id, dto);
   }
 
-async deleteById(id: string): Promise<void> {
+  async deleteById(id: string): Promise<void> {
+    const senderDeleted = await this.senderService.delete(id);
+    if (senderDeleted) return;
 
-  const senderDeleted = await this.senderService.delete(id);
-  if (senderDeleted) return;
+    const receiverDeleted = await this.receiverService.delete(id);
+    if (receiverDeleted) return;
 
-  const receiverDeleted = await this.receiverService.delete(id);
-  if (receiverDeleted) return;
+    const financialAccount = await this.financialAccountRepo.findOneBy({ id });
+    if (!financialAccount) {
+      throw new NotFoundException(`No se encontró ninguna cuenta financiera con el ID: ${id}`);
+    }
 
-  const financialAccount = await this.financialAccountRepo.findOneBy({ id });
-  if (!financialAccount) {
-    throw new NotFoundException(`No se encontró ninguna cuenta financiera con el ID: ${id}`);
+    await this.financialAccountRepo.delete({ id });
   }
-
-  await this.financialAccountRepo.delete({ id });
-}
-
 }

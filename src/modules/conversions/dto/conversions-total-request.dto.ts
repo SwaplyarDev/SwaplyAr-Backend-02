@@ -33,9 +33,3 @@ export class ConversionTotalRequestDto {
   @IsEnum(ArsOperationType)
   operationType?: ArsOperationType;
 }
-
-
-
-
-
-

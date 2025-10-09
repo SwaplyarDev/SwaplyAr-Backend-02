@@ -1,5 +1,3 @@
-
-
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
@@ -20,14 +18,12 @@ export class ConversionsService {
     const apiUrl = this.configService.get<string>('CONVERSION_API_URL');
 
     if (!apiUrl) {
-    throw new Error('CONVERSION_API_URL is not defined in environment variables');
+      throw new Error('CONVERSION_API_URL is not defined in environment variables');
     }
 
-    const { data } = await firstValueFrom(
-      this.httpService.get(apiUrl),
-    );
+    const { data } = await firstValueFrom(this.httpService.get(apiUrl));
     return data;
-    }
+  }
 
   async convert(dto: ConversionRequestDto): Promise<ConversionResponseDto> {
     const { from, to, amount } = dto;
@@ -38,7 +34,7 @@ export class ConversionsService {
         to,
         amount,
         convertedAmount: amount,
-        rateUsed: 1, 
+        rateUsed: 1,
         message: `Conversión no requerida: las divisas son iguales (${from}). Se aplica factor 1.`,
       };
     }
@@ -47,8 +43,7 @@ export class ConversionsService {
     const pairKey = `${from} a ${to}`;
 
     const found = data.find(
-      (entry) =>
-        entry['Actualizar Monedas Calculadora']['Par de MonedasR'] === pairKey,
+      (entry) => entry['Actualizar Monedas Calculadora']['Par de MonedasR'] === pairKey,
     );
 
     if (!found) {
@@ -61,7 +56,7 @@ export class ConversionsService {
     const lastUpdated = item['Última Actualización'];
     const convertedAmount = amount * rate;
 
-   return {
+    return {
       from,
       to,
       amount,
@@ -75,13 +70,9 @@ export class ConversionsService {
     const { from, to, amount, operationType } = dto;
     const data = await this.fetchData();
 
-    const operationLabel =
-      operationType === ArsOperationType.Compra ? 'Compra' : 'Venta';
+    const operationLabel = operationType === ArsOperationType.Compra ? 'Compra' : 'Venta';
 
-    const key =
-      from === 'USD'
-        ? `USD Blue (${operationLabel})`
-        : `EUR Blue (${operationLabel})`;
+    const key = from === 'USD' ? `USD Blue (${operationLabel})` : `EUR Blue (${operationLabel})`;
 
     const found = data.find(
       (entry) => entry['Actualizar Monedas Calculadora']['Par de MonedasR'] === key,
@@ -109,11 +100,3 @@ export class ConversionsService {
     };
   }
 }
-
-
-
-
-
-
-
-

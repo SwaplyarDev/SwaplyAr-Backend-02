@@ -4,7 +4,6 @@ import { Repository, FindManyOptions, Between, ILike } from 'typeorm';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 
-
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { DiscountService } from 'src/modules/discounts/discounts.service';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
@@ -15,7 +14,10 @@ import { AdminStatus } from 'src/enum/admin-status.enum';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { FileUploadDTO } from 'src/modules/file-upload/dto/file-upload.dto';
 import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
-import { TransactionAdminResponseDto, TransactionByIdAdminResponseDto } from './dto/get-transaction-response.dto';
+import {
+  TransactionAdminResponseDto,
+  TransactionByIdAdminResponseDto,
+} from './dto/get-transaction-response.dto';
 import { UpdateStarDto } from 'src/modules/discounts/dto/update-star.dto';
 // import { TransactionGetResponseDto } from '@transactions/dto/transaction-response.dto';
 
@@ -59,102 +61,102 @@ export class AdminTransactionService {
   /* -------------------------------------------------------------------------- */
   /*                                 FIND ALL                                   */
   /* -------------------------------------------------------------------------- */
-async findAllTransactions(filters: {
-  page: number;
-  perPage: number;
-  country?: string;
-  status?: string;
-  method?: string;
-  search?: string;
-}): Promise<{ meta: any; data: TransactionAdminResponseDto[] }> {
-  const { page, perPage, country, status, method, search } = filters;
+  async findAllTransactions(filters: {
+    page: number;
+    perPage: number;
+    country?: string;
+    status?: string;
+    method?: string;
+    search?: string;
+  }): Promise<{ meta: any; data: TransactionAdminResponseDto[] }> {
+    const { page, perPage, country, status, method, search } = filters;
 
-  const query = this.transactionsRepository.createQueryBuilder('tx')
-    .leftJoinAndSelect('tx.senderAccount', 'senderAccount')
-    .leftJoinAndSelect('senderAccount.paymentMethod', 'senderPaymentMethod')
-    .leftJoinAndSelect('tx.receiverAccount', 'receiverAccount')
-    .leftJoinAndSelect('receiverAccount.paymentMethod', 'receiverPaymentMethod')
-    .leftJoinAndSelect('tx.amount', 'amount')
-    .leftJoinAndSelect('tx.proofsOfPayment', 'proofsOfPayment')
-    .leftJoinAndSelect('tx.note', 'note')
-    .leftJoinAndSelect('tx.regret', 'regret')
-    .orderBy('tx.createdAt', 'DESC')
-    .skip((page - 1) * perPage)
-    .take(perPage);
+    const query = this.transactionsRepository
+      .createQueryBuilder('tx')
+      .leftJoinAndSelect('tx.senderAccount', 'senderAccount')
+      .leftJoinAndSelect('senderAccount.paymentMethod', 'senderPaymentMethod')
+      .leftJoinAndSelect('tx.receiverAccount', 'receiverAccount')
+      .leftJoinAndSelect('receiverAccount.paymentMethod', 'receiverPaymentMethod')
+      .leftJoinAndSelect('tx.amount', 'amount')
+      .leftJoinAndSelect('tx.proofsOfPayment', 'proofsOfPayment')
+      .leftJoinAndSelect('tx.note', 'note')
+      .leftJoinAndSelect('tx.regret', 'regret')
+      .orderBy('tx.createdAt', 'DESC')
+      .skip((page - 1) * perPage)
+      .take(perPage);
 
-  // 📍 Filtros
-  if (country) {
-  query.andWhere('LOWER(tx.countryTransaction) = LOWER(:country)', { country });
-  }
-  if (status) query.andWhere('tx.finalStatus = :status', { status });
-  if (method) {
-    query.andWhere(
-      '(senderPaymentMethod.method = :method OR receiverPaymentMethod.method = :method)',
-      { method },
-    );
-  }
+    // 📍 Filtros
+    if (country) {
+      query.andWhere('LOWER(tx.countryTransaction) = LOWER(:country)', { country });
+    }
+    if (status) query.andWhere('tx.finalStatus = :status', { status });
+    if (method) {
+      query.andWhere(
+        '(senderPaymentMethod.method = :method OR receiverPaymentMethod.method = :method)',
+        { method },
+      );
+    }
 
-  // 🔍 Búsqueda por nombre o apellido del senderAccount
-  if (search) {
-  const searchPattern = search
-  .replace(/a/gi, '[aá]')
-  .replace(/e/gi, '[eé]')
-  .replace(/i/gi, '[ií]')
-  .replace(/o/gi, '[oó]')
-  .replace(/u/gi, '[uú]');
+    // 🔍 Búsqueda por nombre o apellido del senderAccount
+    if (search) {
+      const searchPattern = search
+        .replace(/a/gi, '[aá]')
+        .replace(/e/gi, '[eé]')
+        .replace(/i/gi, '[ií]')
+        .replace(/o/gi, '[oó]')
+        .replace(/u/gi, '[uú]');
 
-  query.andWhere(
-  `(senderAccount.first_name ~* :pattern OR senderAccount.last_name ~* :pattern OR CONCAT(senderAccount.first_name, ' ', senderAccount.last_name) ~* :pattern)`,
-  { pattern: searchPattern }
-  );
-  }
+      query.andWhere(
+        `(senderAccount.first_name ~* :pattern OR senderAccount.last_name ~* :pattern OR CONCAT(senderAccount.first_name, ' ', senderAccount.last_name) ~* :pattern)`,
+        { pattern: searchPattern },
+      );
+    }
 
-  const [transactions, total] = await query.getManyAndCount();
+    const [transactions, total] = await query.getManyAndCount();
 
-  const data = transactions.map((tx) => ({
-    id: tx.id,
-    countryTransaction: tx.countryTransaction,
-    message: tx.message,
-    createdAt: tx.createdAt.toISOString(),
-    finalStatus: tx.finalStatus,
-    regret: tx.regret && { regretId: tx.regret.id },
-    senderAccount: {
-      id: tx.senderAccount.id,
-      firstName: tx.senderAccount.firstName,
-      lastName: tx.senderAccount.lastName,
-      createdBy: tx.senderAccount.createdBy,
-      phoneNumber: tx.senderAccount.phoneNumber,
-      paymentMethod: {
-        id: tx.senderAccount.paymentMethod.id,
-        platformId: tx.senderAccount.paymentMethod.platformId,
-        method: tx.senderAccount.paymentMethod.method,
+    const data = transactions.map((tx) => ({
+      id: tx.id,
+      countryTransaction: tx.countryTransaction,
+      message: tx.message,
+      createdAt: tx.createdAt.toISOString(),
+      finalStatus: tx.finalStatus,
+      regret: tx.regret && { regretId: tx.regret.id },
+      senderAccount: {
+        id: tx.senderAccount.id,
+        firstName: tx.senderAccount.firstName,
+        lastName: tx.senderAccount.lastName,
+        createdBy: tx.senderAccount.createdBy,
+        phoneNumber: tx.senderAccount.phoneNumber,
+        paymentMethod: {
+          id: tx.senderAccount.paymentMethod.id,
+          platformId: tx.senderAccount.paymentMethod.platformId,
+          method: tx.senderAccount.paymentMethod.method,
+        },
       },
-    },
-    receiverAccount: {
-      id: tx.receiverAccount.id,
-      paymentMethod: tx.receiverAccount.paymentMethod,
-    },
-    note: tx.note ? { note_id: tx.note.note_id } : undefined,
-    proofOfPayment:
-      tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment[0] : undefined,
-    amount: tx.amount,
-    isNoteVerified: tx.isNoteVerified,
-    noteVerificationExpiresAt: tx.noteVerificationExpiresAt
-      ? tx.noteVerificationExpiresAt.toISOString()
-      : '',
-  }));
+      receiverAccount: {
+        id: tx.receiverAccount.id,
+        paymentMethod: tx.receiverAccount.paymentMethod,
+      },
+      note: tx.note ? { note_id: tx.note.note_id } : undefined,
+      proofOfPayment:
+        tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment[0] : undefined,
+      amount: tx.amount,
+      isNoteVerified: tx.isNoteVerified,
+      noteVerificationExpiresAt: tx.noteVerificationExpiresAt
+        ? tx.noteVerificationExpiresAt.toISOString()
+        : '',
+    }));
 
-  return {
-    meta: {
-      totalPages: Math.ceil(total / perPage),
-      page,
-      perPage,
-      totalTransactions: total,
-    },
-    data,
-  };
-}
-
+    return {
+      meta: {
+        totalPages: Math.ceil(total / perPage),
+        page,
+        perPage,
+        totalTransactions: total,
+      },
+      data,
+    };
+  }
 
   /* -------------------------------------------------------------------------- */
   /*                         GET TRANSACTION BY ID                              */
@@ -252,28 +254,27 @@ async findAllTransactions(filters: {
     } as TransactionByIdAdminResponseDto;
   }
 
-
   async getTransactionsByCreatedBy(email: string): Promise<Transaction[]> {
-  const transactions = await this.transactionsRepository.find({
-    where: { senderAccount: { createdBy: email } }, 
-    relations: [
-      'senderAccount',
-      'senderAccount.paymentMethod',
-      'receiverAccount',
-      'receiverAccount.paymentMethod',
-      'amount',
-      'proofsOfPayment',
-      'note',
-      'regret',
-    ],
-  });
+    const transactions = await this.transactionsRepository.find({
+      where: { senderAccount: { createdBy: email } },
+      relations: [
+        'senderAccount',
+        'senderAccount.paymentMethod',
+        'receiverAccount',
+        'receiverAccount.paymentMethod',
+        'amount',
+        'proofsOfPayment',
+        'note',
+        'regret',
+      ],
+    });
 
-  if (!transactions || transactions.length === 0) {
-    throw new NotFoundException('No se encontraron transacciones con ese email.');
+    if (!transactions || transactions.length === 0) {
+      throw new NotFoundException('No se encontraron transacciones con ese email.');
+    }
+
+    return transactions;
   }
-
-  return transactions;
-}
 
   /* -------------------------------------------------------------------------- */
   /*                        STATUS HISTORY FOR A TX                              */

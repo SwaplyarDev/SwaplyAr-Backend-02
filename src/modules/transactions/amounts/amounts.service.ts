@@ -24,22 +24,15 @@ export class AmountsService {
     return `This action returns all amounts`;
   }
 
-  findOne (id: string) {
-
-    return this.amountsRepository.findOne ({ where: { id } });
-
+  findOne(id: string) {
+    return this.amountsRepository.findOne({ where: { id } });
   }
 
-  async update (id: string, updateAmountDto: UpdateAmountDto) {
-
-    return await this.amountsRepository.update ({ id }, updateAmountDto);
-
+  async update(id: string, updateAmountDto: UpdateAmountDto) {
+    return await this.amountsRepository.update({ id }, updateAmountDto);
   }
 
-  async remove (id: string) {
-
-    return await this.amountsRepository.delete ({ id });
-    
+  async remove(id: string) {
+    return await this.amountsRepository.delete({ id });
   }
-  
 }

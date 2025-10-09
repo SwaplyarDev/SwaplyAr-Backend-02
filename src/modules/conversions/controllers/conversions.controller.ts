@@ -1,5 +1,3 @@
-
-
 import { Body, Controller, Post, BadRequestException, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConversionsService } from '../services/conversions.service';
@@ -9,11 +7,8 @@ import { ConversionArsRequestDto } from '../dto/conversions-request-Ars.dto';
 
 @Controller('conversions')
 @ApiTags('Conversions')
-
 export class ConversionsController {
-  constructor(
-    private readonly conversionsService: ConversionsService,
-  ) {}
+  constructor(private readonly conversionsService: ConversionsService) {}
 
   @Post()
   @ApiOperation({ summary: 'Convertir divisas y/o monedas (excepto USD/EUR → ARS)' })

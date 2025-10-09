@@ -1,16 +1,14 @@
-import { InjectRepository } from "@nestjs/typeorm";
-import { Transaction } from "@transactions/entities/transaction.entity";
-import { User } from "@users/entities/user.entity";
-import { DiscountCode } from "src/modules/discounts/entities/discount-code.entity";
-import { UserDiscount } from "src/modules/discounts/entities/user-discount.entity";
-import { UserRewardsLedger } from "src/modules/discounts/entities/user-rewards-ledger.entity";
-import { Repository } from "typeorm";
-import { CreateDiscountCodeDto } from "./dto/create-discount-code.dto";
-import { BadRequestException, NotFoundException } from "@nestjs/common";
-import { FilterTypeEnum, FilterUserDiscountsDto } from "./dto/filter-user-discounts.dto";
-import { UserDiscountHistoryDto } from "src/modules/discounts/dto/user-discount-history.dto";
-
-
+import { InjectRepository } from '@nestjs/typeorm';
+import { Transaction } from '@transactions/entities/transaction.entity';
+import { User } from '@users/entities/user.entity';
+import { DiscountCode } from 'src/modules/discounts/entities/discount-code.entity';
+import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
+import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
+import { Repository } from 'typeorm';
+import { CreateDiscountCodeDto } from './dto/create-discount-code.dto';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { FilterTypeEnum, FilterUserDiscountsDto } from './dto/filter-user-discounts.dto';
+import { UserDiscountHistoryDto } from 'src/modules/discounts/dto/user-discount-history.dto';
 
 export class AdminDiscountService {
   constructor(
@@ -27,17 +25,17 @@ export class AdminDiscountService {
   ) {}
 
   private applyUserDiscountsFilter(
-      qb: import('typeorm').SelectQueryBuilder<UserDiscount>,
-      filterDto: FilterUserDiscountsDto,
-    ): void {
-      if (filterDto.filterType && filterDto.filterType !== FilterTypeEnum.ALL) {
-        if (filterDto.filterType === FilterTypeEnum.USED) {
-          qb.andWhere('ud.isUsed = :used', { used: true });
-        } else if (filterDto.filterType === FilterTypeEnum.AVAILABLE) {
-          qb.andWhere('ud.isUsed = :used', { used: false });
-        }
+    qb: import('typeorm').SelectQueryBuilder<UserDiscount>,
+    filterDto: FilterUserDiscountsDto,
+  ): void {
+    if (filterDto.filterType && filterDto.filterType !== FilterTypeEnum.ALL) {
+      if (filterDto.filterType === FilterTypeEnum.USED) {
+        qb.andWhere('ud.isUsed = :used', { used: true });
+      } else if (filterDto.filterType === FilterTypeEnum.AVAILABLE) {
+        qb.andWhere('ud.isUsed = :used', { used: false });
       }
     }
+  }
 
   /**
   
@@ -114,22 +112,21 @@ async createDiscountCode(
     return qb.getMany();
   }
 
-async getUserDiscountHistoryByAdmin (userId: string): Promise<UserDiscountHistoryDto[]> {
-  const userDiscounts = await this.userDiscountRepo.find ({
-    where: { user: { id: userId }, isUsed: true },
-    relations: ['discountCode'],
-    order: { createdAt: 'DESC' },
-  });
+  async getUserDiscountHistoryByAdmin(userId: string): Promise<UserDiscountHistoryDto[]> {
+    const userDiscounts = await this.userDiscountRepo.find({
+      where: { user: { id: userId }, isUsed: true },
+      relations: ['discountCode'],
+      order: { createdAt: 'DESC' },
+    });
 
-  return userDiscounts.map ((ud) => ({
-    id: ud.id,
-    code: ud.discountCode.code,
-    value: ud.discountCode.value,
-    currencyCode: ud.discountCode.currencyCode,
-    isUsed: ud.isUsed,
-    createdAt: ud.createdAt,
-    usedAt: ud.usedAt,
-
-  }));
-}    
+    return userDiscounts.map((ud) => ({
+      id: ud.id,
+      code: ud.discountCode.code,
+      value: ud.discountCode.value,
+      currencyCode: ud.discountCode.currencyCode,
+      isUsed: ud.isUsed,
+      createdAt: ud.createdAt,
+      usedAt: ud.usedAt,
+    }));
+  }
 }

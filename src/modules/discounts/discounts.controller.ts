@@ -42,13 +42,12 @@ interface DataResponse<T> {
 export class DiscountsController {
   constructor(private readonly discountService: DiscountService) {}
 
-
   @Get('user-discounts/available/me')
   @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({
-  summary: 'Obtener descuentos disponibles del usuario autenticado',
-  description:
-    'Este endpoint devuelve únicamente los descuentos activos y no utilizados (isUsed = false) del usuario autenticado. El parámetro filterType fue eliminado.',
+    summary: 'Obtener descuentos disponibles del usuario autenticado',
+    description:
+      'Este endpoint devuelve únicamente los descuentos activos y no utilizados (isUsed = false) del usuario autenticado. El parámetro filterType fue eliminado.',
   })
   @ApiResponse({
     status: 200,
@@ -77,31 +76,29 @@ export class DiscountsController {
   })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @HttpCode(HttpStatus.OK)
-  async getmyAvailableUserDiscounts (
+  async getmyAvailableUserDiscounts(
     @User() user: UserEntity,
   ): Promise<DataResponse<UserDiscount[]>> {
     const discounts = await this.discountService.getAvailableUserDiscounts(user.id);
     return { data: discounts };
   }
 
-  @Get ('user-history')
-  @Roles (UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
-  @ApiOperation ({ summary: 'Obtener historial de cupones usados del usuario autenticado' })
-  @ApiResponse ({
+  @Get('user-history')
+  @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
+  @ApiOperation({ summary: 'Obtener historial de cupones usados del usuario autenticado' })
+  @ApiResponse({
     status: 200,
     description: 'Listado del historial de cupones usados',
     type: [UserDiscountHistoryDto],
   })
-  @ApiResponse ({ status: 401, description: 'No autenticado' })
-  @HttpCode (HttpStatus.OK)
-  async getMyDiscountHistory (@User () user: UserEntity): Promise<DataResponse<UserDiscountHistoryDto []>> {
-
-    const history = await this.discountService.getUserDiscountHistory (user.id);
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @HttpCode(HttpStatus.OK)
+  async getMyDiscountHistory(
+    @User() user: UserEntity,
+  ): Promise<DataResponse<UserDiscountHistoryDto[]>> {
+    const history = await this.discountService.getUserDiscountHistory(user.id);
     return { data: history };
-
   }
-  
-  
 
   @Put('user-discounts/admin/:id')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)

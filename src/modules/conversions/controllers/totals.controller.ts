@@ -1,5 +1,3 @@
-
-
 import { Body, Controller, HttpCode, Post, BadRequestException, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConversionsService } from '../services/conversions.service';
@@ -29,30 +27,29 @@ export class TotalsController {
   async calculateTotal(
     @Body() dto: ConversionTotalRequestDto,
   ): Promise<ConversionTotalsResponseDto> {
-    const isArsConversion =
-      (dto.from === 'USD' || dto.from === 'EUR') && dto.to === 'ARS';
+    const isArsConversion = (dto.from === 'USD' || dto.from === 'EUR') && dto.to === 'ARS';
 
-    const conversion = isArsConversion && dto.operationType
-      ? await this.conversionsService.convertArs({
-          amount: dto.amount,
-          from: dto.from,
-          to: dto.to,
-          operationType: dto.operationType,
-        })
-      : await this.conversionsService.convert({
-          amount: dto.amount,
-          from: dto.from,
-          to: dto.to,
-        });
+    const conversion =
+      isArsConversion && dto.operationType
+        ? await this.conversionsService.convertArs({
+            amount: dto.amount,
+            from: dto.from,
+            to: dto.to,
+            operationType: dto.operationType,
+          })
+        : await this.conversionsService.convert({
+            amount: dto.amount,
+            from: dto.from,
+            to: dto.to,
+          });
 
-    const commissionResult =
-      this.commissionsService.calculateCommissionWithCurrencyCheck(
-        conversion.convertedAmount,
-        dto.fromPlatform,
-        dto.toPlatform,
-        dto.from,
-        dto.to,
-      );
+    const commissionResult = this.commissionsService.calculateCommissionWithCurrencyCheck(
+      conversion.convertedAmount,
+      dto.fromPlatform,
+      dto.toPlatform,
+      dto.from,
+      dto.to,
+    );
 
     if (!commissionResult.valid) {
       throw new BadRequestException(
@@ -74,14 +71,3 @@ export class TotalsController {
     };
   }
 }
-
-
-
-
-
-
-
-
-
-
-

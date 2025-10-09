@@ -1,16 +1,25 @@
-import { RolesGuard } from "@common/guards/roles.guard";
-import { JwtAuthGuard } from "@common/jwt-auth.guard";
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from "@nestjs/common";
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { AdminDiscountService } from "./admin-discount.service";
-import { UserRole } from "src/enum/user-role.enum";
-import { Roles } from "@common/decorators/roles.decorator";
-import { DiscountCode } from "src/modules/discounts/entities/discount-code.entity";
-import { CreateDiscountCodeDto } from "./dto/create-discount-code.dto";
-import { UserDiscount } from "src/modules/discounts/entities/user-discount.entity";
-import { FilterUserDiscountsDto } from "./dto/filter-user-discounts.dto";
-import { UserDiscountHistoryDto } from "src/modules/discounts/dto/user-discount-history.dto";
-
+import { RolesGuard } from '@common/guards/roles.guard';
+import { JwtAuthGuard } from '@common/jwt-auth.guard';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AdminDiscountService } from './admin-discount.service';
+import { UserRole } from 'src/enum/user-role.enum';
+import { Roles } from '@common/decorators/roles.decorator';
+import { DiscountCode } from 'src/modules/discounts/entities/discount-code.entity';
+import { CreateDiscountCodeDto } from './dto/create-discount-code.dto';
+import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
+import { FilterUserDiscountsDto } from './dto/filter-user-discounts.dto';
+import { UserDiscountHistoryDto } from 'src/modules/discounts/dto/user-discount-history.dto';
 
 interface DataResponse<T> {
   data: T;
@@ -23,7 +32,7 @@ interface DataResponse<T> {
 export class AdminDiscountsController {
   constructor(private readonly adminDiscountService: AdminDiscountService) {}
 
-   /**
+  /**
    * Crea un código de descuento global, un descuento de usuario sin usar y sin fecha y devuelve el código completo.
   @Post('codes')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
@@ -81,7 +90,7 @@ export class AdminDiscountsController {
       }
     
       */
-  
+
   @Get('user-discounts')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({
@@ -102,23 +111,21 @@ export class AdminDiscountsController {
     return { data: discounts };
   }
 
-  @Get ('user-history/admin/:userId')
-  @Roles (UserRole.Admin, UserRole.SuperAdmin)
-  @ApiOperation ({
+  @Get('user-history/admin/:userId')
+  @Roles(UserRole.Admin, UserRole.SuperAdmin)
+  @ApiOperation({
     summary: 'Obtener historial de cupones de un usuario específico (Admin)',
   })
-  @ApiResponse ({
+  @ApiResponse({
     status: 200,
     description: 'Historial de descuentos del usuario',
     type: [UserDiscountHistoryDto],
   })
-  @HttpCode (HttpStatus.OK)
-  async getUserDiscountHistoryByAdmin (
+  @HttpCode(HttpStatus.OK)
+  async getUserDiscountHistoryByAdmin(
     @Param('userId') userId: string,
-  ): Promise<DataResponse<UserDiscountHistoryDto []>> {
-    const history = await this.adminDiscountService.getUserDiscountHistoryByAdmin (userId);
+  ): Promise<DataResponse<UserDiscountHistoryDto[]>> {
+    const history = await this.adminDiscountService.getUserDiscountHistoryByAdmin(userId);
     return { data: history };
-
   }
-
 }

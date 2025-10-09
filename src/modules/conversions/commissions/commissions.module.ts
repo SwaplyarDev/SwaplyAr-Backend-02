@@ -1,5 +1,3 @@
-
-
 import { Module } from '@nestjs/common';
 import { CommissionsController } from './controllers/commissions.controller';
 import { CommissionsService } from './services/commissions.service';
@@ -10,5 +8,3 @@ import { CommissionsService } from './services/commissions.service';
   exports: [CommissionsService],
 })
 export class CommissionsModule {}
-
-

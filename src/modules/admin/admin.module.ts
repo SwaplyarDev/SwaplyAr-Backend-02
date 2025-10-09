@@ -41,7 +41,7 @@ import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.ent
       UserSocials,
       UserDiscount,
       DiscountCode,
-      UserRewardsLedger
+      UserRewardsLedger,
     ]),
     FileUploadModule,
     ProofOfPaymentsModule,
@@ -54,14 +54,14 @@ import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.ent
     AdminProfileController,
     AdminTransactionController,
     AdminUserController,
-    AdminDiscountsController
+    AdminDiscountsController,
   ],
   providers: [
     ProfileService,
     AdminTransactionService,
     AdminProfileService,
     AdminUserService,
-    AdminDiscountService
+    AdminDiscountService,
   ],
   exports: [],
 })

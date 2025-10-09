@@ -6,10 +6,7 @@ import { UserAccount } from './entities/user-account.entity';
 import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UserAccount]),
-    FinancialAccountsModule, 
-  ],
+  imports: [TypeOrmModule.forFeature([UserAccount]), FinancialAccountsModule],
   controllers: [AccountsController],
   providers: [AccountsService],
   exports: [AccountsService],

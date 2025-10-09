@@ -83,14 +83,13 @@ export class User {
   })
   rewardsLedger: UserRewardsLedger;
 
-  @Column ({
-  type: 'enum',
-  enum: UserRole,
-  default: UserRole.User,
-  name: 'user_role',
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.User,
+    name: 'user_role',
   })
   role: UserRole;
-
 
   @Column({ name: 'terms_accepted', default: false })
   termsAccepted: boolean;

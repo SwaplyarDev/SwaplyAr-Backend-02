@@ -1,5 +1,3 @@
-
-
 import { ApiProperty } from '@nestjs/swagger';
 import { ConversionResponseDto } from './conversions-response.dto';
 import { CommissionResponseDto } from '../commissions/dto/commissions-response.dto';

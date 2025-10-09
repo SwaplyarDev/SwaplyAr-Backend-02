@@ -34,147 +34,144 @@ import { CreateUserAccountDto } from './dto/create-user-account.dto';
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
-// CREAR una cuenta de usuario con FinancialAccount
-@ApiOperation({
-  summary: 'Crear una cuenta financiera para el usuario autenticado',
-})
-@ApiResponse({
-  status: 201,
-  description: 'Cuenta financiera creada correctamente',
-  schema: {
-    example: {
-  "message": "Cuenta financiera creada correctamente",
-  "bank": {
-    "accountId": "29e11aa2-4f5f-45c4-aac9-52da305c5313",
-    "accountName": "Cuenta Principal",
-    "createdAt": "2025-09-19T14:06:28.075Z",
-    "updatedAt": "2025-09-19T14:06:28.113Z",
-    "status": true,
-    "userId": "e98d5deb-02f5-4466-8aaa-0ae638836422",
-    "financialAccount": {
-      "id": "a8fcf65d-1cfc-4100-b5be-ce5c014520bf",
-      "firstName": "Juan",
-      "lastName": "Pérez",
-      "paymentMethod": {
-        "id": "af2927b8-c901-4bc9-93fe-5f1cf58a516e",
-        "platformId": "bank",
-        "method": "bank",
-        "currency": "ARS",
-        "bankName": "Banco Nación",
-        "sendMethodKey": "CBU",
-        "sendMethodValue": "1234567890123456789012",
-        "documentType": "DNI",
-        "documentValue": "87654321"
-      }
-    }
-  }
-}
-  }
-})
-@ApiBody({
-  description: 'Datos para crear la cuenta financiera',
-  type: CreateUserAccountDto,
-  examples: {
-    bankExample: {
-      summary: 'Cuenta bancaria',
-      value: {
-        platformId: 'bank',
-        method: 'bank',
+  // CREAR una cuenta de usuario con FinancialAccount
+  @ApiOperation({
+    summary: 'Crear una cuenta financiera para el usuario autenticado',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Cuenta financiera creada correctamente',
+    schema: {
+      example: {
+        message: 'Cuenta financiera creada correctamente',
         bank: {
-          currency: 'ARS',
-          bankName: 'Banco Nación',
-          sendMethodKey: 'CBU',
-          sendMethodValue: '1234567890123456789012',
-          documentType: 'DNI',
-          documentValue: '87654321'
+          accountId: '29e11aa2-4f5f-45c4-aac9-52da305c5313',
+          accountName: 'Cuenta Principal',
+          createdAt: '2025-09-19T14:06:28.075Z',
+          updatedAt: '2025-09-19T14:06:28.113Z',
+          status: true,
+          userId: 'e98d5deb-02f5-4466-8aaa-0ae638836422',
+          financialAccount: {
+            id: 'a8fcf65d-1cfc-4100-b5be-ce5c014520bf',
+            firstName: 'Juan',
+            lastName: 'Pérez',
+            paymentMethod: {
+              id: 'af2927b8-c901-4bc9-93fe-5f1cf58a516e',
+              platformId: 'bank',
+              method: 'bank',
+              currency: 'ARS',
+              bankName: 'Banco Nación',
+              sendMethodKey: 'CBU',
+              sendMethodValue: '1234567890123456789012',
+              documentType: 'DNI',
+              documentValue: '87654321',
+            },
+          },
         },
-        firstName: 'Juan',
-        lastName: 'Pérez',
-        accountName: 'Cuenta Principal'
-      }
+      },
     },
-    pixExample: {
-      summary: 'Cuenta PIX',
-      value: {
-        platformId: 'pix',
-        method: 'pix',
-        pix: {
-          pixId: '001',
-          pixKey: 'ABC123',
-          pixValue: '1234567890',
-          cpf: '12345678901'
+  })
+  @ApiBody({
+    description: 'Datos para crear la cuenta financiera',
+    type: CreateUserAccountDto,
+    examples: {
+      bankExample: {
+        summary: 'Cuenta bancaria',
+        value: {
+          platformId: 'bank',
+          method: 'bank',
+          bank: {
+            currency: 'ARS',
+            bankName: 'Banco Nación',
+            sendMethodKey: 'CBU',
+            sendMethodValue: '1234567890123456789012',
+            documentType: 'DNI',
+            documentValue: '87654321',
+          },
+          firstName: 'Juan',
+          lastName: 'Pérez',
+          accountName: 'Cuenta Principal',
         },
-        firstName: 'Juan',
-        lastName: 'Pérez',
-        accountName: 'Cuenta PIX Principal'
-      }
+      },
+      pixExample: {
+        summary: 'Cuenta PIX',
+        value: {
+          platformId: 'pix',
+          method: 'pix',
+          pix: {
+            pixId: '001',
+            pixKey: 'ABC123',
+            pixValue: '1234567890',
+            cpf: '12345678901',
+          },
+          firstName: 'Juan',
+          lastName: 'Pérez',
+          accountName: 'Cuenta PIX Principal',
+        },
+      },
+      virtualBankExample: {
+        summary: 'Cuenta Virtual Bank',
+        value: {
+          platformId: 'virtual_bank',
+          method: 'virtual-bank',
+          virtualBank: {
+            currency: 'ARS',
+            emailAccount: 'nahuel@gmail.com',
+            transferCode: 'XYZ123',
+          },
+          type: 'paypal',
+          firstName: 'Juan',
+          lastName: 'Pérez',
+          accountName: 'Cuenta Virtual Principal',
+        },
+      },
+      cryptoExample: {
+        summary: 'Cuenta Crypto',
+        value: {
+          platformId: 'receiver_crypto',
+          method: 'receiver-crypto',
+          receiverCrypto: {
+            currency: 'BTC',
+            network: 'Bitcoin',
+            wallet: '1A2b3C4d5E6f7G8h9I0J',
+          },
+          accountName: 'Cuenta Crypto Principal',
+        },
+      },
     },
-    virtualBankExample: {
-      summary: 'Cuenta Virtual Bank',
-      value: {
-        platformId: 'virtual_bank',
-        method: 'virtual-bank',
-        virtualBank: {
-          currency: 'ARS',
-          emailAccount: 'nahuel@gmail.com',
-          transferCode: 'XYZ123'
-        },
-        type: 'paypal',
-        firstName: 'Juan',
-        lastName: 'Pérez',
-        accountName: 'Cuenta Virtual Principal'
-      }
-    },
-    cryptoExample: {
-      summary: 'Cuenta Crypto',
-      value: {
-        platformId: 'receiver_crypto',
-        method: 'receiver-crypto',
-        receiverCrypto: {
-          currency: 'BTC',
-          network: 'Bitcoin',
-          wallet: '1A2b3C4d5E6f7G8h9I0J'
-        },
-        accountName: 'Cuenta Crypto Principal'
-      }
-    }
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Solicitud inválida. Asegúrate de que los datos de entrada sean correctos y válidos.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado. Se requiere un token de autenticación válido.',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Prohibido. El usuario no tiene los permisos necesarios para crear una cuenta financiera.',
+  })
+  @UseGuards(RolesGuard)
+  @Roles('user')
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Request() req, @Body() body: CreateUserAccountDto) {
+    const userId = req.user.id;
+
+    const { firstName, lastName, accountName, ...createPaymentMethodDto } = body;
+    const accountData = { firstName, lastName, accountName };
+
+    const newAccount = await this.accountsService.createUserAccountWithFinancial(
+      userId,
+      createPaymentMethodDto,
+      accountData,
+    );
+
+    return { message: 'Cuenta financiera creada correctamente', bank: newAccount };
   }
-})
-@ApiResponse({
-  status: 400,
-  description: 'Solicitud inválida. Asegúrate de que los datos de entrada sean correctos y válidos.',
-})
-@ApiResponse({
-  status: 401,
-  description: 'No autorizado. Se requiere un token de autenticación válido.',
-})
-@ApiResponse({
-  status: 403,
-  description: 'Prohibido. El usuario no tiene los permisos necesarios para crear una cuenta financiera.',
-})
-@UseGuards(RolesGuard)
-@Roles('user')
-@Post()
-@HttpCode(HttpStatus.CREATED)
-async create(
-  @Request() req,
- @Body() body: CreateUserAccountDto,
-) {
-  const userId = req.user.id;
-
-  const { firstName, lastName, accountName, ...createPaymentMethodDto } = body;
-  const accountData = { firstName, lastName, accountName };
-
-  const newAccount = await this.accountsService.createUserAccountWithFinancial(
-    userId,
-    createPaymentMethodDto,
-    accountData,
-  );
-
-
-  return { message: 'Cuenta financiera creada correctamente', bank: newAccount };
-}
-
 
   // DELETE una cuenta de banco
   @ApiOperation({

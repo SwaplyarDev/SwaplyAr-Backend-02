@@ -1,5 +1,5 @@
-import { CreatePaymentMethodDto } from "@financial-accounts/payment-methods/dto/create-payment-method.dto";
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateUserAccountDto extends CreatePaymentMethodDto {
   @IsString()

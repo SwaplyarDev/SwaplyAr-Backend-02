@@ -37,7 +37,6 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Transaction } from './entities/transaction.entity';
 import {
-
   ReceiverAccountDto,
   SenderAccountDto,
   TransactionGetByIdDto,
@@ -97,67 +96,67 @@ export class TransactionsController {
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-  schema: {
-    type: 'object',
-    properties: {
-      createTransactionDto: {
-        type: 'string',
-        description:
-          'JSON stringificado con la información de la transacción (CreateTransactionDto)',
-        example: JSON.stringify(
-          {
-            countryTransaction: "Argentina",
-            message: "Transferencia de prueba",
-            financialAccounts: {
-              senderAccount: {
-                firstName: "Juan",
-                lastName: "Pérez",
-                phoneNumber: "+5491123456789",
-                createdBy: "coronajonhatan@gmail.com",
-                paymentMethod: {
-                  platformId: "bank",
-                  method: "bank"
-                }
+    schema: {
+      type: 'object',
+      properties: {
+        createTransactionDto: {
+          type: 'string',
+          description:
+            'JSON stringificado con la información de la transacción (CreateTransactionDto)',
+          example: JSON.stringify(
+            {
+              countryTransaction: 'Argentina',
+              message: 'Transferencia de prueba',
+              financialAccounts: {
+                senderAccount: {
+                  firstName: 'Juan',
+                  lastName: 'Pérez',
+                  phoneNumber: '+5491123456789',
+                  createdBy: 'coronajonhatan@gmail.com',
+                  paymentMethod: {
+                    platformId: 'bank',
+                    method: 'bank',
+                  },
+                },
+                receiverAccount: {
+                  firstName: 'Alan',
+                  lastName: 'Fernandez',
+                  paymentMethod: {
+                    platformId: 'bank',
+                    method: 'bank',
+                    bank: {
+                      currency: 'ARS',
+                      bankName: 'Banco Galicia',
+                      sendMethodKey: 'CBU',
+                      sendMethodValue: '1234567890123456789012',
+                    },
+                  },
+                },
               },
-              receiverAccount: {
-                firstName: "Alan",
-                lastName: "Fernandez",
-                paymentMethod: {
-                  platformId: "bank",
-                  method: "bank",
-                  bank: {
-                    currency: "ARS",
-                    bankName: "Banco Galicia",
-                    sendMethodKey: "CBU",
-                    sendMethodValue: "1234567890123456789012",
-                  }
-                }
-              }
-            },
-            amount: {
-              amountSent: 1000,
-              currencySent: "ARS",
-              amountReceived: 900,
-              currencyReceived: "BRL",
-            },
-            userDiscountIds: [
+              amount: {
+                amountSent: 1000,
+                currencySent: 'ARS',
+                amountReceived: 900,
+                currencyReceived: 'BRL',
+              },
+              userDiscountIds: [
                 '550e8400-e29b-41d4-a716-446655440000',
-                '550e8400-e29b-41d4-a716-446655440001'
-              ]             
-          },
-          null,
-          2
-        )
+                '550e8400-e29b-41d4-a716-446655440001',
+              ],
+            },
+            null,
+            2,
+          ),
+        },
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Archivo del comprobante de pago (JPG, PNG o PDF)',
+        },
       },
-      file: {
-        type: 'string',
-        format: 'binary',
-        description: 'Archivo del comprobante de pago (JPG, PNG o PDF)',
-      },
+      required: ['createTransactionDto'],
     },
-    required: ['createTransactionDto'],
-  },
-})
+  })
   @ApiResponse({
     status: 201,
     description: '✅ Transacción creada correctamente',
@@ -221,23 +220,26 @@ export class TransactionsController {
     const createTransactionDto = plainToInstance(CreateTransactionDto, parsedDto);
 
     const senderPaymentMethod = createTransactionDto.financialAccounts.senderAccount.paymentMethod;
-    const receiverPaymentMethod = createTransactionDto.financialAccounts.receiverAccount.paymentMethod;
+    const receiverPaymentMethod =
+      createTransactionDto.financialAccounts.receiverAccount.paymentMethod;
 
-// Función auxiliar para validar type
-const validateVirtualBankType = (pm: typeof senderPaymentMethod | typeof receiverPaymentMethod) => {
-  if (pm.method === 'virtual-bank') {
-    if (!pm.type) {
-      throw new BadRequestException('El campo "type" es obligatorio para virtual-bank');
-    }
-    // Asegurarse de que el type sea válido según tu enum
-    if (!Object.values(VirtualBankType).includes(pm.type as VirtualBankType)) {
-      throw new BadRequestException('El campo "type" no es válido para virtual-bank');
-    }
-  }
-};
+    // Función auxiliar para validar type
+    const validateVirtualBankType = (
+      pm: typeof senderPaymentMethod | typeof receiverPaymentMethod,
+    ) => {
+      if (pm.method === 'virtual-bank') {
+        if (!pm.type) {
+          throw new BadRequestException('El campo "type" es obligatorio para virtual-bank');
+        }
+        // Asegurarse de que el type sea válido según tu enum
+        if (!Object.values(VirtualBankType).includes(pm.type as VirtualBankType)) {
+          throw new BadRequestException('El campo "type" no es válido para virtual-bank');
+        }
+      }
+    };
 
-validateVirtualBankType(senderPaymentMethod);
-validateVirtualBankType(receiverPaymentMethod);
+    validateVirtualBankType(senderPaymentMethod);
+    validateVirtualBankType(receiverPaymentMethod);
 
     const senderDto = createTransactionDto.financialAccounts.senderAccount;
 
@@ -403,10 +405,10 @@ validateVirtualBankType(receiverPaymentMethod);
     @Request() req: RequestWithUser,
   ): Promise<TransactionGetByIdDto> {
     const userEmail = req.user.email;
-    
+
     try {
       return await this.transactionsService.getTransactionByEmail(transactionId, userEmail);
-    }catch (error) {
+    } catch (error) {
       if (error instanceof ForbiddenException) {
         throw new ForbiddenException(error.message || 'Acceso no autorizado');
       }
@@ -416,4 +418,4 @@ validateVirtualBankType(receiverPaymentMethod);
       throw new InternalServerErrorException('Error inesperado al obtener la transacción');
     }
   }
-} 
+}

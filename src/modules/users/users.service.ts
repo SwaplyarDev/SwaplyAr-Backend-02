@@ -92,5 +92,4 @@ export class UsersService {
   async save(user: User): Promise<User> {
     return this.userRepository.save(user);
   }
-
 }

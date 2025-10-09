@@ -41,7 +41,7 @@ class UserAccountResponseDto {
   createdAt: Date;
 
   @IsString()
-  updatedAt: Date; 
+  updatedAt: Date;
 
   @IsBoolean()
   status: boolean;

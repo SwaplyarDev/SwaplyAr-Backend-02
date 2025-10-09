@@ -472,7 +472,7 @@ export class UserVerificationController {
           ? {
               firstName: profile.firstName,
               lastName: profile.lastName,
-              email: profile.email
+              email: profile.email,
             }
           : null,
         documents,

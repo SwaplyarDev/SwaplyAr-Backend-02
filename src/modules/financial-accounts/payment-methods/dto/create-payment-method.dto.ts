@@ -41,13 +41,15 @@ export class CreatePaymentMethodDto {
   @Type(() => CreateVirtualBankDto)
   virtualBank?: CreateVirtualBankDto;
 
-@ApiProperty({
+  @ApiProperty({
     description: 'Tipo de virtual bank (solo aplica si method = virtual-bank)',
     example: VirtualBankType.PayPal,
     required: false,
     enum: VirtualBankType,
   })
   @IsOptional()
-  @IsEnum(VirtualBankType, { message: 'type debe ser uno de los valores permitidos en VirtualBankType' })
+  @IsEnum(VirtualBankType, {
+    message: 'type debe ser uno de los valores permitidos en VirtualBankType',
+  })
   type?: VirtualBankType;
 }

@@ -12,7 +12,12 @@ export class VirtualBankService {
     private readonly virtualBankRepository: Repository<VirtualBank>,
   ) {}
 
-  async create(createVirtualBankDto: CreateVirtualBankDto, platformId: Platform, method: string, type: string) {
+  async create(
+    createVirtualBankDto: CreateVirtualBankDto,
+    platformId: Platform,
+    method: string,
+    type: string,
+  ) {
     const newVirtualBank = this.virtualBankRepository.create({
       ...createVirtualBankDto,
       platformId,

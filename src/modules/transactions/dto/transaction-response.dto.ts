@@ -19,7 +19,7 @@ export class PaymentMethodSenderDto {
 
   @Expose()
   @ApiProperty({ name: 'type', example: 'virtual', required: false })
-  @Transform(({ value }) => (value ? value : undefined)) 
+  @Transform(({ value }) => (value ? value : undefined))
   type?: string;
 }
 
@@ -205,24 +205,17 @@ export class TransactionResponseDto {
   @ApiProperty({ name: 'finalStatus', example: 'pending' })
   finalStatus: string;
 
-  @Expose ()
-
-  @ApiProperty ({
-
+  @Expose()
+  @ApiProperty({
     name: 'financialAccounts',
     type: () => ({
       senderAccount: { type: AccountSenderDto },
       receiverAccount: { type: AccountReceiverDto },
-    
     }),
-
   })
-
   financialAccounts: {
-  
     senderAccount: AccountSenderDto;
     receiverAccount: AccountReceiverDto;
-    
   };
 
   @Expose()
@@ -236,11 +229,7 @@ export class TransactionResponseDto {
   amount: AmountResponseDto;
 
   @Expose()
-  @Transform(({ obj }) => 
-    obj.userDiscounts?.length 
-      ? obj.userDiscounts.map(ud => ud.id) 
-      : []
-  )
+  @Transform(({ obj }) => (obj.userDiscounts?.length ? obj.userDiscounts.map((ud) => ud.id) : []))
   @ApiProperty({
     name: 'userDiscounts',
     description: 'IDs de los descuentos aplicados',
@@ -248,11 +237,9 @@ export class TransactionResponseDto {
     isArray: true,
   })
   userDiscounts?: string[];
-
 }
 
 export class UserDiscountGetDto {
-
   @Expose()
   @ApiProperty({ example: 'uuid-discount-1234' })
   id: string;
@@ -268,12 +255,11 @@ export class UserDiscountGetDto {
   @Expose()
   @ApiProperty({ example: '2025-09-17T14:32:00.000Z', required: false })
   usedAt?: Date | null;
-
 }
 
 export class TransactionGetByIdDto {
   @Expose()
-  @ApiProperty ({ name: 'id', example: 'Sq5k0DMwf4' })
+  @ApiProperty({ name: 'id', example: 'Sq5k0DMwf4' })
   id: string;
 
   @Expose()
@@ -290,24 +276,17 @@ export class TransactionGetByIdDto {
   @ApiProperty({ name: 'finalStatus', example: 'pending' })
   finalStatus: string;
 
-  @Expose ()
-
-  @ApiProperty ({
-
+  @Expose()
+  @ApiProperty({
     name: 'financialAccounts',
     type: () => ({
       senderAccount: { type: AccountSenderDto },
       receiverAccount: { type: AccountReceiverDto },
-    
     }),
-
   })
-
   financialAccounts: {
-  
     senderAccount: AccountSenderDto;
     receiverAccount: AccountReceiverDto;
-    
   };
 
   @Expose()
@@ -319,7 +298,7 @@ export class TransactionGetByIdDto {
   @Type(() => AmountResponseDto)
   @ApiProperty({ name: 'amount', type: AmountResponseDto })
   amount: AmountResponseDto;
-  
+
   @Type(() => RegretDto)
   @ApiProperty({ type: RegretDto, required: false })
   regret?: RegretDto;
@@ -332,7 +311,6 @@ export class TransactionGetByIdDto {
     description: 'Lista completa de descuentos aplicados',
   })
   userDiscounts?: UserDiscountGetDto[];
-
 }
 
 export class PaymentMethodGetReceiverDto {
@@ -508,45 +486,42 @@ export class PaymentMethodGetReceiverDto {
 }
 
 export class SenderAccountDto {
-
-  @Expose ()
+  @Expose()
   @ApiProperty({ example: '47964345-930b-4eec-b221-42ad423ac760' })
   id: string;
 
-  @Expose ()
+  @Expose()
   @ApiProperty({ example: 'Juan' })
   firstName: string;
 
-  @Expose ()
+  @Expose()
   @ApiProperty({ example: 'Pérez' })
   lastName: string;
 
-  @Expose ()
+  @Expose()
   @ApiProperty({ example: 'example@gmail.com' })
   @IsEmail()
   createdBy: string;
 
-  @Expose ()
+  @Expose()
   @ApiProperty({ example: 'Pérez' })
   phoneNumber: string;
 
   @Expose()
-  @Type(() => PaymentMethodSenderDto) // 
+  @Type(() => PaymentMethodSenderDto) //
   @ApiProperty({ type: PaymentMethodSenderDto })
   paymentMethod: PaymentMethodSenderDto;
 }
 
 export class ReceiverAccountDto {
-
-  @Expose () 
+  @Expose()
   @ApiProperty({ example: 'e28f2e9f-b436-42cf-888c-c161739c8565' })
   id: string;
 
-  @Expose() 
-  @Type(() => PaymentMethodGetReceiverDto) // 
+  @Expose()
+  @Type(() => PaymentMethodGetReceiverDto) //
   @ApiProperty({ type: PaymentMethodGetReceiverDto })
   paymentMethod: PaymentMethodGetReceiverDto;
-
 }
 
 export class ProofOfPaymentDto {
@@ -600,6 +575,4 @@ export class TransactionGetResponseDto {
 
   @ApiProperty({ type: AmountDto })
   amount: AmountDto;
-  
 }
-

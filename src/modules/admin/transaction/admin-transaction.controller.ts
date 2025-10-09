@@ -30,7 +30,10 @@ import { StatusHistoryResponse } from 'src/common/interfaces/status-history.inte
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { AdminRoleGuard } from '@common/guards/admin-role.guard';
 import { MailerService } from '@mailer/mailer.service';
-import { TransactionAdminResponseDto, TransactionByIdAdminResponseDto } from './dto/get-transaction-response.dto';
+import {
+  TransactionAdminResponseDto,
+  TransactionByIdAdminResponseDto,
+} from './dto/get-transaction-response.dto';
 import { AdminTransactionService } from './admin-transaction.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AddVoucherDto } from './dto/add-voucher.dto';
@@ -38,8 +41,6 @@ import { AdminStatus } from 'src/enum/admin-status.enum';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { User } from '@users/entities/user.entity';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
-
-
 
 @ApiTags('Transacciones (Admin)')
 @ApiBearerAuth()
@@ -115,15 +116,15 @@ export class AdminTransactionController {
     @Query('method') method?: string,
     @Query('search') search?: string,
   ): Promise<{ meta: any; data: TransactionAdminResponseDto[] }> {
-  return this.adminService.findAllTransactions({
-    page: Number(page),
-    perPage: Number(perPage),
-    country,
-    status,
-    method,
-    search,
-  });
-}
+    return this.adminService.findAllTransactions({
+      page: Number(page),
+      perPage: Number(perPage),
+      country,
+      status,
+      method,
+      search,
+    });
+  }
 
   @ApiOperation({ summary: 'Agregar comprobante a una transacción' })
   @ApiConsumes('multipart/form-data')
@@ -362,34 +363,33 @@ export class AdminTransactionController {
   }
 
   @ApiOperation({ summary: 'Obtener transacciones por createdBy (email) del remitente' })
-@ApiResponse({
-  status: 200,
-  description: 'Transacciones encontradas',
-  type: [TransactionByIdAdminResponseDto],
-})
-@ApiResponse({ status: 404, description: '❌ No se encontraron transacciones con ese email' })
-@Get('transactions/sender/:email')
-async getTransactionsByCreatedBy(
-  @Param('email') email: string,
-): Promise<{ data?: TransactionByIdAdminResponseDto[]; message?: string }> {
-  try {
-    if (!email) {
-      return { message: 'El email (createdBy) es requerido.' };
-    }
+  @ApiResponse({
+    status: 200,
+    description: 'Transacciones encontradas',
+    type: [TransactionByIdAdminResponseDto],
+  })
+  @ApiResponse({ status: 404, description: '❌ No se encontraron transacciones con ese email' })
+  @Get('transactions/sender/:email')
+  async getTransactionsByCreatedBy(
+    @Param('email') email: string,
+  ): Promise<{ data?: TransactionByIdAdminResponseDto[]; message?: string }> {
+    try {
+      if (!email) {
+        return { message: 'El email (createdBy) es requerido.' };
+      }
 
-    const transactions = await this.adminService.getTransactionsByCreatedBy(email);
+      const transactions = await this.adminService.getTransactionsByCreatedBy(email);
 
-    return {
-      data: transactions.map((tx) => this.adminService.formatTransaction(tx)),
-    };
-  } catch (error) {
-    if (error instanceof NotFoundException) {
-      return { message: 'No se encontraron transacciones con ese email.' };
+      return {
+        data: transactions.map((tx) => this.adminService.formatTransaction(tx)),
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return { message: 'No se encontraron transacciones con ese email.' };
+      }
+      throw error;
     }
-    throw error;
   }
-}
-
 
   @ApiOperation({ summary: 'Actualizar el estado de una transacción por tipo' })
   @ApiResponse({

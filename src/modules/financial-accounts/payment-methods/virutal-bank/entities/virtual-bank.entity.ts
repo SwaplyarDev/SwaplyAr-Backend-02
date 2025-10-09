@@ -9,6 +9,6 @@ export class VirtualBank extends PaymentMethod {
   @Column({ name: 'email_account' })
   emailAccount: string;
 
-  @Column({ name: 'transfer_code' , nullable: true})
+  @Column({ name: 'transfer_code', nullable: true })
   transferCode?: string;
 }

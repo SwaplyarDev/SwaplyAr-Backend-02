@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UserLocationDto {
   @ApiProperty({ example: '1a5bcb6c-2f9a-4677-b51e-9ee2fc295a5d' })
@@ -14,8 +14,8 @@ export class UserLocationDto {
   postalCode: string;
 
   @ApiProperty({
-    type: 'string',           // fuerza a Swagger a tratarlo como string
-    format: 'date-time',      // formato ISO
+    type: 'string', // fuerza a Swagger a tratarlo como string
+    format: 'date-time', // formato ISO
     example: '2025-09-24T00:00:00.000Z',
   })
   date: Date;
@@ -25,17 +25,17 @@ export class UserResponseDto {
   @ApiProperty({ example: 'd8e5fcb1-cf4b-4de9-823a-b075dfadaca2' })
   id: string;
 
-   @ApiProperty({
-  type: [UserLocationDto],
-  example: [
-    {
-      id: '1a5bcb6c-2f9a-4677-b51e-9ee2fc295a5d',
-      country: 'Colombia',
-      department: 'Antioquia',
-      postalCode: '050021',
-      date: '2025-09-24T00:00:00.000Z',
-    },
-  ],
+  @ApiProperty({
+    type: [UserLocationDto],
+    example: [
+      {
+        id: '1a5bcb6c-2f9a-4677-b51e-9ee2fc295a5d',
+        country: 'Colombia',
+        department: 'Antioquia',
+        postalCode: '050021',
+        date: '2025-09-24T00:00:00.000Z',
+      },
+    ],
   })
   locations: UserLocationDto[];
 

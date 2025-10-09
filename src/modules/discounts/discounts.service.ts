@@ -9,11 +9,13 @@ import { DiscountCode } from './entities/discount-code.entity';
 import { UserDiscount } from './entities/user-discount.entity';
 import { UserRewardsLedger } from './entities/user-rewards-ledger.entity';
 import { CreateDiscountCodeDto } from '../admin/discounts/dto/create-discount-code.dto';
-import { FilterTypeEnum, FilterUserDiscountsDto } from '../admin/discounts/dto/filter-user-discounts.dto';
+import {
+  FilterTypeEnum,
+  FilterUserDiscountsDto,
+} from '../admin/discounts/dto/filter-user-discounts.dto';
 import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
 import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
 import { UpdateStarDto } from './dto/update-star.dto';
-
 
 export class DiscountService {
   constructor(
@@ -71,16 +73,14 @@ export class DiscountService {
   /**
    * Obtiene descuentos disponibles de un usuario específico.
    */
-  async getAvailableUserDiscounts(
-    userId: string,
-  ): Promise<UserDiscount[]> {
+  async getAvailableUserDiscounts(userId: string): Promise<UserDiscount[]> {
     const qb = this.userDiscountRepo
       .createQueryBuilder('ud')
       .leftJoin('ud.user', 'user')
       .leftJoinAndSelect('ud.discountCode', 'code')
       .where('user.id = :userId', { userId })
       .andWhere('ud.isUsed = :isUsed', { isUsed: false });
-      return qb.getMany();
+    return qb.getMany();
   }
 
   /* Obtiene descuentos de un usuario específico por su user_id */
@@ -97,20 +97,20 @@ export class DiscountService {
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
 
     if (![UserRole.Admin, UserRole.SuperAdmin].includes(userRole ?? UserRole.User)) {
-
-      throw new ForbiddenException ('No tiene permiso para acceder a este descuento');
-
+      throw new ForbiddenException('No tiene permiso para acceder a este descuento');
     }
 
     return ud;
-
   }
 
   /**
    * Obtiene un descuento de usuario por ID, verifica propiedad y devuelve toda la información relevante.
    */
-  async getUserDiscountById(id: string, userId: string, userRole?: UserRole): Promise<UserDiscount> {
-
+  async getUserDiscountById(
+    id: string,
+    userId: string,
+    userRole?: UserRole,
+  ): Promise<UserDiscount> {
     const ud = await this.userDiscountRepo.findOne({
       where: { id },
       relations: ['user', 'discountCode', 'transactions'],
@@ -120,25 +120,23 @@ export class DiscountService {
       throw new ForbiddenException('No tiene permiso para acceder a este descuento');
     }*/
 
-    if (ud.user.id !== userId && (userRole !== UserRole.Admin && userRole !== UserRole.SuperAdmin)) {
-
-      throw new ForbiddenException ('No tiene permiso para acceder a este descuento');
-
+    if (ud.user.id !== userId && userRole !== UserRole.Admin && userRole !== UserRole.SuperAdmin) {
+      throw new ForbiddenException('No tiene permiso para acceder a este descuento');
     }
 
     return ud;
   }
 
   /**
-  * Alterna el estado de un descuento de usuario:
-  * - Si no estaba usado → marcar como usado y asociar a la transacción indicada en el DTO.
-  * - Si estaba usado → desmarcar, borrar usedAt y desasociar de la transacción.
-  */
+   * Alterna el estado de un descuento de usuario:
+   * - Si no estaba usado → marcar como usado y asociar a la transacción indicada en el DTO.
+   * - Si estaba usado → desmarcar, borrar usedAt y desasociar de la transacción.
+   */
   async updateUserDiscount(
     id: string,
     dto: UpdateUserDiscountDto,
     userId: string,
-  ): Promise<UserDiscount> {   
+  ): Promise<UserDiscount> {
     const ud = await this.getUserDiscountById(id, userId);
 
     if (!ud.isUsed) {
@@ -154,9 +152,7 @@ export class DiscountService {
           throw new NotFoundException('Transacción no encontrada');
         }
 
-        const alreadyLinked = ud.transactions?.some(
-          t => t.id === transaction.id,
-        );
+        const alreadyLinked = ud.transactions?.some((t) => t.id === transaction.id);
         if (!alreadyLinked) {
           ud.transactions = [...(ud.transactions || []), transaction];
         }
@@ -166,9 +162,7 @@ export class DiscountService {
       ud.usedAt = null;
 
       if (dto.transactionId && ud.transactions?.length) {
-        ud.transactions = ud.transactions.filter(
-          t => t.id !== dto.transactionId,
-       );
+        ud.transactions = ud.transactions.filter((t) => t.id !== dto.transactionId);
       }
     }
 
@@ -186,18 +180,14 @@ export class DiscountService {
     return updatedUd;
   }
 
-  async getUserDiscountHistory (userId: string): Promise<UserDiscountHistoryDto[]> {
-
-    const userDiscounts = await this.userDiscountRepo.find ({
-
+  async getUserDiscountHistory(userId: string): Promise<UserDiscountHistoryDto[]> {
+    const userDiscounts = await this.userDiscountRepo.find({
       where: { user: { id: userId }, isUsed: true },
       relations: ['discountCode'],
       order: { createdAt: 'DESC' },
-
     });
 
-    return userDiscounts.map ((ud) => ({
-
+    return userDiscounts.map((ud) => ({
       id: ud.id,
       code: ud.discountCode.code,
       value: ud.discountCode.value,
@@ -205,34 +195,26 @@ export class DiscountService {
       isUsed: ud.isUsed,
       createdAt: ud.createdAt,
       usedAt: ud.usedAt,
-
     }));
-  
   }
 
-  async getUserDiscountHistoryByAdmin (userId: string): Promise<UserDiscountHistoryDto[]> {
+  async getUserDiscountHistoryByAdmin(userId: string): Promise<UserDiscountHistoryDto[]> {
+    const userDiscounts = await this.userDiscountRepo.find({
+      where: { user: { id: userId }, isUsed: true },
+      relations: ['discountCode'],
+      order: { createdAt: 'DESC' },
+    });
 
-  const userDiscounts = await this.userDiscountRepo.find ({
-
-    where: { user: { id: userId }, isUsed: true },
-    relations: ['discountCode'],
-    order: { createdAt: 'DESC' },
-
-  });
-
-  return userDiscounts.map ((ud) => ({
-
-    id: ud.id,
-    code: ud.discountCode.code,
-    value: ud.discountCode.value,
-    currencyCode: ud.discountCode.currencyCode,
-    isUsed: ud.isUsed,
-    createdAt: ud.createdAt,
-    usedAt: ud.usedAt,
-
-  }));
-
-}    
+    return userDiscounts.map((ud) => ({
+      id: ud.id,
+      code: ud.discountCode.code,
+      value: ud.discountCode.value,
+      currencyCode: ud.discountCode.currencyCode,
+      isUsed: ud.isUsed,
+      createdAt: ud.createdAt,
+      usedAt: ud.usedAt,
+    }));
+  }
 
   /**
    * Elimina un descuento de usuario y devuelve un mensaje de confirmación.

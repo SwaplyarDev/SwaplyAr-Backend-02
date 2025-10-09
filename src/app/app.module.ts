@@ -50,7 +50,7 @@ import { CommissionsModule } from 'src/modules/conversions/commissions/commissio
     UserVerificationModule,
     QualificationModule,
     ConversionsModule,
-    CommissionsModule, 
+    CommissionsModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',
       signOptions: { expiresIn: '1d' },

@@ -14,7 +14,16 @@ import { plainToInstance } from 'class-transformer';
 
 import { Transaction } from './entities/transaction.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { AccountSenderDto, PaymentMethodGetReceiverDto, ReceiverAccountDto, SenderAccountDto, TransactionGetByIdDto, TransactionGetResponseDto, TransactionResponseDto, UserDiscountGetDto } from './dto/transaction-response.dto';
+import {
+  AccountSenderDto,
+  PaymentMethodGetReceiverDto,
+  ReceiverAccountDto,
+  SenderAccountDto,
+  TransactionGetByIdDto,
+  TransactionGetResponseDto,
+  TransactionResponseDto,
+  UserDiscountGetDto,
+} from './dto/transaction-response.dto';
 
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
@@ -88,7 +97,7 @@ export class TransactionsService {
     @InjectRepository(Transaction)
     private readonly transactionsRepository: Repository<Transaction>,
 
-    @InjectRepository(UserDiscount)   // <--- Agregado
+    @InjectRepository(UserDiscount) // <--- Agregado
     private readonly userDiscountRepository: Repository<UserDiscount>,
 
     @InjectRepository(AdministracionStatusLog)
@@ -181,7 +190,6 @@ export class TransactionsService {
     createTransactionDto: CreateTransactionDto,
     file: FileUploadDTO,
   ): Promise<TransactionResponseDto> {
-
     if (!file) {
       throw new BadRequestException('El comprobante de pago (archivo) es obligatorio.');
     }
@@ -200,20 +208,20 @@ export class TransactionsService {
         'Error al crear el monto',
         BadRequestException,
       );
-      
-      let userDiscounts: UserDiscount [] = [];
+
+      let userDiscounts: UserDiscount[] = [];
 
       if (createTransactionDto.userDiscountIds && createTransactionDto.userDiscountIds.length > 0) {
         for (const id of createTransactionDto.userDiscountIds) {
-          const ud = await this.safeExecute (
+          const ud = await this.safeExecute(
             async () => {
-              const discount = await this.userDiscountRepository.findOne ({
+              const discount = await this.userDiscountRepository.findOne({
                 where: { id },
                 relations: ['discountCode'],
               });
 
-              if (!discount) throw new NotFoundException (`UserDiscount con ID ${id} no encontrado`);
-              if (discount.isUsed) throw new BadRequestException (`El cupón ${id} ya fue usado`);
+              if (!discount) throw new NotFoundException(`UserDiscount con ID ${id} no encontrado`);
+              if (discount.isUsed) throw new BadRequestException(`El cupón ${id} ya fue usado`);
               return discount;
             },
 
@@ -223,7 +231,7 @@ export class TransactionsService {
 
           ud.isUsed = true;
           ud.usedAt = new Date();
-          await this.userDiscountRepository.save (ud);
+          await this.userDiscountRepository.save(ud);
           userDiscounts.push(ud);
         }
       }
@@ -287,8 +295,7 @@ export class TransactionsService {
 
       console.log('fullTransaction.userDiscounts:', fullTransaction.userDiscounts);
 
-
-      const userDiscountIds = fullTransaction.userDiscounts?.map(ud => ud.id) ?? [];
+      const userDiscountIds = fullTransaction.userDiscounts?.map((ud) => ud.id) ?? [];
 
       if (fullTransaction.senderAccount?.createdBy) {
         fullTransaction.senderAccount.createdBy = String(
@@ -303,22 +310,21 @@ export class TransactionsService {
 
       console.log('userDiscountIds:', userDiscountIds);
       return plainToInstance(
-      TransactionResponseDto,
-      {
-        ...fullTransaction,
-        financialAccounts: {
-      senderAccount: plainToInstance(SenderAccountDto, fullTransaction.senderAccount, {
-        excludeExtraneousValues: true,
-      }),
-      receiverAccount: plainToInstance(ReceiverAccountDto, fullTransaction.receiverAccount, {
-        excludeExtraneousValues: true,
-      }),
-    },
-    userDiscounts: fullTransaction.userDiscounts, 
-      },
-      { excludeExtraneousValues: true },
-    );
-
+        TransactionResponseDto,
+        {
+          ...fullTransaction,
+          financialAccounts: {
+            senderAccount: plainToInstance(SenderAccountDto, fullTransaction.senderAccount, {
+              excludeExtraneousValues: true,
+            }),
+            receiverAccount: plainToInstance(ReceiverAccountDto, fullTransaction.receiverAccount, {
+              excludeExtraneousValues: true,
+            }),
+          },
+          userDiscounts: fullTransaction.userDiscounts,
+        },
+        { excludeExtraneousValues: true },
+      );
     } catch (error) {
       this.logger.error(
         'Error inesperado al crear la transacción',
@@ -328,7 +334,6 @@ export class TransactionsService {
         ? error
         : new InternalServerErrorException('Error inesperado al crear la transacción.');
     }
-
   }
 
   // --------------------------------------------------------------------
@@ -441,49 +446,58 @@ export class TransactionsService {
     return { pagination: { page, pageSize, totalItems, totalPages }, data };
   }
 
- async getTransactionByEmail(transactionId: string, userEmail: string): Promise<TransactionGetByIdDto> {
-  if (!userEmail?.trim()) throw new ForbiddenException('El email es obligatorio');
+  async getTransactionByEmail(
+    transactionId: string,
+    userEmail: string,
+  ): Promise<TransactionGetByIdDto> {
+    if (!userEmail?.trim()) throw new ForbiddenException('El email es obligatorio');
 
-  const transaction = await this.transactionsRepository.findOne({
-    where: { id: transactionId },
-    relations: {
-      regret: true,
-      senderAccount: { paymentMethod: true },
-      receiverAccount: { paymentMethod: true },
-      amount: true,
-      proofsOfPayment: true,
-      userDiscounts: { discountCode: true },
+    const transaction = await this.transactionsRepository.findOne({
+      where: { id: transactionId },
+      relations: {
+        regret: true,
+        senderAccount: { paymentMethod: true },
+        receiverAccount: { paymentMethod: true },
+        amount: true,
+        proofsOfPayment: true,
+        userDiscounts: { discountCode: true },
+      },
+    });
 
-    },
-  });
+    if (!transaction)
+      throw new NotFoundException(`No se encontró transacción con id '${transactionId}'`);
+    if (transaction.senderAccount?.createdBy !== userEmail)
+      throw new ForbiddenException('Acceso no autorizado');
 
-  if (!transaction) throw new NotFoundException(`No se encontró transacción con id '${transactionId}'`);
-  if (transaction.senderAccount?.createdBy !== userEmail) throw new ForbiddenException('Acceso no autorizado');
-  
-  const financialAccounts = {
-    senderAccount: plainToInstance(AccountSenderDto, transaction.senderAccount, { excludeExtraneousValues: true }),
-    receiverAccount: plainToInstance(ReceiverAccountDto, transaction.receiverAccount, { excludeExtraneousValues: true }),
-  };
+    const financialAccounts = {
+      senderAccount: plainToInstance(AccountSenderDto, transaction.senderAccount, {
+        excludeExtraneousValues: true,
+      }),
+      receiverAccount: plainToInstance(ReceiverAccountDto, transaction.receiverAccount, {
+        excludeExtraneousValues: true,
+      }),
+    };
 
-  const dto = plainToInstance(TransactionGetByIdDto, {
-    ...transaction,
-    financialAccounts,
+    const dto = plainToInstance(
+      TransactionGetByIdDto,
+      {
+        ...transaction,
+        financialAccounts,
+      },
+      { excludeExtraneousValues: true },
+    );
 
-  }, { excludeExtraneousValues: true });
+    const discounts = transaction.userDiscounts ?? [];
 
-const discounts = transaction.userDiscounts ?? [];
+    dto.userDiscounts = discounts.map((ud) => ({
+      id: ud.id,
+      code: ud.discountCode?.code,
+      value: ud.discountCode?.value,
+      usedAt: ud.usedAt,
+    }));
 
-  dto.userDiscounts = discounts.map((ud) => ({
-    id: ud.id,
-    code: ud.discountCode?.code,
-    value: ud.discountCode?.value,
-    usedAt: ud.usedAt,
-  }));
-
-
-  return dto; 
-
- }
+    return dto;
+  }
   async findOne(id: string, options?: FindOneOptions<Transaction>): Promise<Transaction> {
     const transaction = await this.transactionsRepository.findOne({ where: { id }, ...options });
     if (!transaction) throw new NotFoundException(`Transacción con ID ${id} no encontrada`);

@@ -21,7 +21,8 @@ export class PaymentMethodService {
   ) {}
 
   async create(createPaymentMethodDto: CreatePaymentMethodDto, isSender = false) {
-    const { bank, pix, receiverCrypto, virtualBank, method, platformId, type} = createPaymentMethodDto;
+    const { bank, pix, receiverCrypto, virtualBank, method, platformId, type } =
+      createPaymentMethodDto;
 
     if (platformId && !Object.values(Platform).includes(platformId)) {
       throw new BadRequestException('El platformId no es válido');
@@ -34,11 +35,10 @@ export class PaymentMethodService {
       return await this.paymentMethodRepository.save({
         platformId,
         method,
-        type
+        type,
       });
     }
 
-    
     // Si tiene detalles o no es sender, procesar normalmente según método
     switch (method) {
       case 'bank':

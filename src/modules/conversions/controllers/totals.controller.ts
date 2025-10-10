@@ -27,6 +27,30 @@ export class TotalsController {
   async calculateTotal(
     @Body() dto: ConversionTotalRequestDto,
   ): Promise<ConversionTotalsResponseDto> {
+
+    const involvesArs = dto.from === 'ARS' || dto.to === 'ARS';
+
+    if (involvesArs) {
+      const isBankToPlatform = dto.fromPlatform.startsWith('Banco');
+      const isPlatformToBank =
+        dto.fromPlatform.startsWith('Wise') ||
+        dto.fromPlatform.startsWith('PayPal') ||
+        dto.fromPlatform.startsWith('Payoneer') ||
+        dto.fromPlatform.startsWith('Tether');
+
+      if (isBankToPlatform && dto.operationType !== 'venta') {
+        throw new BadRequestException(
+          `Para conversiones desde Banco ARS hacia una plataforma, el tipo de operación debe ser "venta".`,
+        );
+      }
+
+      if (isPlatformToBank && dto.operationType !== 'compra') {
+        throw new BadRequestException(
+          `Para conversiones desde una plataforma hacia Banco ARS, el tipo de operación debe ser "compra".`,
+        );
+      }
+    }
+
     const isArsConversion = (dto.from === 'USD' || dto.from === 'EUR') && dto.to === 'ARS';
 
     const conversion =
@@ -45,10 +69,10 @@ export class TotalsController {
 
     const commissionResult = this.commissionsService.calculateCommissionWithCurrencyCheck(
       conversion.convertedAmount,
-      dto.fromPlatform,
-      dto.toPlatform,
-      dto.from,
-      dto.to,
+        dto.fromPlatform,
+        dto.toPlatform,
+        dto.from,
+        dto.to,
     );
 
     if (!commissionResult.valid) {

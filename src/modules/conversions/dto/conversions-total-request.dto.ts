@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsString, IsEnum, IsOptional } from 'class-validator';
-import { ArsOperationType } from '../../../enum/ars-operation-type.enum';
+/*import { ArsOperationType } from '../../../enum/ars-operation-type.enum';*/
 
 export class ConversionTotalRequestDto {
   @ApiProperty({ description: 'Monto a convertir', example: 100 })
@@ -22,14 +22,4 @@ export class ConversionTotalRequestDto {
   @ApiProperty({ description: 'Plataforma de destino', example: 'Payoneer EUR' })
   @IsString()
   toPlatform: string;
-
-  @ApiProperty({
-    required: false,
-    description: 'Tipo de operación (compra o venta)',
-    enum: ArsOperationType,
-    example: 'venta',
-  })
-  @IsOptional()
-  @IsEnum(ArsOperationType)
-  operationType?: ArsOperationType;
 }

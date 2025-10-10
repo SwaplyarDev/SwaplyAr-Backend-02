@@ -9,7 +9,6 @@ export const COMMISSION_RULES = [
   { from: 'Banco ARS', to: 'Payoneer USD', rate: 0.04, chargedBy: 'destination' },
   { from: 'Banco ARS', to: 'PayPal USD', rate: 0.05, chargedBy: 'destination' },
   { from: 'Banco ARS', to: 'PayPal EUR', rate: 0.05, chargedBy: 'destination' },
-  { from: 'Banco BRL', to: 'PayPal USD', rate: 0.05, chargedBy: 'destination' },
   { from: 'Banco ARS', to: 'Payoneer EUR', rate: 0.04, chargedBy: 'destination' },
   { from: 'Banco ARS', to: 'Wise USD', rate: 0.04, chargedBy: 'destination' },
   { from: 'Banco ARS', to: 'Wise EUR', rate: 0.04, chargedBy: 'destination' },
@@ -24,7 +23,6 @@ export const COMMISSION_RULES = [
   { from: 'PayPal USD', to: 'Wise USD', rate: 0.14, chargedBy: 'destination' },
   { from: 'PayPal USD', to: 'Wise EUR', rate: 0.14, chargedBy: 'destination' },
   { from: 'PayPal USD', to: 'tether USD', rate: 0.14, chargedBy: 'destination' },
-
 
   // === PAYONEER → OTROS ===
   { from: 'Payoneer EUR', to: 'Banco ARS', rate: 0.04, chargedBy: 'destination' },
@@ -42,8 +40,8 @@ export const COMMISSION_RULES = [
   { from: 'Payoneer USD', to: 'Wise USD', rate: 0.05, chargedBy: 'destination' },
   { from: 'Payoneer USD', to: 'Wise EUR', rate: 0.05, chargedBy: 'destination' },
   { from: 'Payoneer USD', to: 'Wise EUR', rate: 0.05, chargedBy: 'destination' },
-  { from: 'Payoneer EUR', to: 'Tether USD', rate: 0.05, chargedBy: 'destination' },
-  { from: 'Payoneer USD', to: 'Tether USD', rate: 0.05, chargedBy: 'destination' },
+  { from: 'Payoneer EUR', to: 'tether USD', rate: 0.05, chargedBy: 'destination' },
+  { from: 'Payoneer USD', to: 'tether USD', rate: 0.05, chargedBy: 'destination' },
 
   // === WISE → OTROS ===
   { from: 'Wise EUR', to: 'Banco ARS', rate: 0.04, chargedBy: 'destination' },
@@ -61,13 +59,12 @@ export const COMMISSION_RULES = [
   { from: 'Wise EUR', to: 'tether USD', rate: 0.05, chargedBy: 'destination' },
   { from: 'Wise USD', to: 'tether USD', rate: 0.05, chargedBy: 'destination' },
   
-  
   // === TETHER (USDT) → OTROS ===
-  { from: 'Tether USD', to: 'Banco ARS', rate: 0.04, chargedBy: 'destination' },
-  { from: 'Tether USD', to: 'Banco BRL', rate: 0.05, chargedBy: 'destination' }, 
-  { from: 'Tether USD', to: 'PayPal USD', rate: 0.02, chargedBy: 'destination' },
-  { from: 'Tether USD', to: 'Payoneer EUR', rate: 0.05, chargedBy: 'destination' },
-  { from: 'Tether USD', to: 'Payoneer USD', rate: 0.05, chargedBy: 'destination' },
-  { from: 'Tether USD', to: 'Wise EUR', rate: 0.05, chargedBy: 'destination' },
-  { from: 'Tether USD', to: 'Wise USD', rate: 0.05, chargedBy: 'destination' },
+  { from: 'tether USD', to: 'Banco ARS', rate: 0.04, chargedBy: 'destination' },
+  { from: 'tether USD', to: 'Banco BRL', rate: 0.05, chargedBy: 'destination' }, 
+  { from: 'tether USD', to: 'PayPal USD', rate: 0.02, chargedBy: 'destination' },
+  { from: 'tether USD', to: 'Payoneer EUR', rate: 0.05, chargedBy: 'destination' },
+  { from: 'tether USD', to: 'Payoneer USD', rate: 0.05, chargedBy: 'destination' },
+  { from: 'tether USD', to: 'Wise EUR', rate: 0.05, chargedBy: 'destination' },
+  { from: 'tether USD', to: 'Wise USD', rate: 0.05, chargedBy: 'destination' },
 ];

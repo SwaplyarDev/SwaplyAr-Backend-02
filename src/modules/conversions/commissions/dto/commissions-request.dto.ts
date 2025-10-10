@@ -15,12 +15,12 @@ export class CommissionRequestDto {
     description: 'Plataforma o medio de destino (receptor de la comisión).',
   })
   @IsString()
-  to: string;
+  toPlatform: string;
 
   @ApiProperty({
     example: 'PayPal USD',
     description: 'Plataforma o medio de origen (emisor del monto).',
   })
   @IsString()
-  from: string;
+  fromPlatform: string;
 }

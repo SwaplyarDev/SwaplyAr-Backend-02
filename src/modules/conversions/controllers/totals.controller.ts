@@ -1,4 +1,6 @@
-import { Body, Controller, HttpCode, Post, BadRequestException, UseGuards } from '@nestjs/common';
+
+
+import { Body, Controller, Post, BadRequestException } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConversionsService } from '../services/conversions.service';
 import { CommissionsService } from '../commissions/services/commissions.service';
@@ -16,10 +18,10 @@ export class TotalsController {
   @Post()
   @ApiOperation({
     summary:
-      'Calcula el monto total recibido (maneja conversiones generales y especiales USD/EUR → ARS, incluyendo comisión y plataformas).',
+      'Calcula el monto total recibido (maneja conversiones generales y especiales USD/EUR ↔ ARS o ARS ↔ EUR/USD/BRL, incluyendo comisión y plataformas).',
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     type: ConversionTotalsResponseDto,
     description: 'Conversión y comisión calculadas correctamente.',
   })
@@ -28,57 +30,43 @@ export class TotalsController {
     @Body() dto: ConversionTotalRequestDto,
   ): Promise<ConversionTotalsResponseDto> {
 
-    const involvesArs = dto.from === 'ARS' || dto.to === 'ARS';
+    const isToArs = (dto.to === 'ARS' && (dto.from === 'USD' || dto.from === 'EUR'));
+    const isFromArs = (dto.from === 'ARS' && ['USD', 'EUR', 'BRL'].includes(dto.to));
 
-    if (involvesArs) {
-      const isBankToPlatform = dto.fromPlatform.startsWith('Banco');
-      const isPlatformToBank =
-        dto.fromPlatform.startsWith('Wise') ||
-        dto.fromPlatform.startsWith('PayPal') ||
-        dto.fromPlatform.startsWith('Payoneer') ||
-        dto.fromPlatform.startsWith('Tether');
+    let conversion;
 
-      if (isBankToPlatform && dto.operationType !== 'venta') {
-        throw new BadRequestException(
-          `Para conversiones desde Banco ARS hacia una plataforma, el tipo de operación debe ser "venta".`,
-        );
-      }
-
-      if (isPlatformToBank && dto.operationType !== 'compra') {
-        throw new BadRequestException(
-          `Para conversiones desde una plataforma hacia Banco ARS, el tipo de operación debe ser "compra".`,
-        );
-      }
+    if (isToArs) {
+      conversion = await this.conversionsService.convertArs({
+        amount: dto.amount,
+        from: dto.from,
+        to: dto.to,
+      });
+    } else if (isFromArs) {
+      conversion = await this.conversionsService.convertArsIndirect({
+        amount: dto.amount,
+        from: dto.from,
+        to: dto.to,
+      });
+    } else {
+      conversion = await this.conversionsService.convert({
+        amount: dto.amount,
+        from: dto.from,
+        to: dto.to,
+      });
     }
-
-    const isArsConversion = (dto.from === 'USD' || dto.from === 'EUR') && dto.to === 'ARS';
-
-    const conversion =
-      isArsConversion && dto.operationType
-        ? await this.conversionsService.convertArs({
-            amount: dto.amount,
-            from: dto.from,
-            to: dto.to,
-            operationType: dto.operationType,
-          })
-        : await this.conversionsService.convert({
-            amount: dto.amount,
-            from: dto.from,
-            to: dto.to,
-          });
 
     const commissionResult = this.commissionsService.calculateCommissionWithCurrencyCheck(
       conversion.convertedAmount,
-        dto.fromPlatform,
-        dto.toPlatform,
-        dto.from,
-        dto.to,
+      dto.fromPlatform,
+      dto.toPlatform,
+      dto.from,
+      dto.to,
     );
 
     if (!commissionResult.valid) {
       throw new BadRequestException(
         `Las plataformas seleccionadas (${dto.fromPlatform} → ${dto.toPlatform}) no son coherentes con la conversión ${dto.from} → ${dto.to}. 
-        Ajusta las plataformas para continuar.`,
+        o no se encontró una regla de comisión para las mismas. Ajusta las plataformas para continuar.`,
       );
     }
 

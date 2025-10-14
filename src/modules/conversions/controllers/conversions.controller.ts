@@ -10,7 +10,9 @@ export class ConversionsController {
   constructor(private readonly conversionsService: ConversionsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Convertir divisas y/o monedas (excepto EUR/USD → ARS o ARS → EUR/ARS/BRL)'})
+  @ApiOperation({
+    summary: 'Convertir divisas y/o monedas (excepto EUR/USD → ARS o ARS → EUR/ARS/BRL)',
+  })
   @ApiResponse({ status: 201, type: ConversionResponseDto })
   async convert(@Body() request: ConversionRequestDto) {
     if (request.to === 'ARS' && (request.from === 'USD' || request.from === 'EUR')) {
@@ -47,13 +49,10 @@ export class ConversionsController {
   async convertArsIndirect(@Body() request: ConversionRequestDto) {
     if (request.from !== 'ARS' || !['EUR', 'USD', 'BRL'].includes(request.to)) {
       throw new BadRequestException(
-      `Este endpoint solo permite conversiones desde ARS hacia EUR, USD o BRL.`,
-    );
+        `Este endpoint solo permite conversiones desde ARS hacia EUR, USD o BRL.`,
+      );
     }
 
     return this.conversionsService.convertArsIndirect(request);
   }
 }
-
-
-

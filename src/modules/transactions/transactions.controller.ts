@@ -224,15 +224,13 @@ export class TransactionsController {
       createTransactionDto.financialAccounts.receiverAccount.paymentMethod;
 
     // Función auxiliar para validar type
-    const validateVirtualBankType = (
-      pm: typeof senderPaymentMethod | typeof receiverPaymentMethod,
-    ) => {
+    const validateVirtualBankType = (pm: typeof senderPaymentMethod) => {
       if (pm.method === 'virtual-bank') {
         if (!pm.type) {
           throw new BadRequestException('El campo "type" es obligatorio para virtual-bank');
         }
         // Asegurarse de que el type sea válido según tu enum
-        if (!Object.values(VirtualBankType).includes(pm.type as VirtualBankType)) {
+        if (!Object.values(VirtualBankType).includes(pm.type)) {
           throw new BadRequestException('El campo "type" no es válido para virtual-bank');
         }
       }

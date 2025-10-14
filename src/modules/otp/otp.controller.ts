@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
 import { OtpService } from './otp.service';
 import { SendCodeDto } from '@auth/dto/send-code.dto';
 import { ValidateCodeDto } from '@auth/dto/validate-code.dto';
@@ -19,8 +19,20 @@ export class OtpController {
   @Post('email/send')
   @HttpCode(HttpStatus.OK)
   async send(@Body() dto: SendCodeDto) {
-    await this.otpService.sendOtpToEmail(dto.email);
-    return { success: true, message: 'Código enviado correctamente' };
+    if (!dto.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dto.email)) {
+      throw new BadRequestException('El correo proporcionado no es válido.');
+    }
+
+    try {
+      await this.otpService.sendOtpToEmail(dto.email);
+      return { success: true, message: 'Código enviado correctamente' };
+    } catch (error) {
+      let errorMessage = 'Error desconocido';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      throw new BadRequestException(errorMessage || 'Error al enviar el código OTP.');
+    }
   }
 
   @ApiOperation({ summary: 'Validar código OTP recibido por email' })

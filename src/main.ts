@@ -23,7 +23,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: {
-        enableImplicitConversion: true, // 👈 hace cast automático (string → number, etc.)
+        enableImplicitConversion: true,
       },
       exceptionFactory: (errors) => {
         console.log('❌ Errores de validación:', errors);
@@ -41,7 +41,6 @@ async function bootstrap() {
     'https://www.swaplyar.com',
     'https://swaplyar-swaplyar.vercel.app',
     'http://localhost:3000',
-    'http://localhost:3001',
   ];
   app.enableCors({
     credentials: true,

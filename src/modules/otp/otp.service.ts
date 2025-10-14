@@ -34,25 +34,34 @@ export class OtpService {
   }
 
   async sendOtpToEmail(email: string): Promise<void> {
-    // ahora buscás el usuario tú mismo:
     const user = await this.userRepo.findOne({
       where: { profile: { email } },
-      relations: ['profile'],
     });
-    if (!user) throw new BadRequestException('Email not associated');
+
+    if (!user) {
+      throw new BadRequestException('El correo no está asociado a ningún usuario.');
+    }
 
     const otp = await this.createOtpFor(user);
-    //await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
-    await this.mailer.sendAuthCodeMail(
-      user.profile.email,
-      {
-        NAME: user.profile.firstName || user.profile.email,
-        VERIFICATION_CODE: otp.code,
-        BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
-        EXPIRATION_MINUTES: 15, // o el valor que uses
-      },
-      'login',
-    );
+
+    try {
+      await this.mailer.sendAuthCodeMail(
+        user.profile.email,
+        {
+          NAME: user.profile.firstName || user.profile.email,
+          VERIFICATION_CODE: otp.code,
+          BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
+          EXPIRATION_MINUTES: 15,
+        },
+        'login',
+      );
+    } catch (error) {
+      let errorMessage = 'Error desconocido';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      throw new Error('Error al enviar el correo: ' + errorMessage);
+    }
   }
 
   async sendOtpForTransaction(transactionId: string) {

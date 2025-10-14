@@ -34,6 +34,7 @@ export class OtpService {
   }
 
   async sendOtpToEmail(email: string): Promise<void> {
+    console.log(`[OTP Service] Iniciando envío de OTP para email: ${email}`);
     const user = await this.userRepo
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.profile', 'profile')
@@ -41,12 +42,15 @@ export class OtpService {
       .getOne();
 
     if (!user) {
+      console.log(`[OTP Service] Usuario no encontrado para email: ${email}`);
       throw new BadRequestException('El correo no está asociado a ningún usuario.');
     }
 
+    console.log(`[OTP Service] Usuario encontrado: ${user.id}, enviando OTP`);
     const otp = await this.createOtpFor(user);
 
     try {
+      console.log(`[OTP Service] Enviando email de OTP a: ${user.profile.email}`);
       await this.mailer.sendAuthCodeMail(
         user.profile.email,
         {
@@ -57,7 +61,9 @@ export class OtpService {
         },
         'login',
       );
+      console.log(`[OTP Service] Email de OTP enviado exitosamente a: ${user.profile.email}`);
     } catch (error) {
+      console.error(`[OTP Service] Error al enviar email de OTP:`, error);
       let errorMessage = 'Error desconocido';
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -93,23 +99,31 @@ export class OtpService {
   }
 
   async validateOtpAndGetUser(email: string, code: string): Promise<User> {
+    console.log(`[OTP Service] Iniciando validación de OTP para email: ${email}, código: ${code}`);
     const user = await this.userRepo
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.profile', 'profile')
       .where('profile.email = :email', { email })
       .getOne();
-    if (!user) throw new BadRequestException('Email not associated');
+    if (!user) {
+      console.log(`[OTP Service] Usuario no encontrado para email: ${email}`);
+      throw new BadRequestException('Email not associated');
+    }
 
+    console.log(`[OTP Service] Usuario encontrado: ${user.id}, buscando OTP`);
     const otp = await this.otpRepo.findOne({
       where: { code: code.trim(), user: { id: user.id } },
       relations: ['user'],
     });
     if (!otp || otp.expiryDate < new Date() || otp.isUsed) {
+      console.log(`[OTP Service] OTP inválido o expirado para usuario: ${user.id}`);
       throw new BadRequestException('Invalid or expired code');
     }
 
+    console.log(`[OTP Service] OTP válido, marcando como usado`);
     otp.isUsed = true;
     await this.otpRepo.save(otp);
+    console.log(`[OTP Service] Validación exitosa para usuario: ${user.id}`);
     return user;
   }
 

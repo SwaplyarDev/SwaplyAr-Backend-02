@@ -29,29 +29,6 @@ export class DynamicCommissionsService {
     };
   }
 
-  /*private validatePlatformEnum(value: string | undefined, field: string): void {
-    if (!value) {
-      throw new BadRequestException({
-        statusCode: 400,
-        message: [`${field} es obligatorio.`],
-        error: 'Bad Request',
-      });
-    }
-
-    const validValues = Object.values(PlatformName);
-    const isValid = validValues.some((v) => v.toLowerCase() === value.toLowerCase());
-
-    if (!isValid) {
-      throw new BadRequestException({
-        statusCode: 400,
-        message: [
-          `${field} debe ser un valor válido del enum PlatformName. Valores permitidos: ${validValues.join(', ')}`,
-        ],
-        error: 'Bad Request',
-      });
-    }
-  }*/
-
   private extractCurrency(platform: string): string | null {
     return platform.match(/\b(USD|EUR|ARS|BRL|USDT)\b/i)?.[0]?.toUpperCase() ?? null;
   }
@@ -59,25 +36,6 @@ export class DynamicCommissionsService {
   private normalizePlatformName(platform: string): string {
     return platform.replace(/\b(USD|EUR|ARS|BRL|USDT)\b/gi, '').trim().toLowerCase();
   }
-
-  /*private validateCommissionRate(rate: number): void {
-    if (rate === undefined || rate === null || Number.isNaN(rate)) {
-      throw new BadRequestException({
-        statusCode: 400,
-        message: ['commissionRate es requerido y debe ser un número válido.'],
-        error: 'Bad Request',
-      });
-    }
-
-    if (rate < 0 || rate > 1) {
-      throw new BadRequestException({
-        statusCode: 400,
-        message: ['La tasa de comisión debe estar entre 0 y 1.'],
-        error: 'Bad Request',
-      });
-    }
-  }*/
-
   private ensureDifferentPlatforms(from: string, to: string): void {
     const sameBase = this.normalizePlatformName(from) === this.normalizePlatformName(to);
     const sameCurrency = this.extractCurrency(from) === this.extractCurrency(to);
@@ -98,9 +56,6 @@ export class DynamicCommissionsService {
   }): Promise<DynamicCommissionResponseDto> {
     const { fromPlatform, toPlatform, commissionRate } = data;
 
-    /*this.validatePlatformEnum(fromPlatform, 'fromPlatform');
-    this.validatePlatformEnum(toPlatform, 'toPlatform');*/
-    /*this.validateCommissionRate(commissionRate);*/
     this.ensureDifferentPlatforms(fromPlatform, toPlatform);
 
     const exists = await this.commissionRepo.findOne({ where: { fromPlatform, toPlatform } });
@@ -123,9 +78,6 @@ export class DynamicCommissionsService {
   }): Promise<DynamicCommissionResponseDto> {
     const { fromPlatform, toPlatform, commissionRate } = data;
 
-    /*this.validatePlatformEnum(fromPlatform, 'fromPlatform');
-    this.validatePlatformEnum(toPlatform, 'toPlatform');*/
-    /*this.validateCommissionRate(commissionRate);*/
     this.ensureDifferentPlatforms(fromPlatform, toPlatform);
 
     const existing = await this.commissionRepo.findOne({ where: { fromPlatform, toPlatform } });
@@ -145,8 +97,6 @@ export class DynamicCommissionsService {
   }
 
   async find(fromPlatform?: PlatformName, toPlatform?: PlatformName): Promise<DynamicCommissionResponseDto[]> {
-    /*if (fromPlatform) this.validatePlatformEnum(fromPlatform, 'fromPlatform');
-    if (toPlatform) this.validatePlatformEnum(toPlatform, 'toPlatform');*/
 
     const query = this.commissionRepo.createQueryBuilder('commission');
 

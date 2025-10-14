@@ -42,7 +42,7 @@ export class DynamicCommissionsController {
     private readonly dynamicCommissionsService: DynamicCommissionsService,
   ) {}
 
-  @Post()
+  @Post('/admin')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Crear una nueva comisión entre plataformas' })
   @ApiBody({ type: CreateDynamicCommissionDto })
@@ -59,7 +59,7 @@ export class DynamicCommissionsController {
     return this.dynamicCommissionsService.create(body);
   }
 
-  @Patch()
+  @Patch('/admin')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({
     summary: 'Actualizar la tasa de comisión entre dos plataformas',
@@ -81,7 +81,7 @@ export class DynamicCommissionsController {
     return this.dynamicCommissionsService.update(body);
   }
 
-  @Get()
+  @Get('/admin')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Obtener comisiones (todas o filtradas por cruce)' })
   @ApiQuery({

@@ -65,7 +65,7 @@ export class ConversionsService {
   }
 
   async convertArs(dto: ConversionRequestDto): Promise<ConversionResponseDto> {
-    const { from, to, amount} = dto;
+    const { from, to, amount } = dto;
     const data = await this.fetchData();
 
     const operationLabel = 'Compra';
@@ -97,7 +97,7 @@ export class ConversionsService {
       message: `Conversión realizada correctamente usando ${item['Par de MonedasR']} (fuente: ${source}, última actualización: ${lastUpdated})`,
     };
   }
-  
+
   async convertArsIndirect(dto: ConversionRequestDto): Promise<ConversionResponseDto> {
     const { from, to, amount } = dto;
     const data = await this.fetchData();
@@ -117,7 +117,7 @@ export class ConversionsService {
       }
 
       const item = usdBlueVenta['Actualizar Monedas Calculadora'];
-      const rateUsed = 1 / item['Valor']; 
+      const rateUsed = 1 / item['Valor'];
       const convertedAmount = amount * rateUsed;
 
       return {
@@ -141,7 +141,7 @@ export class ConversionsService {
       }
 
       const item = eurBlueVenta['Actualizar Monedas Calculadora'];
-      const rateUsed = 1 / item['Valor']; 
+      const rateUsed = 1 / item['Valor'];
       const convertedAmount = amount * rateUsed;
 
       return {
@@ -168,8 +168,7 @@ export class ConversionsService {
       const arsToUsdRate = 1 / usdItem['Valor']; // inverso
 
       const usdToBrl = data.find(
-        (entry) =>
-          entry['Actualizar Monedas Calculadora']['Par de MonedasR'] === 'USD a BRL',
+        (entry) => entry['Actualizar Monedas Calculadora']['Par de MonedasR'] === 'USD a BRL',
       );
 
       if (!usdToBrl) {
@@ -193,9 +192,4 @@ export class ConversionsService {
 
     throw new BadRequestException(`Conversión indirecta no implementada para ARS → ${to}`);
   }
-
 }
-
-
-
-

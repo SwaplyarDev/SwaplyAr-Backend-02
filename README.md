@@ -182,3 +182,46 @@ npm run migration:revert
 * La conexión a PostgreSQL se realiza a través de `DATABASE_URL` tanto en desarrollo como producción.
 
 ---
+
+## 🚀 Despliegue en Render
+
+### 1. Configuración en Render
+
+1. Ve a [Render Dashboard](https://dashboard.render.com) y crea un nuevo servicio web.
+2. Conecta tu repositorio de GitHub.
+3. Selecciona **Docker** como runtime (usará el `Dockerfile` incluido).
+4. Configura las variables de entorno en el dashboard:
+   - `NODE_ENV`: `production`
+   - `PORT`: (Render lo asigna automáticamente)
+   - `DATABASE_URL`: Tu URL de base de datos (ej. Neon PostgreSQL)
+   - `JWT_SECRET`: Tu secreto JWT
+   - `JWT_REFRESH_SECRET`: Tu secreto de refresh JWT
+   - `EMAIL_USER`: Usuario de email
+   - `EMAIL_PASS`: Contraseña de email
+   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_CLOUD_API_KEY`, `CLOUDINARY_CLOUD_API_SECRET`: Credenciales de Cloudinary
+   - `BASE_URL`: `https://swaplyar.com`
+   - `CORS_ORIGINS`: `https://www.swaplyar.com,https://swaplyar-swaplyar.vercel.app`
+
+5. En **Build Command**: `npm run build`
+6. En **Start Command**: `npm run start:prod`
+7. Configura el **Health Check Path** como `/health`.
+
+### 2. Migraciones de base de datos
+
+Después del despliegue, ejecuta las migraciones manualmente en el shell de Render:
+
+```bash
+npm run migrate:prod
+```
+
+O configura un comando post-build si es necesario.
+
+### 3. Optimizaciones aplicadas
+
+- **Dockerfile optimizado**: Usa multi-stage build para reducir el tamaño de la imagen.
+- **Usuario no-root**: Para mayor seguridad.
+- **Health check**: Endpoint `/health` para monitoreo.
+- **Manejo de errores**: Mejor logging en producción.
+- **Variables de entorno**: Todas las sensibles configuradas externamente.
+
+---

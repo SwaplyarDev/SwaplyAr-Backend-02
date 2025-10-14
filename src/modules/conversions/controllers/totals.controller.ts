@@ -1,5 +1,3 @@
-
-
 import { Body, Controller, Post, BadRequestException } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConversionsService } from '../services/conversions.service';
@@ -29,9 +27,8 @@ export class TotalsController {
   async calculateTotal(
     @Body() dto: ConversionTotalRequestDto,
   ): Promise<ConversionTotalsResponseDto> {
-
-    const isToArs = (dto.to === 'ARS' && (dto.from === 'USD' || dto.from === 'EUR'));
-    const isFromArs = (dto.from === 'ARS' && ['USD', 'EUR', 'BRL'].includes(dto.to));
+    const isToArs = dto.to === 'ARS' && (dto.from === 'USD' || dto.from === 'EUR');
+    const isFromArs = dto.from === 'ARS' && ['USD', 'EUR', 'BRL'].includes(dto.to);
 
     let conversion;
 

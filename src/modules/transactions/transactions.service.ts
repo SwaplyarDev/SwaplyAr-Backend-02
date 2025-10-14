@@ -209,7 +209,7 @@ export class TransactionsService {
         BadRequestException,
       );
 
-      let userDiscounts: UserDiscount[] = [];
+      const userDiscounts: UserDiscount[] = [];
 
       if (createTransactionDto.userDiscountIds && createTransactionDto.userDiscountIds.length > 0) {
         for (const id of createTransactionDto.userDiscountIds) {

@@ -72,8 +72,13 @@ async function bootstrap() {
   const port = parseInt(configService.get<string>('PORT', '3001'), 10);
   const host = nodeEnv === 'production' ? '0.0.0.0' : 'localhost';
 
-  await app.listen(port, host);
-  console.log(`🚀 [${nodeEnv}] Server corriendo en http://${host}:${port}/${apiPrefix}`);
+  try {
+    await app.listen(port, host);
+    console.log(`🚀 [${nodeEnv}] Server corriendo en http://${host}:${port}/${apiPrefix}`);
+  } catch (error) {
+    console.error('❌ Error al iniciar el servidor:', error);
+    process.exit(1);
+  }
 }
 
 void bootstrap();

@@ -34,9 +34,11 @@ export class OtpService {
   }
 
   async sendOtpToEmail(email: string): Promise<void> {
-    const user = await this.userRepo.findOne({
-      where: { profile: { email } },
-    });
+    const user = await this.userRepo
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.profile', 'profile')
+      .where('profile.email = :email', { email })
+      .getOne();
 
     if (!user) {
       throw new BadRequestException('El correo no está asociado a ningún usuario.');
@@ -91,10 +93,11 @@ export class OtpService {
   }
 
   async validateOtpAndGetUser(email: string, code: string): Promise<User> {
-    const user = await this.userRepo.findOne({
-      where: { profile: { email } },
-      relations: ['profile'],
-    });
+    const user = await this.userRepo
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.profile', 'profile')
+      .where('profile.email = :email', { email })
+      .getOne();
     if (!user) throw new BadRequestException('Email not associated');
 
     const otp = await this.otpRepo.findOne({

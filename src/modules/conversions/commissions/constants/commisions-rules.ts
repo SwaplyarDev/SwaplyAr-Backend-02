@@ -58,10 +58,10 @@ export const COMMISSION_RULES = [
   { from: 'Wise EUR', to: 'Wise USD', rate: 0.05, chargedBy: 'destination' },
   { from: 'Wise EUR', to: 'tether USD', rate: 0.05, chargedBy: 'destination' },
   { from: 'Wise USD', to: 'tether USD', rate: 0.05, chargedBy: 'destination' },
-  
+
   // === TETHER (USDT) → OTROS ===
   { from: 'tether USD', to: 'Banco ARS', rate: 0.04, chargedBy: 'destination' },
-  { from: 'tether USD', to: 'Banco BRL', rate: 0.05, chargedBy: 'destination' }, 
+  { from: 'tether USD', to: 'Banco BRL', rate: 0.05, chargedBy: 'destination' },
   { from: 'tether USD', to: 'PayPal USD', rate: 0.02, chargedBy: 'destination' },
   { from: 'tether USD', to: 'Payoneer EUR', rate: 0.05, chargedBy: 'destination' },
   { from: 'tether USD', to: 'Payoneer USD', rate: 0.05, chargedBy: 'destination' },

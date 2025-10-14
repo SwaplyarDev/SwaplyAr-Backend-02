@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: swaplyar-backend
+    runtime: docker
+    buildCommand: "npm run build"
+    startCommand: "npm run start:prod"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false # Configura manualmente en el dashboard
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_CLOUD_API_KEY
+        sync: false
+      - key: CLOUDINARY_CLOUD_API_SECRET
+        sync: false
+      - key: BASE_URL
+        value: https://swaplyar.com
+      - key: CORS_ORIGINS
+        value: https://www.swaplyar.com,https://swaplyar-swaplyar.vercel.app
+    healthCheckPath: /health
+    disk:
+      name: swaplyar-disk
+      mountPath: /data
+      sizeGB: 1

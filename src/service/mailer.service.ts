@@ -119,7 +119,9 @@ export class MailerService {
   }
 
   async sendStatusEmail(transaction: any, status: AdminStatus) {
-    this.logger.log(`sendStatusEmail called with transactionId=${transaction?.id}, status=${status}`);
+    this.logger.log(
+      `sendStatusEmail called with transactionId=${transaction?.id}, status=${status}`,
+    );
     try {
       const config = this.configService.get('nodemailer');
       const from = config?.auth?.user;

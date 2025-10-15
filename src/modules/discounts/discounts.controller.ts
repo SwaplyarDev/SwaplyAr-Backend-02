@@ -134,7 +134,7 @@ export class DiscountsController {
   /*
    *  RECOMPENSAS
    */
-  @Put('update-star')
+  /*@Put('update-star')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Actualizar recompensas de usuario (estrellas)' })
   @ApiOkResponse({
@@ -145,7 +145,7 @@ export class DiscountsController {
           cycleCompleted: true,
           ledger: {
             /* estructura del ledger */
-          },
+          /*},
           message: 'Has completado un ciclo',
         },
       },
@@ -176,7 +176,7 @@ export class DiscountsController {
   > {
     const result = await this.discountService.updateStars(dto, user.id);
     return { data: result };
-  }
+  }*/
 
   @Get('stars')
   @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)

@@ -235,7 +235,7 @@ export class DiscountService {
    * Suma `quantity` al acumulado del usuario.
    * Devuelve información detallada: si completó el ciclo, el ledger actualizado y un mensaje.
    */
-  async updateStars(
+  /*async updateStars(
     dto: UpdateStarDto,
     userId: string,
   ): Promise<{
@@ -282,7 +282,7 @@ export class DiscountService {
       ledger,
       message,
     };
-  }
+  }*/
 
   /**
    * Lógica que corre cuando el usuario completa un ciclo:
@@ -290,7 +290,7 @@ export class DiscountService {
    * - Crea/activa un nuevo código de descuento PLUS REWARDS
    * - Puede enviar notificaciones, emails, etc.
    */
-  private async handleCycleCompletion(ledger: UserRewardsLedger): Promise<string> {
+  /*private async handleCycleCompletion(ledger: UserRewardsLedger): Promise<string> {
     // Reiniciamos contadores
     ledger.quantity = 0;
     ledger.stars = 0;
@@ -315,7 +315,7 @@ export class DiscountService {
     );
 
     return '¡Felicidades! Completaste un ciclo y se ha generado tu cupón PLUS REWARDS de 10 USD.';
-  }
+  }*/
 
   async getStars(userId: string): Promise<{ quantity: number; stars: number }> {
     const ledger = await this.rewardsLedgerRepo.findOne({
@@ -328,7 +328,7 @@ export class DiscountService {
     };
   }
 
-  private async getOrCreateUserLedger(userId: string) {
+  /*private async getOrCreateUserLedger(userId: string) {
     let ledger = await this.rewardsLedgerRepo.findOne({
       where: { user: { id: userId } },
       relations: ['user'],
@@ -341,7 +341,7 @@ export class DiscountService {
     }
 
     return ledger;
-  }
+  }*/
 
   /** Métodos auxiliares privados para mejorar legibilidad/reutilización **/
 

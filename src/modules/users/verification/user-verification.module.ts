@@ -7,10 +7,11 @@ import { UserVerificationService } from './user-verification.service';
 import { CloudinaryService } from '../../../service/cloudinary/cloudinary.service';
 import { DiscountModule } from 'src/modules/discounts/discounts.module';
 import { UserVerificationAttempt } from '@users/entities/user-verification-attempt.entity';
+import { UserProfile } from '@users/entities/user-profile.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserVerification, User, UserVerificationAttempt]),
+    TypeOrmModule.forFeature([UserVerification, User, UserVerificationAttempt, UserProfile]),
     DiscountModule,
   ],
   controllers: [UserVerificationController],

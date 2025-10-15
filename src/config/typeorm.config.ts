@@ -8,8 +8,12 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
   // Si no existe DATABASE_URL (por ejemplo decides NO definirla y usar solo variables sueltas),
   // construimos una a partir de POSTGRES_*.
   const isTestEnv = process.env.NODE_ENV === 'test';
-  let databaseUrl = isTestEnv ? process.env.DATABASE_TEST_URL : process.env.DATABASE_URL;
 
+  let databaseUrl = isTestEnv ? process.env.DATABASE_TEST_URL : process.env.DATABASE_URL;
+  // Normalizar prefijo postgresql:// a postgres:// para TypeORM
+  if (databaseUrl && databaseUrl.startsWith('postgresql://')) {
+    databaseUrl = databaseUrl.replace('postgresql://', 'postgres://');
+  }
   if (!databaseUrl) {
     const user = isTestEnv ? process.env.POSTGRES_TEST_USER : process.env.POSTGRES_USER;
     const pass = isTestEnv ? process.env.POSTGRES_TEST_PASSWORD : process.env.POSTGRES_PASSWORD;

@@ -70,7 +70,9 @@ export class OtpService {
       );
       this.logger.log(`Email de OTP enviado exitosamente a: ${user.profile.email}`);
     } catch (error) {
-      this.logger.error(`Error al enviar email de OTP: ${error instanceof Error ? error.message : error}`);
+      this.logger.error(
+        `Error al enviar email de OTP: ${error instanceof Error ? error.message : error}`,
+      );
       let errorMessage = 'Error desconocido';
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -107,7 +109,9 @@ export class OtpService {
       });
       this.logger.log(`Email de OTP para transacción enviado exitosamente a: ${email}`);
     } catch (error) {
-      this.logger.error(`Error al enviar email de OTP para transacción: ${error instanceof Error ? error.message : error}`);
+      this.logger.error(
+        `Error al enviar email de OTP para transacción: ${error instanceof Error ? error.message : error}`,
+      );
       let errorMessage = 'Error desconocido al enviar el correo';
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -213,7 +217,9 @@ export class OtpService {
       );
       this.logger.log(`Email de OTP para registro enviado exitosamente a: ${user.profile.email}`);
     } catch (error) {
-      this.logger.error(`Error al enviar email de OTP para registro: ${error instanceof Error ? error.message : error}`);
+      this.logger.error(
+        `Error al enviar email de OTP para registro: ${error instanceof Error ? error.message : error}`,
+      );
       let errorMessage = 'Error desconocido al enviar el correo';
       if (error instanceof Error) {
         errorMessage = error.message;

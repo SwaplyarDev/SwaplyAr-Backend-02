@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { createTransport, Transporter } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import * as sgTransport from 'nodemailer-sendgrid-transport';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { AdminStatus } from 'src/enum/admin-status.enum';
@@ -15,7 +16,20 @@ export class MailerService {
 
   constructor(private readonly configService: ConfigService) {
     this.logger.log('Initializing MailerService...');
-    this.mailer = createTransport(configService.get<SMTPTransport.Options>('nodemailer'));
+    const sendgridApiKey = this.configService.get<string>('SENDGRID_API_KEY');
+    if (sendgridApiKey) {
+      this.logger.log('Usando SendGrid como transport de correo');
+      this.mailer = createTransport(
+        sgTransport({
+          auth: {
+            api_key: sendgridApiKey,
+          },
+        })
+      );
+    } else {
+      this.logger.log('Usando SMTP tradicional como transport de correo');
+      this.mailer = createTransport(configService.get<SMTPTransport.Options>('nodemailer'));
+    }
     this.logger.log('MailerService initialized.');
   }
 

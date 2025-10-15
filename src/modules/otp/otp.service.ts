@@ -1,4 +1,10 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OtpCode } from '../auth/entities/otp-code.entity';
@@ -13,6 +19,7 @@ import { Transaction } from '@transactions/entities/transaction.entity';
 export class OtpService {
   private readonly secret: string;
   private readonly ttlSeconds: number;
+  private readonly logger = new Logger(OtpService.name);
 
   constructor(
     @InjectRepository(Transaction)
@@ -34,7 +41,7 @@ export class OtpService {
   }
 
   async sendOtpToEmail(email: string): Promise<void> {
-    console.log(`[OTP Service] Iniciando envío de OTP para email: ${email}`);
+    this.logger.log(`Iniciando envío de OTP para email: ${email}`);
     const user = await this.userRepo
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.profile', 'profile')
@@ -42,15 +49,15 @@ export class OtpService {
       .getOne();
 
     if (!user) {
-      console.log(`[OTP Service] Usuario no encontrado para email: ${email}`);
+      this.logger.log(`Usuario no encontrado para email: ${email}`);
       throw new BadRequestException('El correo no está asociado a ningún usuario.');
     }
 
-    console.log(`[OTP Service] Usuario encontrado: ${user.id}, enviando OTP`);
+    this.logger.log(`Usuario encontrado: ${user.id}, enviando OTP`);
     const otp = await this.createOtpFor(user);
 
     try {
-      console.log(`[OTP Service] Enviando email de OTP a: ${user.profile.email}`);
+      this.logger.log(`Enviando email de OTP a: ${user.profile.email}`);
       await this.mailer.sendAuthCodeMail(
         user.profile.email,
         {
@@ -61,14 +68,14 @@ export class OtpService {
         },
         'login',
       );
-      console.log(`[OTP Service] Email de OTP enviado exitosamente a: ${user.profile.email}`);
+      this.logger.log(`Email de OTP enviado exitosamente a: ${user.profile.email}`);
     } catch (error) {
-      console.error(`[OTP Service] Error al enviar email de OTP:`, error);
+      this.logger.error(`Error al enviar email de OTP: ${error instanceof Error ? error.message : error}`);
       let errorMessage = 'Error desconocido';
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      throw new Error('Error al enviar el correo: ' + errorMessage);
+      throw new InternalServerErrorException('Error al enviar el correo: ' + errorMessage);
     }
   }
 
@@ -90,40 +97,51 @@ export class OtpService {
 
     const otp = await this.createOtpForTransaction(transactionId, email);
 
-    await this.mailer.sendAuthCodeMail(email, {
-      NAME: email,
-      VERIFICATION_CODE: otp.code,
-      BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
-      EXPIRATION_MINUTES: 5,
-    });
+    try {
+      this.logger.log(`Enviando email de OTP para transacción a: ${email}`);
+      await this.mailer.sendAuthCodeMail(email, {
+        NAME: email,
+        VERIFICATION_CODE: otp.code,
+        BASE_URL: process.env.BASE_URL || 'https://swaplyar.com',
+        EXPIRATION_MINUTES: 5,
+      });
+      this.logger.log(`Email de OTP para transacción enviado exitosamente a: ${email}`);
+    } catch (error) {
+      this.logger.error(`Error al enviar email de OTP para transacción: ${error instanceof Error ? error.message : error}`);
+      let errorMessage = 'Error desconocido al enviar el correo';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      throw new InternalServerErrorException('Error al enviar el correo: ' + errorMessage);
+    }
   }
 
   async validateOtpAndGetUser(email: string, code: string): Promise<User> {
-    console.log(`[OTP Service] Iniciando validación de OTP para email: ${email}, código: ${code}`);
+    this.logger.log(`Iniciando validación de OTP para email: ${email}, código: ${code}`);
     const user = await this.userRepo
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.profile', 'profile')
       .where('profile.email = :email', { email })
       .getOne();
     if (!user) {
-      console.log(`[OTP Service] Usuario no encontrado para email: ${email}`);
+      this.logger.log(`Usuario no encontrado para email: ${email}`);
       throw new BadRequestException('Email not associated');
     }
 
-    console.log(`[OTP Service] Usuario encontrado: ${user.id}, buscando OTP`);
+    this.logger.log(`Usuario encontrado: ${user.id}, buscando OTP`);
     const otp = await this.otpRepo.findOne({
       where: { code: code.trim(), user: { id: user.id } },
       relations: ['user'],
     });
     if (!otp || otp.expiryDate < new Date() || otp.isUsed) {
-      console.log(`[OTP Service] OTP inválido o expirado para usuario: ${user.id}`);
+      this.logger.log(`OTP inválido o expirado para usuario: ${user.id}`);
       throw new BadRequestException('Invalid or expired code');
     }
 
-    console.log(`[OTP Service] OTP válido, marcando como usado`);
+    this.logger.log(`OTP válido, marcando como usado`);
     otp.isUsed = true;
     await this.otpRepo.save(otp);
-    console.log(`[OTP Service] Validación exitosa para usuario: ${user.id}`);
+    this.logger.log(`Validación exitosa para usuario: ${user.id}`);
     return user;
   }
 
@@ -180,18 +198,28 @@ export class OtpService {
 
   async generateAndSendOtp(user: User): Promise<void> {
     const otp = await this.createOtpFor(user);
-    //await this.mailer.sendAuthCodeMail(user.profile.email, otp.code);
-    await this.mailer.sendAuthCodeMail(
-      user.profile.email,
-      {
-        ID: user.profile.id,
-        NAME: user.profile.firstName || user.profile.email,
-        VERIFICATION_CODE: otp.code,
-        BASE_URL: process.env.BASE_URL || 'http://localhost:3001',
-        EXPIRATION_MINUTES: 10,
-      },
-      'register',
-    );
+    try {
+      this.logger.log(`Enviando email de OTP para registro a: ${user.profile.email}`);
+      await this.mailer.sendAuthCodeMail(
+        user.profile.email,
+        {
+          ID: user.profile.id,
+          NAME: user.profile.firstName || user.profile.email,
+          VERIFICATION_CODE: otp.code,
+          BASE_URL: process.env.BASE_URL || 'http://localhost:3001',
+          EXPIRATION_MINUTES: 10,
+        },
+        'register',
+      );
+      this.logger.log(`Email de OTP para registro enviado exitosamente a: ${user.profile.email}`);
+    } catch (error) {
+      this.logger.error(`Error al enviar email de OTP para registro: ${error instanceof Error ? error.message : error}`);
+      let errorMessage = 'Error desconocido al enviar el correo';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      throw new InternalServerErrorException('Error al enviar el correo: ' + errorMessage);
+    }
   }
 
   generateOtpToken(transactionId: string): string {
@@ -205,16 +233,16 @@ export class OtpService {
     iat?: number;
     exp?: number;
   } {
-    console.log(this.secret);
+    this.logger.debug(`Verificando token OTP`);
     try {
-      console.log(this.secret);
+      this.logger.debug(`Decodificando token`);
       const payload = jwt.verify(token, this.secret) as {
         transactionId: string;
         iat?: number;
         exp?: number;
       };
 
-      console.log('Payload del token verificado:', payload);
+      this.logger.debug('Payload del token verificado:', payload);
 
       return payload;
     } catch {

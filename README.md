@@ -1,6 +1,6 @@
 # 📦 SwaplyAR Backend
 
-Proyecto backend desarrollado con [NestJS](https://nestjs.com/) para la plataforma **SwaplyAR**. Utiliza PostgreSQL como base de datos mediante TypeORM, y Nodemailer para el envío de correos.
+Proyecto backend desarrollado con [NestJS](https://nestjs.com/) para la plataforma **SwaplyAR**. Utiliza PostgreSQL como base de datos mediante TypeORM, y Nodemailer (vía Brevo SMTP) para el envío de correos.
 
 ---
 
@@ -30,9 +30,13 @@ PORT=3001
 # Conexión a la base de datos
 DATABASE_URL=postgres://postgres:admin@localhost:5432/swaplyar
 
-# Configuración de correo
+
+# Configuración de correo (Brevo SMTP)
+EMAIL_HOST=smtp-relay.brevo.com
+EMAIL_PORT=587
 EMAIL_USER=brasil@swaplyar.com
 EMAIL_PASS=skhcshxzorvcakzh
+# EMAIL_FROM=no-reply@swaplyar.com  # Opcional, si quieres un remitente personalizado
 
 # Cloudinary (para gestión de imágenes)
 CLOUDINARY_CLOUD_NAME=dy1jiclwg
@@ -108,9 +112,13 @@ PORT=
 # Base de datos
 DATABASE_URL=
 
-# Gmail (Nodemailer)
+
+# Brevo SMTP
+EMAIL_HOST=
+EMAIL_PORT=
 EMAIL_USER=
 EMAIL_PASS=
+# EMAIL_FROM=  # Opcional
 
 # Cloudinary
 CLOUDINARY_CLOUD_NAME=
@@ -176,7 +184,7 @@ npm run migration:revert
 ## 📝 Notas
 
 * El proyecto usa `ValidationPipe` global para validar DTOs.
-* El sistema de autenticación OTP usa **correo electrónico** (Gmail via Nodemailer).
+* El sistema de autenticación OTP usa **correo electrónico** (Brevo SMTP via Nodemailer).
 * Swagger se activa automáticamente solo fuera de producción (`NODE_ENV !== 'production'`).
 * No se debe usar `synchronize: true` en entornos productivos.
 * La conexión a PostgreSQL se realiza a través de `DATABASE_URL` tanto en desarrollo como producción.
@@ -196,8 +204,11 @@ npm run migration:revert
    - `DATABASE_URL`: Tu URL de base de datos (ej. Neon PostgreSQL)
    - `JWT_SECRET`: Tu secreto JWT
    - `JWT_REFRESH_SECRET`: Tu secreto de refresh JWT
-   - `EMAIL_USER`: Usuario de email
-   - `EMAIL_PASS`: Contraseña de email
+   - `EMAIL_HOST`: Host SMTP de Brevo (`smtp-relay.brevo.com`)
+   - `EMAIL_PORT`: Puerto SMTP (`587`)
+   - `EMAIL_USER`: Usuario SMTP de Brevo
+   - `EMAIL_PASS`: Contraseña SMTP de Brevo
+   - `EMAIL_FROM`: (opcional) Remitente personalizado
    - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_CLOUD_API_KEY`, `CLOUDINARY_CLOUD_API_SECRET`: Credenciales de Cloudinary
    - `BASE_URL`: `https://swaplyar.com`
    - `CORS_ORIGINS`: `https://www.swaplyar.com,https://swaplyar-swaplyar.vercel.app`

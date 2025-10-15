@@ -2,8 +2,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createTransport, Transporter } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import * as sgTransport from 'nodemailer-sendgrid-transport';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { AdminStatus } from 'src/enum/admin-status.enum';
@@ -15,22 +13,17 @@ export class MailerService {
   private readonly logger = new Logger(MailerService.name);
 
   constructor(private readonly configService: ConfigService) {
-    this.logger.log('Initializing MailerService...');
-    const sendgridApiKey = this.configService.get<string>('SENDGRID_API_KEY');
-    if (sendgridApiKey) {
-      this.logger.log('Usando SendGrid como transport de correo');
-      this.mailer = createTransport(
-        sgTransport({
-          auth: {
-            api_key: sendgridApiKey,
-          },
-        })
-      );
-    } else {
-      this.logger.log('Usando SMTP tradicional como transport de correo');
-      this.mailer = createTransport(configService.get<SMTPTransport.Options>('nodemailer'));
-    }
-    this.logger.log('MailerService initialized.');
+    this.logger.log('Inicializando MailerService con Brevo SMTP...');
+    this.mailer = createTransport({
+      host: this.configService.get<string>('EMAIL_HOST'),
+      port: this.configService.get<number>('EMAIL_PORT'),
+      auth: {
+        user: this.configService.get<string>('EMAIL_USER'),
+        pass: this.configService.get<string>('EMAIL_PASS'),
+      },
+      secure: false, // STARTTLS en 587
+    });
+    this.logger.log('MailerService inicializado con Brevo SMTP.');
   }
 
   async sendAuthCodeMail(
@@ -48,25 +41,13 @@ export class MailerService {
     mailType?: 'register' | 'login',
   ) {
     this.logger.log(`sendAuthCodeMail called with to=${to}, mailType=${mailType}`);
-    const nodemailerConfig = this.configService.get<any>('nodemailer');
-    const from =
-      nodemailerConfig?.auth?.user ??
-      this.configService.get<string>('EMAIL_USER') ??
-      this.configService.get<string>('nodemailer.auth.user');
-
-    if (!from) {
-      this.logger.error(
-        'Falta configuración del remitente. Verifica EMAIL_USER o nodemailer.auth.user.',
-      );
-      throw new Error('Missing email sender configuration.');
-    }
-
+    const from = this.getFromAddress();
     try {
-      this.logger.log('Verifying mailer...');
+      this.logger.log('Verificando conexión SMTP...');
       await this.mailer.verify();
-      this.logger.log('Mailer verification: OK');
-    } catch (err: any) {
-      this.logger.warn(`Mailer verification failed: ${err?.message ?? err}`);
+      this.logger.log('Conexión SMTP verificada: OK');
+    } catch (err) {
+      this.logger.warn(`Verificación SMTP fallida: ${MailerService.getErrorMessage(err)}`);
     }
 
     const subject =
@@ -114,7 +95,7 @@ export class MailerService {
           from,
           to,
           subject: template.subject,
-          text: `Tu código de verificación es: ${payload.VERIFICATION_CODE}`,
+          text: `Tu código de verificación es: ${typeof payload === 'string' ? payload : payload.VERIFICATION_CODE}`,
         });
         continue;
       }
@@ -125,35 +106,50 @@ export class MailerService {
         this.logger.log('Template compiled successfully. Sending email...');
         await this.mailer.sendMail({ from, to, subject: template.subject, html });
         this.logger.log('Templated email sent successfully.');
-      } catch (error: any) {
-        this.logger.error(`Error sending templated mail (${template.file}): ${error.message}`);
+      } catch (error) {
+        this.logger.error(
+          `Error sending templated mail (${template.file}): ${MailerService.getErrorMessage(error)}`,
+        );
         throw error;
       }
     }
   }
+  /**
+   * Obtiene el remitente de correo desde la configuración.
+   * Lanza error si no está configurado.
+   */
+  private getFromAddress(): string {
+    const from =
+      this.configService.get<string>('EMAIL_FROM') ?? this.configService.get<string>('EMAIL_USER');
+    if (!from) {
+      this.logger.error('Falta configuración del remitente. Verifica EMAIL_FROM o EMAIL_USER.');
+      throw new Error('Missing email sender configuration.');
+    }
+    return from;
+  }
 
   async sendStatusEmail(transaction: any, status: AdminStatus) {
-    this.logger.log(
-      `sendStatusEmail called with transactionId=${transaction?.id}, status=${status}`,
-    );
+    const txId = MailerService.extractId(transaction);
+    this.logger.log(`sendStatusEmail called with transactionId=${txId}, status=${status}`);
     try {
-      const config = this.configService.get('nodemailer');
-      const from = config?.auth?.user;
-
-      if (!from || !config?.auth?.pass) {
+      const from =
+        this.configService.get<string>('EMAIL_FROM') ??
+        this.configService.get<string>('EMAIL_USER');
+      const pass = this.configService.get<string>('EMAIL_PASS');
+      if (!from || !pass) {
         this.logger.error(
-          'Falta configuración del correo. Verifica las variables de entorno EMAIL_USER y EMAIL_PASS.',
+          'Falta configuración del correo. Verifica EMAIL_FROM, EMAIL_USER y EMAIL_PASS.',
         );
         return { message: 'Mailer no configurado correctamente' };
       }
 
       try {
-        this.logger.log('Verifying mailer...');
+        this.logger.log('Verificando conexión SMTP...');
         await this.mailer.verify();
-        this.logger.debug('Mailer verification: OK');
-      } catch (verifyErr: any) {
+        this.logger.debug('Conexión SMTP verificada: OK');
+      } catch (verifyErr) {
         this.logger.warn(
-          `Mailer verification failed (continuando): ${verifyErr?.message ?? verifyErr}`,
+          `Verificación SMTP fallida (continuando): ${MailerService.getErrorMessage(verifyErr)}`,
         );
       }
 
@@ -236,7 +232,9 @@ export class MailerService {
       this.logger.log(`Cargando plantilla desde: ${templatePath}`);
       const html = this.compileTemplate(templatePath, this.buildTemplateData(transaction));
 
-      const candidateEmails: Array<string | undefined> = [transaction?.senderAccount?.createdBy];
+      const candidateEmails: Array<string | undefined> = [
+        MailerService.extractSenderEmail(transaction),
+      ];
 
       const normalize = (s?: string) =>
         typeof s === 'string' ? s.trim().toLowerCase() : undefined;
@@ -253,11 +251,12 @@ export class MailerService {
       }
 
       if (!recipient) {
+        const txId = MailerService.extractId(transaction);
         this.logger.warn(
-          `No se encontró un destinatario válido para la transacción ${transaction?.id}. candidateEmails: ${JSON.stringify(candidateEmails)}`,
+          `No se encontró un destinatario válido para la transacción ${txId}. candidateEmails: ${JSON.stringify(candidateEmails)}`,
         );
         return {
-          message: `No se envió el correo. No se detectó un email válido para la transacción ${transaction?.id}`,
+          message: `No se envió el correo. No se detectó un email válido para la transacción ${txId}`,
         };
       }
 
@@ -269,7 +268,9 @@ export class MailerService {
         envelope: { from, to: [recipient] },
       };
 
-      this.logger.log(`Enviando correo desde ${from} a ${recipient} (tx=${transaction?.id})`);
+      this.logger.log(
+        `Enviando correo desde ${from} a ${recipient} (tx=${MailerService.extractId(transaction)})`,
+      );
       try {
         const result = await this.mailer.sendMail(mailOptions);
         this.logger.log('Correo enviado exitosamente:', result);
@@ -277,20 +278,22 @@ export class MailerService {
           message: `El correo de estado ha sido enviado a ${recipient}`,
           result,
         };
-      } catch (sendErr: any) {
+      } catch (sendErr) {
         this.logger.error(
-          `Error al enviar correo (sendMail) a ${recipient}: ${sendErr?.message ?? sendErr}`,
+          `Error al enviar correo (sendMail) a ${recipient}: ${MailerService.getErrorMessage(sendErr)}`,
         );
         return {
           message: `Error enviando correo a ${recipient}`,
-          error: sendErr?.message ?? sendErr,
+          error: MailerService.getErrorMessage(sendErr),
         };
       }
-    } catch (error: any) {
-      this.logger.error(`Error al procesar sendStatusEmail: ${error?.message ?? error}`);
+    } catch (error) {
+      this.logger.error(
+        `Error al procesar sendStatusEmail: ${MailerService.getErrorMessage(error)}`,
+      );
       return {
         message: `Error interno en MailerService`,
-        error: error?.message ?? error,
+        error: MailerService.getErrorMessage(error),
       };
     }
   }
@@ -302,10 +305,23 @@ export class MailerService {
       const compiled = Handlebars.compile(rawTemplate);
       this.logger.log('Template compiled successfully.');
       return compiled(data);
-    } catch (error: any) {
-      this.logger.error(`Error compiling template: ${error.message}`);
+    } catch (error) {
+      this.logger.error(`Error compiling template: ${MailerService.getErrorMessage(error)}`);
       throw error;
     }
+  }
+
+  private static getErrorMessage(error: unknown): string {
+    if (typeof error === 'string') return error;
+    if (
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof (error as any).message === 'string'
+    ) {
+      return (error as any).message;
+    }
+    return JSON.stringify(error);
   }
 
   private getPaymentMethodImg(method: string, currency: string): string {
@@ -340,34 +356,137 @@ export class MailerService {
   }
 
   private buildTemplateData(transaction: any): Record<string, any> {
-    this.logger.log(`Building template data for transactionId=${transaction?.id}`);
-    const sender = transaction.senderAccount ?? {};
-    const receiver = transaction.receiverAccount ?? {};
-    const amount = transaction.amount ?? {};
+    const txId = MailerService.extractId(transaction);
+    this.logger.log(`Building template data for transactionId=${txId}`);
+    const sender = MailerService.extractSender(transaction) as {
+      firstName?: string;
+      lastName?: string;
+      phoneNumber?: string;
+      paymentMethod?: { method?: string };
+    };
+    const receiver = MailerService.extractReceiver(transaction) as {
+      firstName?: string;
+      lastName?: string;
+      phoneNumber?: string;
+      paymentMethod?: { method?: string };
+    };
+    const amount = MailerService.extractAmount(transaction) as {
+      amountSent?: number;
+      currencySent?: string;
+      amountReceived?: number;
+      currencyReceived?: string;
+    };
 
     return {
-      REFERENCE_NUMBER: transaction.id?.slice(0, 8)?.toUpperCase() ?? '',
+      REFERENCE_NUMBER: typeof txId === 'string' ? txId.slice(0, 8)?.toUpperCase() : '',
       MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
-      NAME: sender.firstName ?? '',
-      LAST_NAME: sender.lastName ?? '',
-      TRANSACTION_ID: transaction.id,
+      NAME: typeof sender.firstName === 'string' ? sender.firstName : '',
+      LAST_NAME: typeof sender.lastName === 'string' ? sender.lastName : '',
+      TRANSACTION_ID: txId,
       BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
       DATE_HOUR: new Date().toLocaleString('es-AR'),
-      PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
-      AMOUNT_SENT: amount.amountSent ?? 0,
-      SENT_CURRENCY: amount.currencySent ?? '',
-      AMOUNT_RECEIVED: amount.amountReceived ?? 0,
-      RECEIVED_CURRENCY: amount.currencyReceived ?? '',
-      PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
-      RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`,
+      PHONE_NUMBER:
+        typeof sender.phoneNumber === 'string'
+          ? sender.phoneNumber
+          : typeof receiver.phoneNumber === 'string'
+            ? receiver.phoneNumber
+            : '',
+      AMOUNT_SENT: typeof amount.amountSent === 'number' ? amount.amountSent : 0,
+      SENT_CURRENCY: typeof amount.currencySent === 'string' ? amount.currencySent : '',
+      AMOUNT_RECEIVED: typeof amount.amountReceived === 'number' ? amount.amountReceived : 0,
+      RECEIVED_CURRENCY: typeof amount.currencyReceived === 'string' ? amount.currencyReceived : '',
+      PAYMENT_METHOD:
+        typeof sender.paymentMethod === 'object' &&
+        sender.paymentMethod &&
+        typeof sender.paymentMethod.method === 'string'
+          ? sender.paymentMethod.method
+          : 'No especificado',
+      RECEIVED_NAME:
+        `${typeof receiver.firstName === 'string' ? receiver.firstName : ''} ${typeof receiver.lastName === 'string' ? receiver.lastName : ''}`.trim(),
       PAYMENT_METHOD_IMG: this.getPaymentMethodImg(
-        sender.paymentMethod?.method ?? '',
-        amount.currencySent ?? '',
+        typeof sender.paymentMethod === 'object' &&
+          sender.paymentMethod &&
+          typeof sender.paymentMethod.method === 'string'
+          ? sender.paymentMethod.method
+          : '',
+        typeof amount.currencySent === 'string' ? amount.currencySent : '',
       ),
       PAYMENT_RECEIVED_IMG: this.getPaymentMethodImg(
-        receiver.paymentMethod?.method ?? '',
-        amount.currencyReceived ?? '',
+        typeof receiver.paymentMethod === 'object' &&
+          receiver.paymentMethod &&
+          typeof receiver.paymentMethod.method === 'string'
+          ? receiver.paymentMethod.method
+          : '',
+        typeof amount.currencyReceived === 'string' ? amount.currencyReceived : '',
       ),
     };
+  }
+
+  /**
+   * Métodos utilitarios para acceso seguro a propiedades de transaction
+   */
+  private static extractId(transaction: any): string {
+    if (
+      transaction &&
+      typeof transaction === 'object' &&
+      'id' in transaction &&
+      typeof transaction.id === 'string'
+    ) {
+      return transaction.id;
+    }
+    return '';
+  }
+
+  private static extractSenderEmail(transaction: any): string | undefined {
+    if (
+      transaction &&
+      typeof transaction === 'object' &&
+      'senderAccount' in transaction &&
+      transaction.senderAccount &&
+      typeof transaction.senderAccount === 'object' &&
+      'createdBy' in transaction.senderAccount &&
+      typeof transaction.senderAccount.createdBy === 'string'
+    ) {
+      return transaction.senderAccount.createdBy;
+    }
+    return undefined;
+  }
+  private static extractSender(transaction: any): any {
+    if (
+      transaction &&
+      typeof transaction === 'object' &&
+      'senderAccount' in transaction &&
+      transaction.senderAccount &&
+      typeof transaction.senderAccount === 'object'
+    ) {
+      return transaction.senderAccount;
+    }
+    return {};
+  }
+
+  private static extractReceiver(transaction: any): any {
+    if (
+      transaction &&
+      typeof transaction === 'object' &&
+      'receiverAccount' in transaction &&
+      transaction.receiverAccount &&
+      typeof transaction.receiverAccount === 'object'
+    ) {
+      return transaction.receiverAccount;
+    }
+    return {};
+  }
+
+  private static extractAmount(transaction: any): any {
+    if (
+      transaction &&
+      typeof transaction === 'object' &&
+      'amount' in transaction &&
+      transaction.amount &&
+      typeof transaction.amount === 'object'
+    ) {
+      return transaction.amount;
+    }
+    return {};
   }
 }

@@ -2,8 +2,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createTransport, Transporter } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import * as sgTransport from 'nodemailer-sendgrid-transport';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { AdminStatus } from 'src/enum/admin-status.enum';
@@ -15,22 +13,17 @@ export class MailerService {
   private readonly logger = new Logger(MailerService.name);
 
   constructor(private readonly configService: ConfigService) {
-    this.logger.log('Initializing MailerService...');
-    const sendgridApiKey = this.configService.get<string>('SENDGRID_API_KEY');
-    if (sendgridApiKey) {
-      this.logger.log('Usando SendGrid como transport de correo');
-      this.mailer = createTransport(
-        sgTransport({
-          auth: {
-            api_key: sendgridApiKey,
-          },
-        })
-      );
-    } else {
-      this.logger.log('Usando SMTP tradicional como transport de correo');
-      this.mailer = createTransport(configService.get<SMTPTransport.Options>('nodemailer'));
-    }
-    this.logger.log('MailerService initialized.');
+    this.logger.log('Inicializando MailerService con Brevo SMTP...');
+    this.mailer = createTransport({
+      host: this.configService.get<string>('EMAIL_HOST'),
+      port: this.configService.get<number>('EMAIL_PORT'),
+      auth: {
+        user: this.configService.get<string>('EMAIL_USER'),
+        pass: this.configService.get<string>('EMAIL_PASS'),
+      },
+      secure: false, // STARTTLS en 587
+    });
+    this.logger.log('MailerService inicializado con Brevo SMTP.');
   }
 
   async sendAuthCodeMail(
@@ -48,25 +41,20 @@ export class MailerService {
     mailType?: 'register' | 'login',
   ) {
     this.logger.log(`sendAuthCodeMail called with to=${to}, mailType=${mailType}`);
-    const nodemailerConfig = this.configService.get<any>('nodemailer');
-    const from =
-      nodemailerConfig?.auth?.user ??
-      this.configService.get<string>('EMAIL_USER') ??
-      this.configService.get<string>('nodemailer.auth.user');
-
+  const from = this.configService.get<string>('EMAIL_FROM') ?? this.configService.get<string>('EMAIL_USER');
     if (!from) {
-      this.logger.error(
-        'Falta configuración del remitente. Verifica EMAIL_USER o nodemailer.auth.user.',
-      );
+      this.logger.error('Falta configuración del remitente. Verifica EMAIL_FROM o EMAIL_USER.');
       throw new Error('Missing email sender configuration.');
     }
 
     try {
-      this.logger.log('Verifying mailer...');
+      this.logger.log('Verificando conexión SMTP...');
       await this.mailer.verify();
-      this.logger.log('Mailer verification: OK');
-    } catch (err: any) {
-      this.logger.warn(`Mailer verification failed: ${err?.message ?? err}`);
+      this.logger.log('Conexión SMTP verificada: OK');
+    } catch (err) {
+      this.logger.warn(
+        `Verificación SMTP fallida: ${err && typeof err === 'object' && 'message' in err ? err.message : String(err)}`,
+      );
     }
 
     const subject =
@@ -126,7 +114,9 @@ export class MailerService {
         await this.mailer.sendMail({ from, to, subject: template.subject, html });
         this.logger.log('Templated email sent successfully.');
       } catch (error: any) {
-        this.logger.error(`Error sending templated mail (${template.file}): ${error.message}`);
+        this.logger.error(
+          `Error sending templated mail (${template.file}): ${error && typeof error === 'object' && 'message' in error ? error.message : String(error)}`,
+        );
         throw error;
       }
     }
@@ -134,26 +124,23 @@ export class MailerService {
 
   async sendStatusEmail(transaction: any, status: AdminStatus) {
     this.logger.log(
-      `sendStatusEmail called with transactionId=${transaction?.id}, status=${status}`,
+      `sendStatusEmail called with transactionId=${transaction && typeof transaction === 'object' && 'id' in transaction ? transaction.id : ''}, status=${status}`,
     );
     try {
-      const config = this.configService.get('nodemailer');
-      const from = config?.auth?.user;
-
-      if (!from || !config?.auth?.pass) {
-        this.logger.error(
-          'Falta configuración del correo. Verifica las variables de entorno EMAIL_USER y EMAIL_PASS.',
-        );
+      const from = this.configService.get<string>('EMAIL_FROM') ?? this.configService.get<string>('EMAIL_USER');
+      const pass = this.configService.get<string>('EMAIL_PASS');
+      if (!from || !pass) {
+        this.logger.error('Falta configuración del correo. Verifica EMAIL_FROM, EMAIL_USER y EMAIL_PASS.');
         return { message: 'Mailer no configurado correctamente' };
       }
 
       try {
-        this.logger.log('Verifying mailer...');
+        this.logger.log('Verificando conexión SMTP...');
         await this.mailer.verify();
-        this.logger.debug('Mailer verification: OK');
-      } catch (verifyErr: any) {
+        this.logger.debug('Conexión SMTP verificada: OK');
+      } catch (verifyErr) {
         this.logger.warn(
-          `Mailer verification failed (continuando): ${verifyErr?.message ?? verifyErr}`,
+          `Verificación SMTP fallida (continuando): ${verifyErr && typeof verifyErr === 'object' && 'message' in verifyErr ? verifyErr.message : String(verifyErr)}`,
         );
       }
 
@@ -236,7 +223,11 @@ export class MailerService {
       this.logger.log(`Cargando plantilla desde: ${templatePath}`);
       const html = this.compileTemplate(templatePath, this.buildTemplateData(transaction));
 
-      const candidateEmails: Array<string | undefined> = [transaction?.senderAccount?.createdBy];
+      const candidateEmails: Array<string | undefined> = [
+        transaction && typeof transaction === 'object' && 'senderAccount' in transaction && transaction.senderAccount && typeof transaction.senderAccount === 'object' && 'createdBy' in transaction.senderAccount
+          ? transaction.senderAccount.createdBy
+          : undefined,
+      ];
 
       const normalize = (s?: string) =>
         typeof s === 'string' ? s.trim().toLowerCase() : undefined;
@@ -253,11 +244,12 @@ export class MailerService {
       }
 
       if (!recipient) {
+        const txId = transaction && typeof transaction === 'object' && 'id' in transaction ? transaction.id : '';
         this.logger.warn(
-          `No se encontró un destinatario válido para la transacción ${transaction?.id}. candidateEmails: ${JSON.stringify(candidateEmails)}`,
+          `No se encontró un destinatario válido para la transacción ${txId}. candidateEmails: ${JSON.stringify(candidateEmails)}`,
         );
         return {
-          message: `No se envió el correo. No se detectó un email válido para la transacción ${transaction?.id}`,
+          message: `No se envió el correo. No se detectó un email válido para la transacción ${txId}`,
         };
       }
 
@@ -269,7 +261,9 @@ export class MailerService {
         envelope: { from, to: [recipient] },
       };
 
-      this.logger.log(`Enviando correo desde ${from} a ${recipient} (tx=${transaction?.id})`);
+      this.logger.log(
+        `Enviando correo desde ${from} a ${recipient} (tx=${transaction && typeof transaction === 'object' && 'id' in transaction ? transaction.id : ''})`,
+      );
       try {
         const result = await this.mailer.sendMail(mailOptions);
         this.logger.log('Correo enviado exitosamente:', result);
@@ -277,20 +271,22 @@ export class MailerService {
           message: `El correo de estado ha sido enviado a ${recipient}`,
           result,
         };
-      } catch (sendErr: any) {
+      } catch (sendErr) {
         this.logger.error(
-          `Error al enviar correo (sendMail) a ${recipient}: ${sendErr?.message ?? sendErr}`,
+          `Error al enviar correo (sendMail) a ${recipient}: ${sendErr && typeof sendErr === 'object' && 'message' in sendErr ? sendErr.message : String(sendErr)}`,
         );
         return {
           message: `Error enviando correo a ${recipient}`,
-          error: sendErr?.message ?? sendErr,
+          error: sendErr && typeof sendErr === 'object' && 'message' in sendErr ? sendErr.message : String(sendErr),
         };
       }
-    } catch (error: any) {
-      this.logger.error(`Error al procesar sendStatusEmail: ${error?.message ?? error}`);
+    } catch (error) {
+      this.logger.error(
+        `Error al procesar sendStatusEmail: ${error && typeof error === 'object' && 'message' in error ? error.message : String(error)}`,
+      );
       return {
         message: `Error interno en MailerService`,
-        error: error?.message ?? error,
+        error: error && typeof error === 'object' && 'message' in error ? error.message : String(error),
       };
     }
   }
@@ -302,8 +298,10 @@ export class MailerService {
       const compiled = Handlebars.compile(rawTemplate);
       this.logger.log('Template compiled successfully.');
       return compiled(data);
-    } catch (error: any) {
-      this.logger.error(`Error compiling template: ${error.message}`);
+    } catch (error) {
+      this.logger.error(
+        `Error compiling template: ${error && typeof error === 'object' && 'message' in error ? error.message : String(error)}`,
+      );
       throw error;
     }
   }
@@ -340,10 +338,21 @@ export class MailerService {
   }
 
   private buildTemplateData(transaction: any): Record<string, any> {
-    this.logger.log(`Building template data for transactionId=${transaction?.id}`);
-    const sender = transaction.senderAccount ?? {};
-    const receiver = transaction.receiverAccount ?? {};
-    const amount = transaction.amount ?? {};
+    this.logger.log(
+      `Building template data for transactionId=${transaction && typeof transaction === 'object' && 'id' in transaction ? transaction.id : ''}`,
+    );
+    const sender =
+      transaction && typeof transaction === 'object' && 'senderAccount' in transaction && transaction.senderAccount
+        ? transaction.senderAccount
+        : {};
+    const receiver =
+      transaction && typeof transaction === 'object' && 'receiverAccount' in transaction && transaction.receiverAccount
+        ? transaction.receiverAccount
+        : {};
+    const amount =
+      transaction && typeof transaction === 'object' && 'amount' in transaction && transaction.amount
+        ? transaction.amount
+        : {};
 
     return {
       REFERENCE_NUMBER: transaction.id?.slice(0, 8)?.toUpperCase() ?? '',

@@ -41,6 +41,7 @@ async function bootstrap() {
     'https://www.swaplyar.com',
     'https://swaplyar-swaplyar.vercel.app',
     'http://localhost:3000',
+    'http://localhost:3001',
   ];
   app.enableCors({
     credentials: true,

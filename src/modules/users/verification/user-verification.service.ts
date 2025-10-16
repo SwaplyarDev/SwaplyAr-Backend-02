@@ -164,7 +164,7 @@ export class UserVerificationService {
       }
     }
 
-    return verification;
+    return verification
   }
 
   async reupload(

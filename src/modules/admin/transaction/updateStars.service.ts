@@ -8,19 +8,23 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '@users/entities/user.entity';
-import { Transaction } from './entities/transaction.entity';
+import { UserProfile } from '@users/entities/user-profile.entity';
+import { Transaction } from 'src/modules/transactions/entities/transaction.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
 import { DiscountCode } from 'src/modules/discounts/entities/discount-code.entity';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
-import { ConversionsService } from '../conversions/services/conversions.service';
+import { ConversionsService } from 'src/modules/conversions/services/conversions.service';
 import { AdminStatus } from 'src/enum/admin-status.enum';
-import { DiscountService } from '../discounts/discounts.service';
+import { DiscountService } from '../../discounts/discounts.service';
 
 @Injectable()
 export class UpdateStarsService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+
+    @InjectRepository(UserProfile)
+    private readonly userProfileRepo: Repository<UserProfile>,
 
     @InjectRepository(Transaction)
     private readonly transactionRepo: Repository<Transaction>,
@@ -38,7 +42,7 @@ export class UpdateStarsService {
     private readonly conversionsService: ConversionsService,
   ) {}
 
-  async updateStarService(transactionId: string): Promise<{
+  async updateStars(transactionId: string): Promise<{
     cycleCompleted: boolean;
     ledger: UserRewardsLedger;
     message?: string;
@@ -62,8 +66,20 @@ export class UpdateStarsService {
       );
     }
 
-    const userId = transaction.senderAccount?.createdBy;
-    if (!userId) {
+    const senderEmail = transaction.senderAccount?.createdBy;
+    if (!senderEmail) {
+      throw new BadRequestException(
+        'No se encontró el email del remitente de la transacción.',
+      );
+    }
+
+    const userProfile = await this.userProfileRepo.findOne({
+      where: { email: senderEmail },
+      relations: ['user'],
+    });
+
+    const user = userProfile?.user;
+    if (!user) {
       throw new BadRequestException(
         'No se encontró el usuario asociado al remitente de la transacción.',
       );
@@ -92,15 +108,20 @@ export class UpdateStarsService {
         amount: baseAmount,
       });
       convertedAmount = arsToUsd;
+    } else if (fromCurrency === 'BRL') {
+      const { convertedAmount: brlToUsd } = await this.conversionsService.convertArsIndirect({
+        from: 'BRL',
+        to: 'USD',
+        amount: baseAmount,
+      });
+      convertedAmount = brlToUsd;
     } else if (fromCurrency === 'USD') {
       convertedAmount = baseAmount;
-    } else if (fromCurrency === 'BRL') {
-      throw new BadRequestException('Conversión BRL → USD aún no implementada.');
     } else {
       throw new BadRequestException(`Conversión no soportada desde ${fromCurrency} a USD.`);
     }
 
-    const ledger = await this.getOrCreateUserLedger(userId);
+    const ledger = await this.getOrCreateUserLedger(user.id);
 
     ledger.quantity = Number(ledger.quantity) + Number(convertedAmount);
     ledger.stars = ledger.stars + 1;
@@ -157,11 +178,12 @@ export class UpdateStarsService {
       throw new NotFoundException('Usuario no encontrado en el ledger.');
     }
 
-    await this.discountService.assignSystemDiscount(user, 'PLUS', 10);
+    const discount = await this.discountService.assignSystemDiscount(user, 'PLUS', 10);
 
-    return '¡Felicidades! Completaste un ciclo y se ha generado tu cupón PLUS REWARDS de 10 USD.';
+    return `¡Felicidades! Completaste un ciclo y se ha generado tu cupón PLUS REWARDS. Código: ${discount.code}, Válido desde: ${discount.validFrom.toLocaleDateString()}, Valor: ${discount.value} ${discount.currencyCode}.`;
   }
 }
+
 
 
 

@@ -1,11 +1,9 @@
-import { Injectable, NotFoundException, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindManyOptions, Between, ILike } from 'typeorm';
 import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
-
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
-import { DiscountService } from 'src/modules/discounts/discounts.service';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
 import { BankService } from '@financial-accounts/payment-methods/bank/bank.service';
@@ -18,7 +16,7 @@ import {
   TransactionAdminResponseDto,
   TransactionByIdAdminResponseDto,
 } from './dto/get-transaction-response.dto';
-import { UpdateStarDto } from 'src/modules/discounts/dto/update-star.dto';
+import { UpdateStarsService } from './updateStars.service';
 // import { TransactionGetResponseDto } from '@transactions/dto/transaction-response.dto';
 
 @Injectable()
@@ -34,7 +32,7 @@ export class AdminTransactionService {
     private readonly adminMasterRepository: Repository<AdministracionMaster>,
     private readonly proofOfPaymentService: ProofOfPaymentsService,
     private readonly bankService: BankService,
-    private readonly discountService: DiscountService,
+    private readonly updateStars: UpdateStarsService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(ProofOfPayment)
@@ -335,7 +333,6 @@ export class AdminTransactionService {
     message?: string,
     additionalData?: Record<string, any>,
   ) {
-    // Verificar que el usuario sea admin o super_admin
     if (!['admin', 'super_admin'].includes(adminUser.role)) {
       throw new UnauthorizedException(
         'Solo los administradores pueden actualizar el estado de las transacciones',
@@ -351,115 +348,90 @@ export class AdminTransactionService {
       throw new NotFoundException('Transacción no encontrada.');
     }
 
-    // Buscar o crear el registro en administracion_master
-    let adminMaster = await this.adminMasterRepository.findOne({
-      where: { transactionId },
-    });
+   if (transaction.finalStatus === AdminStatus.Completed) {
+      this.logger.warn(
+        `Intento de modificar una transacción completada (ID: ${transaction.id}). Estado solicitado: ${status}`,
+      );
 
-    if (!adminMaster) {
+      throw new BadRequestException(
+        'No se puede cambiar el estado de una transacción que ya fue completada.',
+      );
+   }
+
+   let adminMaster = await this.adminMasterRepository.findOne({ where: { transactionId } });
+
+   if (!adminMaster) {
       adminMaster = this.adminMasterRepository.create({
         transactionId,
         status,
         adminUserId: adminUser.id,
       });
       await this.adminMasterRepository.save(adminMaster);
-    } else {
-      // Actualizar el estado en administracion_master
+   } else {
       await this.adminMasterRepository.update(
         { transactionId },
-        {
-          status,
-          adminUserId: adminUser.id,
-        },
+        { status, adminUserId: adminUser.id },
       );
-    }
+     }
 
-    // Crear nuevo registro en el historial
-    const statusLog = this.statusLogRepository.create({
+     const statusLog = this.statusLogRepository.create({
       transaction: adminMaster,
       status,
       message,
       changedByAdminId: adminUser.id,
       additionalData,
-    });
+     });
 
-    await this.statusLogRepository.save(statusLog);
+     await this.statusLogRepository.save(statusLog);
 
-    // Convertir el estado de admin a estado de transacción
-    const transactionStatus = this.convertAdminStatusToTransactionStatus(status);
+     const transactionStatus = this.convertAdminStatusToTransactionStatus(status);
 
-    // Actualizar el estado en la transacción
-    await this.transactionsRepository.update(
+     await this.transactionsRepository.update(
       { id: transactionId },
       { finalStatus: transactionStatus },
-    );
+     );
 
-    const updatedTransaction = await this.transactionsRepository.findOne({
+     const updatedTransaction = await this.transactionsRepository.findOne({
       where: { id: transactionId },
-    });
+     });
 
-    this.logger.log(
+     this.logger.log(
       `Estado de transacción ${transactionId} actualizado a ${status} por admin ${adminUser.id}`,
-    );
+     );
 
-    if (status === AdminStatus.Approved) {
-      // Solo cambia el estado, no asigna recompensas
+     if (status === AdminStatus.Approved) {
       return {
         message: 'Estado cambiado a approved correctamente. No se asignaron recompensas.',
         status: 200,
         transaction: updatedTransaction,
       };
-    }
+     }
 
-    if (status === AdminStatus.Completed) {
-      console.log(transaction);
-      const quantityToAdd = Number(transaction.amount.amountSent);
+     if (status === AdminStatus.Completed) {
+      const { cycleCompleted, ledger, message: starMessage } =
+      await this.updateStars.updateStars(transaction.id);
 
-      const starDto: UpdateStarDto = {
-        quantity: quantityToAdd,
-        transactionId: transaction.id,
-      };
+      this.logger.log(
+        `Recompensas actualizadas para usuario ${transaction.senderAccount?.createdBy}: +${ledger.quantity}. Ciclo completado: ${cycleCompleted}`,
+      );
 
-      const user = await this.userRepository.findOne({
-        where: { profile: { email: transaction.senderAccount.createdBy } },
-        relations: ['profile'],
-      });
-
-      if (user) {
-        const userId = user.id;
-        const { cycleCompleted, message: starMessage } = await this.discountService.updateStars(
-          starDto,
-          userId,
-        );
-
-        this.logger.log(
-          `Recompensas actualizadas para usuario ${userId}: +${quantityToAdd}. Ciclo completo: ${cycleCompleted}`,
-        );
-
-        if (starMessage) {
-          this.logger.log(`Mensaje de recompensa: ${starMessage}`);
-        }
-      } else {
-        // Opcional: loggear que no se encontró usuario pero continuar sin error
-        this.logger.warn(
-          `No se encontró usuario para la transacción ${transactionId}. No se actualizaron estrellas.`,
-        );
+      if (starMessage) {
+        this.logger.log(`Mensaje de recompensa: ${starMessage}`);
       }
+
       return {
-        message: 'Estado cambiado a completed y se asignaron recompensas.',
+        message: `Estado cambiado a completed y se asignaron recompensas.${starMessage ? ' ' + starMessage : ''}`,
         status: 200,
         transaction: updatedTransaction,
       };
     }
 
-    // No es necesario eliminar campos inexistentes del objeto Transaction
-
     return {
-      message: 'Estado actualizado',
-      status,
+      message: 'Estado actualizado correctamente.',
+      status: 200,
       transaction: updatedTransaction,
     };
-  }
+  }  
 
   /* -------------------------------------------------------------------------- */
   /*                       ADD TRANSACTION RECEIPT (FILE)                       */
@@ -597,23 +569,47 @@ export class AdminTransactionService {
         proofsOfPayment: true,
       },
     });
+
     if (!transaction) {
-      throw new Error('Transacción no encontrada.');
+      throw new NotFoundException('Transacción no encontrada.');
     }
-    // Actualizar solo campos permitidos y con validación básica
+
     const p = (payload as Record<string, unknown>) || {};
-    if (typeof p.message === 'string') transaction.message = p.message;
-    if (typeof p.isNoteVerified === 'boolean') transaction.isNoteVerified = p.isNoteVerified;
+
+    if (transaction.finalStatus === AdminStatus.Completed) {
+      throw new BadRequestException(
+        'No se puede modificar una transacción que ya está marcada como completada.',
+      );
+    }
+
+    const fs = p.finalStatus;
+    if (typeof fs === 'string' && Object.values(AdminStatus).includes(fs as AdminStatus)) {
+      if (fs === AdminStatus.Completed) {
+        throw new BadRequestException(
+          'No se puede marcar la transacción como completed desde este endpoint.',
+        );
+      }
+    }
+
+    if (typeof p.message === 'string') {
+      transaction.message = p.message;
+    }
+
+    if (typeof p.isNoteVerified === 'boolean') {
+      transaction.isNoteVerified = p.isNoteVerified;
+    }
+
     const ns = p.noteVerificationExpiresAt;
     if (typeof ns === 'string' || ns instanceof Date) {
       transaction.noteVerificationExpiresAt = ns instanceof Date ? ns : new Date(ns);
     }
-    const fs = p.finalStatus;
+
     if (typeof fs === 'string' && Object.values(AdminStatus).includes(fs as AdminStatus)) {
       transaction.finalStatus = fs as AdminStatus;
     }
+
     await this.transactionsRepository.save(transaction);
-    // Devolver la transacción actualizada
+
     const updated = await this.transactionsRepository.findOne({
       where: { id },
       relations: {
@@ -623,8 +619,13 @@ export class AdminTransactionService {
         proofsOfPayment: true,
       },
     });
-    return updated;
-  }
+
+    return {
+      message: 'Transacción actualizada correctamente.',
+      status: 200,
+      transaction: updated,
+    };
+  }  
 
   /**
    * Obtiene todas las transacciones con paginación y filtros dinámicos.

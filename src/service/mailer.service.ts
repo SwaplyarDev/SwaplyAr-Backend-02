@@ -186,7 +186,7 @@ export class MailerService {
           subject: 'Discrepancia en la Transacción',
           path: 'discrepancy.hbs',
         },
-        [AdminStatus.Canceled]: {
+        [AdminStatus.Cancelled]: {
           subject: 'Transacción Cancelada',
           path: 'canceled.hbs',
         },

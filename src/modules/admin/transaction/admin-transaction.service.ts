@@ -48,7 +48,7 @@ export class AdminTransactionService {
       [AdminStatus.RefundInTransit]: AdminStatus.RefundInTransit,
       [AdminStatus.InTransit]: AdminStatus.InTransit,
       [AdminStatus.Discrepancy]: AdminStatus.Discrepancy,
-      [AdminStatus.Canceled]: AdminStatus.Canceled,
+      [AdminStatus.Cancelled]: AdminStatus.Cancelled,
       [AdminStatus.Modified]: AdminStatus.Modified,
       [AdminStatus.Refunded]: AdminStatus.Refunded,
       [AdminStatus.Completed]: AdminStatus.Completed,

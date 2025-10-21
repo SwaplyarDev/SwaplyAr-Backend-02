@@ -5,6 +5,7 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  BeforeInsert,
 } from 'typeorm';
 import { UserProfile } from '@users/entities/user-profile.entity';
 import { UserAlternativeEmail } from '@users/entities/user-alternative-email.entity';
@@ -20,10 +21,17 @@ import { UserRole } from 'src/enum/user-role.enum';
 import { UserAccount } from 'src/modules/userAccounts/entities/user-account.entity';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
+import { customAlphabet } from 'nanoid';
+ 
+export const nanoidCustom = customAlphabet(
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+  8,
+);
+
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid', { name: 'user_id' })
+  @PrimaryGeneratedColumn('uuid', { name: 'user_id'})
   id: string;
 
   @Exclude()
@@ -94,6 +102,11 @@ export class User {
   @Column({ name: 'terms_accepted', default: false })
   termsAccepted: boolean;
 
+  @BeforeInsert()
+    generateMemberCode() {
+      this.memberCode = nanoidCustom(); // genera un string de 8 caracteres sin "-" ni "_"
+    } 
+  
   @Column({
     name: 'member_code',
     type: 'varchar',

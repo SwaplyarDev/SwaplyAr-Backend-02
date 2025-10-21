@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@app/app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { ConfigService } from '@nestjs/config';
@@ -26,8 +26,21 @@ async function bootstrap() {
         enableImplicitConversion: true,
       },
       exceptionFactory: (errors) => {
-        console.log('❌ Errores de validación:', errors);
-        return new Error(`Errores de validación:`);
+
+       if (errors instanceof BadRequestException) return errors;
+       console.log('❌ Errores de validación del DTO:', errors);
+
+       const messages = errors.map((error) => {
+        if (!error.constraints) return `${error.property} tiene un valor inválido.`;
+        const constraints = Object.values(error.constraints).join(', ');
+        return `${error.property}: ${constraints}`;
+        });
+
+       return new BadRequestException({
+        statusCode: 400,
+        message: messages,
+        error: 'Bad Request',
+       });
       },
     }),
   );
@@ -60,7 +73,8 @@ async function bootstrap() {
       .setVersion('1.0')
       .addBearerAuth()
       .build();
-    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    const document = SwaggerModule.createDocument(app, swaggerConfig
+);
     SwaggerModule.setup(apiPrefix, app, document);
   }
 

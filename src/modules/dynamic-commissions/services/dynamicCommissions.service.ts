@@ -1,10 +1,4 @@
-
-
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DynamicCommission } from '../entities/dynamicCommissions.entity';
@@ -34,7 +28,10 @@ export class DynamicCommissionsService {
   }
 
   private normalizePlatformName(platform: string): string {
-    return platform.replace(/\b(USD|EUR|ARS|BRL|USDT)\b/gi, '').trim().toLowerCase();
+    return platform
+      .replace(/\b(USD|EUR|ARS|BRL|USDT)\b/gi, '')
+      .trim()
+      .toLowerCase();
   }
   private ensureDifferentPlatforms(from: string, to: string): void {
     const sameBase = this.normalizePlatformName(from) === this.normalizePlatformName(to);
@@ -62,7 +59,9 @@ export class DynamicCommissionsService {
     if (exists) {
       throw new BadRequestException({
         statusCode: 400,
-        message: [`Ya existe una comisión para ${fromPlatform} → ${toPlatform}. Usa PATCH para actualizar.`],
+        message: [
+          `Ya existe una comisión para ${fromPlatform} → ${toPlatform}. Usa PATCH para actualizar.`,
+        ],
         error: 'Bad Request',
       });
     }
@@ -84,7 +83,9 @@ export class DynamicCommissionsService {
     if (!existing) {
       throw new NotFoundException({
         statusCode: 404,
-        message: [`No se encontró una comisión para ${fromPlatform} → ${toPlatform}. Usa POST para crear.`],
+        message: [
+          `No se encontró una comisión para ${fromPlatform} → ${toPlatform}. Usa POST para crear.`,
+        ],
         error: 'Not Found',
       });
     }
@@ -96,8 +97,10 @@ export class DynamicCommissionsService {
     return this.toResponseDto(saved);
   }
 
-  async find(fromPlatform?: PlatformName, toPlatform?: PlatformName): Promise<DynamicCommissionResponseDto[]> {
-
+  async find(
+    fromPlatform?: PlatformName,
+    toPlatform?: PlatformName,
+  ): Promise<DynamicCommissionResponseDto[]> {
     const query = this.commissionRepo.createQueryBuilder('commission');
 
     if (fromPlatform) query.andWhere('commission.fromPlatform = :fromPlatform', { fromPlatform });
@@ -108,7 +111,9 @@ export class DynamicCommissionsService {
     if (!results.length) {
       throw new NotFoundException({
         statusCode: 404,
-        message: [`No se encontró una comisión para ${fromPlatform} → ${toPlatform}. Usa POST para crear.`],
+        message: [
+          `No se encontró una comisión para ${fromPlatform} → ${toPlatform}. Usa POST para crear.`,
+        ],
         error: 'Not Found',
       });
     }
@@ -116,9 +121,3 @@ export class DynamicCommissionsService {
     return results.map((c) => this.toResponseDto(c));
   }
 }
-
-
-
-
-
-

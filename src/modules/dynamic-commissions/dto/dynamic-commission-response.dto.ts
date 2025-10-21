@@ -1,5 +1,3 @@
-
-
 import { ApiProperty } from '@nestjs/swagger';
 import { PlatformName } from 'src/enum/commissions.enum';
 
@@ -44,8 +42,3 @@ export class DynamicCommissionResponseDto {
   })
   updatedAt: string;
 }
-
-
-
-
-

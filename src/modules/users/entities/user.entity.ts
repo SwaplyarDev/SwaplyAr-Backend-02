@@ -94,6 +94,15 @@ export class User {
   @Column({ name: 'terms_accepted', default: false })
   termsAccepted: boolean;
 
+  @Column({
+    name: 'member_code',
+    type: 'varchar',
+    length: 8,
+    nullable: false,
+    unique: true,
+  })
+  memberCode: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;
 

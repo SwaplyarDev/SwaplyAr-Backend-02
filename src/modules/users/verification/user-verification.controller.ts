@@ -272,14 +272,6 @@ export class UserVerificationController {
             properties: {
               id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
               user_id: { type: 'string', example: 'bb34d516-4866-4302-8d4b-c3e22a2ca64b' },
-              user_profile: {
-                type: 'object',
-                properties: {
-                  firstName: { type: 'string', example: 'Oscar' },
-                  lastName: { type: 'string', example: 'Padilla' },
-                  email: { type: 'string', example: 'usuario@ejemplo.com' },
-                },
-              },
               documents: {
                 type: 'object',
                 properties: {
@@ -345,13 +337,6 @@ export class UserVerificationController {
       return {
         id: v.verification_id,
         user_id: v.user?.id,
-        user_profile: v.user?.profile
-          ? {
-              firstName: v.user.profile.firstName,
-              lastName: v.user.profile.lastName,
-              email: v.user.profile.email,
-            }
-          : null,
         documents,
         verification_status: v.verification_status,
         rejection_note:
@@ -392,14 +377,6 @@ export class UserVerificationController {
           properties: {
             id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
             user_id: { type: 'string', example: 'bb34d516-4866-4302-8d4b-c3e22a2ca64b' },
-            user_profile: {
-              type: 'object',
-              properties: {
-                firstName: { type: 'string', example: 'Oscar' },
-                lastName: { type: 'string', example: 'Padilla' },
-                email: { type: 'string', example: 'usuario@ejemplo.com' },
-              },
-            },
             documents: {
               type: 'object',
               properties: {
@@ -443,8 +420,6 @@ export class UserVerificationController {
       throw new NotFoundException(`Verification with id ${verificationId} not found`);
     }
 
-    const profile = verification.user?.profile;
-
     const latestAttempt =
       verification.attempts && verification.attempts.length > 0
         ? verification.attempts[verification.attempts.length - 1]
@@ -468,13 +443,6 @@ export class UserVerificationController {
       data: {
         id: verification.verification_id,
         user_id: verification.user?.id,
-        user_profile: profile
-          ? {
-              firstName: profile.firstName,
-              lastName: profile.lastName,
-              email: profile.email,
-            }
-          : null,
         documents,
         verification_status: verification.verification_status,
         rejection_note:

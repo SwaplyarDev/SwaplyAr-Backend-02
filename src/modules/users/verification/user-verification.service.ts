@@ -12,8 +12,6 @@ import { CloudinaryService } from '../../../service/cloudinary/cloudinary.servic
 import { DiscountService } from 'src/modules/discounts/discounts.service';
 import { CreateVerificationResponseDto } from './dto/create-verification-response.dto';
 import { UserVerificationAttempt } from '@users/entities/user-verification-attempt.entity';
-import { ProfileService } from '@users/profile/profile.service';
-import { UserProfile } from '@users/entities/user-profile.entity';
 
 @Injectable()
 export class UserVerificationService {
@@ -28,8 +26,6 @@ export class UserVerificationService {
     @InjectRepository(UserVerificationAttempt)
     private readonly userVerificationAttemptsRepository: Repository<UserVerificationAttempt>,
 
-    @InjectRepository(UserProfile)
-    private readonly profileRepository: Repository<UserProfile>,
   ) {}
 
   async create(
@@ -138,7 +134,7 @@ export class UserVerificationService {
 
     const [data, total] = await this.userVerificationRepository.findAndCount({
       where: whereCondition,
-      relations: ['user', 'user.profile', 'attempts'],
+      relations: ['user', 'attempts'],
       order: { created_at: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -148,23 +144,10 @@ export class UserVerificationService {
   }
 
   async findVerificationById(verificationId: string): Promise<UserVerification | null> {
-    const verification = await this.userVerificationRepository.findOne({
+    return this.userVerificationRepository.findOne({
       where: { verification_id: verificationId },
       relations: ['user', 'attempts'], // Para incluir info del usuario relacionado
     });
-
-    if (verification) {
-      const profile = await this.profileRepository.findOne({
-        where: { user: { id: verification.user.id } },
-        relations: ['user', 'user.locations', 'socials'],
-      });
-
-      if (profile) {
-        verification.user.profile = profile;
-      }
-    }
-
-    return verification
   }
 
   async reupload(

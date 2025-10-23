@@ -1,5 +1,3 @@
-
-
 export enum PlatformName {
   BANK_ARS = 'Banco ARS',
   BANK_BRL = 'pix BRL',
@@ -10,6 +8,3 @@ export enum PlatformName {
   WISE_USD = 'wise USD',
   TETHER_USDT = 'tether USD',
 }
-
-
-

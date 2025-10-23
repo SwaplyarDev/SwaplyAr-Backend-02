@@ -63,4 +63,3 @@ export class AddDynamicCommissionsTableOnly1760982979347 implements MigrationInt
     await queryRunner.dropTable('dynamic_commissions');
   }
 }
-

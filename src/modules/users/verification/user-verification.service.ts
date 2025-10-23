@@ -125,24 +125,6 @@ export class UserVerificationService {
     return verification;
   }
 
-  async findVerificationsByStatus(
-    status?: VerificationStatus,
-    page: number = 1,
-    limit: number = 10,
-  ): Promise<{ data: UserVerification[]; total: number }> {
-    const whereCondition = status ? { verification_status: status } : {};
-
-    const [data, total] = await this.userVerificationRepository.findAndCount({
-      where: whereCondition,
-      relations: ['user', 'attempts'],
-      order: { created_at: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
-
-    return { data, total };
-  }
-
   async findVerificationById(verificationId: string): Promise<UserVerification | null> {
     return this.userVerificationRepository.findOne({
       where: { verification_id: verificationId },

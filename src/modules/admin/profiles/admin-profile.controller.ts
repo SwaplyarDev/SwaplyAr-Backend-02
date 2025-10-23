@@ -16,12 +16,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { UserProfile } from '@users/entities/user-profile.entity';
 import { ProfileService } from '@users/profile/profile.service';
 import { AdminProfileService } from './admin-profile.service';
 import { UpdateAdminProfileDto } from '@admin/profiles/dto/update-admin-profile.dto';
 import { AdminProfileResponseDto } from '@admin/profiles/dto/admin-profile-response.dto';
 import { UpdateAdminProfileResponseDto } from '@admin/profiles/dto/update-admin-profile-response.dto';
+import { ApiQuery } from '@nestjs/swagger';
+import { VerificationStatus } from '@users/entities/user-verification.entity';
 
 @ApiTags('Perfiles (Admin)')
 @Controller('admin/profiles')
@@ -38,7 +39,31 @@ export class AdminProfileController {
    * Lista todos los perfiles de usuarios.
    */
   @Get()
-  @ApiOperation({ summary: 'Listar todos los perfiles de usuario (solo admin)' })
+  @ApiOperation({
+    summary: 'Listar perfiles de usuario por estado de verificación (solo admin)',
+    description:
+      'Permite a los administradores listar perfiles de usuario filtrando por estado de verificación (PENDIENTE, APROBADO, RECHAZADO, REENVIAR_DATOS).',
+  })
+  @ApiQuery({ 
+    name: 'status',
+    required: false,
+    enum: VerificationStatus,
+    description: 'Filtrar por estado de verificación',
+  })
+  @ApiQuery({ 
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Número de página',
+    example: 1,
+  })
+  @ApiQuery({ 
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Cantidad de resultados por página',
+    example: 10,
+  })
   @ApiResponse({
     status: 200,
     description: 'Listado de perfiles de usuario',
@@ -46,9 +71,16 @@ export class AdminProfileController {
   })
   @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
   @ApiResponse({ status: 403, description: 'No autorizado, Solo para Administradores' })
-  async findAll() {
-    const profiles = await this.adminProfileService.findAll();
-
+  async findAll(
+    @Query('status') status?: VerificationStatus,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const profiles = await this.adminProfileService.findAll(
+      status,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 10,
+    );
     return profiles;
   }
 

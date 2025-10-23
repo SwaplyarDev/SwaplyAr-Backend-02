@@ -27,6 +27,10 @@ import { AdminDiscountsController } from './discounts/admin-discount.controller'
 import { DiscountCode } from '../discounts/entities/discount-code.entity';
 import { UserDiscount } from '../discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.entity';
+import { UserVerification } from '@users/entities/user-verification.entity';
+import { UserVerificationService } from '@users/verification/user-verification.service';
+import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
+import { UserVerificationModule } from '@users/verification/user-verification.module';
 
 @Module({
   imports: [
@@ -42,6 +46,7 @@ import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.ent
       UserDiscount,
       DiscountCode,
       UserRewardsLedger,
+      UserVerification,
     ]),
     FileUploadModule,
     ProofOfPaymentsModule,
@@ -49,6 +54,7 @@ import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.ent
     UsersModule,
     MailerModule,
     DiscountModule,
+    UserVerificationModule,
   ],
   controllers: [
     AdminProfileController,
@@ -62,7 +68,8 @@ import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.ent
     AdminProfileService,
     AdminUserService,
     AdminDiscountService,
+    CloudinaryService,
   ],
-  exports: [],
+  exports: [CloudinaryService],
 })
 export class AdminModule {}

@@ -43,16 +43,32 @@ export class ConversionsController {
     return this.conversionsService.convertArs(request);
   }
 
-  @Post('ars/indirect')
-  @ApiOperation({ summary: 'Convertir ARS → EUR/USD/BRL (con cálculo indirecto, venta)' })
+  @Post('indirect')
+  @ApiOperation({
+    summary: 'Convertir ARS → EUR/USD/BRL o BRL → USD  (con cálculo indirecto, venta (ARS))' 
+  })
   @ApiResponse({ status: 201, type: ConversionResponseDto })
-  async convertArsIndirect(@Body() request: ConversionRequestDto) {
-    if (request.from !== 'ARS' || !['EUR', 'USD', 'BRL'].includes(request.to)) {
+  async convertIndirect(@Body() request: ConversionRequestDto) {
+    const { from, to } = request;
+    const validPairs = [
+      ['ARS', 'EUR'],
+      ['ARS', 'USD'],
+      ['ARS', 'BRL'],
+      ['BRL', 'USD'],
+    ];
+
+    const isValid = validPairs.some(([f, t]) => f === from && t === to);
+
+    if (!isValid) {
       throw new BadRequestException(
-        `Este endpoint solo permite conversiones desde ARS hacia EUR, USD o BRL.`,
+        'Este endpoint solo permite conversiones indirectas desde ARS hacia EUR/USD/BRL o desde BRL hacia USD.',
       );
     }
 
-    return this.conversionsService.convertArsIndirect(request);
+    if (from === 'ARS') {
+      return this.conversionsService.convertArsIndirect(request);
+    } else if (from === 'BRL') {
+      return this.conversionsService.convertBrlIndirect(request);
+    }
   }
 }

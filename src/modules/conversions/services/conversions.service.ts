@@ -192,4 +192,36 @@ export class ConversionsService {
 
     throw new BadRequestException(`Conversión indirecta no implementada para ARS → ${to}`);
   }
+
+  async convertBrlIndirect(dto: ConversionRequestDto): Promise<ConversionResponseDto> {
+    const { from, to, amount } = dto;
+    const data = await this.fetchData();
+
+    if (from !== 'BRL' || to !== 'USD') {
+      throw new BadRequestException(
+        'Este método solo permite conversiones indirectas desde BRL hacia USD.',
+      );
+    }
+
+    const usdItem = data.find(
+      (entry) => entry['Actualizar Monedas Calculadora']['Par de MonedasR'] === 'USD a BRL',
+    );
+
+    if (!usdItem) {
+      throw new BadRequestException('No se encontró tasa para USD.');
+    }
+
+    const item = usdItem['Actualizar Monedas Calculadora'];
+    const rateUsed = 1 / item['Valor'];
+    const convertedAmount = amount * rateUsed;
+
+    return {
+      from,
+      to,
+      amount,
+      convertedAmount,
+      rateUsed,
+      message: `Conversión indirecta BRL → USD realizada usando el inverso de USD. Fuente: ${item['Fuente']}, última actualización: ${item['Última Actualización']}.`,
+    };
+  }
 }

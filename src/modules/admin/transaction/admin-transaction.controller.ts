@@ -40,7 +40,7 @@ import { AddVoucherDto } from './dto/add-voucher.dto';
 import { AdminStatus } from 'src/enum/admin-status.enum';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { User } from '@users/entities/user.entity';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { UpdateTransactionPayloadDto } from './dto/update_transaction.dto';
 
 @ApiTags('Transacciones (Admin)')
 @ApiBearerAuth()
@@ -398,7 +398,7 @@ export class AdminTransactionController {
     schema: {
       example: {
         success: true,
-        message: 'Estado actualizado a approved correctamente',
+        message: 'Estado cambiado a completed y se asignaron recompensas. ¡Felicidades! Completaste un ciclo y se ha generado tu cupón PLUS REWARDS. Código: PLUS-W50TNX, Válido desde: 17/10/2025, Valor: 10 USD.',
         data: {},
       },
     },
@@ -523,60 +523,15 @@ export class AdminTransactionController {
   })
   @ApiBody({
     description: 'Datos para actualizar la transacción',
-    type: UpdateTransactionDto,
+    type: UpdateTransactionPayloadDto,
     examples: {
       ejemplo1: {
         summary: 'Ejemplo de request',
         value: {
-          countryTransaction: 'Argentina',
-          message: 'Transferencia de prueba',
-          createdBy: 'brasil@swaplyar.com',
-          financialAccounts: {
-            senderAccount: {
-              firstName: 'Juan',
-              lastName: 'Pérez',
-              email: 'juan@swaply.com',
-              paymentMethod: {
-                platformId: 'bank',
-                method: 'bank',
-                bank: {
-                  currency: 'ARS',
-                  bankName: 'Banco Nación',
-                  sendMethodKey: 'CBU',
-                  sendMethodValue: '1234567890123456789012',
-                  documentType: 'DNI',
-                  documentValue: '87654321',
-                },
-              },
-            },
-            receiverAccount: {
-              firstName: 'Ana',
-              lastName: 'García',
-              document_value: '12345678',
-              phoneNumber: '1122334455',
-              email: 'ana@example.com',
-              bank_name: 'Banco Galicia',
-              paymentMethod: {
-                platformId: 'bank',
-                method: 'bank',
-                bank: {
-                  currency: 'ARS',
-                  bankName: 'Banco Galicia',
-                  sendMethodKey: 'CBU',
-                  sendMethodValue: '1234567890123456789012',
-                  documentType: 'DNI',
-                  documentValue: '12345678',
-                },
-              },
-            },
-          },
-          amount: {
-            amountSent: 1000,
-            currencySent: 'ARS',
-            amountReceived: 900,
-            currencyReceived: 'BRL',
-            received: false,
-          },
+          message: 'Actualización de prueba desde Swagger',
+          isNoteVerified: true,
+          noteVerificationExpiresAt: '2025-11-01T00:00:00.000Z',
+          finalStatus: 'approved',
         },
       },
     },
@@ -585,7 +540,7 @@ export class AdminTransactionController {
   async updateTransaction(
     @Param('id') id: string,
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-    body: UpdateTransactionDto,
+    body: UpdateTransactionPayloadDto,
   ) {
     const result = await this.adminService.updateTransaction(id, body);
     return {

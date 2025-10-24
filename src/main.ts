@@ -1,13 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@app/app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { ConfigService } from '@nestjs/config';
 import { Response, Request } from 'express';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useWebSocketAdapter(new IoAdapter(app));
+
   const configService = app.get(ConfigService);
 
   // 1. Seguridad HTTP con Helmet
@@ -26,8 +29,20 @@ async function bootstrap() {
         enableImplicitConversion: true,
       },
       exceptionFactory: (errors) => {
-        console.log('❌ Errores de validación:', errors);
-        return new Error(`Errores de validación:`);
+        if (errors instanceof BadRequestException) return errors;
+        console.log('❌ Errores de validación del DTO:', errors);
+
+        const messages = errors.map((error) => {
+          if (!error.constraints) return `${error.property} tiene un valor inválido.`;
+          const constraints = Object.values(error.constraints).join(', ');
+          return `${error.property}: ${constraints}`;
+        });
+
+        return new BadRequestException({
+          statusCode: 400,
+          message: messages,
+          error: 'Bad Request',
+        });
       },
     }),
   );
@@ -41,10 +56,7 @@ async function bootstrap() {
     'https://www.swaplyar.com',
     'https://swaplyar-swaplyar.vercel.app',
     'http://localhost:3000',
-    'http://localhost:3001', 
-    'http://127.0.0.1:3001', 
-
-
+    'http://localhost:3001',
   ];
   app.enableCors({
     credentials: true,

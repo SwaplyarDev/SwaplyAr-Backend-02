@@ -188,7 +188,7 @@ export class MailerService {
         },
         [AdminStatus.Cancelled]: {
           subject: 'Transacción Cancelada',
-          path: 'canceled.hbs',
+          path: 'cancelled.hbs',
         },
         [AdminStatus.Modified]: {
           subject: 'Transacción Modificada',

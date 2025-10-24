@@ -22,7 +22,29 @@ export class UsersService {
     private profileRepository: Repository<UserProfile>,
     @InjectRepository(UserSocials)
     private socialsRepository: Repository<UserSocials>,
-  ) {}
+  ) { }
+
+  // private generateUserCode(): string {
+  //   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  //   let result = '';
+  //   for (let i = 0; i < 8; i++) {
+  //     result += chars.charAt(Math.floor(Math.random() * chars.length));
+  //   }
+  //   return result;
+  // }
+
+  // private async generateUniqueUserCode(): Promise<string> {
+  //   let code: string;
+  //   let exists: boolean;
+
+  //   do {
+  //     code = this.generateUserCode();
+  //     exists = !!(await this.userRepository.findOne({ where: { memberCode: code } }));
+  //   } while (exists);
+
+  //   return code;
+  // }
+
 
   async register(userDto: RegisterUserDto): Promise<User> {
     try {
@@ -93,3 +115,5 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 }
+
+

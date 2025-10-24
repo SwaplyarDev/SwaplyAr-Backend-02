@@ -1,24 +1,37 @@
+
+
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { COMMISSION_RULES } from '../constants/commisions-rules';
 import { CommissionResponseDto } from '../dto/commissions-response.dto';
+import { DynamicCommissionsService } from 'src/modules/dynamic-commissions/services/dynamicCommissions.service';
+import { PlatformName } from 'src/enum/commissions.enum';
 
 @Injectable()
 export class CommissionsService {
-  calculateCommission(
+  constructor(
+    private readonly dynamicCommissionsService: DynamicCommissionsService,
+  ) {}
+
+  async calculateCommission(
     amount: number,
     fromPlatform: string,
     toPlatform: string,
-  ): CommissionResponseDto {
-    console.log('Checking rule for:', fromPlatform, '->', toPlatform);
-    const rule = COMMISSION_RULES.find((r) => r.from === fromPlatform && r.to === toPlatform);
+  ): Promise<CommissionResponseDto> {
 
-    if (!rule) {
+    const from = fromPlatform as PlatformName;
+    const to = toPlatform as PlatformName;
+    
+    const dynamicRule = await this.dynamicCommissionsService.findOneByPair(
+      from,
+      to,
+    );
+
+    if (!dynamicRule) {
       throw new BadRequestException(
-        `No se encontró una regla de comisión para ${fromPlatform} → ${toPlatform}.`,
+        `No se encontró una comisión para ${fromPlatform} → ${toPlatform}.`,
       );
     }
 
-    const commissionRate = rule.rate;
+    const commissionRate = dynamicRule.commissionRate;
     const commissionValue = +(amount * commissionRate).toFixed(2);
     const finalAmount = +(amount - commissionValue).toFixed(2);
 
@@ -29,20 +42,20 @@ export class CommissionsService {
       commissionRate,
       commissionValue,
       finalAmount,
-      message: 'Comisión calculada correctamente.',
+      message: 'Comisión calculada correctamente (fuente: dinámica).',
     };
   }
 
-  calculateCommissionWithCurrencyCheck(
+  async calculateCommissionWithCurrencyCheck(
     amount: number,
     fromPlatform: string,
     toPlatform: string,
     fromCurrency: string,
     toCurrency: string,
-  ): { valid: boolean; data?: CommissionResponseDto } {
+  ): Promise<{ valid: boolean; data?: CommissionResponseDto }> {
     const extractCurrency = (platform: string): string | null => {
-      const match = platform.match(/\b(USD|EUR|ARS|BRL)\b/);
-      return match ? match[0] : null;
+      const match = platform.match(/\b(USD|EUR|ARS|BRL|USDT)\b/);
+      return match ? match[0].toUpperCase() : null;
     };
 
     const fromCurrencyInPlatform = extractCurrency(fromPlatform);
@@ -52,13 +65,19 @@ export class CommissionsService {
       return { valid: false };
     }
 
-    const rule = COMMISSION_RULES.find((r) => r.from === fromPlatform && r.to === toPlatform);
+    const from = fromPlatform as PlatformName;
+    const to = toPlatform as PlatformName;
 
-    if (!rule) {
+    const dynamicRule = await this.dynamicCommissionsService.findOneByPair(
+      from,
+      to,
+    );
+
+    if (!dynamicRule) {
       return { valid: false };
     }
 
-    const commissionRate = rule.rate;
+    const commissionRate = dynamicRule.commissionRate;
     const commissionValue = +(amount * commissionRate).toFixed(2);
     const finalAmount = +(amount - commissionValue).toFixed(2);
 
@@ -69,7 +88,7 @@ export class CommissionsService {
       commissionRate,
       commissionValue,
       finalAmount,
-      message: 'Comisión calculada correctamente.',
+      message: 'Comisión calculada correctamente (fuente: dinámica).',
     };
 
     return { valid: true, data };

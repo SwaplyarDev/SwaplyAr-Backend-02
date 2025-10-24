@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, Logger } from '@nestjs/common';
-import { createTransport, Transporter } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { ApiClient, TransactionalEmailsApi } from 'sib-api-v3-sdk';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { AdminStatus } from 'src/enum/admin-status.enum';
@@ -10,18 +8,33 @@ import Handlebars from 'handlebars';
 
 @Injectable()
 export class MailerService {
-  private readonly mailer: Transporter;
   private readonly logger = new Logger(MailerService.name);
+  private brevoClient: TransactionalEmailsApi;
+  private readonly from: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.mailer = createTransport(configService.get<SMTPTransport.Options>('nodemailer'));
+    const apiKey = this.configService.get<string>('brevo.apiKey');
+    if (!apiKey) {
+      this.logger.error('Falta la variable brevo.apiKey en la configuración.');
+      throw new Error('Missing brevo.apiKey');
+    }
+
+    const defaultClient = ApiClient.instance;
+    defaultClient.authentications['api-key'].apiKey = apiKey;
+
+    this.brevoClient = new TransactionalEmailsApi();
+
+    this.from = this.configService.get<string>('brevo.emailFrom') ?? '';
+    if (!this.from) {
+      this.logger.warn('No se encontró brevo.emailFrom en configuración.');
+    }
+
+    this.logger.log('MailerService inicializado con Brevo API.');
   }
 
-  /**
-   * Envío retrocompatible de código de autenticación:
-   * - si `payload` es `string` => envía texto plano (legacy).
-   * - si `payload` es un objeto => renderiza plantilla Handlebars.
-   */
+  /** ===========================
+   * AUTH EMAILS
+   * =========================== */
   async sendAuthCodeMail(
     to: string,
     payload:
@@ -34,91 +47,94 @@ export class MailerService {
           LOCATION?: string;
           EXPIRATION_MINUTES: number;
         },
-    mailType?: 'register' | 'login',
+    mailType: 'register' | 'login' = 'login',
   ) {
-    const nodemailerConfig = this.configService.get<any>('nodemailer');
-    const from =
-      nodemailerConfig?.auth?.user ??
-      this.configService.get<string>('EMAIL_USER') ??
-      this.configService.get<string>('nodemailer.auth.user');
-
-    if (!from) {
-      this.logger.error(
-        'Falta configuración del remitente. Verifica EMAIL_USER o nodemailer.auth.user.',
-      );
-      throw new Error('Missing email sender configuration.');
-    }
-
-    try {
-      await this.mailer.verify();
-      this.logger.log('Mailer verification: OK');
-    } catch (err: any) {
-      this.logger.warn(`Mailer verification failed: ${err?.message ?? err}`);
-    }
-
     const subject =
       mailType === 'register' ? 'Bienvenido a SwaplyAr' : 'Código de inicio de sesión';
 
     if (typeof payload === 'string') {
-      await this.mailer.sendMail({ from, to, subject, text: payload });
-      return { message: `The code has been sent to the email ${to}` };
+      await this.sendBrevoEmail({ to, subject, textContent: payload });
+      return { message: `Código enviado a ${to}` };
     }
 
-    // Plantillas según mailType
-    const templateFiles =
+    const templates =
       mailType === 'register'
-        ? [
-            { file: 'welcome_verification_code.hbs', subject: 'Bienvenido a SwaplyAr' },
-            { file: 'plus_rewards_welcome.hbs', subject: 'Tus beneficios SwaplyAr Plus Rewards' },
-          ]
-        : [{ file: 'login_verification_code.hbs', subject: 'Código de inicio de sesión' }];
+        ? ['welcome_verification_code.hbs', 'plus_rewards_welcome.hbs']
+        : ['login_verification_code.hbs'];
 
-    for (const template of templateFiles) {
-      const templateRelativeParts: string[] = [
-        'modules',
-        'mailer',
-        'templates',
-        'email',
-        'auth',
-        template.file,
-      ];
+    for (const file of templates) {
+      const templatePath = this.resolveTemplatePath(['auth', file]);
 
-      const templatePathDev = join(process.cwd(), 'src', ...templateRelativeParts);
-      const templatePathDist = join(__dirname, '..', '..', '..', ...templateRelativeParts);
-
-      let templatePath = '';
-      if (existsSync(templatePathDev)) {
-        templatePath = templatePathDev;
-      } else if (existsSync(templatePathDist)) {
-        templatePath = templatePathDist;
-      } else {
-        this.logger.warn(
-          `No se encontró la plantilla (${template.file}). Enviando fallback con texto.`,
-        );
-        await this.mailer.sendMail({
-          from,
+      if (!templatePath) {
+        this.logger.warn(`No se encontró la plantilla ${file}, usando texto plano.`);
+        await this.sendBrevoEmail({
           to,
-          subject: template.subject,
-          text: `Tu código de verificación es: ${payload.VERIFICATION_CODE}`,
+          subject,
+          textContent: `Tu código de verificación es: ${payload.VERIFICATION_CODE}`,
         });
         continue;
       }
 
       try {
         const html = this.compileTemplate(templatePath, payload);
-        await this.mailer.sendMail({ from, to, subject: template.subject, html });
-      } catch (error: any) {
-        this.logger.error(`Error sending templated mail (${template.file}): ${error.message}`);
-        throw error;
+        await this.sendBrevoEmail({ to, subject, htmlContent: html });
+      } catch (err: any) {
+        this.logger.error(`Error al enviar plantilla ${file}: ${err.message}`);
       }
     }
   }
 
-  /**
-   * Envía un correo al usuario cuando el estado de la transacción cambia.
-   */
+  /** ===========================
+   * TRANSACTION STATUS EMAILS
+   * =========================== */
   async sendStatusEmail(transaction: any, status: AdminStatus) {
+    const templates: Record<AdminStatus, { subject: string; file: string }> = {
+      [AdminStatus.Pending]: { subject: 'Transacción Pendiente', file: 'pending.hbs' },
+      [AdminStatus.ReviewPayment]: {
+        subject: 'Transacción en Revisión de Pago',
+        file: 'review-payment.hbs',
+      },
+      [AdminStatus.Approved]: { subject: 'Transacción Aprobada', file: 'approved.hbs' },
+      [AdminStatus.Rejected]: { subject: 'Transacción Rechazada', file: 'reject.hbs' },
+      [AdminStatus.RefundInTransit]: {
+        subject: 'Reembolso en Tránsito',
+        file: 'refund-in-transit.hbs',
+      },
+      [AdminStatus.InTransit]: { subject: 'Transacción en Tránsito', file: 'in-transit.hbs' },
+      [AdminStatus.Discrepancy]: {
+        subject: 'Discrepancia en la Transacción',
+        file: 'discrepancy.hbs',
+      },
+      [AdminStatus.Cancelled]: { subject: 'Transacción Cancelada', file: 'canceled.hbs' },
+      [AdminStatus.Modified]: { subject: 'Transacción Modificada', file: 'modified.hbs' },
+      [AdminStatus.Refunded]: { subject: 'Transacción Reembolsada', file: 'refunded.hbs' },
+      [AdminStatus.Completed]: { subject: 'Transacción Completada', file: 'completed.hbs' },
+    };
+
+    const selected = templates[status];
+    if (!selected) {
+      this.logger.warn(`No hay plantilla definida para el estado ${status}`);
+      return { message: `Sin plantilla definida para: ${status}` };
+    }
+
+    const templatePath = this.resolveTemplatePath([
+      'transaction',
+      'operations_transactions',
+      selected.file,
+    ]);
+    if (!templatePath) {
+      this.logger.warn(`No se encontró plantilla para ${status}.`);
+      return { message: `Falta plantilla para ${status}` };
+    }
+
+    const recipient = this.extractValidEmail(transaction);
+    if (!recipient) {
+      this.logger.warn(`Transacción ${transaction?.id}: sin email válido.`);
+      return { message: 'No se encontró destinatario válido.' };
+    }
+
     try {
+
       const config = this.configService.get('nodemailer');
       const from = config?.auth?.user;
 
@@ -130,14 +146,14 @@ export class MailerService {
       }
 
       // Intento de verificación (no abortamos completamente si falla)
-      try {
+      /*try {
         await this.mailer.verify();
         this.logger.debug('Mailer verification: OK');
       } catch (verifyErr: any) {
         this.logger.warn(
           `Mailer verification failed (continuando): ${verifyErr?.message ?? verifyErr}`,
         );
-      }
+      }*/
 
       // Templates mapping...
       const statusTemplates: Record<AdminStatus, { subject: string; path: string }> = {
@@ -171,7 +187,7 @@ export class MailerService {
         },
         [AdminStatus.Cancelled]: {
           subject: 'Transacción Cancelada',
-          path: 'canceled.hbs',
+          path: 'cancelled.hbs',
         },
         [AdminStatus.Modified]: {
           subject: 'Transacción Modificada',
@@ -218,118 +234,88 @@ export class MailerService {
 
       this.logger.log(`Cargando plantilla desde: ${templatePath}`);
       const html = this.compileTemplate(templatePath, this.buildTemplateData(transaction));
-
-      // ------- NUEVO: Determinar destinatario con fallback -------
-      const candidateEmails: Array<string | undefined> = [transaction?.senderAccount?.createdBy];
-
-      const normalize = (s?: string) =>
-        typeof s === 'string' ? s.trim().toLowerCase() : undefined;
-      const isValidEmail = (s?: string) =>
-        typeof s === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
-
-      let recipient: string | undefined;
-      for (const c of candidateEmails) {
-        const n = normalize(c);
-        if (isValidEmail(n)) {
-          recipient = n;
-          break;
-        }
-      }
-
-      if (!recipient) {
-        this.logger.warn(
-          `No se encontró un destinatario válido para la transacción ${transaction?.id}. candidateEmails: ${JSON.stringify(candidateEmails)}`,
-        );
-        // No lanzamos error; devolvemos info para que el flujo admin no rompa.
-        return {
-          message: `No se envió el correo. No se detectó un email válido para la transacción ${transaction?.id}`,
-        };
-      }
-      // -----------------------------------------------------------
-
-      const mailOptions = {
-        from,
+      const result = await this.sendBrevoEmail({
         to: recipient,
         subject: selected.subject,
-        html,
-        envelope: { from, to: [recipient] }, // explícito para evitar problemas en nodemailer
-      };
-
-      this.logger.log(`Enviando correo desde ${from} a ${recipient} (tx=${transaction?.id})`);
-      try {
-        const result = await this.mailer.sendMail(mailOptions);
-        this.logger.log('Correo enviado exitosamente:', result);
-        return {
-          message: `El correo de estado ha sido enviado a ${recipient}`,
-          result,
-        };
-      } catch (sendErr: any) {
-        this.logger.error(
-          `Error al enviar correo (sendMail) a ${recipient}: ${sendErr?.message ?? sendErr}`,
-        );
-        // No relanzar para no romper proceso admin; devolver info.
-        return {
-          message: `Error enviando correo a ${recipient}`,
-          error: sendErr?.message ?? sendErr,
-        };
-      }
+        htmlContent: html,
+      });
+      this.logger.log(`Correo de estado enviado a ${recipient}`);
+      return { message: `Correo enviado a ${recipient}`, result };
     } catch (error: any) {
-      this.logger.error(`Error al procesar sendStatusEmail: ${error?.message ?? error}`);
-      // Devolver info (no relanzar) para evitar que el flujo admin se caiga por un mail faltante.
-      return {
-        message: `Error interno en MailerService`,
-        error: error?.message ?? error,
-      };
+      this.logger.error(`Error enviando correo a ${recipient}: ${error.message}`);
+      return { message: 'Error al enviar correo', error: error.message };
     }
   }
 
-  /**
-   * Carga y compila un template Handlebars desde el archivo especificado.
-   */
+  /** ===========================
+   * REVIEW PAYMENT EMAIL
+   * =========================== */
+  async sendReviewPaymentEmail(to: string, transaction: any) {
+    const context = this.buildReviewPaymentTemplateData(transaction);
+    const templatePath = this.resolveTemplatePath([
+      'transaction',
+      'operations_transactions',
+      'pending.hbs',
+    ]);
+    if (!templatePath) throw new Error('No se encontró plantilla pending.hbs');
+    const html = this.compileTemplate(templatePath, context);
+
+    await this.sendBrevoEmail({
+      to,
+      subject: 'Transacción en curso',
+      htmlContent: html,
+    });
+  }
+
+  /** ===========================
+   * HELPERS
+   * =========================== */
+  private resolveTemplatePath(subdirs: string[]): string | null {
+    const parts = ['modules', 'mailer', 'templates', 'email', ...subdirs];
+    const devPath = join(process.cwd(), 'src', ...parts);
+    const distPath = join(__dirname, '..', '..', '..', ...parts);
+    if (existsSync(devPath)) return devPath;
+    if (existsSync(distPath)) return distPath;
+    return null;
+  }
+
   private compileTemplate(templatePath: string, data: Record<string, any>): string {
     try {
-      const rawTemplate = readFileSync(templatePath, 'utf8');
-      const compiled = Handlebars.compile(rawTemplate);
-      return compiled(data);
-    } catch (error: any) {
-      this.logger.error(`Error compiling template: ${error.message}`);
-      throw error;
+      const raw = readFileSync(templatePath, 'utf8');
+      return Handlebars.compile(raw)(data);
+    } catch (err: any) {
+      this.logger.error(`Error compilando plantilla ${templatePath}: ${err.message}`);
+      throw err;
     }
   }
 
-  private getPaymentMethodImg(method: string, currency: string): string {
-    if (method === 'paypal') {
-      return currency === 'USD'
-        ? 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224913/paypal.big_phrzvb.png'
-        : 'https://res.cloudinary.com/dwrhturiy/image/upload/v1726600628/paypal.dark_lgvm7j.png';
-    }
-    if (method === 'payoneer') {
-      if (currency === 'USD')
-        return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224899/payoneer.usd.big_djd07t.png';
-      if (currency === 'EUR')
-        return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224887/payoneer.eur.big_xxdjxd.png';
-    }
-    if (method === 'bank') {
-      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725223550/banco.medium_vy2eqp.webp';
-    }
-    if (method === 'wise') {
-      if (currency === 'USD')
-        return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225432/wise.usd.big_yvnpez.png';
-      if (currency === 'EUR')
-        return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225416/wise.eur.big_etdolw.png';
-    }
-    if (method === 'tether') {
-      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329683/TetherLight_jkyojt.png';
-    }
-    if (method === 'pix') {
-      return 'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329734/Pix1_lib603.png';
-    }
-    return '';
+  private extractValidEmail(transaction: any): string | null {
+    const candidates = [transaction?.senderAccount?.createdBy];
+    const isEmail = (s?: string) => typeof s === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+    return candidates.find(isEmail) ?? null;
   }
 
-  /**
-   * Construye los datos necesarios para renderizar el template de email.
-   */
+  private async sendBrevoEmail({
+    to,
+    subject,
+    htmlContent,
+    textContent,
+  }: {
+    to: string;
+    subject: string;
+    htmlContent?: string;
+    textContent?: string;
+  }) {
+    const email = {
+      sender: { email: this.from },
+      to: [{ email: to }],
+      subject,
+      ...(htmlContent ? { htmlContent } : {}),
+      ...(textContent ? { textContent } : {}),
+    };
+    return this.brevoClient.sendTransacEmail(email);
+  }
+
   private buildTemplateData(transaction: any): Record<string, any> {
     const sender = transaction.senderAccount ?? {};
     const receiver = transaction.receiverAccount ?? {};
@@ -337,93 +323,50 @@ export class MailerService {
 
     return {
       REFERENCE_NUMBER: transaction.id?.slice(0, 8)?.toUpperCase() ?? '',
-      MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
+      TRANSACTION_ID: transaction.id,
       NAME: sender.firstName ?? '',
       LAST_NAME: sender.lastName ?? '',
-      TRANSACTION_ID: transaction.id,
-      BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
-      DATE_HOUR: new Date().toLocaleString('es-AR'),
       PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
       AMOUNT_SENT: amount.amountSent ?? 0,
       SENT_CURRENCY: amount.currencySent ?? '',
-      AMOUNT_RECEIVED: amount.amountReceived ?? 0,
-      RECEIVED_CURRENCY: amount.currencyReceived ?? '',
       PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
-      RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`,
       PAYMENT_METHOD_IMG: this.getPaymentMethodImg(
         sender.paymentMethod?.method ?? '',
         amount.currencySent ?? '',
       ),
-      PAYMENT_RECEIVED_IMG: this.getPaymentMethodImg(
-        receiver.paymentMethod?.method ?? '',
-        amount.currencyReceived ?? '',
-      ),
+      AMOUNT_RECEIVED: amount.amountReceived ?? 0,
+      RECEIVED_CURRENCY: amount.currencyReceived ?? '',
+      RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`.trim(),
+      BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
+      DATE_HOUR: new Date().toLocaleString('es-AR'),
+      MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
     };
   }
 
-  async sendReviewPaymentEmail(senderEmail: string, transaction: any) {
-    const context = this.buildReviewPaymentTemplateData(transaction);
-
-    // Determinar "from" con varios fallbacks
-    const nodemailerConfig = this.configService.get<any>('nodemailer');
-    const from =
-      nodemailerConfig?.auth?.user ??
-      this.configService.get<string>('EMAIL_USER') ??
-      this.configService.get<string>('nodemailer.auth.user');
-
-    // Ruta del template
-    const templatePath = join(
-      __dirname,
-      '..',
-      '..',
-      '..',
-      'modules',
-      'mailer',
-      'templates',
-      'email',
-      'transaction',
-      'operations_transactions',
-      'pending.hbs',
-    );
-
-    const html = this.compileTemplate(templatePath, context);
-
-    await this.mailer.sendMail({
-      from,
-      to: senderEmail,
-      subject: 'Transaccion en curso',
-      html,
-    });
-  }
-
-  /**
-   * Construye los datos necesarios para el template review-payment.hbs.
-   */
   private buildReviewPaymentTemplateData(transaction: any): Record<string, any> {
-    const sender = transaction.senderAccount ?? {};
-    const receiver = transaction.receiverAccount ?? {};
-    const amount = transaction.amount ?? {};
+    return this.buildTemplateData(transaction);
+  }
 
-    return {
-      REFERENCE_NUMBER: transaction.id?.slice(0, 8)?.toUpperCase() ?? '',
-      TRANSACTION_ID: transaction.id,
-      NAME: sender.firstName ?? '',
-      LAST_NAME: sender.lastName ?? '',
-      PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
-      AMOUNT_SENT: amount.amountSent ?? 0,
-      SENT_CURRENCY: amount.currencySent ?? '',
-      PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
-      PAYMENT_METHOD_IMG: this.getPaymentMethodImg(
-        sender.paymentMethod?.method ?? '',
-        amount.currencySent ?? '',
-      ),
-      AMOUNT_RECEIVED: amount.amountReceived ?? 0,
-      RECEIVED_CURRENCY: amount.currencyReceived ?? '',
-      RECEIVED_NAME:
-        `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`.trim() || 'No especificado',
-      BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
-      DATE_HOUR: new Date().toLocaleString('es-AR'),
-      MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
+  private getPaymentMethodImg(method: string, currency: string): string {
+    const map: Record<string, string> = {
+      paypal_usd:
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224913/paypal.big_phrzvb.png',
+      paypal_default:
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1726600628/paypal.dark_lgvm7j.png',
+      payoneer_usd:
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224899/payoneer.usd.big_djd07t.png',
+      payoneer_eur:
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224887/payoneer.eur.big_xxdjxd.png',
+      bank_default:
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1725223550/banco.medium_vy2eqp.webp',
+      wise_usd:
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225432/wise.usd.big_yvnpez.png',
+      wise_eur:
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225416/wise.eur.big_etdolw.png',
+      tether_default:
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329683/TetherLight_jkyojt.png',
+      pix_default: 'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329734/Pix1_lib603.png',
     };
+    return map[`${method}_${currency.toLowerCase()}`] ?? map[`${method}_default`] ?? '';
   }
 }

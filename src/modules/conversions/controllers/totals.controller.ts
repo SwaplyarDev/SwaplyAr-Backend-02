@@ -52,7 +52,7 @@ export class TotalsController {
       });
     }
 
-    const commissionResult = this.commissionsService.calculateCommissionWithCurrencyCheck(
+    const commissionResult = await this.commissionsService.calculateCommissionWithCurrencyCheck(
       conversion.convertedAmount,
       dto.fromPlatform,
       dto.toPlatform,
@@ -62,8 +62,8 @@ export class TotalsController {
 
     if (!commissionResult.valid) {
       throw new BadRequestException(
-        `Las plataformas seleccionadas (${dto.fromPlatform} → ${dto.toPlatform}) no son coherentes con la conversión ${dto.from} → ${dto.to}. 
-        o no se encontró una regla de comisión para las mismas. Ajusta las plataformas para continuar.`,
+        `No se encontró una comisión válida para la combinación ${dto.fromPlatform} → ${dto.toPlatform} 
+        en la conversión ${dto.from} → ${dto.to}. Verifica que la regla esté creada o que las plataformas sean coherentes.`,
       );
     }
 

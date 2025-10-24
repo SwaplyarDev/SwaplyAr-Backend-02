@@ -29,21 +29,20 @@ async function bootstrap() {
         enableImplicitConversion: true,
       },
       exceptionFactory: (errors) => {
+        if (errors instanceof BadRequestException) return errors;
+        console.log('❌ Errores de validación del DTO:', errors);
 
-       if (errors instanceof BadRequestException) return errors;
-       console.log('❌ Errores de validación del DTO:', errors);
-
-       const messages = errors.map((error) => {
-        if (!error.constraints) return `${error.property} tiene un valor inválido.`;
-        const constraints = Object.values(error.constraints).join(', ');
-        return `${error.property}: ${constraints}`;
+        const messages = errors.map((error) => {
+          if (!error.constraints) return `${error.property} tiene un valor inválido.`;
+          const constraints = Object.values(error.constraints).join(', ');
+          return `${error.property}: ${constraints}`;
         });
 
-       return new BadRequestException({
-        statusCode: 400,
-        message: messages,
-        error: 'Bad Request',
-       });
+        return new BadRequestException({
+          statusCode: 400,
+          message: messages,
+          error: 'Bad Request',
+        });
       },
     }),
   );
@@ -76,8 +75,7 @@ async function bootstrap() {
       .setVersion('1.0')
       .addBearerAuth()
       .build();
-    const document = SwaggerModule.createDocument(app, swaggerConfig
-);
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup(apiPrefix, app, document);
   }
 

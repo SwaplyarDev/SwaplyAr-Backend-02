@@ -1,5 +1,3 @@
-
-
 import {
   Controller,
   Post,
@@ -38,9 +36,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DynamicCommissionsController {
-  constructor(
-    private readonly dynamicCommissionsService: DynamicCommissionsService,
-  ) {}
+  constructor(private readonly dynamicCommissionsService: DynamicCommissionsService) {}
 
   @Post('/admin')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
@@ -53,9 +49,7 @@ export class DynamicCommissionsController {
   @ApiBadRequestResponse({
     description: 'Datos inválidos o combinación de plataformas duplicada.',
   })
-  async create(
-    @Body() body: CreateDynamicCommissionDto,
-  ): Promise<DynamicCommissionResponseDto> {
+  async create(@Body() body: CreateDynamicCommissionDto): Promise<DynamicCommissionResponseDto> {
     return this.dynamicCommissionsService.create(body);
   }
 
@@ -75,9 +69,7 @@ export class DynamicCommissionsController {
   @ApiBadRequestResponse({
     description: 'Datos inválidos o combinación de plataformas duplicada.',
   })
-  async update(
-    @Body() body: UpdateDynamicCommissionDto,
-  ): Promise<DynamicCommissionResponseDto> {
+  async update(@Body() body: UpdateDynamicCommissionDto): Promise<DynamicCommissionResponseDto> {
     return this.dynamicCommissionsService.update(body);
   }
 

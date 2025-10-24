@@ -1,6 +1,11 @@
-
-
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Unique } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Unique,
+} from 'typeorm';
 
 @Entity('dynamic_commissions')
 @Unique(['fromPlatform', 'toPlatform'])
@@ -23,7 +28,3 @@ export class DynamicCommission {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }
-
-
-
-

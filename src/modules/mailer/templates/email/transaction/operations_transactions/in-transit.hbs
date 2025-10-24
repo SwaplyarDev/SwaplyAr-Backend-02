@@ -135,16 +135,16 @@
       <div class="content">
         <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725225314/rewards1_hme3sh.png"
           alt="Personaje" class="img-center" />
-        <h2 style="font-weight: 400; margin-top:50px; ">Tu transferencia está en camino 🚀</h2>
+        <h2 style="font-weight: 400; margin-top:50px; ">Tu transferencia va en camino 🚀</h2>
         <h3 style="font-weight:400; margin-bottom:30px;">
-          Número de referencia: <span style="font-weight:bolder; color: #0c399c; ">#{{REFERENCE_NUMBER}}</span>
+          Solicitud: <span style="font-weight:bolder; color: #0c399c; ">#{{REFERENCE_NUMBER}}</span>
         </h3>
         <div class="details">
           <p style="padding-top: 5px; border-top: 1px solid #0c399c;"><strong>Remitente:</strong> <span class="variable">{{SENDER_NAME}} {{SENDER_LASTNAME}}</span></p>
           <p><strong>Destinatario:</strong> <span class="variable">{{RECEIVER_NAME}} {{RECEIVER_LASTNAME}}</span></p>
           <p>Monto enviado: <span class="variable">{{MONEY_SENT}} {{SENT_CURRENCY}}</span></p>
           <p>Monto a recibir: <span class="variable">{{MONEY_RECEIVED}} {{RECEIVED_CURRENCY}}</span></p>
-          <p>Método de recepción: <span class="variable">{{PAYMENT_METHOD}}</span></p>
+          {{!-- <p>Método de recepción: <span class="variable">{{PAYMENT_METHOD}}</span></p> --}}
 
           {{#if BANK_NAME}}
             <p>Banco: <span class="variable">{{BANK_NAME}}</span></p>

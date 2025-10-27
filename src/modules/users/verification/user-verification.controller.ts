@@ -11,7 +11,6 @@ import {
   UseInterceptors,
   UploadedFiles,
   BadRequestException,
-  Query,
   ParseUUIDPipe,
   Put,
   Delete,

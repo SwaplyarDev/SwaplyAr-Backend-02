@@ -41,7 +41,7 @@ export class AdminProfileService {
       email: profile.email,
       telefono: profile.phone,
       pais: profile.user.locations?.[0]?.country || null,
-      verifications: profile.user.verifications, // ya vienen filtradas por la BD
+      verifications: profile.user.verifications,
     }));
 
     return {

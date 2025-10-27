@@ -21,14 +21,12 @@ import { UserSocials } from '@users/entities/user-socials.entity';
 import { AdminProfileService } from './profiles/admin-profile.service';
 import { AdminUserController } from './users/user-admin.controller';
 import { AdminUserService } from './users/user-admin.service';
-import { Admin } from 'typeorm';
 import { AdminDiscountService } from './discounts/admin-discount.service';
 import { AdminDiscountsController } from './discounts/admin-discount.controller';
 import { DiscountCode } from '../discounts/entities/discount-code.entity';
 import { UserDiscount } from '../discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.entity';
 import { UserVerification } from '@users/entities/user-verification.entity';
-import { UserVerificationService } from '@users/verification/user-verification.service';
 import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
 import { UserVerificationModule } from '@users/verification/user-verification.module';
 

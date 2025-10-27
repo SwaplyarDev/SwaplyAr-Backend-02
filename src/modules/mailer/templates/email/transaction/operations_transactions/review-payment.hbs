@@ -11,6 +11,7 @@
       margin: 0;
       padding: 0;
       background-color: #f4f4f4;
+      max-width: 447px;
     }
 
     .container {
@@ -35,19 +36,19 @@
 
     .date {
       text-align: right;
-      font-size: 12px;
-      color: #333;
-      margin-top: 20px;
+      font-size: 10px;
+      color: rgba(203, 196, 188);
+      margin-bottom: 20px;
     }
 
     .logo {
       width: 150px;
       display: block;
-      margin: 0 auto;
+      margin-left: 10px;
     }
 
     .img-center {
-      max-width: 50%;
+      max-width: 100%;
       height: auto;
       display: block;
       margin: 0 auto;
@@ -77,10 +78,10 @@
     }
 
     .details p {
-      line-height: 1.6;
+      line-height: 1;
       margin: 5px 0;
       position: relative;
-      border-top: 1px solid rgb(92, 124, 199);
+      border-top: 2px solid rgb(92, 124, 199);
       color: black;
       padding: 5px 0;
       padding-bottom: 5px;
@@ -116,18 +117,6 @@
       text-align: right;
     }
 
-    .button {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #012d8a;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      font-size: 16px;
-      margin: 10px 5px;
-      transition: background-color 0.3s ease;
-    }
-
     .info-text {
       font-family: Roboto, Arial, sans-serif;
       font-size: 12px;
@@ -151,11 +140,11 @@
     }
 
     .confidential-section {
-      text-align: center;
+      text-align: justify;
       font-size: 8px;
       color: #888;
       padding: 0px 20px;
-      max-width: 400px;
+      max-width: 100%;
       margin: 0 auto;
     }
 
@@ -167,14 +156,22 @@
       font-style: normal;
       font-weight: 300;
       line-height: 150%;
+      max-width: 100%;
       margin: 0;
     }
 
-
-
-    .button:hover {
-      background-color: #0056b3;
+    .cta-button {
+      text-align: center;
+      display: inline-block;
+      margin: 20px 0;
+      padding: 10px 20px;
+      color: white;
+      background-color: #012d8a;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 16px;
     }
+
 
     .footer {
       text-align: center;
@@ -211,7 +208,7 @@
       <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" alt="SwaplyAr Logotipo"
         class="logo" />
     </div>
-    <div class="content" >
+    <div class="content">
       <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731499523/13_bz4qha.png" alt="Personaje"
         class="img-center" />
       <h2>Hemos recibido una transferencia en nuestra<br>cuenta</h2>
@@ -226,28 +223,27 @@
 
       <div class="details" style="font-size: 15px; margin: 0 auto; width:424px; padding-top: 10px">
         <p>
-          Id de Solicitud <span class="variable" style="float: right; color:#012d8a; font-weight: 600">#{{REFERENCE_NUMBER}}</span>
+          ID de Solicitud 
+          <span class="variable" style="float: right; color:#012d8a; font-weight: 600">#{{REFERENCE_NUMBER}}</span>
         </p>
         <p>
-          <strong>Nombre y Apellido:</strong>
-          <span class="variable">{{NAME}} {{LAST_NAME}}</span>
+          Nombre y Apellido: <span class="variable">{{NAME}} {{LAST_NAME}}</span>
         </p>
         <p>Nº Teléfono: <span class="variable">{{PHONE_NUMBER}}</span></p>
         <p>
-          Monto enviado:
+          Monto Enviado:
           <span class="variable">$ {{AMOUNT_SENT}} {{SENT_CURRENCY}}</span>
         </p>
         <p>
-          Monto a recibir:
+          Monto a Recibir:
           <span class="variable">{{AMOUNT_RECEIVED}} {{RECEIVED_CURRENCY}}</span>
         </p>
-        <p>
+        {{!-- <p>
           Método de recepción:
           <span class="variable">{{PAYMENT_METHOD}}</span>
-        </p>
-        <p>
+        </p> --}}
+        <p style="border-bottom: 2px solid #012d8a">
           Destinatario <span class="variable">{{RECEIVED_NAME}}</span>
-
         </p>
       </div>
 
@@ -255,7 +251,7 @@
 
     <div style="info-text">
       <p>Para conocer el estado exacto de tu solicitud y seguir su proceso en detalle, puedes visitar la sección
-        <span>"Buscar Solicitud"</span>
+        <span style="font-weight: 600;">"Buscar Solicitud"</span>
         en la seccion de Centro de Ayuda en nuestra plataforma SwaplyAr.com
       </p>
     </div>
@@ -295,6 +291,7 @@
     </nav>
 
     <section class="confidential-section">
+      <p>
       Este mensaje puede contener información confidencial. No compartas información sobre esta transacción con
       terceros. Si no eres el destinatario indicado, notifícaselo al remitente de inmediato y borra este correo
       electronico de tu sistema.
@@ -324,19 +321,19 @@
             <td align="center">
               <a href="https://www.linkedin.com/company/swaplyar/" style="text-decoration: none">
                 <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/linkedin_jhsarf.png"
-                  alt="Logo Linkedin" style="width: 15px; height: auto" />
+                  alt="Logo Linkedin" style="width: 20px; height: auto" />
               </a>
               <a href="https://www.instagram.com/swaplyar/" style="text-decoration: none">
                 <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330494/instagram_ihxf7s.png"
-                  alt="Logo Instagram" style="width: 15px; height: auto; margin-left: 10px" />
+                  alt="Logo Instagram" style="width: 20px; height: auto; margin-left: 10px" />
               </a>
               <a href="" style="text-decoration: none">
                 <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330493/facebook_cqn0dm.png"
-                  alt="Logo Facebook" style="width: 15px; height: auto; margin-left: 10px" />
+                  alt="Logo Facebook" style="width: 20px; height: auto; margin-left: 10px" />
               </a>
               <a href="https://api.whatsapp.com/send?phone=5491123832198" style="text-decoration: none">
                 <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/whatsapp_ji3tfh.png"
-                  alt="Logo WhatsApp" style="width: 15px; height: auto; margin-left: 10px" />
+                  alt="Logo WhatsApp" style="width: 20px; height: auto; margin-left: 10px" />
               </a>
             </td>
           </tr>

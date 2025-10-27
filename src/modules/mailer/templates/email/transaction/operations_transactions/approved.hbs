@@ -54,6 +54,10 @@
         color: #fff;
         font-weight: 400;
       }
+      .link-gray {
+        color: #888 !important;
+        text-decoration: none;
+      }
       .container {
         max-width: 500px;
         margin: 0 auto;
@@ -101,7 +105,7 @@
 
       <!-- Main Content -->
       <div style="text-align: center; padding: 0 20px">
-        <img src="https://s3-alpha-sig.figma.com/img/2fb2/ba51/cf3c86ac71504aa08ef2128563811362" alt="Personaje" style="max-width: 95%; height: auto" />
+        <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1761575819/2fb2ba51cf3c86ac71504aa08ef2128563811362_zx5qdr.png" alt="Personaje" style="max-width: 95%; height: auto" />
       </div>
 
       <div class="title">
@@ -114,16 +118,16 @@
 
       <section class="info" style="text-align: start; padding-top: 15px">
         <p>
-          Hola, <span>{{NAME}} {{LAST_NAME}}</span>.<br><br>
+          <span class="bold">Hola</span> <span>{{NAME}} {{LAST_NAME}}</span>.<br><br>
           Te informamos que tu solicitud <span>#{{TRANSACTION_ID}}</span> ha sido aprobada y está en proceso. En breve, recibirás el dinero en la cuenta proporcionada según los tiempos establecidos.<br><br>
           Es importante que verifiques los datos de tu cuenta para asegurarte de que todo esté correcto. En caso de que se presente algún inconveniente con el destinatario o el proceso de pago, te notificaremos de inmediato a través de este correo o por WhatsApp.<br><br>
           Si tienes alguna consulta o necesitas más información, no dudes en contactarnos. Estamos aquí para ayudarte.<br><br>
-          <span>Atentamente, Equipo de SwaplyAr</span>
+          <span>Atentamente Equipo de SwaplyAr</span>
         </p>
       </section>
 
       <section class="last_info" style="text-align: center; width: 100%; border-top: 2px solid #012A8E;">
-        <p>Para conocer el estado exacto de tu solicitud y seguir su proceso, puedes visitar <a href="{{BASE_URL}}/request/search-request/" class="link-black">"Buscar Solicitud"</a> en nuestra plataforma.</p>
+        <p style="font-size: 13px; color: #888;">Para conocer el estado exacto de tu solicitud y seguir su proceso, puedes visitar <a href="{{BASE_URL}}/request/search-request/" class="link-gray">"Buscar Solicitud"</a> en nuestra plataforma.</p>
         <a href="{{BASE_URL}}" class="cta-button link-white">SwaplyAr.com</a>
       </section>
 
@@ -142,8 +146,8 @@
         </table>
       </nav>
 
-      <section style="font-size: 10px; text-align: justify; color: #252526;">
-        <p>Este mensaje puede contener información confidencial. Si no eres el destinatario, notifícaselo al remitente y borra este correo.</p>
+      <section style="text-align:justify ; width: %; margin: 0 auto; font-size: 8px; color: #888; ">
+        <p style="font-size: 12px;">Este mensaje puede contener información confidencial. No compartas información sobre esta transacción con terceros. Si no eres el destinatario indicado, notifícaselo al remitente de inmediato y borra este correo electrónico de tu sistema.</p>
       </section>
 
       <section>

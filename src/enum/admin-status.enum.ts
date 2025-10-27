@@ -6,7 +6,7 @@ export enum AdminStatus {
   RefundInTransit = 'refund_in_transit',
   InTransit = 'in_transit',
   Discrepancy = 'discrepancy',
-  Canceled = 'cancelled',
+  Cancelled = 'cancelled',
   Modified = 'modified',
   Refunded = 'refunded',
   Completed = 'completed',

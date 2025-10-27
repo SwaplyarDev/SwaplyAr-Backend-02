@@ -27,6 +27,9 @@ import { AdminDiscountsController } from './discounts/admin-discount.controller'
 import { DiscountCode } from '../discounts/entities/discount-code.entity';
 import { UserDiscount } from '../discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.entity';
+import { UpdateStarsService } from './transaction/updateStars.service';
+import { ConversionsService } from '../conversions/services/conversions.service';
+import { HttpModule, HttpService } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -49,6 +52,7 @@ import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.ent
     UsersModule,
     MailerModule,
     DiscountModule,
+    HttpModule,
   ],
   controllers: [
     AdminProfileController,
@@ -62,6 +66,8 @@ import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.ent
     AdminProfileService,
     AdminUserService,
     AdminDiscountService,
+    UpdateStarsService,
+    ConversionsService,
   ],
   exports: [],
 })

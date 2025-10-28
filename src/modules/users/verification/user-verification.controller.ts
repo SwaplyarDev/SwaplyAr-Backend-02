@@ -17,7 +17,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
@@ -38,8 +37,7 @@ import { VerificationStatus } from '../entities/user-verification.entity';
 import { UserVerificationService } from './user-verification.service';
 import { UploadFilesDto } from '@users/dto/create-user-verification.dto';
 import { VerificationFilesInterceptor } from '@users/interceptors/verification-files.interceptor';
-
-@ApiTags('User Verification')
+import { UpdateVerificationResponseDto } from '@users/dto/update-verification-response.dto';
 @Controller('verification')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -240,7 +238,7 @@ export class UserVerificationController {
               },
             },
             verification_status: { type: 'string', example: 'pending' },
-            rejection_note: { type: 'string', example: null },
+            note_rejection: { type: 'string', example: null },
             submitted_at: {
               type: 'string',
               format: 'date-time',
@@ -299,7 +297,7 @@ export class UserVerificationController {
         user_id: verification.user?.id,
         documents,
         verification_status: verification.verification_status,
-        rejection_note:
+        note_rejection:
           verification.note_rejection && verification.note_rejection.trim() !== ''
             ? verification.note_rejection
             : null,
@@ -346,25 +344,8 @@ export class UserVerificationController {
     },
   })
   @ApiOkResponse({
-    description: 'Estado de verificación actualizado correctamente',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: {
-          type: 'string',
-          example: 'Verificación aprobada correctamente',
-        },
-        data: {
-          type: 'object',
-          properties: {
-            verification_id: { type: 'string' },
-            status: { type: 'string' },
-            note_rejection: { type: 'string', nullable: true },
-          },
-        },
-      },
-    },
+    description: 'Verificación actualizada correctamente',
+    type: UpdateVerificationResponseDto,
   })
   @ApiBadRequestResponse({
     description:

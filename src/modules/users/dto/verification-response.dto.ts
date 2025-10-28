@@ -28,7 +28,7 @@ export class VerificationDataDto {
   verification_status: 'pending' | 'verified' | 'rejected' | 'resend-data';
 
   @ApiPropertyOptional({ example: 'Documento ilegible', nullable: true })
-  rejection_note?: string | null;
+  note_rejection?: string | null;
 
   @ApiProperty({ example: '2025-08-22T01:31:43.733Z' })
   submitted_at: Date;

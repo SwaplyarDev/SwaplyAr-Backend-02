@@ -11,14 +11,12 @@ import {
   UseInterceptors,
   UploadedFiles,
   BadRequestException,
-  Query,
   ParseUUIDPipe,
   Put,
   Delete,
   NotFoundException,
 } from '@nestjs/common';
 import {
-  ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
@@ -30,7 +28,6 @@ import {
   ApiNotFoundResponse,
   ApiBadRequestResponse,
   ApiConflictResponse,
-  ApiQuery,
   ApiOkResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../common/jwt-auth.guard';
@@ -38,20 +35,9 @@ import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { VerificationStatus } from '../entities/user-verification.entity';
 import { UserVerificationService } from './user-verification.service';
-import {
-  CreateUserVerificationDto,
-  GetVerificationsQueryDto,
-  UploadFilesDto,
-} from '@users/dto/create-user-verification.dto';
+import { UploadFilesDto } from '@users/dto/create-user-verification.dto';
 import { VerificationFilesInterceptor } from '@users/interceptors/verification-files.interceptor';
-import { GetVerificationResponseDto } from '@users/dto/verification-response.dto';
-import {
-  CreateVerificationResponseDto,
-  VerificationDataDto,
-} from './dto/create-verification-response.dto';
-import { ObjectId } from 'typeorm';
-
-@ApiTags('User Verification')
+import { UpdateVerificationResponseDto } from '@users/dto/update-verification-response.dto';
 @Controller('verification')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -223,155 +209,6 @@ export class UserVerificationController {
     const userId = req.user.id;
     return this.verificationService.reupload(userId, files);
   }
-  @Get('admin/list')
-  @UseGuards(RolesGuard)
-  @Roles('admin')
-  @ApiOperation({
-    summary: 'Listar verificaciones por estado',
-    description:
-      'Permite a los administradores listar verificaciones filtrando por estado (PENDIENTE, APROBADO, RECHAZADO, REENVIAR_DATOS).',
-  })
-  @ApiQuery({
-    name: 'status',
-    required: false,
-    description:
-      'Estado de verificación a filtrar. Opciones: pending, verified, rejected, resend-data',
-    schema: {
-      type: 'string',
-      enum: ['pending', 'verified', 'rejected', 'resend-data'],
-    },
-  })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    description: 'Número de página (por defecto: 1)',
-    schema: { type: 'number', example: 1 },
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    description: 'Cantidad de registros por página (por defecto: 10)',
-    schema: { type: 'number', example: 10 },
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Verificaciones obtenidas correctamente',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Verificaciones obtenidas correctamente' },
-        page: { type: 'number', example: 1 },
-        limit: { type: 'number', example: 10 },
-        total: { type: 'number', example: 1 },
-        totalPages: { type: 'number', example: 1 },
-        data: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
-              user_id: { type: 'string', example: 'bb34d516-4866-4302-8d4b-c3e22a2ca64b' },
-              user_profile: {
-                type: 'object',
-                properties: {
-                  firstName: { type: 'string', example: 'Oscar' },
-                  lastName: { type: 'string', example: 'Padilla' },
-                  email: { type: 'string', example: 'usuario@ejemplo.com' },
-                },
-              },
-              documents: {
-                type: 'object',
-                properties: {
-                  front: { type: 'string', example: 'https://.../front.png' },
-                  back: { type: 'string', example: 'https://.../back.png' },
-                  selfie: { type: 'string', example: 'https://.../selfie.png' },
-                },
-              },
-              verification_status: { type: 'string', example: 'pending' },
-              rejection_note: { type: 'string', example: null },
-              submitted_at: {
-                type: 'string',
-                format: 'date-time',
-                example: '2025-08-22T01:31:43.733Z',
-              },
-              updated_at: {
-                type: 'string',
-                format: 'date-time',
-                example: '2025-08-22T01:35:05.634Z',
-              },
-              verified_at: { type: 'string', format: 'date-time', example: null },
-            },
-          },
-        },
-      },
-    },
-  })
-  @ApiBadRequestResponse({
-    description:
-      'Parámetro inválido: el valor de "status" no es uno permitido. Debe ser uno de: pending, verified, rejected, resend-data',
-  })
-  @ApiUnauthorizedResponse({
-    description: ' No autorizado. Token no válido o no enviado',
-  })
-  @ApiForbiddenResponse({
-    description: 'Autorización no permitida, solo para Administradores.',
-  })
-  @Get('admin/list')
-  async listPending(@Query() query: GetVerificationsQueryDto) {
-    const { status, page = 1, limit = 10 } = query;
-    const { data: verifications, total } = await this.verificationService.findVerificationsByStatus(
-      status,
-      page,
-      limit,
-    );
-
-    const data = verifications.map((v) => {
-      const latestAttempt =
-        v.attempts && v.attempts.length > 0 ? v.attempts[v.attempts.length - 1] : null;
-
-      const documents = latestAttempt
-        ? {
-            front: latestAttempt.document_front,
-            back: latestAttempt.document_back,
-            selfie: latestAttempt.selfie_image,
-          }
-        : {
-            front: v.document_front,
-            back: v.document_back,
-            selfie: v.selfie_image,
-          };
-
-      return {
-        id: v.verification_id,
-        user_id: v.user?.id,
-        user_profile: v.user?.profile
-          ? {
-              firstName: v.user.profile.firstName,
-              lastName: v.user.profile.lastName,
-              email: v.user.profile.email,
-            }
-          : null,
-        documents,
-        verification_status: v.verification_status,
-        rejection_note:
-          v.note_rejection && v.note_rejection.trim() !== '' ? v.note_rejection : null,
-        submitted_at: v.created_at,
-        updated_at: v.updated_at,
-        verified_at: v.verified_at ? v.verified_at.toISOString() : null,
-      };
-    });
-
-    return {
-      success: true,
-      message: `Verificaciones${status ? ` con estado ${status}` : ''} obtenidas correctamente`,
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-      data,
-    };
-  }
   @UseGuards(RolesGuard)
   @Roles('admin')
   @ApiOperation({
@@ -392,14 +229,6 @@ export class UserVerificationController {
           properties: {
             id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
             user_id: { type: 'string', example: 'bb34d516-4866-4302-8d4b-c3e22a2ca64b' },
-            user_profile: {
-              type: 'object',
-              properties: {
-                firstName: { type: 'string', example: 'Oscar' },
-                lastName: { type: 'string', example: 'Padilla' },
-                email: { type: 'string', example: 'usuario@ejemplo.com' },
-              },
-            },
             documents: {
               type: 'object',
               properties: {
@@ -409,7 +238,7 @@ export class UserVerificationController {
               },
             },
             verification_status: { type: 'string', example: 'pending' },
-            rejection_note: { type: 'string', example: null },
+            note_rejection: { type: 'string', example: null },
             submitted_at: {
               type: 'string',
               format: 'date-time',
@@ -443,8 +272,6 @@ export class UserVerificationController {
       throw new NotFoundException(`Verification with id ${verificationId} not found`);
     }
 
-    const profile = verification.user?.profile;
-
     const latestAttempt =
       verification.attempts && verification.attempts.length > 0
         ? verification.attempts[verification.attempts.length - 1]
@@ -468,16 +295,9 @@ export class UserVerificationController {
       data: {
         id: verification.verification_id,
         user_id: verification.user?.id,
-        user_profile: profile
-          ? {
-              firstName: profile.firstName,
-              lastName: profile.lastName,
-              email: profile.email,
-            }
-          : null,
         documents,
         verification_status: verification.verification_status,
-        rejection_note:
+        note_rejection:
           verification.note_rejection && verification.note_rejection.trim() !== ''
             ? verification.note_rejection
             : null,
@@ -524,25 +344,8 @@ export class UserVerificationController {
     },
   })
   @ApiOkResponse({
-    description: 'Estado de verificación actualizado correctamente',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: {
-          type: 'string',
-          example: 'Verificación aprobada correctamente',
-        },
-        data: {
-          type: 'object',
-          properties: {
-            verification_id: { type: 'string' },
-            status: { type: 'string' },
-            note_rejection: { type: 'string', nullable: true },
-          },
-        },
-      },
-    },
+    description: 'Verificación actualizada correctamente',
+    type: UpdateVerificationResponseDto,
   })
   @ApiBadRequestResponse({
     description:
@@ -712,7 +515,7 @@ export class UserVerificationController {
   @ApiOperation({
     summary: 'Validar usuario si la verificación está aprobada',
     description:
-      'Si la verificación del usuario autenticado se encuentra en estado APROBADO, se marcará al usuario como validado (isValidated = true).',
+      'Si la verificación del usuario autenticado se encuentra en estado APROBADO, se marcará al usuario como validado (userValidated = true).',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -727,7 +530,7 @@ export class UserVerificationController {
           properties: {
             verification_id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
             verification_status: { type: 'string', example: 'approved' },
-            isValidated: { type: 'boolean', example: true },
+            userValidated: { type: 'boolean', example: true },
           },
         },
       },

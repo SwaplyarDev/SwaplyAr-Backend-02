@@ -21,15 +21,17 @@ import { UserSocials } from '@users/entities/user-socials.entity';
 import { AdminProfileService } from './profiles/admin-profile.service';
 import { AdminUserController } from './users/user-admin.controller';
 import { AdminUserService } from './users/user-admin.service';
-import { Admin } from 'typeorm';
 import { AdminDiscountService } from './discounts/admin-discount.service';
 import { AdminDiscountsController } from './discounts/admin-discount.controller';
 import { DiscountCode } from '../discounts/entities/discount-code.entity';
 import { UserDiscount } from '../discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.entity';
+import { UserVerification } from '@users/entities/user-verification.entity';
+import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
+import { UserVerificationModule } from '@users/verification/user-verification.module';
 import { UpdateStarsService } from './transaction/updateStars.service';
 import { ConversionsService } from '../conversions/services/conversions.service';
-import { HttpModule, HttpService } from '@nestjs/axios';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -45,6 +47,7 @@ import { HttpModule, HttpService } from '@nestjs/axios';
       UserDiscount,
       DiscountCode,
       UserRewardsLedger,
+      UserVerification,
     ]),
     FileUploadModule,
     ProofOfPaymentsModule,
@@ -52,6 +55,7 @@ import { HttpModule, HttpService } from '@nestjs/axios';
     UsersModule,
     MailerModule,
     DiscountModule,
+    UserVerificationModule,
     HttpModule,
   ],
   controllers: [
@@ -66,9 +70,10 @@ import { HttpModule, HttpService } from '@nestjs/axios';
     AdminProfileService,
     AdminUserService,
     AdminDiscountService,
+    CloudinaryService,
     UpdateStarsService,
     ConversionsService,
   ],
-  exports: [],
+  exports: [CloudinaryService],
 })
 export class AdminModule {}

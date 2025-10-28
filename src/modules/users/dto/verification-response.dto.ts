@@ -1,86 +1,52 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'; 
 
-export class UserProfileDto {
-  @ApiProperty({ example: 'Juan' })
-  firstName: string;
+export class DocumentsDto {
+  @ApiProperty({ example: 'https://.../front.png' })
+  front: string;
 
-  @ApiProperty({ example: 'Pérez' })
-  lastName?: string;
+  @ApiProperty({ example: 'https://.../back.png' })
+  back: string;
 
-  @ApiProperty({ example: 'juan.perez@gmail.com' })
-  email: string;
-
-  @ApiProperty({ example: '+54 9 11 2345-6789' })
-  phone?: string;
-
-  @ApiProperty({ example: '12345678' })
-  identification?: string;
-
-  @ApiProperty({ example: '1990-05-15' })
-  birthdate?: string;
+  @ApiProperty({ example: 'https://.../selfie.png' })
+  selfie: string;
 }
 
 export class VerificationDataDto {
-  @ApiProperty({ example: 'a1729f98-9987-4799-93b1-79012c6ba885' })
-  verification_id: string;
+  @ApiProperty({ example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' })
+  id: string;
 
-  @ApiProperty({ example: '6c2b180f-6ffe-4f0f-a275-c0a644b2eb50' })
-  users_id: string;
+  @ApiProperty({ example: 'bb34d516-4866-4302-8d4b-c3e22a2ca64b' })
+  user_id: string;
 
-  @ApiProperty({ example: 'https://...' })
-  document_front: string;
-
-  @ApiProperty({ example: 'https://...' })
-  document_back: string;
-
-  @ApiProperty({ example: 'https://...' })
-  selfie_image: string;
+  @ApiProperty({ type: DocumentsDto })
+  documents: DocumentsDto;
 
   @ApiProperty({
     enum: ['pending', 'verified', 'rejected', 'resend-data'],
-    example: 'verified',
+    example: 'pending',
   })
   verification_status: 'pending' | 'verified' | 'rejected' | 'resend-data';
 
-  @ApiPropertyOptional({
-    example: 'Documento ilegible o dañado',
-    nullable: true,
-  })
+  @ApiPropertyOptional({ example: 'Documento ilegible', nullable: true })
   note_rejection?: string | null;
 
-  @ApiPropertyOptional({
-    example: '2025-07-28T15:58:23.252Z',
-    nullable: true,
-    type: String,
-    format: 'date-time',
-  })
-  verified_at?: string | null;
+  @ApiProperty({ example: '2025-08-22T01:31:43.733Z' })
+  submitted_at: Date;
 
-  @ApiProperty({
-    example: '2025-07-28T15:49:56.108Z',
-    type: String,
-    format: 'date-time',
-  })
-  created_at: string;
+  @ApiProperty({ example: '2025-08-22T01:35:05.634Z' })
+  updated_at: Date;
 
-  @ApiProperty({
-    example: '2025-07-28T15:58:23.285Z',
-    type: String,
-    format: 'date-time',
-  })
-  updated_at: string;
-
-  @ApiPropertyOptional({ type: () => UserProfileDto, nullable: true })
-  user?: UserProfileDto | null;
+  @ApiPropertyOptional({ example: null, nullable: true, type: String })
+  verified_at?: Date | null;
 }
 
-export class GetVerificationResponseDto {
+export class VerificationResponseDto {
   @ApiProperty({ example: true })
   success: boolean;
 
   @ApiProperty({ example: 'Verificación obtenida correctamente' })
   message: string;
 
-  @ApiProperty({ type: () => VerificationDataDto })
+  @ApiProperty({ type: VerificationDataDto })
   data: VerificationDataDto;
 }

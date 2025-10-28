@@ -3,12 +3,10 @@ import { User } from '@users/entities/user.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AdminStatus } from 'src/enum/admin-status.enum';
 import { UserRole } from 'src/enum/user-role.enum';
 import { DiscountCode } from './entities/discount-code.entity';
 import { UserDiscount } from './entities/user-discount.entity';
 import { UserRewardsLedger } from './entities/user-rewards-ledger.entity';
-import { CreateDiscountCodeDto } from '../admin/discounts/dto/create-discount-code.dto';
 import {
   FilterTypeEnum,
   FilterUserDiscountsDto,
@@ -38,7 +36,7 @@ export class DiscountService {
    * @param value Valor del descuento.
    * @returns El id del descuento de usuario creado.
    */
-  async assignSystemDiscount(user: User, prefix: string, value: number): Promise<string> {
+  async assignSystemDiscount(user: User, prefix: string, value: number): Promise<{ code: string; value: number; currencyCode: string; validFrom: Date }> {
     const codeEntity = this.discountCodeRepo.create({
       code: `${prefix}-${Math.random().toString(36).substr(2, 6)}`.toUpperCase(),
       value,
@@ -54,7 +52,12 @@ export class DiscountService {
     });
     await this.userDiscountRepo.save(userDiscount);
 
-    return userDiscount.id;
+    return {
+    code: codeEntity.code,
+    value: codeEntity.value,
+    currencyCode: codeEntity.currencyCode,
+    validFrom: codeEntity.validFrom,
+  };
   }
 
   /**
@@ -231,92 +234,6 @@ export class DiscountService {
 
   // ... El resto de métodos privados y de recompensas igual
 
-  /**
-   * Suma `quantity` al acumulado del usuario.
-   * Devuelve información detallada: si completó el ciclo, el ledger actualizado y un mensaje.
-   */
-  async updateStars(
-    dto: UpdateStarDto,
-    userId: string,
-  ): Promise<{
-    cycleCompleted: boolean;
-    ledger: UserRewardsLedger;
-    message?: string;
-  }> {
-    // Verifica que se pase el transactionId
-    if (!dto.transactionId) {
-      throw new BadRequestException('Se requiere transactionId para asignar estrellas.');
-    }
-
-    // Busca la transacción y verifica su estado
-    const transaction = await this.transactionRepo.findOne({
-      where: { id: dto.transactionId },
-    });
-    if (!transaction) {
-      throw new NotFoundException('Transacción no encontrada');
-    }
-    if (transaction.finalStatus !== AdminStatus.Completed) {
-      throw new BadRequestException(
-        'Solo se pueden asignar estrellas a transacciones completadas.',
-      );
-    }
-
-    const ledger = await this.getOrCreateUserLedger(userId);
-
-    ledger.quantity = Number(ledger.quantity) + Number(dto.quantity);
-    //límite de 5 estrellas
-    if (ledger.stars < 5) {
-      ledger.stars += 1;
-    }
-    await this.rewardsLedgerRepo.save(ledger);
-
-    const cycleCompleted =
-      ledger.quantity >= DiscountService.CYCLE_QUANTITY &&
-      ledger.stars >= DiscountService.CYCLE_STARS;
-    let message: string | undefined;
-    if (cycleCompleted) {
-      message = await this.handleCycleCompletion(ledger);
-    }
-    return {
-      cycleCompleted,
-      ledger,
-      message,
-    };
-  }
-
-  /**
-   * Lógica que corre cuando el usuario completa un ciclo:
-   * - Reinicia contadores
-   * - Crea/activa un nuevo código de descuento PLUS REWARDS
-   * - Puede enviar notificaciones, emails, etc.
-   */
-  private async handleCycleCompletion(ledger: UserRewardsLedger): Promise<string> {
-    // Reiniciamos contadores
-    ledger.quantity = 0;
-    ledger.stars = 0;
-    await this.rewardsLedgerRepo.save(ledger);
-
-    //creamos un código de descuento de 10 USD
-    const discountCode = this.discountCodeRepo.create({
-      code: `PLUS-${Date.now().toString(36).toUpperCase()}`,
-      value: 10,
-      currencyCode: 'USD',
-      validFrom: new Date(),
-    });
-    await this.discountCodeRepo.save(discountCode);
-
-    // Asociamos automáticamente ese código al usuario
-    await this.userDiscountRepo.save(
-      this.userDiscountRepo.create({
-        user: ledger.user,
-        discountCode,
-        isUsed: false,
-      }),
-    );
-
-    return '¡Felicidades! Completaste un ciclo y se ha generado tu cupón PLUS REWARDS de 10 USD.';
-  }
-
   async getStars(userId: string): Promise<{ quantity: number; stars: number }> {
     const ledger = await this.rewardsLedgerRepo.findOne({
       where: { user: { id: userId } },
@@ -326,21 +243,6 @@ export class DiscountService {
       quantity: ledger?.quantity ?? 0,
       stars: ledger?.stars ?? 0,
     };
-  }
-
-  private async getOrCreateUserLedger(userId: string) {
-    let ledger = await this.rewardsLedgerRepo.findOne({
-      where: { user: { id: userId } },
-      relations: ['user'],
-    });
-
-    if (!ledger) {
-      const user = await this.userRepo.findOne({ where: { id: userId } });
-      if (!user) throw new NotFoundException('Usuario no encontrado');
-      ledger = this.rewardsLedgerRepo.create({ user, quantity: 0, stars: 0 });
-    }
-
-    return ledger;
   }
 
   /** Métodos auxiliares privados para mejorar legibilidad/reutilización **/

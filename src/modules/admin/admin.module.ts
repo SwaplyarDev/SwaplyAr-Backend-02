@@ -29,6 +29,9 @@ import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.ent
 import { UserVerification } from '@users/entities/user-verification.entity';
 import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
 import { UserVerificationModule } from '@users/verification/user-verification.module';
+import { UpdateStarsService } from './transaction/updateStars.service';
+import { ConversionsService } from '../conversions/services/conversions.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -53,6 +56,7 @@ import { UserVerificationModule } from '@users/verification/user-verification.mo
     MailerModule,
     DiscountModule,
     UserVerificationModule,
+    HttpModule,
   ],
   controllers: [
     AdminProfileController,
@@ -67,6 +71,8 @@ import { UserVerificationModule } from '@users/verification/user-verification.mo
     AdminUserService,
     AdminDiscountService,
     CloudinaryService,
+    UpdateStarsService,
+    ConversionsService,
   ],
   exports: [CloudinaryService],
 })

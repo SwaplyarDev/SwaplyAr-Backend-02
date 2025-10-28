@@ -16,7 +16,7 @@ import { User } from '@users/entities/user.entity';
 
 @Entity('administracion_master')
 export class AdministracionMaster {
-  @PrimaryColumn('uuid', { name: 'transaction_id' })
+  @PrimaryColumn({ name: 'transaction_id', type: 'varchar', length: 10 })
   transactionId: string;
 
   // Relación con la transacción original

@@ -19,6 +19,7 @@ export class AuthService {
 
     return {
       sub: user.id,
+      memberCode: user.memberCode,
       email: profile.email ?? '',
       role: user.role,
       fullName: `${profile.firstName ?? ''} ${profile.lastName ?? ''}`,

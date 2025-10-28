@@ -1,5 +1,6 @@
 import { AdminRoleGuard } from '@common/guards/admin-role.guard';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
+import { GetAdminProfilesQueryDto } from '@admin/profiles/dto/admin-profile-response.dto';
 import {
   BadRequestException,
   Controller,
@@ -44,20 +45,20 @@ export class AdminProfileController {
     description:
       'Permite a los administradores listar perfiles de usuario filtrando por estado de verificación (PENDIENTE, APROBADO, RECHAZADO, REENVIAR_DATOS).',
   })
-  @ApiQuery({ 
+  @ApiQuery({
     name: 'status',
     required: false,
     enum: VerificationStatus,
     description: 'Filtrar por estado de verificación',
   })
-  @ApiQuery({ 
+  @ApiQuery({
     name: 'page',
     required: false,
     type: Number,
     description: 'Número de página',
     example: 1,
   })
-  @ApiQuery({ 
+  @ApiQuery({
     name: 'limit',
     required: false,
     type: Number,
@@ -71,16 +72,8 @@ export class AdminProfileController {
   })
   @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
   @ApiResponse({ status: 403, description: 'No autorizado, Solo para Administradores' })
-  async findAll(
-    @Query('status') status?: VerificationStatus,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
-    const profiles = await this.adminProfileService.findAll(
-      status,
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 10,
-    );
+  async findAll(@Query() query: GetAdminProfilesQueryDto) {
+    const profiles = await this.adminProfileService.findAll(query.status, query.page, query.limit);
     return profiles;
   }
 

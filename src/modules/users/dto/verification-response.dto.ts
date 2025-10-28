@@ -1,24 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-
-export class UserProfileDto {
-  @ApiProperty({ example: 'Juan' })
-  firstName: string;
-
-  @ApiProperty({ example: 'Pérez' })
-  lastName?: string;
-
-  @ApiProperty({ example: 'juan.perez@gmail.com' })
-  email: string;
-
-  @ApiProperty({ example: '+54 9 11 2345-6789' })
-  phone?: string;
-
-  @ApiProperty({ example: '12345678' })
-  identification?: string;
-
-  @ApiProperty({ example: '1990-05-15' })
-  birthdate?: string;
-}
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'; 
 
 export class DocumentsDto {
   @ApiProperty({ example: 'https://.../front.png' })
@@ -50,28 +30,17 @@ export class VerificationDataDto {
   @ApiPropertyOptional({ example: 'Documento ilegible', nullable: true })
   rejection_note?: string | null;
 
-  @ApiProperty({ example: '2025-08-22T01:31:43.733Z', type: String })
-  submitted_at: string;
+  @ApiProperty({ example: '2025-08-22T01:31:43.733Z' })
+  submitted_at: Date;
 
-  @ApiProperty({ example: '2025-08-22T01:35:05.634Z', type: String })
-  updated_at: string;
+  @ApiProperty({ example: '2025-08-22T01:35:05.634Z' })
+  updated_at: Date;
 
   @ApiPropertyOptional({ example: null, nullable: true, type: String })
-  verified_at?: string | null;
+  verified_at?: Date | null;
 }
 
-export class GetVerificationResponseDto {
-  @ApiProperty({ example: true })
-  success: boolean;
-
-  @ApiProperty({ example: 'Verificación obtenida correctamente' })
-  message: string;
-
-  @ApiProperty({ type: () => VerificationDataDto })
-  data: VerificationDataDto;
-}
-
-export class VerificationApiResponseDto {
+export class VerificationResponseDto {
   @ApiProperty({ example: true })
   success: boolean;
 

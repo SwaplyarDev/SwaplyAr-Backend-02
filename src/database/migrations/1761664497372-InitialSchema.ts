@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class InitialSchema1761232269523 implements MigrationInterface {
-    name = 'InitialSchema1761232269523'
+export class InitialSchema1761664497372 implements MigrationInterface {
+    name = 'InitialSchema1761664497372'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "user_socials" ("user_socials_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "whatsapp_number" character varying, "facebook" character varying, "instagram" character varying, "tiktok" character varying, "twitter_x" character varying, "snapchat" character varying, "linkedin" character varying, "youtube" character varying, "pinterest" character varying, "user_profile_id" uuid, CONSTRAINT "REL_52aa4379b581fd0a16a89a0918" UNIQUE ("user_profile_id"), CONSTRAINT "PK_7c6cb2e7d47e86d5776b9b368d8" PRIMARY KEY ("user_socials_id"))`);
@@ -13,9 +13,6 @@ export class InitialSchema1761232269523 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "user_contacts" ("user_contact_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "last_name" character varying NOT NULL, "email" character varying NOT NULL, "message" character varying NOT NULL, "user_id" uuid, CONSTRAINT "PK_9636da2a0471db068889ad23940" PRIMARY KEY ("user_contact_id"))`);
         await queryRunner.query(`CREATE TABLE "user_questions" ("user_question_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "title" character varying NOT NULL, "description" character varying NOT NULL, "user_id" uuid, CONSTRAINT "PK_20f9b11d3e3916300715c2dc18f" PRIMARY KEY ("user_question_id"))`);
         await queryRunner.query(`CREATE TABLE "user_bans" ("user_ban_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "reason" character varying NOT NULL, "start_date" TIMESTAMP WITH TIME ZONE NOT NULL, "end_date" TIMESTAMP WITH TIME ZONE NOT NULL, "is_permanent" boolean NOT NULL, "is_active" boolean NOT NULL, "user_id" uuid, CONSTRAINT "PK_c303745e5445d520c2b2fcd5efd" PRIMARY KEY ("user_ban_id"))`);
-        await queryRunner.query(`CREATE TABLE "user_verification_attempts" ("attempt_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "verification_id" uuid NOT NULL, "document_front" character varying NOT NULL, "document_back" character varying NOT NULL, "selfie_image" character varying NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_84908537350d46f47b72cf1af0a" PRIMARY KEY ("attempt_id"))`);
-        await queryRunner.query(`CREATE TYPE "public"."user_verification_verification_status_enum" AS ENUM('pending', 'verified', 'rejected', 'resend-data')`);
-        await queryRunner.query(`CREATE TABLE "user_verification" ("verification_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "document_front" character varying NOT NULL, "document_back" character varying NOT NULL, "selfie_image" character varying NOT NULL, "verification_status" "public"."user_verification_verification_status_enum" NOT NULL DEFAULT 'pending', "note_rejection" character varying, "verified_at" TIMESTAMP, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "user_id" uuid, CONSTRAINT "PK_863bc8cfcdb1ea11736502c8f34" PRIMARY KEY ("verification_id"))`);
         await queryRunner.query(`CREATE TABLE "refresh_token" ("refresh_token_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "refresh_token" character varying NOT NULL, "expiry_date" TIMESTAMP WITH TIME ZONE NOT NULL, "user_id" uuid, CONSTRAINT "PK_38622f85836f4e77b3230e39f31" PRIMARY KEY ("refresh_token_id"))`);
         await queryRunner.query(`CREATE TABLE "otp_codes" ("otp_code_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "transaction_id" character varying, "code" character varying NOT NULL, "expiry_date" TIMESTAMP WITH TIME ZONE NOT NULL, "is_used" boolean NOT NULL DEFAULT false, "email" character varying, "user_id" uuid, CONSTRAINT "PK_386398666bbacd564c1cb92ec00" PRIMARY KEY ("otp_code_id"))`);
         await queryRunner.query(`CREATE TABLE "discount_codes" ("discount_code_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "code" character varying NOT NULL, "value" numeric(15,2) NOT NULL, "currency_code" character varying NOT NULL, "valid_from" TIMESTAMP WITH TIME ZONE NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_b967edd0d46547d4a92b4a1c6b3" UNIQUE ("code"), CONSTRAINT "PK_fadc09294961ba8a3f08205fe28" PRIMARY KEY ("discount_code_id"))`);
@@ -41,7 +38,7 @@ export class InitialSchema1761232269523 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "amount" ("amount_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "amountSent" numeric(15,2) NOT NULL, "currencySent" character varying NOT NULL, "amountReceived" numeric(15,2) NOT NULL, "currencyReceived" character varying NOT NULL, "received" boolean NOT NULL, CONSTRAINT "PK_fb1f9159cc149775fc9e9be9c75" PRIMARY KEY ("amount_id"))`);
         await queryRunner.query(`CREATE TABLE "notes" ("note_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "img_url" character varying, "message" character varying NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "transaction_id" character varying(10), CONSTRAINT "REL_1cd1479d6f04cc72659f5921e6" UNIQUE ("transaction_id"), CONSTRAINT "PK_77f245eb03df887f6f03c57f7f5" PRIMARY KEY ("note_id"))`);
         await queryRunner.query(`CREATE TABLE "regrets" ("regret_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "last_name" character varying NOT NULL, "email" character varying NOT NULL, "phone_number" character varying NOT NULL, "description" character varying NOT NULL, "transaction_id" character varying(10), "payment_info_id" uuid, CONSTRAINT "REL_a877ca7e6cddbe5ae8cf98450a" UNIQUE ("transaction_id"), CONSTRAINT "REL_8dd9ff9e0708f17eb60d0fe874" UNIQUE ("payment_info_id"), CONSTRAINT "PK_147d7c8a8e3f8742fa022faf667" PRIMARY KEY ("regret_id"))`);
-        await queryRunner.query(`CREATE TYPE "public"."transactions_final_status_enum" AS ENUM('pending', 'review_payment', 'approved', 'rejected', 'refund_in_transit', 'in_transit', 'discrepancy', 'canceled', 'modified', 'refunded', 'completed')`);
+        await queryRunner.query(`CREATE TYPE "public"."transactions_final_status_enum" AS ENUM('pending', 'review_payment', 'approved', 'rejected', 'refund_in_transit', 'in_transit', 'discrepancy', 'cancelled', 'modified', 'refunded', 'completed')`);
         await queryRunner.query(`CREATE TABLE "transactions" ("transaction_id" character varying(10) NOT NULL, "country_transaction" character varying NOT NULL, "message" character varying, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "final_status" "public"."transactions_final_status_enum" NOT NULL DEFAULT 'pending', "amount_value" numeric(18,2), "amount_currency" character varying(3), "isNoteVerified" boolean NOT NULL DEFAULT false, "noteVerificationExpiresAt" TIMESTAMP, "sender_account_id" uuid, "receiver_account_id" uuid, "note_id" uuid, "regret_id" uuid, "amount_id" uuid, CONSTRAINT "REL_c3f53f3fa7100cb3fbd2c09c6e" UNIQUE ("note_id"), CONSTRAINT "REL_e006fc4547b2051900939febb6" UNIQUE ("regret_id"), CONSTRAINT "REL_2ca3a8b59e96c792e4ec3c0dc8" UNIQUE ("amount_id"), CONSTRAINT "PK_9162bf9ab4e31961a8f7932974c" PRIMARY KEY ("transaction_id"))`);
         await queryRunner.query(`CREATE INDEX "idx_transactions_country_transaction" ON "transactions" ("country_transaction") `);
         await queryRunner.query(`CREATE INDEX "idx_transactions_created_at" ON "transactions" ("created_at") `);
@@ -52,16 +49,19 @@ export class InitialSchema1761232269523 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "user_rewards_ledger" ("ledger_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "quantity" numeric NOT NULL DEFAULT '0', "stars" integer NOT NULL DEFAULT '0', "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "user_id" uuid, CONSTRAINT "REL_96bbda5ec76e8ff391a2bb3497" UNIQUE ("user_id"), CONSTRAINT "PK_c5c7b28c2ee4d8c0285cb65cd3d" PRIMARY KEY ("ledger_id"))`);
         await queryRunner.query(`CREATE TYPE "public"."users_user_role_enum" AS ENUM('user', 'admin', 'super_admin')`);
         await queryRunner.query(`CREATE TABLE "users" ("user_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_role" "public"."users_user_role_enum" NOT NULL DEFAULT 'user', "terms_accepted" boolean NOT NULL DEFAULT false, "member_code" character varying(8) NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "validated_at" TIMESTAMP WITH TIME ZONE, "is_active" boolean NOT NULL DEFAULT true, "is_validated" boolean NOT NULL DEFAULT false, "user_validated" boolean NOT NULL DEFAULT false, "refreshToken" character varying, CONSTRAINT "UQ_54edc787000bbce448a70bc3e83" UNIQUE ("member_code"), CONSTRAINT "PK_96aac72f1574b88752e9fb00089" PRIMARY KEY ("user_id"))`);
-        await queryRunner.query(`CREATE TYPE "public"."administracion_status_log_status_enum" AS ENUM('pending', 'review_payment', 'approved', 'rejected', 'refund_in_transit', 'in_transit', 'discrepancy', 'canceled', 'modified', 'refunded', 'completed')`);
-        await queryRunner.query(`CREATE TABLE "administracion_status_log" ("log_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "status" "public"."administracion_status_log_status_enum" NOT NULL, "changed_at" TIMESTAMP NOT NULL DEFAULT now(), "message" text, "changed_by_admin_id" uuid NOT NULL, "additionalData" jsonb, "transaction_id" character varying(10), CONSTRAINT "PK_93c3d98ede4fd3ac21a4f9d021f" PRIMARY KEY ("log_id"))`);
-        await queryRunner.query(`CREATE TYPE "public"."administracion_master_status_enum" AS ENUM('pending', 'review_payment', 'approved', 'rejected', 'refund_in_transit', 'in_transit', 'discrepancy', 'canceled', 'modified', 'refunded', 'completed')`);
-        await queryRunner.query(`CREATE TABLE "administracion_master" ("transaction_id" character varying(10) NOT NULL, "admin_user_id" uuid NOT NULL, "status" "public"."administracion_master_status_enum" NOT NULL DEFAULT 'pending', "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "begin_transaction" TIMESTAMP, "end_transaction" TIMESTAMP, "transfer_received" text, CONSTRAINT "PK_07c46f45239be5da141ac02a58f" PRIMARY KEY ("transaction_id"))`);
+        await queryRunner.query(`CREATE TABLE "user_verification_attempts" ("attempt_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "verification_id" uuid NOT NULL, "document_front" character varying NOT NULL, "document_back" character varying NOT NULL, "selfie_image" character varying NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_84908537350d46f47b72cf1af0a" PRIMARY KEY ("attempt_id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."user_verification_verification_status_enum" AS ENUM('pending', 'verified', 'rejected', 'resend-data')`);
+        await queryRunner.query(`CREATE TABLE "user_verification" ("verification_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "document_front" character varying NOT NULL, "document_back" character varying NOT NULL, "selfie_image" character varying NOT NULL, "verification_status" "public"."user_verification_verification_status_enum" NOT NULL DEFAULT 'pending', "note_rejection" character varying, "verified_at" TIMESTAMP, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "user_id" uuid, CONSTRAINT "PK_863bc8cfcdb1ea11736502c8f34" PRIMARY KEY ("verification_id"))`);
         await queryRunner.query(`CREATE TABLE "user_account" ("account_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "account_name" character varying, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "status" boolean NOT NULL DEFAULT true, "user_id" character varying NOT NULL, "financial_account_id" uuid, CONSTRAINT "REL_c6412112ab4eb46363a87b2767" UNIQUE ("financial_account_id"), CONSTRAINT "PK_7db53a014418432811b1eb1aa97" PRIMARY KEY ("account_id"))`);
         await queryRunner.query(`CREATE TABLE "abandoned_transactions" ("abandoned_transaction_id" character varying(10) NOT NULL, "first_name" character varying NOT NULL, "last_name" character varying NOT NULL, "email" character varying NOT NULL, "phone_number" character varying NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_596b224b2cdf41add5186844cdf" PRIMARY KEY ("abandoned_transaction_id"))`);
-        await queryRunner.query(`CREATE TABLE "questions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "title" character varying NOT NULL, "description" character varying NOT NULL, CONSTRAINT "PK_08a6d4b0f49ff300bf3a0ca60ac" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "qualifications" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "transaction_id" character varying NOT NULL, "stars_amount" integer NOT NULL, "note" character varying, CONSTRAINT "PK_9ed4d526ac3b76ba3f1c1080433" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "questions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "title" character varying NOT NULL, "description" character varying NOT NULL, CONSTRAINT "PK_08a6d4b0f49ff300bf3a0ca60ac" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "dynamic_commissions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "from_platform" character varying(20) NOT NULL, "to_platform" character varying(20) NOT NULL, "commission_rate" double precision NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_0c6594adb488a7fe97a77a4b082" UNIQUE ("from_platform", "to_platform"), CONSTRAINT "PK_3ec45caa1179a1ece569034f39b" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "contacts" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "lastname" character varying NOT NULL, "email" character varying NOT NULL, "message" character varying NOT NULL, "user_id" character varying, CONSTRAINT "PK_b99cd40cfd66a99f1571f4f72e6" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."administracion_master_status_enum" AS ENUM('pending', 'review_payment', 'approved', 'rejected', 'refund_in_transit', 'in_transit', 'discrepancy', 'cancelled', 'modified', 'refunded', 'completed')`);
+        await queryRunner.query(`CREATE TABLE "administracion_master" ("transaction_id" character varying(10) NOT NULL, "admin_user_id" uuid NOT NULL, "status" "public"."administracion_master_status_enum" NOT NULL DEFAULT 'pending', "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "begin_transaction" TIMESTAMP, "end_transaction" TIMESTAMP, "transfer_received" text, CONSTRAINT "PK_07c46f45239be5da141ac02a58f" PRIMARY KEY ("transaction_id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."administracion_status_log_status_enum" AS ENUM('pending', 'review_payment', 'approved', 'rejected', 'refund_in_transit', 'in_transit', 'discrepancy', 'cancelled', 'modified', 'refunded', 'completed')`);
+        await queryRunner.query(`CREATE TABLE "administracion_status_log" ("log_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "status" "public"."administracion_status_log_status_enum" NOT NULL, "changed_at" TIMESTAMP NOT NULL DEFAULT now(), "message" text, "changed_by_admin_id" uuid NOT NULL, "additionalData" jsonb, "transaction_id" character varying(10), CONSTRAINT "PK_93c3d98ede4fd3ac21a4f9d021f" PRIMARY KEY ("log_id"))`);
         await queryRunner.query(`CREATE TABLE "transaction_user_discounts" ("transaction_id" character varying(10) NOT NULL, "user_discount_id" uuid NOT NULL, CONSTRAINT "PK_6377e5783cf2c1ca0037af3ac90" PRIMARY KEY ("transaction_id", "user_discount_id"))`);
         await queryRunner.query(`CREATE INDEX "IDX_d526dd3f45bb11e3982dcadb45" ON "transaction_user_discounts" ("transaction_id") `);
         await queryRunner.query(`CREATE INDEX "IDX_4d935195f295a5ceb932cc21fb" ON "transaction_user_discounts" ("user_discount_id") `);
@@ -73,8 +73,6 @@ export class InitialSchema1761232269523 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "user_contacts" ADD CONSTRAINT "FK_a81491e712124db8d5423803ecb" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "user_questions" ADD CONSTRAINT "FK_7df0da6b1f94c132a9fbed5155c" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "user_bans" ADD CONSTRAINT "FK_a142c9954b2fd911b3e7ea8c307" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "user_verification_attempts" ADD CONSTRAINT "FK_b004467f274428dc2e4f7d7b2db" FOREIGN KEY ("verification_id") REFERENCES "user_verification"("verification_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "user_verification" ADD CONSTRAINT "FK_3d40c1993bffba775f0ffad0cae" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "refresh_token" ADD CONSTRAINT "FK_6bbe63d2fe75e7f0ba1710351d4" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "otp_codes" ADD CONSTRAINT "FK_318b850fc020b1e0f8670f66e12" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "proof_of_payments" ADD CONSTRAINT "FK_08c13e97528e9dacc5e5f57eac5" FOREIGN KEY ("transaction_id") REFERENCES "transactions"("transaction_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
@@ -90,11 +88,13 @@ export class InitialSchema1761232269523 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "user_discounts" ADD CONSTRAINT "FK_9710deded29316fe5d81cb3e89c" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "user_discounts" ADD CONSTRAINT "FK_d647dbf1a5357a381559345a147" FOREIGN KEY ("discount_code_id") REFERENCES "discount_codes"("discount_code_id") ON DELETE SET NULL ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "user_rewards_ledger" ADD CONSTRAINT "FK_96bbda5ec76e8ff391a2bb34972" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "administracion_status_log" ADD CONSTRAINT "FK_d76daa9604bb63d1cd3d76ea2c0" FOREIGN KEY ("transaction_id") REFERENCES "administracion_master"("transaction_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "administracion_status_log" ADD CONSTRAINT "FK_d925420f2e01382ff12b1623c23" FOREIGN KEY ("changed_by_admin_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "user_verification_attempts" ADD CONSTRAINT "FK_b004467f274428dc2e4f7d7b2db" FOREIGN KEY ("verification_id") REFERENCES "user_verification"("verification_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "user_verification" ADD CONSTRAINT "FK_3d40c1993bffba775f0ffad0cae" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "user_account" ADD CONSTRAINT "FK_c6412112ab4eb46363a87b2767c" FOREIGN KEY ("financial_account_id") REFERENCES "financial_accounts"("financial_account_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "administracion_master" ADD CONSTRAINT "FK_07c46f45239be5da141ac02a58f" FOREIGN KEY ("transaction_id") REFERENCES "transactions"("transaction_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "administracion_master" ADD CONSTRAINT "FK_4e5dbc8b447674f7ecc2dd35155" FOREIGN KEY ("admin_user_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "user_account" ADD CONSTRAINT "FK_c6412112ab4eb46363a87b2767c" FOREIGN KEY ("financial_account_id") REFERENCES "financial_accounts"("financial_account_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "administracion_status_log" ADD CONSTRAINT "FK_d76daa9604bb63d1cd3d76ea2c0" FOREIGN KEY ("transaction_id") REFERENCES "administracion_master"("transaction_id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "administracion_status_log" ADD CONSTRAINT "FK_d925420f2e01382ff12b1623c23" FOREIGN KEY ("changed_by_admin_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "transaction_user_discounts" ADD CONSTRAINT "FK_d526dd3f45bb11e3982dcadb45c" FOREIGN KEY ("transaction_id") REFERENCES "transactions"("transaction_id") ON DELETE CASCADE ON UPDATE CASCADE`);
         await queryRunner.query(`ALTER TABLE "transaction_user_discounts" ADD CONSTRAINT "FK_4d935195f295a5ceb932cc21fbc" FOREIGN KEY ("user_discount_id") REFERENCES "user_discounts"("user_discount_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
     }
@@ -102,11 +102,13 @@ export class InitialSchema1761232269523 implements MigrationInterface {
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "transaction_user_discounts" DROP CONSTRAINT "FK_4d935195f295a5ceb932cc21fbc"`);
         await queryRunner.query(`ALTER TABLE "transaction_user_discounts" DROP CONSTRAINT "FK_d526dd3f45bb11e3982dcadb45c"`);
-        await queryRunner.query(`ALTER TABLE "user_account" DROP CONSTRAINT "FK_c6412112ab4eb46363a87b2767c"`);
-        await queryRunner.query(`ALTER TABLE "administracion_master" DROP CONSTRAINT "FK_4e5dbc8b447674f7ecc2dd35155"`);
-        await queryRunner.query(`ALTER TABLE "administracion_master" DROP CONSTRAINT "FK_07c46f45239be5da141ac02a58f"`);
         await queryRunner.query(`ALTER TABLE "administracion_status_log" DROP CONSTRAINT "FK_d925420f2e01382ff12b1623c23"`);
         await queryRunner.query(`ALTER TABLE "administracion_status_log" DROP CONSTRAINT "FK_d76daa9604bb63d1cd3d76ea2c0"`);
+        await queryRunner.query(`ALTER TABLE "administracion_master" DROP CONSTRAINT "FK_4e5dbc8b447674f7ecc2dd35155"`);
+        await queryRunner.query(`ALTER TABLE "administracion_master" DROP CONSTRAINT "FK_07c46f45239be5da141ac02a58f"`);
+        await queryRunner.query(`ALTER TABLE "user_account" DROP CONSTRAINT "FK_c6412112ab4eb46363a87b2767c"`);
+        await queryRunner.query(`ALTER TABLE "user_verification" DROP CONSTRAINT "FK_3d40c1993bffba775f0ffad0cae"`);
+        await queryRunner.query(`ALTER TABLE "user_verification_attempts" DROP CONSTRAINT "FK_b004467f274428dc2e4f7d7b2db"`);
         await queryRunner.query(`ALTER TABLE "user_rewards_ledger" DROP CONSTRAINT "FK_96bbda5ec76e8ff391a2bb34972"`);
         await queryRunner.query(`ALTER TABLE "user_discounts" DROP CONSTRAINT "FK_d647dbf1a5357a381559345a147"`);
         await queryRunner.query(`ALTER TABLE "user_discounts" DROP CONSTRAINT "FK_9710deded29316fe5d81cb3e89c"`);
@@ -122,8 +124,6 @@ export class InitialSchema1761232269523 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "proof_of_payments" DROP CONSTRAINT "FK_08c13e97528e9dacc5e5f57eac5"`);
         await queryRunner.query(`ALTER TABLE "otp_codes" DROP CONSTRAINT "FK_318b850fc020b1e0f8670f66e12"`);
         await queryRunner.query(`ALTER TABLE "refresh_token" DROP CONSTRAINT "FK_6bbe63d2fe75e7f0ba1710351d4"`);
-        await queryRunner.query(`ALTER TABLE "user_verification" DROP CONSTRAINT "FK_3d40c1993bffba775f0ffad0cae"`);
-        await queryRunner.query(`ALTER TABLE "user_verification_attempts" DROP CONSTRAINT "FK_b004467f274428dc2e4f7d7b2db"`);
         await queryRunner.query(`ALTER TABLE "user_bans" DROP CONSTRAINT "FK_a142c9954b2fd911b3e7ea8c307"`);
         await queryRunner.query(`ALTER TABLE "user_questions" DROP CONSTRAINT "FK_7df0da6b1f94c132a9fbed5155c"`);
         await queryRunner.query(`ALTER TABLE "user_contacts" DROP CONSTRAINT "FK_a81491e712124db8d5423803ecb"`);
@@ -135,16 +135,19 @@ export class InitialSchema1761232269523 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX "public"."IDX_4d935195f295a5ceb932cc21fb"`);
         await queryRunner.query(`DROP INDEX "public"."IDX_d526dd3f45bb11e3982dcadb45"`);
         await queryRunner.query(`DROP TABLE "transaction_user_discounts"`);
-        await queryRunner.query(`DROP TABLE "contacts"`);
-        await queryRunner.query(`DROP TABLE "dynamic_commissions"`);
-        await queryRunner.query(`DROP TABLE "qualifications"`);
-        await queryRunner.query(`DROP TABLE "questions"`);
-        await queryRunner.query(`DROP TABLE "abandoned_transactions"`);
-        await queryRunner.query(`DROP TABLE "user_account"`);
-        await queryRunner.query(`DROP TABLE "administracion_master"`);
-        await queryRunner.query(`DROP TYPE "public"."administracion_master_status_enum"`);
         await queryRunner.query(`DROP TABLE "administracion_status_log"`);
         await queryRunner.query(`DROP TYPE "public"."administracion_status_log_status_enum"`);
+        await queryRunner.query(`DROP TABLE "administracion_master"`);
+        await queryRunner.query(`DROP TYPE "public"."administracion_master_status_enum"`);
+        await queryRunner.query(`DROP TABLE "contacts"`);
+        await queryRunner.query(`DROP TABLE "dynamic_commissions"`);
+        await queryRunner.query(`DROP TABLE "questions"`);
+        await queryRunner.query(`DROP TABLE "qualifications"`);
+        await queryRunner.query(`DROP TABLE "abandoned_transactions"`);
+        await queryRunner.query(`DROP TABLE "user_account"`);
+        await queryRunner.query(`DROP TABLE "user_verification"`);
+        await queryRunner.query(`DROP TYPE "public"."user_verification_verification_status_enum"`);
+        await queryRunner.query(`DROP TABLE "user_verification_attempts"`);
         await queryRunner.query(`DROP TABLE "users"`);
         await queryRunner.query(`DROP TYPE "public"."users_user_role_enum"`);
         await queryRunner.query(`DROP TABLE "user_rewards_ledger"`);
@@ -181,9 +184,6 @@ export class InitialSchema1761232269523 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "discount_codes"`);
         await queryRunner.query(`DROP TABLE "otp_codes"`);
         await queryRunner.query(`DROP TABLE "refresh_token"`);
-        await queryRunner.query(`DROP TABLE "user_verification"`);
-        await queryRunner.query(`DROP TYPE "public"."user_verification_verification_status_enum"`);
-        await queryRunner.query(`DROP TABLE "user_verification_attempts"`);
         await queryRunner.query(`DROP TABLE "user_bans"`);
         await queryRunner.query(`DROP TABLE "user_questions"`);
         await queryRunner.query(`DROP TABLE "user_contacts"`);

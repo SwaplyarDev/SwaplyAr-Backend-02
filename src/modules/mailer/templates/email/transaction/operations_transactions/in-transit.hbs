@@ -92,16 +92,17 @@
     <div class="transaction-info" style="font-size: 15px; margin: 0 auto; width:424px; padding-top: 10px">
       <p>Nombre y Apellido:<span style="float: right;">{{NAME}} {{LAST_NAME}}</span></p>
       <p>Destinatario: <span style="float: right;">{{RECEIVED_NAME}}</span></p>
-      <p>Correo Electrónico:<span style="float: right;">{{}}
+      <p>Correo Electrónico:<span style="float: right; color: #252526; text-decoration: none; pointer-events: none; cursor: default;">{{EMAIL}}
       <p>Monto Enviado:<span style="float: right;">{{AMOUNT_SENT}} {{SENT_CURRENCY}}</span></p>
       <p>Monto a Recibir:<span style="float: right;">{{AMOUNT_RECEIVED}} {{RECEIVED_CURRENCY}}</span></p>
+      <div style="border-top: 1px solid rgb(92, 124, 199); width: 100%;"></div>
     </div>
 
     <section class="info" style="text-align: start; padding-top: 15px">
         <p>
           <span>Le confirmamos que ha recibido este correo porque hemos realizado un pago a la cuenta de <strong style="font-weight: 600;">{{NAME}} {{LAST_NAME}}</strong> bajo la cuenta de nuestros proveedores.</span>.<br><br>
           <span>Si tienes alguna pregunta o necesitas asistencia adicional, no dude en ponerse en contacto con nosotros.</span><br><br>
-          <span>Conozca mas en <a href="{{BASE_URL}}"style="color: ">SwaplyAr.com</a></span>
+          <span>Conozca mas en <a href="{{BASE_URL}}"style="color: #252526">SwaplyAr.com</a></span>
         </p>
       </section>
 

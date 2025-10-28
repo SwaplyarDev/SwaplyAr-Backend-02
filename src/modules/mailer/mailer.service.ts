@@ -228,6 +228,7 @@ export class MailerService {
       NAME: sender.firstName ?? '',
       LAST_NAME: sender.lastName ?? '',
       PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
+      EMAIL: sender.createdBy ?? '',
       AMOUNT_SENT: amount.amountSent ?? 0,
       SENT_CURRENCY: amount.currencySent ?? '',
       PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',

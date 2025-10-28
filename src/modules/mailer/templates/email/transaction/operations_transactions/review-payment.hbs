@@ -56,6 +56,7 @@
 
     .content {
       text-align: center;
+      font-weight: 400;
     }
 
     .content h2 {
@@ -195,6 +196,11 @@
       width: 40px;
       margin: 10px auto;
     }
+
+    .link-black {
+      color: #000 !important;
+      text-decoration: none;
+    }
   </style>
 </head>
 
@@ -223,7 +229,7 @@
 
       <div class="details" style="font-size: 15px; margin: 0 auto; width:424px; padding-top: 10px">
         <p>
-          ID de Solicitud 
+          ID de Solicitud
           <span class="variable" style="float: right; color:#012d8a; font-weight: 600">#{{REFERENCE_NUMBER}}</span>
         </p>
         <p>
@@ -242,7 +248,7 @@
           Método de recepción:
           <span class="variable">{{PAYMENT_METHOD}}</span>
         </p> --}}
-        <p style="border-bottom: 2px solid #012d8a">
+        <p style="border-bottom: 2px solid rgb(92, 124, 199)">
           Destinatario <span class="variable">{{RECEIVED_NAME}}</span>
         </p>
       </div>
@@ -251,7 +257,7 @@
 
     <div style="info-text">
       <p>Para conocer el estado exacto de tu solicitud y seguir su proceso en detalle, puedes visitar la sección
-        <span style="font-weight: 600;">"Buscar Solicitud"</span>
+        <a href="{{BASE_URL}}/request/search-request/" class="link-black"><strong>"Buscar Solicitud"</strong></a>
         en la seccion de Centro de Ayuda en nuestra plataforma SwaplyAr.com
       </p>
     </div>
@@ -292,9 +298,9 @@
 
     <section class="confidential-section">
       <p>
-      Este mensaje puede contener información confidencial. No compartas información sobre esta transacción con
-      terceros. Si no eres el destinatario indicado, notifícaselo al remitente de inmediato y borra este correo
-      electronico de tu sistema.
+        Este mensaje puede contener información confidencial. No compartas información sobre esta transacción con
+        terceros. Si no eres el destinatario indicado, notifícaselo al remitente de inmediato y borra este correo
+        electronico de tu sistema.
       </p>
     </section>
 

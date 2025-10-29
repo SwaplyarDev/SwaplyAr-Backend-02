@@ -11,7 +11,8 @@
       margin: 0;
       padding: 0;
       background-color: #f4f4f4;
-      max-width: 447px;
+      max-width: 500px;
+      margin: 0 auto;
     }
 
     .container {
@@ -44,7 +45,6 @@
     .logo {
       width: 200px;
       display: block;
-      margin-left: 10px;
     }
 
     .img-center {
@@ -103,14 +103,10 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 10px;
-      margin: 20px 0;
-    }
+      gap: 20px;
+      margin: 20px auto;
+      max-width: 100%;
 
-    .payment-transfer img {
-      padding-left: 30px;
-      max-height: 50px;
-      height: auto;
     }
 
     .variable {
@@ -153,7 +149,7 @@
       color: #161F33;
       text-align: justify;
       font-family: Roboto, Arial, sans-serif;
-      font-size: 8px;
+      font-size: 10px;
       font-style: normal;
       font-weight: 300;
       line-height: 150%;
@@ -220,10 +216,10 @@
       <h2>Hemos recibido una transferencia en nuestra<br>cuenta</h2>
 
       <div class="payment-transfer">
-        <img src="{{PAYMENT_METHOD_IMG}}" alt="Método de pago enviado" />
+        <img src="{{PAYMENT_METHOD_IMG}}" alt="Método de pago enviado" style="width: auto; height: 50px; margin:0" />
         <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731499521/20_dtcfgk.png" alt="Flecha"
-          style="width: 80px; height: auto; margin-bottom: 0.7em" />
-        <img src="{{PAYMENT_RECEIVED_IMG}}" alt="Método de pago recibido" />
+          style="width: 80px; height: auto; margin:0" />
+        <img src="{{RECEIVED_METHOD_IMG}}" alt="Método de pago recibido" style="width: auto; height: 50px; margin:0" />
       </div>
 
 
@@ -244,10 +240,6 @@
           Monto a Recibir:
           <span class="variable">{{AMOUNT_RECEIVED}} {{RECEIVED_CURRENCY}}</span>
         </p>
-        {{!-- <p>
-          Método de recepción:
-          <span class="variable">{{PAYMENT_METHOD}}</span>
-        </p> --}}
         <p style="border-bottom: 2px solid rgb(92, 124, 199)">
           Destinatario <span class="variable">{{RECEIVED_NAME}}</span>
         </p>
@@ -351,14 +343,6 @@
         </table>
       </nav>
     </footer>
-
-
-
-
-
-
-
-
     <div class="blue-border"></div>
   </div>
 </body>

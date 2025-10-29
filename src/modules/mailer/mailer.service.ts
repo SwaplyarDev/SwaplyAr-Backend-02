@@ -6,6 +6,10 @@ import { join } from 'path';
 import { AdminStatus } from 'src/enum/admin-status.enum';
 import Handlebars from 'handlebars';
 
+Handlebars.registerHelper('eq', function (a, b) {
+  return a === b;
+});
+
 @Injectable()
 export class MailerService {
   private readonly logger = new Logger(MailerService.name);
@@ -222,7 +226,7 @@ export class MailerService {
     const receiver = transaction.receiverAccount ?? {};
     const amount = transaction.amount ?? {};
 
-    return {
+    const templateData = {
       REFERENCE_NUMBER: transaction.id?.slice(0, 8)?.toUpperCase() ?? '',
       TRANSACTION_ID: transaction.id,
       NAME: sender.firstName ?? '',
@@ -231,7 +235,7 @@ export class MailerService {
       EMAIL: sender.createdBy ?? '',
       AMOUNT_SENT: amount.amountSent ?? 0,
       SENT_CURRENCY: amount.currencySent ?? '',
-      PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
+      PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',      
       PAYMENT_METHOD_IMG: this.getPaymentMethodImg(
         sender.paymentMethod?.method ?? '',
         amount.currencySent ?? '',
@@ -239,10 +243,23 @@ export class MailerService {
       AMOUNT_RECEIVED: amount.amountReceived ?? 0,
       RECEIVED_CURRENCY: amount.currencyReceived ?? '',
       RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`.trim(),
+      RECEIVED_METHOD: receiver.paymentMethod?.method ?? 'No especificado',
+      RECEIVED_METHOD_IMG: this.getPaymentMethodImg(
+        receiver.paymentMethod?.method ?? '',
+        amount.currencyReceived ?? '',
+      ),
       BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
       DATE_HOUR: new Date().toLocaleString('es-AR'),
       MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
     };
+
+    
+    if (receiver.paymentMethod?.method === 'pix') {
+      templateData['PIX_KEY'] = receiver.pixKey ?? '';
+      templateData['CPF'] = receiver.cpf ?? '';
+    }
+
+    return templateData;
   }
 
   private buildReviewPaymentTemplateData(transaction: any): Record<string, any> {

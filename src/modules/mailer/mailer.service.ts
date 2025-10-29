@@ -252,22 +252,22 @@ export class MailerService {
   private getPaymentMethodImg(method: string, currency: string): string {
     const map: Record<string, string> = {
       paypal_usd:
-        'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224913/paypal.big_phrzvb.png',
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677907/ppcom_1_qenolt.png',
       paypal_default:
-        'https://res.cloudinary.com/dwrhturiy/image/upload/v1726600628/paypal.dark_lgvm7j.png',
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677907/ppcom_1_1_kwexmd.png',
       payoneer_usd:
-        'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224899/payoneer.usd.big_djd07t.png',
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677904/Frame_14_1_co6gfi.png',
       payoneer_eur:
-        'https://res.cloudinary.com/dwrhturiy/image/upload/v1725224887/payoneer.eur.big_xxdjxd.png',
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677981/Frame_14_3_ir23zl.png',
       bank_default:
-        'https://res.cloudinary.com/dwrhturiy/image/upload/v1725223550/banco.medium_vy2eqp.webp',
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677641/Frame_11_izy6ra.png',
       wise_usd:
-        'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225432/wise.usd.big_yvnpez.png',
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677904/New_Wise_USD_Claro_f1dt7a.png',
       wise_eur:
-        'https://res.cloudinary.com/dwrhturiy/image/upload/v1725225416/wise.eur.big_etdolw.png',
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677905/New_Wise_EUR_Claro_ckwcsi.png',
       tether_default:
-        'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329683/TetherLight_jkyojt.png',
-      pix_default: 'https://res.cloudinary.com/dwrhturiy/image/upload/v1745329734/Pix1_lib603.png',
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677905/New_Tether_Claro_zxxqqz.png',
+      pix_default: 'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677907/layer1_dw5lwr.png',
     };
     return map[`${method}_${currency.toLowerCase()}`] ?? map[`${method}_default`] ?? '';
   }

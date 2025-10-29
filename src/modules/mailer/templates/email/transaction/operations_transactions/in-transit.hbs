@@ -103,15 +103,12 @@
 
     {{!-- Bloque que muestra el logo del método de pago si existe --}}
     {{#if PAYMENT_METHOD_IMG}}
-      <div style="text-align: center; margin-top: 20px;">
+      <div style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
         <img 
           src="{{PAYMENT_METHOD_IMG}}" 
           alt="Logo {{PAYMENT_METHOD}}" 
           style="width: 120px; height: auto; display: inline-block;"
         />
-        <p style="font-size: 14px; color: #555; margin-top: 8px;">
-          Método de pago: {{PAYMENT_METHOD}}
-        </p>
       </div>
     {{/if}}
 

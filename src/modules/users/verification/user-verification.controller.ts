@@ -18,7 +18,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiOperation,
-  ApiResponse,
+  ApiCreatedResponse,
   ApiBearerAuth,
   ApiConsumes,
   ApiBody,
@@ -35,9 +35,17 @@ import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { VerificationStatus } from '../entities/user-verification.entity';
 import { UserVerificationService } from './user-verification.service';
-import { UploadFilesDto } from '@users/dto/create-user-verification.dto';
+import { UploadFilesDto } from '@users/verification/dto/create-user-verification.dto';
 import { VerificationFilesInterceptor } from '@users/interceptors/verification-files.interceptor';
-import { UpdateVerificationResponseDto } from '@users/dto/update-verification-response.dto';
+import { UpdateVerificationResponseDto } from '@users/verification/dto/update-verification-response.dto';
+import { UpdateVerificationDto } from './dto/update-verification.dto';
+import {
+  UploadFilesExtendedResponseDto,
+  UploadFilesResponseDto,
+} from './dto/upload-files-response.dto';
+import { VerificationStatusResponseDto } from './dto/verification-status-response.dto';
+import { VerificationResponseDto } from './dto/verification-response.dto';
+import { DeleteVerificationResponseDto } from './dto/delete-verification-response.dto';
 @Controller('verification')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -54,27 +62,9 @@ export class UserVerificationController {
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: UploadFilesDto })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
+  @ApiCreatedResponse({
     description: 'Documentos subidos exitosamente',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: {
-          type: 'string',
-          example:
-            'Imágenes de verificación subidas correctamente. Su verificación está pendiente de revisión.',
-        },
-        data: {
-          type: 'object',
-          properties: {
-            verification_id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
-            verification_status: { type: 'string', example: 'pending' },
-          },
-        },
-      },
-    },
+    type: UploadFilesResponseDto,
   })
   @ApiNotFoundResponse({ description: 'Usuario no encontrado.' })
   @ApiConflictResponse({
@@ -111,23 +101,9 @@ export class UserVerificationController {
     summary: 'Consultar estado de verificación',
     description: 'Permite a un usuario consultar el estado actual de su verificación.',
   })
-  @ApiResponse({
-    status: HttpStatus.OK,
+  @ApiOkResponse({
     description: 'Estado de verificación obtenido correctamente',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        data: {
-          type: 'object',
-          properties: {
-            verification_id: { type: 'string', example: 'abc123' },
-            status: { type: 'string', example: 'pending' },
-            submitted_at: { type: 'string', format: 'date-time' },
-          },
-        },
-      },
-    },
+    type: VerificationStatusResponseDto,
   })
   @ApiUnauthorizedResponse({
     description: 'No autorizado. Token no válido o no enviado.',
@@ -161,27 +137,9 @@ export class UserVerificationController {
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: UploadFilesDto })
-  @ApiResponse({
-    status: HttpStatus.OK,
+  @ApiOkResponse({
     description: 'Documentos re-subidos exitosamente',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: {
-          type: 'string',
-          example:
-            'Imágenes de verificación re-subidas correctamente. Su verificación está pendiente de revisión.',
-        },
-        data: {
-          type: 'object',
-          properties: {
-            verification_id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
-            verification_status: { type: 'string', example: 'pending' },
-          },
-        },
-      },
-    },
+    type: UploadFilesResponseDto,
   })
   @ApiNotFoundResponse({
     description: 'No se encontró una verificación existente para este usuario.',
@@ -216,44 +174,9 @@ export class UserVerificationController {
     description:
       'Permite a los administradores obtener el detalle completo de una verificación por su ID.',
   })
-  @ApiResponse({
-    status: HttpStatus.OK,
+  @ApiOkResponse({
     description: 'Verificación obtenida correctamente',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Verificación obtenida correctamente' },
-        data: {
-          type: 'object',
-          properties: {
-            id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
-            user_id: { type: 'string', example: 'bb34d516-4866-4302-8d4b-c3e22a2ca64b' },
-            documents: {
-              type: 'object',
-              properties: {
-                front: { type: 'string', example: 'https://.../front.png' },
-                back: { type: 'string', example: 'https://.../back.png' },
-                selfie: { type: 'string', example: 'https://.../selfie.png' },
-              },
-            },
-            verification_status: { type: 'string', example: 'pending' },
-            note_rejection: { type: 'string', example: null },
-            submitted_at: {
-              type: 'string',
-              format: 'date-time',
-              example: '2025-08-22T01:31:43.733Z',
-            },
-            updated_at: {
-              type: 'string',
-              format: 'date-time',
-              example: '2025-08-22T01:35:05.634Z',
-            },
-            verified_at: { type: 'string', format: 'date-time', example: null },
-          },
-        },
-      },
-    },
+    type: VerificationResponseDto,
   })
   @ApiNotFoundResponse({
     description: 'Verificación no encontrada para el ID proporcionado',
@@ -320,29 +243,7 @@ export class UserVerificationController {
     description: 'ID de la verificación a actualizar (UUID)',
     type: 'string',
   })
-  @ApiBody({
-    description: 'Datos para actualizar el estado de la verificación',
-    required: true,
-    schema: {
-      type: 'object',
-      required: ['status'],
-      properties: {
-        status: {
-          type: 'string',
-          enum: ['verified', 'rejected', 'resend-data'],
-          description: 'Nuevo estado de la verificación',
-          example: 'verified',
-        },
-        note_rejection: {
-          type: 'string',
-          description:
-            'Motivo del rechazo (obligatorio solo si status es "rejected o "resend-data")',
-          example: 'Documento ilegible o dañado',
-          nullable: true,
-        },
-      },
-    },
-  })
+  @ApiBody({ type: UpdateVerificationDto })
   @ApiOkResponse({
     description: 'Verificación actualizada correctamente',
     type: UpdateVerificationResponseDto,
@@ -414,16 +315,7 @@ export class UserVerificationController {
   })
   @ApiOkResponse({
     description: 'Verificación eliminada correctamente',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: {
-          type: 'string',
-          example: 'Verificación eliminada correctamente',
-        },
-      },
-    },
+    type: DeleteVerificationResponseDto,
   })
   @ApiNotFoundResponse({
     description: 'No se encontró la verificación con el ID especificado',
@@ -451,26 +343,9 @@ export class UserVerificationController {
     description:
       'Permite a un usuario cambiar el estado de su verificación de RECHAZADO a REENVIAR DATOS para poder re-subir documentos.',
   })
-  @ApiResponse({
-    status: HttpStatus.OK,
+  @ApiOkResponse({
     description: 'Solicitud de reenvío registrada correctamente',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: {
-          type: 'string',
-          example: 'Solicitud de reenvío de datos registrada correctamente',
-        },
-        data: {
-          type: 'object',
-          properties: {
-            verification_id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
-            verification_status: { type: 'string', example: 'resend-data' },
-          },
-        },
-      },
-    },
+    type: UploadFilesResponseDto,
   })
   @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
   @ApiForbiddenResponse({ description: 'Autorización solo para usuarios' })
@@ -517,24 +392,9 @@ export class UserVerificationController {
     description:
       'Si la verificación del usuario autenticado se encuentra en estado APROBADO, se marcará al usuario como validado (userValidated = true).',
   })
-  @ApiResponse({
-    status: HttpStatus.OK,
+  @ApiOkResponse({
     description: 'Usuario marcado como verificado correctamente',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Usuario verificado correctamente' },
-        data: {
-          type: 'object',
-          properties: {
-            verification_id: { type: 'string', example: '9e643d5d-174e-4c0c-973d-886ddc61b4fd' },
-            verification_status: { type: 'string', example: 'approved' },
-            userValidated: { type: 'boolean', example: true },
-          },
-        },
-      },
-    },
+    type: UploadFilesExtendedResponseDto,
   })
   @ApiUnauthorizedResponse({ description: 'No autorizado. Token no válido o no enviado.' })
   @ApiForbiddenResponse({ description: 'Autorización solo para usuarios' })

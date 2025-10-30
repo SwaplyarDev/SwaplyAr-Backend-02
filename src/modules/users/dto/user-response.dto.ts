@@ -14,8 +14,6 @@ export class UserLocationDto {
   postalCode: string;
 
   @ApiProperty({
-    type: 'string', // fuerza a Swagger a tratarlo como string
-    format: 'date-time', // formato ISO
     example: '2025-09-24T00:00:00.000Z',
   })
   date: Date;
@@ -54,24 +52,15 @@ export class SocialsDto {
 }
 
 export class UserResponseDto {
-  @ApiProperty({ example: 'd8e5fcb1-cf4b-4de9-823a-b075dfadaca2' })
+  @ApiProperty({ example: 'd8e5fcb1-cf4b-4de9-823a-b075dfadaca22' })
   id: string;
 
   @ApiProperty({
-    type: [UserLocationDto],
-    example: [
-      {
-        id: '1a5bcb6c-2f9a-4677-b51e-9ee2fc295a5d',
-        country: 'Colombia',
-        department: 'Antioquia',
-        postalCode: '050021',
-        date: '2025-09-24T00:00:00.000Z',
-      },
-    ],
+    type: UserLocationDto,
   })
   locations: UserLocationDto[];
 
-  @ApiProperty({ example: 'user' })
+  @ApiProperty({ example: 'admin' })
   role: string;
 
   @ApiProperty({ example: true })
@@ -97,7 +86,7 @@ export class ProfileResponseDto {
   @ApiProperty({ example: '3305af05-9a75-46b7-8f82-1cdd10af47de' })
   id: string;
 
-  @ApiProperty({ type: UserResponseDto })
+  @ApiProperty({ type: () => UserResponseDto })
   user: UserResponseDto;
 
   @ApiProperty({ example: 'Nahuel' })

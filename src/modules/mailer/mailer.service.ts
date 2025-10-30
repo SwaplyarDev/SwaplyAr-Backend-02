@@ -254,9 +254,11 @@ export class MailerService {
     };
 
     
-    if (receiver.paymentMethod?.method === 'pix') {
-      templateData['PIX_KEY'] = receiver.pixKey ?? '';
-      templateData['CPF'] = receiver.cpf ?? '';
+    if (receiver.paymentMethod?.method === 'pix' || templateData.RECEIVED_METHOD_IMG ===
+    'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677907/layer1_dw5lwr.png') 
+    {
+      templateData['PIX_KEY'] = receiver.paymentMethod?.pixKey ?? '';
+      templateData['CPF'] = receiver.paymentMethod?.cpf ?? '';
     }
 
     return templateData;

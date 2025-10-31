@@ -22,7 +22,7 @@ export class UsersService {
     private profileRepository: Repository<UserProfile>,
     @InjectRepository(UserSocials)
     private socialsRepository: Repository<UserSocials>,
-  ) { }
+  ) {}
 
   // private generateUserCode(): string {
   //   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -44,7 +44,6 @@ export class UsersService {
 
   //   return code;
   // }
-
 
   async register(userDto: RegisterUserDto): Promise<User> {
     try {
@@ -115,5 +114,3 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 }
-
-

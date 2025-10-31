@@ -28,7 +28,7 @@
     }
 
     .header {
-      padding: 10px;
+      padding: 0 10px;
       text-align: left;
     }
 
@@ -68,15 +68,12 @@
   <div class="container">
     <section class="blue-border"></section>
     <!-- Header -->
-    <div class="header" style="text-align: right; font-size: 12px; color: #9A9EA6">
-    {{MODIFICATION_DATE}} 
-    <span style="margin-left: 8px; font-size: 12px; color: rgba(203, 196, 188);">
-    {{DATE_HOUR}}
-    </span>
+    <div class="header" style="text-align: right; font-size: 8px; weight: 400; color: #9A9EA6">
+      @2024 SwaplyAr | Group OA.
     </div>
     <div class="header">
       <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" alt="SwaplyAr Logotipo"
-        style="width: 250px ;margin: 20px 20px" />
+        style="width: 200px ;margin: 20px 20px" />
     </div>
 
     <!-- Main Content -->
@@ -87,7 +84,7 @@
 
     <div style="padding-bottom: 10px" class="info">
       <div style="width:420px; font-size: 20px; margin: 0 auto; color: black ">
-        Solicitud <strong style="color: #012A8E; font-weight: 600 ;font-size: 20px;"> #{{REFERENCE_NUMBER}}</strong> se modificó con éxito
+        Solicitud <strong style="color: #012A8E; font-weight: 600; font-size: 20px;"> #{{REFERENCE_NUMBER}}</strong> se modificó con éxito
         </br> ahora sigue su flujo
       </div>
     </div>
@@ -97,8 +94,8 @@
       <p>Nombre y apellido:<span style="float: right; font-weight:lighter; color:#292b2e">{{NAME}} {{LAST_NAME}}</span></p>
       <p>N° Teléfono: <span style="float: right; color:#292b2e ;">{{PHONE_NUMBER}}</span></p>
       <p>Monto Enviado:<span style="float: right; color:#292b2e;">{{AMOUNT_SENT}} {{SENT_CURRENCY}}</span></p>
-      <p>Medio de Pago<span style="float: right; color:#292b2e  ">{{PAYMENT_METHOD}}</span></p>
       <p>Monto a Recibir:<span style="float: right; color:#292b2e;">{{AMOUNT_RECEIVED}} {{RECEIVED_CURRENCY}}</span></p>
+      <p>Medio de Pago<span style="float: right; color:#292b2e  ">{{PAYMENT_METHOD}}</span></p>
       <p style="border-bottom: 1px solid #1b56ec">Destinatario: <span style="float: right; color:#292b2e; ">{{RECEIVED_NAME}}</span></p>
     </div>
 
@@ -137,6 +134,15 @@
       </table>
     </nav>
 
+    <section style="text-align: justify; width: 430px; margin: 0 auto; font-size: 8px; color: #888;">
+      <p style="font-size: 12px;">
+        Este mensaje puede contener información confidencial. No compartas información sobre esta transacción con
+        terceros.
+        Si no eres el destinatario indicado, notifícaselo al remitente de inmediato y borra este correo electrónico de
+        tu sistema.
+      </p>
+    </section>
+
     <!-- Footer -->
     <section>
       <table align="center" cellpadding="0" cellspacing="0" role="presentation"
@@ -166,29 +172,30 @@
             <td align="center">
               <a href="https://www.linkedin.com/company/swaplyar/" style="text-decoration: none">
                 <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/linkedin_jhsarf.png"
-                  alt="Logo Linkedin" style="width: 28px; height: auto; margin-left: 10px" />
+                  alt="Logo Linkedin" style="width: 20px; height: auto" />
               </a>
               <a href="https://www.instagram.com/swaplyar/" style="text-decoration: none">
                 <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330494/instagram_ihxf7s.png"
-                  alt="Logo Instagram" style="width: 28px; height: auto; margin-left: 10px" />
+                  alt="Logo Instagram" style="width: 20px; height: auto; margin-left: 10px" />
               </a>
               <a href="" style="text-decoration: none">
                 <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330493/facebook_cqn0dm.png"
-                  alt="Logo Facebook" style="width: 28px; height: auto; margin-left: 10px" />
+                  alt="Logo Facebook" style="width: 20px; height: auto; margin-left: 10px" />
               </a>
               <a href="https://api.whatsapp.com/send?phone=5491123832198" style="text-decoration: none">
                 <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1731330495/whatsapp_ji3tfh.png"
-                  alt="Logo WhatsApp" style="width: 28px; height: auto; margin-left: 10px" />
+                  alt="Logo WhatsApp" style="width: 20px; height: auto; margin-left: 10px" />
               </a>
             </td>
           </tr>
-
+          <tr>
+            <td align="right" style="font-size: 8px; weight: 400; color: #9A9EA6">
+              {{DATE_HOUR}}
+            </td>
+          </tr>
         </table>
       </nav>
-    </footer>
-              <div style="margin-top:25px; margin-left:300px">© 2024 SwaplyAr | Group OA</div> 
-
-          
+    </footer>  
           
     <section style="margin-top:5px" class="blue-border"></section>
   </div>

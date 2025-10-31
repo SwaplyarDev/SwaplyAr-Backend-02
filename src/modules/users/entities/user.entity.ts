@@ -22,16 +22,15 @@ import { UserAccount } from 'src/modules/userAccounts/entities/user-account.enti
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
 import { customAlphabet } from 'nanoid';
- 
+
 export const nanoidCustom = customAlphabet(
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
   8,
 );
 
-
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid', { name: 'user_id'})
+  @PrimaryGeneratedColumn('uuid', { name: 'user_id' })
   id: string;
 
   @Exclude()
@@ -103,10 +102,10 @@ export class User {
   termsAccepted: boolean;
 
   @BeforeInsert()
-    generateMemberCode() {
-      this.memberCode = nanoidCustom(); // genera un string de 8 caracteres sin "-" ni "_"
-    } 
-  
+  generateMemberCode() {
+    this.memberCode = nanoidCustom(); // genera un string de 8 caracteres sin "-" ni "_"
+  }
+
   @Column({
     name: 'member_code',
     type: 'varchar',

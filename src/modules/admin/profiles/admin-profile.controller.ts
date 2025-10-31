@@ -1,5 +1,6 @@
 import { AdminRoleGuard } from '@common/guards/admin-role.guard';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
+import { GetAdminProfilesQueryDto } from '@admin/profiles/dto/admin-profile-response.dto';
 import {
   BadRequestException,
   Controller,
@@ -15,13 +16,22 @@ import {
   Body,
   NotFoundException,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { UserProfile } from '@users/entities/user-profile.entity';
+import { 
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { ProfileService } from '@users/profile/profile.service';
 import { AdminProfileService } from './admin-profile.service';
 import { UpdateAdminProfileDto } from '@admin/profiles/dto/update-admin-profile.dto';
 import { AdminProfileResponseDto } from '@admin/profiles/dto/admin-profile-response.dto';
 import { UpdateAdminProfileResponseDto } from '@admin/profiles/dto/update-admin-profile-response.dto';
+import { ApiQuery, ApiOkResponse } from '@nestjs/swagger';
+import { VerificationStatus } from '@users/entities/user-verification.entity';
+import { AdminProfileSearchResponseDto } from './dto/admin-profile-search-response.dto';
 
 @ApiTags('Perfiles (Admin)')
 @Controller('admin/profiles')
@@ -38,17 +48,39 @@ export class AdminProfileController {
    * Lista todos los perfiles de usuarios.
    */
   @Get()
-  @ApiOperation({ summary: 'Listar todos los perfiles de usuario (solo admin)' })
-  @ApiResponse({
-    status: 200,
+  @ApiOperation({
+    summary: 'Listar perfiles de usuario por estado de verificación (solo admin)',
+    description:
+      'Permite a los administradores listar perfiles de usuario filtrando por estado de verificación (PENDIENTE, APROBADO, RECHAZADO, REENVIAR_DATOS).',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: VerificationStatus,
+    description: 'Filtrar por estado de verificación',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Número de página',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Cantidad de resultados por página',
+    example: 10,
+  })
+  @ApiOkResponse({
     description: 'Listado de perfiles de usuario',
     type: AdminProfileResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
-  @ApiResponse({ status: 403, description: 'No autorizado, Solo para Administradores' })
-  async findAll() {
-    const profiles = await this.adminProfileService.findAll();
-
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
+  @ApiForbiddenResponse({ description: 'No autorizado, Solo para Administradores' })
+  async findAll(@Query() query: GetAdminProfilesQueryDto) {
+    const profiles = await this.adminProfileService.findAll(query.status, query.page, query.limit);
     return profiles;
   }
 
@@ -58,52 +90,13 @@ export class AdminProfileController {
    */
   @Get('by-id')
   @ApiOperation({ summary: 'Obtener perfil de usuario por ID (solo admin)' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Perfil encontrado',
-    schema: {
-      example: {
-        message: 'Perfil obtenido correctamente',
-        result: {
-          id: 'e997eb7b-dc81-4a3b-91f4-784bd76da2d2',
-          user: {
-            id: 'f3282e57-aaa6-4263-9b17-7db1992d4d76',
-            locations: [
-              {
-                id: 'ea5af371-d47f-4f8e-8771-05f1234446ac',
-                country: 'Colombia',
-                department: 'Bogota',
-                postalCode: '007111',
-                date: '2025-09-25T00:00:00.000Z',
-              },
-            ],
-            role: 'admin',
-            termsAccepted: true,
-            createdAt: '2025-09-25T14:42:52.378Z',
-            validatedAt: null,
-            isActive: true,
-            isValidated: false,
-            userValidated: false,
-          },
-          firstName: 'Jonhatan',
-          lastName: 'Pérez',
-          nickName: 'JPDev',
-          email: 'jacpman1992@gmail.com',
-          identification: null,
-          phone: '+573001112233',
-          birthday: null,
-          age: null,
-          gender: 'M',
-          lastActivity: null,
-          socials: null,
-          profilePictureUrl: null,
-        },
-      },
-    },
+    type: AdminProfileSearchResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
-  @ApiResponse({ status: 403, description: 'No autorizado, Solo para Administradores' })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
+  @ApiForbiddenResponse({ description: 'No autorizado, Solo para Administradores' })
+  @ApiNotFoundResponse({ description: 'Usuario no encontrado' })
   async findById(@Query('userId') userId: string) {
     if (!userId) {
       throw new UnauthorizedException('Id de usuario no existe');
@@ -129,52 +122,13 @@ export class AdminProfileController {
    */
   @Get('by-email')
   @ApiOperation({ summary: 'Obtener perfil de usuario por email (solo admin)' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Perfil encontrado',
-    schema: {
-      example: {
-        message: 'Perfil obtenido correctamente',
-        result: {
-          id: 'e997eb7b-dc81-4a3b-91f4-784bd76da2d2',
-          user: {
-            id: 'f3282e57-aaa6-4263-9b17-7db1992d4d76',
-            locations: [
-              {
-                id: 'ea5af371-d47f-4f8e-8771-05f1234446ac',
-                country: 'Colombia',
-                department: 'Bogota',
-                postalCode: '007111',
-                date: '2025-09-25T00:00:00.000Z',
-              },
-            ],
-            role: 'admin',
-            termsAccepted: true,
-            createdAt: '2025-09-25T14:42:52.378Z',
-            validatedAt: null,
-            isActive: true,
-            isValidated: false,
-            userValidated: false,
-          },
-          firstName: 'Jonhatan',
-          lastName: 'Pérez',
-          nickName: 'JPDev',
-          email: 'jacpman1992@gmail.com',
-          identification: null,
-          phone: '+573001112233',
-          birthday: null,
-          age: null,
-          gender: 'M',
-          lastActivity: null,
-          socials: null,
-          profilePictureUrl: null,
-        },
-      },
-    },
+    type: AdminProfileSearchResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
-  @ApiResponse({ status: 403, description: 'No autorizado, Solo para Administradores' })
-  @ApiResponse({ status: 404, description: 'Email del usuario no encontrado' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
+  @ApiForbiddenResponse({ description: 'No autorizado, Solo para Administradores' })
+  @ApiForbiddenResponse({ description: 'Email del usuario no encontrado' })
   async findByEmail(@Query('email') email: string) {
     if (!email) {
       throw new UnauthorizedException('El email es requerido');
@@ -200,15 +154,14 @@ export class AdminProfileController {
    */
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar datos de un perfil (solo admin)' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Perfil actualizado correctamente',
     type: UpdateAdminProfileResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Campos inválidos o no se enviaron' })
-  @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
-  @ApiResponse({ status: 403, description: 'No autorizado, solo para administradores' })
-  @ApiResponse({ status: 404, description: 'Perfil no encontrado' })
+  @ApiBadRequestResponse({ description: 'Campos inválidos o no se enviaron' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
+  @ApiForbiddenResponse({ description: 'No autorizado, solo para administradores' })
+  @ApiNotFoundResponse({ description: 'Perfil no encontrado' })
   async updateProfile(
     @Param('profileId') profileId: string,
     @Body() updateProfileDto: UpdateAdminProfileDto,
@@ -228,9 +181,9 @@ export class AdminProfileController {
    */
   @Delete()
   @ApiOperation({ summary: 'Eliminar perfil de usuario (solo admin)' })
-  @ApiResponse({ status: 200, description: 'Perfil eliminado correctamente' })
-  @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
-  @ApiResponse({ status: 403, description: 'No autorizado, Solo para Administradores' })
+  @ApiOkResponse({ description: 'Perfil eliminado correctamente' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
+  @ApiForbiddenResponse({ description: 'No autorizado, Solo para Administradores' })
   async deleteProfile(@Query('userId') userId: string) {
     if (!userId) {
       throw new BadRequestException('El ID del usuario es requerido');

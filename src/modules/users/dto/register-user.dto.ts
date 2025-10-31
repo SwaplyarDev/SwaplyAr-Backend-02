@@ -14,7 +14,7 @@ export class RegisterUserDto {
 
   @Transform(({ value, obj }) => value ?? obj.last_name)
   @Matches(/^[a-zA-ZÀ-ÿ\u00f1\u00d1 ]+$/, {
-    message: 'El nombre solo puede contener letras',
+    message: 'El apellido solo puede contener letras',
   })
   @IsNotEmpty()
   @IsString()
@@ -40,7 +40,7 @@ export class RegisterUserDto {
   termsAccepted: boolean;
 }
 
-export class UserResponseDto {
+export class RegisterUserResponseDto {
   @ApiProperty({
     description: 'Identificador único del usuario',
     example: '5b3df863-30c1-4275-9450-fc1945ef73d8',
@@ -63,13 +63,13 @@ export class UserResponseDto {
     description: 'Fecha de creación del usuario',
     example: '2025-08-25T12:58:49.259Z',
   })
-  createdAt: string;
+  createdAt: Date;
 
   @ApiProperty({
     description: 'Fecha de validación del usuario, si aplica',
     example: null,
   })
-  validatedAt: string | null;
+  validatedAt: Date | null;
 
   @ApiProperty({
     description: 'Indica si el usuario está activo',

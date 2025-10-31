@@ -68,12 +68,12 @@
     <section class="blue-border"></section>
 
     <!-- Header -->
-    <div class="header" style="text-align: right; font-size: 12px; color: #888">
-      @{{MODIFICATION_DATE}} SwaplyAr | Group OA
+    <div class="header" style="text-align: right; font-size: 8px; weight: 400; color: #9A9EA6">
+      @2024 SwaplyAr | Group OA
     </div>
     <div class="header">
       <img src="https://res.cloudinary.com/dwrhturiy/image/upload/v1725224666/logo_csfkx6.png" 
-           alt="SwaplyAr Logotipo" style="width: 170px" />
+           alt="SwaplyAr Logotipo" style="width: 200px" />
     </div>
 
     <!-- Main Content -->
@@ -96,23 +96,21 @@
       <p>Monto Enviado:<span style="float: right;">{{AMOUNT_SENT}} {{SENT_CURRENCY}}</span></p>
       <p>Monto a Recibir:<span style="float: right;">{{AMOUNT_RECEIVED}} {{RECEIVED_CURRENCY}}</span></p>
       <p>Medio de Pago: <span style="float: right;">{{PAYMENT_METHOD}}</span></p>
+      <div style="border-top: 1px solid rgb(92, 124, 199); width: 100%;"></div>
     </div>
 
-    <section style="text-align: center; width: 100%">
+    <section style="text-align: center; width: 100%; margin-top: 40px;">
       <a href="{{BASE_URL}}" style="color: white" class="cta-button">SwaplyAr.com</a>
     </section>
 
-    <!-- Links -->
     <nav>
-      <table role="presentation" style="border-top: 1px solid rgb(92, 124, 199);
-                                        font-size: 18px; text-align: left; padding-left: 20px;
-                                        color: black; width: 410px;">
+      <table align="center" role="presentation" style="border-top: 1px solid rgb(92, 124, 199); font-size: 18px; text-align: center;color: black; width: 85%;">
         <tr>
-          <td style="padding-right: 20px; padding-left: 89px; padding-top: 12px">
+          <td style="padding-right: 0px; padding-left: 0px; padding-top: 12px; text-align: center; vertical-align: middle;">
             <a href="{{BASE_URL}}/info/help-center" style="color: black; text-decoration: none">Contáctanos</a>
           </td>
           <td style="width: 1px; background-color: rgb(92, 124, 199);"></td>
-          <td style="padding-left: 20px; padding-top: 12px">
+          <td style="padding-right: 0px; padding-left: 0px; padding-top: 12px; text-align: center; vertical-align: middle;">
             <a href="{{BASE_URL}}/info/terms-and-conditions" style="color: black; text-decoration: none">Avisos Legales</a>
           </td>
         </tr>
@@ -120,7 +118,7 @@
     </nav>
 
     <section style="text-align: justify; width: 430px; margin: 0 auto; font-size: 8px; color: #888;">
-      <p style="font-size: 8px;">
+      <p style="font-size: 12px;">
         Este mensaje puede contener información confidencial. No compartas información sobre esta transacción con terceros. 
         Si no eres el destinatario indicado, notifícaselo al remitente de inmediato y borra este correo electrónico de tu sistema.
       </p>
@@ -166,7 +164,7 @@
             </td>
           </tr>
           <tr>
-            <td style="font-size: 10px; color: rgba(203, 196, 188)">
+            <td align="right" style="font-size: 8px; weight: 400; color: #9A9EA6">
               {{DATE_HOUR}}
             </td>
           </tr>

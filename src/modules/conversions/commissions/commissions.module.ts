@@ -6,7 +6,7 @@ import { CommissionsController } from './controllers/commissions.controller';
 import { CommissionsService } from './services/commissions.service';
 import { DynamicCommissionsModule } from 'src/modules/dynamic-commissions/dynamicCommissions.module';
 import { DynamicCommission } from 'src/modules/dynamic-commissions/entities/dynamicCommissions.entity';
-import { CommissionsGateway } from './gateway/commissions.gateway';
+import { CommissionsGateway } from './gateways/commissions.gateway';
 
 @Module({
   imports: [

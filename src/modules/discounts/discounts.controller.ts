@@ -130,54 +130,7 @@ export class DiscountsController {
     await this.discountService.deleteUserDiscount(id);
     return { data: undefined };
   }
-
-  /*
-   *  RECOMPENSAS
-   */
-  @Put('update-star')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
-  @ApiOperation({ summary: 'Actualizar recompensas de usuario (estrellas)' })
-  @ApiOkResponse({
-    description: 'Recompensa actualizada, devuelve true si se completó un ciclo',
-    schema: {
-      example: {
-        data: {
-          cycleCompleted: true,
-          ledger: {
-            /* estructura del ledger */
-          },
-          message: 'Has completado un ciclo',
-        },
-      },
-      properties: {
-        data: {
-          type: 'object',
-          properties: {
-            cycleCompleted: { type: 'boolean' },
-            ledger: { type: 'object' },
-            message: { type: 'string' },
-          },
-        },
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
-  @HttpCode(HttpStatus.OK)
-  async updateStar(
-    @Body() dto: UpdateStarDto,
-    @User() user: UserEntity,
-  ): Promise<
-    DataResponse<{
-      cycleCompleted: boolean;
-      ledger: UserRewardsLedger;
-      message?: string;
-    }>
-  > {
-    const result = await this.discountService.updateStars(dto, user.id);
-    return { data: result };
-  }
-
+  
   @Get('stars')
   @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({

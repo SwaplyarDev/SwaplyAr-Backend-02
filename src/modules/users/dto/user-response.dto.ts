@@ -21,6 +21,38 @@ export class UserLocationDto {
   date: Date;
 }
 
+export class SocialsDto {
+  @ApiProperty({ example: 'e45ca483-76fb-47df-b5ce-295b4bddbf70' })
+  id: string;
+
+  @ApiProperty({ example: '+5731134334567' })
+  whatsappNumber: string;
+
+  @ApiProperty({ example: 'https://facebook.com/user' })
+  facebook: string;
+
+  @ApiProperty({ example: 'https://instagram.com/user' })
+  instagram: string;
+
+  @ApiProperty({ example: 'https://tiktok.com/@user' })
+  tiktok: string;
+
+  @ApiProperty({ example: 'https://twitter.com/user' })
+  twitterX: string;
+
+  @ApiProperty({ example: 'https://snapchat.com/add/user' })
+  snapchat: string;
+
+  @ApiProperty({ example: 'https://linkedin.com/in/user' })
+  linkedin: string;
+
+  @ApiProperty({ example: 'https://youtube.com/user' })
+  youtube: string;
+
+  @ApiProperty({ example: 'https://pinterest.com/user' })
+  pinterest: string;
+}
+
 export class UserResponseDto {
   @ApiProperty({ example: 'd8e5fcb1-cf4b-4de9-823a-b075dfadaca2' })
   id: string;
@@ -97,6 +129,9 @@ export class ProfileResponseDto {
 
   @ApiProperty({ nullable: true, example: '2025-09-25T14:42:02.386Z' })
   lastActivity: Date | null;
+
+  @ApiProperty({ type: SocialsDto })
+  socials: SocialsDto;
 
   @ApiProperty({ nullable: true, example: 'https://example.com/profile.jpg' })
   profilePictureUrl: string | null;

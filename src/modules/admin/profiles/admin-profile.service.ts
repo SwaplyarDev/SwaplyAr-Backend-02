@@ -1,49 +1,58 @@
 import { UpdateAdminProfileDto } from '@admin/profiles/dto/update-admin-profile.dto';
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserProfile } from '@users/entities/user-profile.entity';
 import { Repository } from 'typeorm';
+import { UserVerification } from '@users/entities/user-verification.entity';
+import { VerificationStatus } from '@users/entities/user-verification.entity';
 
 @Injectable()
 export class AdminProfileService {
   constructor(
     @InjectRepository(UserProfile)
     private readonly profileRepository: Repository<UserProfile>,
+
+    @InjectRepository(UserVerification)
+    private readonly userVerificationRepository: Repository<UserVerification>,
   ) {}
 
-  // Obtener todos los usuarios registrados (ADMIN)
-  async findAll() {
-    const profiles = await this.profileRepository.find({
-      relations: ['user', 'user.locations'],
+  async findAll(status?: VerificationStatus, page: number = 1, limit: number = 10) {
+    const whereCondition = status
+      ? { user: { verifications: { verification_status: status } } }
+      : {};
+
+    const [profiles, total] = await this.profileRepository.findAndCount({
+      where: whereCondition,
+      relations: ['user', 'user.verifications', 'user.locations'],
+      order: { id: 'ASC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
-    if (!profiles || profiles.length === 0) {
-      throw new NotFoundException(`No se encontraron usuarios`);
+    if (!profiles.length) {
+      throw new NotFoundException('No se encontraron usuarios');
     }
 
-    // Mapeo de los datos a la estructura deseada
-    const mappedProfiles = profiles.map((profile) => {
-      return {
-        fechaRegistro: profile.user.createdAt,
-        userId: profile.user.id,
-        profileId: profile.id,
-        nombre: `${profile.firstName} ${profile.lastName}`,
-        email: profile.email,
-        telefono: profile.phone,
-        pais: profile.user.locations?.[0]?.country || null,
-      };
-    });
+    const mappedProfiles = profiles.map((profile) => ({
+      fechaRegistro: profile.user.createdAt,
+      userId: profile.user.id,
+      profileId: profile.id,
+      nombre: `${profile.firstName} ${profile.lastName}`,
+      email: profile.email,
+      telefono: profile.phone,
+      pais: profile.user.locations?.[0]?.country || null,
+      verifications: profile.user.verifications,
+    }));
 
     return {
       message: 'Perfiles obtenidos correctamente',
+      total,
+      page,
+      limit,
       result: mappedProfiles,
     };
   }
+
 
   async updateAdminProfile(profileId: string, updateProfileDto: UpdateAdminProfileDto) {
     const profile = await this.profileRepository.findOne({

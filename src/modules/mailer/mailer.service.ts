@@ -109,7 +109,7 @@ export class MailerService {
         subject: 'Discrepancia en la Transacción',
         file: 'discrepancy.hbs',
       },
-      [AdminStatus.Canceled]: { subject: 'Transacción Cancelada', file: 'canceled.hbs' },
+      [AdminStatus.Cancelled]: { subject: 'Transacción Cancelada', file: 'canceled.hbs' },
       [AdminStatus.Modified]: { subject: 'Transacción Modificada', file: 'modified.hbs' },
       [AdminStatus.Refunded]: { subject: 'Transacción Reembolsada', file: 'refunded.hbs' },
       [AdminStatus.Completed]: { subject: 'Transacción Completada', file: 'completed.hbs' },

@@ -11,10 +11,10 @@ import { Platform } from 'src/enum/platform.enum';
 const mockJwtAuthGuard = { canActivate: jest.fn(() => true) };
 const mockRolesGuard = { canActivate: jest.fn(() => true) };
 const mockAccountsService = {
-  createUserBan: jest.fn(),
-  deleteBankAccount: jest.fn(),
-  findAllByUser: jest.fn(),
-  findAllBanks: jest.fn(),
+  createUserAccountWithFinancial: jest.fn(),
+  deleteUserAccount: jest.fn(),
+  findAllAccount: jest.fn(),
+  findOneUserAccount: jest.fn(),
 };
 
 describe('AccountsController', () => {
@@ -23,27 +23,22 @@ describe('AccountsController', () => {
   const mockRequest = { user: { id: 'user-uuid-123' } };
 
   const createBankAccountDto: CreateUserAccountDto = {
-    userAccValues: {
-      firstName: 'Juan',
-      lastName: 'Pérez',
+    platformId: Platform.Bank,
+    method: 'bank',
+    firstName: 'Juan',
+    lastName: 'Pérez',
+    accountName: 'Cuenta Principal',
+    bank: {
       currency: 'ARS',
-      accountName: 'Cuenta Principal',
-      accountType: Platform.Bank,
+      bankName: 'Banco Nación',
+      sendMethodKey: 'CBU',
+      sendMethodValue: '1234567890123456789012',
+      documentType: 'DNI',
+      documentValue: '87654321',
     },
   };
 
   const deleteDto: DeleteBankAccountDto = { userAccountId: 'bank-uuid-123' };
-
-  const expectCreateUserBankCalled = () => {
-    expect(mockAccountsService.createUserBan).toHaveBeenCalledWith(
-      createBankAccountDto.userAccValues,
-      mockRequest.user.id,
-    );
-  };
-
-  const expectDeleteBankAccountCalled = (id: string) => {
-    expect(mockAccountsService.deleteBankAccount).toHaveBeenCalledWith(mockRequest.user, id);
-  };
 
   beforeEach(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
@@ -57,7 +52,6 @@ describe('AccountsController', () => {
       .compile();
 
     accountsController = moduleRef.get<AccountsController>(AccountsController);
-
     jest.clearAllMocks();
   });
 
@@ -67,24 +61,38 @@ describe('AccountsController', () => {
 
   describe('create', () => {
     it('debería crear una cuenta bancaria y devolver el resultado', async () => {
-      const createdBankAccount = {
-        id: 'bank-uuid-123',
+      const createdAccount = {
+        id: 'account-uuid-1',
         ...createBankAccountDto,
       };
-      mockAccountsService.createUserBan.mockResolvedValue(createdBankAccount);
+
+      const expectedResult = {
+        message: 'Cuenta financiera creada correctamente',
+        bank: createdAccount,
+      };
+
+      mockAccountsService.createUserAccountWithFinancial.mockResolvedValue(createdAccount);
 
       const result = await accountsController.create(mockRequest, createBankAccountDto);
 
-      expectCreateUserBankCalled();
-      expect(mockAccountsService.createUserBan).toHaveBeenCalledTimes(1);
-      expect(result).toEqual({
-        message: 'Banco creado correctamente',
-        bank: createdBankAccount,
-      });
+      expect(result).toEqual(expectedResult);
+      expect(mockAccountsService.createUserAccountWithFinancial).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        expect.objectContaining({
+          platformId: 'bank',
+          method: 'bank',
+          bank: expect.any(Object),
+        }),
+        expect.objectContaining({
+          firstName: 'Juan',
+          lastName: 'Pérez',
+          accountName: 'Cuenta Principal',
+        }),
+      );
     });
 
     it('debería lanzar un error si falla la creación de la cuenta bancaria', async () => {
-      mockAccountsService.createUserBan.mockRejectedValueOnce(
+      mockAccountsService.createUserAccountWithFinancial.mockRejectedValueOnce(
         new BadRequestException('No se pudo crear la cuenta bancaria'),
       );
 
@@ -92,26 +100,27 @@ describe('AccountsController', () => {
         BadRequestException,
       );
 
-      expectCreateUserBankCalled();
-      expect(mockAccountsService.createUserBan).toHaveBeenCalledTimes(1);
+      expect(mockAccountsService.createUserAccountWithFinancial).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('delete', () => {
     it('debería eliminar una cuenta bancaria correctamente', async () => {
-      mockAccountsService.deleteBankAccount.mockResolvedValueOnce({
+      mockAccountsService.deleteUserAccount.mockResolvedValueOnce({
         message: 'Cuenta eliminada correctamente',
       });
 
       const result = await accountsController.delete(mockRequest, deleteDto);
 
-      expectDeleteBankAccountCalled(deleteDto.bankAccountId);
-      expect(mockAccountsService.deleteBankAccount).toHaveBeenCalledTimes(1);
+      expect(mockAccountsService.deleteUserAccount).toHaveBeenCalledWith(
+        mockRequest.user,
+        deleteDto.userAccountId,
+      );
       expect(result).toEqual({ message: 'Cuenta eliminada correctamente' });
     });
 
     it('debería lanzar un error si la cuenta no existe', async () => {
-      mockAccountsService.deleteBankAccount.mockRejectedValueOnce(
+      mockAccountsService.deleteUserAccount.mockRejectedValueOnce(
         new BadRequestException('Cuenta no encontrada o no pertenece al usuario'),
       );
 
@@ -119,32 +128,66 @@ describe('AccountsController', () => {
         BadRequestException,
       );
 
-      expectDeleteBankAccountCalled(deleteDto.bankAccountId);
-      expect(mockAccountsService.deleteBankAccount).toHaveBeenCalledTimes(1);
+      expect(mockAccountsService.deleteUserAccount).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('findAll', () => {
     it('debería devolver todas las cuentas del usuario autenticado', async () => {
       const expectedAccounts = [{ id: 'bank-uuid-123', ...createBankAccountDto }];
-      mockAccountsService.findAllBanks.mockResolvedValue(expectedAccounts);
+      mockAccountsService.findAllAccount.mockResolvedValue(expectedAccounts);
 
       const result = await accountsController.findAll(mockRequest);
 
-      expect(mockAccountsService.findAllBanks).toHaveBeenCalledWith(mockRequest.user.id);
-      expect(mockAccountsService.findAllBanks).toHaveBeenCalledTimes(1);
+      expect(mockAccountsService.findAllAccount).toHaveBeenCalledWith(mockRequest.user.id);
       expect(result).toEqual(expectedAccounts);
     });
 
     it('debería lanzar un error si falla la obtención de las cuentas', async () => {
-      mockAccountsService.findAllBanks.mockRejectedValueOnce(
+      mockAccountsService.findAllAccount.mockRejectedValueOnce(
         new BadRequestException('Error al obtener las cuentas'),
       );
 
       await expect(accountsController.findAll(mockRequest)).rejects.toThrow(BadRequestException);
+    });
+  });
 
-      expect(mockAccountsService.findAllBanks).toHaveBeenCalledWith(mockRequest.user.id);
-      expect(mockAccountsService.findAllBanks).toHaveBeenCalledTimes(1);
+  describe('findOneUserBank', () => {
+    it('debería devolver una cuenta bancaria específica de un usuario', async () => {
+      const userId = 'user-uuid-123';
+      const bankAccountId = 'bank-uuid-456';
+
+      const expectedAccount = {
+        accountName: 'Cuenta Principal',
+        currency: 'USD',
+        status: true,
+        payment_type: 'paypal',
+        details: [
+          {
+            account_id: bankAccountId,
+            email_account: 'juan@example.com',
+            transfer_code: 'XYZ123',
+          },
+        ],
+      };
+
+      mockAccountsService.findOneUserAccount.mockResolvedValue(expectedAccount);
+
+      const result = await accountsController.findOneUserBank(userId, bankAccountId);
+
+      expect(result).toEqual(expectedAccount);
+      expect(mockAccountsService.findOneUserAccount).toHaveBeenCalledWith(userId, bankAccountId);
+    });
+
+    it('debería lanzar un error si la cuenta no se encuentra', async () => {
+      const userId = 'user-uuid-123';
+      const bankAccountId = 'bank-uuid-456';
+
+      mockAccountsService.findOneUserAccount.mockRejectedValue(new Error('Cuenta no encontrada'));
+
+      await expect(accountsController.findOneUserBank(userId, bankAccountId)).rejects.toThrow(
+        'Cuenta no encontrada',
+      );
     });
   });
 });

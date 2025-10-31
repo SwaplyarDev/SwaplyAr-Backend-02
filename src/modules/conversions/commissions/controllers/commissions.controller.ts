@@ -1,5 +1,5 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CommissionsService } from '../services/commissions.service';
 import { CommissionRequestDto } from '../dto/commissions-request.dto';
 import { CommissionResponseDto } from '../dto/commissions-response.dto';
@@ -11,8 +11,7 @@ export class CommissionsController {
 
   @Post()
   @ApiOperation({ summary: 'Calcula la comisión entre dos plataformas o medios de pago.' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     type: CommissionResponseDto,
     description: 'Comisión calculada correctamente.',
   })

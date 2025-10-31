@@ -11,7 +11,14 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse 
+} from '@nestjs/swagger';
 import { AdminDiscountService } from './admin-discount.service';
 import { UserRole } from 'src/enum/user-role.enum';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -96,13 +103,12 @@ export class AdminDiscountsController {
   @ApiOperation({
     summary: 'Obtener descuentos de todos los usuarios con filtro opcional',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Listado de descuentos de usuarios',
     type: [UserDiscount],
   })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @ApiUnauthorizedResponse({ description: 'No autenticado' })
+  @ApiForbiddenResponse({ description: 'No autorizado' })
   @HttpCode(HttpStatus.OK)
   async getAllUserDiscounts(
     @Query() filterDto: FilterUserDiscountsDto,
@@ -116,8 +122,7 @@ export class AdminDiscountsController {
   @ApiOperation({
     summary: 'Obtener historial de cupones de un usuario específico (Admin)',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Historial de descuentos del usuario',
     type: [UserDiscountHistoryDto],
   })

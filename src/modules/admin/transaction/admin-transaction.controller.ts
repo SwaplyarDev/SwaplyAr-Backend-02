@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Post,
@@ -43,9 +42,13 @@ import {
 } from './dto/get-transaction-response.dto';
 import { AdminTransactionService } from './admin-transaction.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { AddVoucherDto } from './dto/add-voucher.dto';
 import { AdminStatus } from 'src/enum/admin-status.enum';
-import { UpdateStatusByIdDto, UpdateStatusDto } from './dto/update-status.dto';
+import {
+  UpdateStatusByIdDto,
+  UpdateStatusByTypeDto,
+  UpdateStatusDto,
+  UpdateTransactionRecipientDto,
+} from './dto/update-status.dto';
 import { User } from '@users/entities/user.entity';
 import { UpdateTransactionPayloadDto } from './dto/update_transaction.dto';
 import { AddVoucherTransactionDto } from './dto/add-voucher-to-transaction.dto';
@@ -253,7 +256,7 @@ export class AdminTransactionController {
     description: 'Transacciones encontradas',
     type: [TransactionByIdAdminResponseDto],
   })
-  @ApiResponse({ status: 404, description: '❌ No se encontraron transacciones con ese email' })
+  @ApiNotFoundResponse({ description: '❌ No se encontraron transacciones con ese email' })
   @Get('transactions/sender/:email')
   async getTransactionsByCreatedBy(
     @Param('email') email: string,
@@ -279,13 +282,7 @@ export class AdminTransactionController {
   @ApiOperation({ summary: 'Actualizar el estado de una transacción por tipo' })
   @ApiOkResponse({
     description: 'Estado actualizado correctamente',
-    schema: {
-      example: {
-        success: true,
-        message: 'Estado cambiado a completed y se asignaron recompensas. ¡Felicidades! Completaste un ciclo y se ha generado tu cupón PLUS REWARDS. Código: PLUS-W50TNX, Válido desde: 17/10/2025, Valor: 10 USD.',
-        data: {},
-      },
-    },
+    type: UpdateStatusByTypeDto,
   })
   @ApiBadRequestResponse({ description: 'Se requiere el ID de la transacción' })
   @ApiParam({
@@ -296,14 +293,6 @@ export class AdminTransactionController {
   @ApiBody({
     description: 'Datos para actualizar el estado',
     type: UpdateStatusDto,
-    examples: {
-      ejemplo1: {
-        summary: 'Ejemplo de request',
-        value: {
-          transactionId: 'uuid',
-        },
-      },
-    },
   })
   @Post('transactions/status/:status')
   async updateStatusByType(
@@ -336,13 +325,7 @@ export class AdminTransactionController {
   @ApiOperation({ summary: 'Actualizar datos del receptor de una transacción' })
   @ApiOkResponse({
     description: 'Transacción actualizada correctamente',
-    schema: {
-      example: {
-        success: true,
-        message: 'Transacción actualizada correctamente',
-        data: {},
-      },
-    },
+    type: UpdateTransactionRecipientDto,
   })
   @ApiBadRequestResponse({ description: 'Transaction ID is required' })
   @ApiParam({
@@ -353,16 +336,6 @@ export class AdminTransactionController {
   @ApiBody({
     description: 'Datos para actualizar el receptor',
     type: UpdateBankDto,
-    examples: {
-      ejemplo1: {
-        summary: 'Ejemplo de request',
-        value: {
-          bankName: 'Banco Nacion',
-          sendMethodValue: '1234567890123456789012',
-          documentValue: '1234567890',
-        },
-      },
-    },
   })
   @Put('transactions/:id/receiver')
   async updateReceiver(
@@ -387,13 +360,7 @@ export class AdminTransactionController {
   @ApiOperation({ summary: 'Actualizar una transacción' })
   @ApiOkResponse({
     description: 'Transacción actualizada correctamente',
-    schema: {
-      example: {
-        success: true,
-        message: 'Transacción actualizada correctamente',
-        data: {},
-      },
-    },
+    type: UpdateTransactionRecipientDto,
   })
   @ApiParam({
     name: 'id',
@@ -403,17 +370,6 @@ export class AdminTransactionController {
   @ApiBody({
     description: 'Datos para actualizar la transacción',
     type: UpdateTransactionPayloadDto,
-    examples: {
-      ejemplo1: {
-        summary: 'Ejemplo de request',
-        value: {
-          message: 'Actualización de prueba desde Swagger',
-          isNoteVerified: true,
-          noteVerificationExpiresAt: '2025-11-01T00:00:00.000Z',
-          finalStatus: 'approved',
-        },
-      },
-    },
   })
   @Put('transactions/:id')
   async updateTransaction(

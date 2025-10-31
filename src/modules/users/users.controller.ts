@@ -5,7 +5,7 @@ import {
   Post,
   UseInterceptors,
 } from '@nestjs/common';
-import { RegisterUserDto, UserResponseDto } from '@users/dto/register-user.dto';
+import { RegisterUserDto } from '@users/dto/register-user.dto';
 import { UsersService } from '@users//users.service';
 import {
   ApiTags,
@@ -41,7 +41,7 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: 'Usuario registrado correctamente',
-    type: UserResponseDto,
+    type: RegisterUserDto,
   })
   @ApiBadRequestResponse({
     description:
@@ -54,13 +54,13 @@ export class UsersController {
     description: '❌ Error interno al procesar el registro.',
   })
   @Post('register')
-  async register(@Body() userDto: RegisterUserDto): Promise<UserResponseDto> {
+  async register(@Body() userDto: RegisterUserDto): Promise<RegisterUserDto> {
     const user = await this.usersService.register(userDto);
 
     await this.otpService.generateAndSendOtp(user);
 
     await this.discountService.assignSystemDiscount(user, 'WELCOME', 3);
 
-    return user as unknown as UserResponseDto;
+    return user as unknown as RegisterUserDto;
   }
 }

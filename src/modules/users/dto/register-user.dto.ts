@@ -40,7 +40,7 @@ export class RegisterUserDto {
   termsAccepted: boolean;
 }
 
-export class UserResponseDto {
+export class RegisterUserResponseDto {
   @ApiProperty({
     description: 'Identificador único del usuario',
     example: '5b3df863-30c1-4275-9450-fc1945ef73d8',

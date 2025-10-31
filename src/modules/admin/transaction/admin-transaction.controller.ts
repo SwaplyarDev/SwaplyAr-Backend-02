@@ -25,6 +25,13 @@ import {
   ApiBearerAuth,
   ApiConsumes,
   ApiQuery,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiCreatedResponse,
+  ApiBadRequestResponse,
+  ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
@@ -38,9 +45,12 @@ import { AdminTransactionService } from './admin-transaction.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AddVoucherDto } from './dto/add-voucher.dto';
 import { AdminStatus } from 'src/enum/admin-status.enum';
-import { UpdateStatusDto } from './dto/update-status.dto';
+import { UpdateStatusByIdDto, UpdateStatusDto } from './dto/update-status.dto';
 import { User } from '@users/entities/user.entity';
 import { UpdateTransactionPayloadDto } from './dto/update_transaction.dto';
+import { AddVoucherTransactionDto } from './dto/add-voucher-to-transaction.dto';
+import { TransactionStatesResponseDto } from './dto/get-transaction-states-response.dto';
+import { TransactionsStatesResponseDto } from './dto/get-transactions-states-response.dto';
 
 @ApiTags('Transacciones (Admin)')
 @ApiBearerAuth()
@@ -89,23 +99,13 @@ export class AdminTransactionController {
     type: String,
     description: 'Busca texto en el mensaje o en el nombre del usuario',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Transacciones obtenidas correctamente',
     type: TransactionAdminResponseDto,
   })
-  @ApiResponse({
-    status: 401,
-    description: '❌ No autorizado. Token no válido o no enviado.',
-  })
-  @ApiResponse({
-    status: 403,
-    description: '❌ Acceso no autorizado, Solo para Administradores',
-  })
-  @ApiResponse({
-    status: 404,
-    description: '❌ No se encuentran Transacciones',
-  })
+  @ApiUnauthorizedResponse({ description: '❌ No autorizado. Token no válido o no enviado.' })
+  @ApiForbiddenResponse({ description: '❌ Acceso no autorizado, Solo para Administradores' })
+  @ApiNotFoundResponse({ description: '❌ No se encuentran Transacciones' })
   @ApiResponse({ status: 500, description: '❌ Error interno del servidor' })
   @Get('transactions')
   async getAllTransactions(
@@ -128,70 +128,24 @@ export class AdminTransactionController {
 
   @ApiOperation({ summary: 'Agregar comprobante a una transacción' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description:
-      'Sube un comprobante para una transacción. El `transactionId` es obligatorio y el `comprobante` es el archivo.',
-    schema: {
-      type: 'object',
-      properties: {
-        transactionId: {
-          type: 'string',
-          description: 'ID de la transacción a la que se asocia el comprobante.',
-        },
-        comprobante: {
-          type: 'string',
-          format: 'binary',
-          description: 'El archivo del comprobante (e.g., PDF, JPG).',
-        },
-      },
-      required: ['transactionId', 'comprobante'],
-    },
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Comprobante agregado correctamente',
-  })
-  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiBody({ type: AddVoucherTransactionDto })
+  @ApiCreatedResponse({ description: 'Comprobante agregado correctamente' })
+  @ApiBadRequestResponse({ description: 'Datos inválidos' })
   @Post('transactions/voucher')
   @UseInterceptors(FileInterceptor('comprobante'))
   async addVoucher(
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-    body: AddVoucherDto,
-    @UploadedFile() file?: Express.Multer.File,
+    body: AddVoucherTransactionDto,
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.adminService.addTransactionReceipt(body.transactionId, file, body.comprobante);
+    return this.adminService.addTransactionReceipt(body.transactionId, file );
   }
 
   @Get('transactions/status/:id')
   @ApiOperation({ summary: 'Obtener historial de estados de una transacción' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Historial de estados obtenido correctamente',
-    schema: {
-      properties: {
-        success: { type: 'boolean', example: true },
-        message: { type: 'string' },
-        data: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              status: { type: 'string' },
-              changedAt: { type: 'string', format: 'date-time' },
-              message: { type: 'string' },
-              changedByAdmin: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  name: { type: 'string' },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
+    type: TransactionStatesResponseDto,
   })
   async getStatusHistory(@Param('id') id: string): Promise<{
     success: boolean;
@@ -212,41 +166,9 @@ export class AdminTransactionController {
   })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Historial de estados obtenido correctamente',
-    schema: {
-      properties: {
-        data: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              status: { type: 'string' },
-              changedAt: { type: 'string', format: 'date-time' },
-              message: { type: 'string' },
-              changedByAdmin: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  name: { type: 'string' },
-                },
-              },
-            },
-          },
-        },
-        meta: {
-          type: 'object',
-          properties: {
-            total: { type: 'number' },
-            page: { type: 'number' },
-            limit: { type: 'number' },
-            totalPages: { type: 'number' },
-          },
-        },
-      },
-    },
+    type: TransactionsStatesResponseDto,
   })
   async getAllStatusHistory(
     @Query('page') page = 1,
@@ -260,37 +182,8 @@ export class AdminTransactionController {
 
   @Post('transactions/:id/status')
   @ApiOperation({ summary: 'Actualizar estado de una transacción' })
-  @ApiResponse({
-    status: 200,
-    description: 'Estado actualizado correctamente',
-  })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        status: {
-          type: 'string',
-          enum: Object.values(AdminStatus),
-          example: AdminStatus.Approved,
-          description: 'Estado administrativo de la transacción',
-        },
-        message: {
-          type: 'string',
-          example: 'Aprobación automática tras revisión',
-          description: 'Mensaje opcional relacionado al cambio de estado',
-        },
-        additionalData: {
-          type: 'object',
-          example: {
-            motivo: 'Verificación completa',
-            notas: 'Sin observaciones',
-          },
-          description: 'Datos adicionales que pueden acompañar el cambio de estado',
-        },
-      },
-      required: ['status'],
-    },
-  })
+  @ApiOkResponse({ description: 'Estado actualizado correctamente' })
+  @ApiBody({ type: UpdateStatusByIdDto })
   async updateTransactionStatus(
     @Param('id') id: string,
     @Body('status') status: AdminStatus,
@@ -316,21 +209,14 @@ export class AdminTransactionController {
   }
 
   @ApiOperation({ summary: 'Obtener una transacción por ID' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Transacción encontrada',
     type: TransactionByIdAdminResponseDto,
   })
-  @ApiResponse({
-    status: 401,
-    description: '❌ No autorizado. Token no válido o no enviado.',
-  })
-  @ApiResponse({
-    status: 403,
-    description: '❌ Acceso no autorizado, Solo para Administradores',
-  })
-  @ApiResponse({ status: 404, description: '❌ Transaccion no Encontrada' })
-  @ApiResponse({ status: 500, description: '❌ Error interno del servidor' })
+  @ApiUnauthorizedResponse({ description: '❌ No autorizado. Token no válido o no enviado.' })
+  @ApiForbiddenResponse({ description: '❌ Acceso no autorizado, Solo para Administradores' })
+  @ApiNotFoundResponse({ description: '❌ Transaccion no Encontrada' })
+  @ApiInternalServerErrorResponse({ description: '❌ Error interno del servidor' })
   @ApiParam({
     name: 'id',
     description: 'ID de la transacción',
@@ -363,8 +249,7 @@ export class AdminTransactionController {
   }
 
   @ApiOperation({ summary: 'Obtener transacciones por createdBy (email) del remitente' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Transacciones encontradas',
     type: [TransactionByIdAdminResponseDto],
   })
@@ -392,8 +277,7 @@ export class AdminTransactionController {
   }
 
   @ApiOperation({ summary: 'Actualizar el estado de una transacción por tipo' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Estado actualizado correctamente',
     schema: {
       example: {
@@ -403,10 +287,7 @@ export class AdminTransactionController {
       },
     },
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Se requiere el ID de la transacción',
-  })
+  @ApiBadRequestResponse({ description: 'Se requiere el ID de la transacción' })
   @ApiParam({
     name: 'status',
     description: 'Nuevo estado',
@@ -453,8 +334,7 @@ export class AdminTransactionController {
   }
 
   @ApiOperation({ summary: 'Actualizar datos del receptor de una transacción' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Transacción actualizada correctamente',
     schema: {
       example: {
@@ -464,7 +344,7 @@ export class AdminTransactionController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'Transaction ID is required' })
+  @ApiBadRequestResponse({ description: 'Transaction ID is required' })
   @ApiParam({
     name: 'id',
     description: 'ID de la transacción',
@@ -505,8 +385,7 @@ export class AdminTransactionController {
   }
 
   @ApiOperation({ summary: 'Actualizar una transacción' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Transacción actualizada correctamente',
     schema: {
       example: {

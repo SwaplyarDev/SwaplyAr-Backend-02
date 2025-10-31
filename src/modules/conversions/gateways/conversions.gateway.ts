@@ -120,7 +120,7 @@ export class ConversionsGateway
         updatedAt: new Date().toISOString(),
       });
 
-      client.emit('calculationResult', {
+         client.emit('calculationResult', {
         ...conversion,
         commission,
         totalReceived,
@@ -128,7 +128,7 @@ export class ConversionsGateway
         toPlatform: dto.toPlatform,
         message: 'Conversión y comisión calculadas correctamente (actualizaciones emitidas).',
       });
-
+     
       this.logger.log(
         `Conversión completada correctamente y actualizaciones emitidas (cliente: ${client.id})`,
       );

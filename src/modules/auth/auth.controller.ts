@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { RefreshDto } from './dto/refresh.dto';
 import { AuthService } from '@auth/auth.service';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiOkResponse } from '@nestjs/swagger';
 
 @ApiTags('Auth')
 @Controller('token')
@@ -9,7 +9,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({ summary: 'Renovar access token usando refresh token' })
-  @ApiResponse({ status: 200, description: 'Nuevo access token generado' })
+  @ApiOkResponse({ description: 'Nuevo access token generado' })
   @ApiBody({ type: RefreshDto })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)

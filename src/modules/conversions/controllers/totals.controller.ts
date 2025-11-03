@@ -1,5 +1,5 @@
 import { Body, Controller, Post, BadRequestException } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ConversionsService } from '../services/conversions.service';
 import { CommissionsService } from '../commissions/services/commissions.service';
 import { ConversionTotalsResponseDto } from '../dto/conversions-totals-response.dto';
@@ -18,8 +18,7 @@ export class TotalsController {
     summary:
       'Calcula el monto total recibido (maneja conversiones generales y especiales USD/EUR ↔ ARS o ARS ↔ EUR/USD/BRL, incluyendo comisión y plataformas).',
   })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     type: ConversionTotalsResponseDto,
     description: 'Conversión y comisión calculadas correctamente.',
   })

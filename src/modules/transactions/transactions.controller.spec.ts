@@ -135,8 +135,8 @@ describe('TransactionsController (integración real)', () => {
   const createMockFile = (): Express.Multer.File => ({
     buffer: Buffer.from('test-buffer'),
     fieldname: 'file',
-    mimetype: 'image/png',
-    originalname: 'comprobante.png',
+    mimeType: 'image/png',
+    originalName: 'comprobante.png',
     size: 1234,
     stream: Readable.from(['test']),
     destination: '',

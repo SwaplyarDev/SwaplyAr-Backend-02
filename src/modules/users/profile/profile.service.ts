@@ -177,8 +177,8 @@ export class ProfileService {
 
     const fileDTO: FileUploadDTO = {
       fieldName: file.fieldname,
-      originalName: file.originalname,
-      mimeType: file.mimetype,
+      originalName: file.originalName,
+      mimeType: file.mimeType,
       size: file.size,
       buffer: file.buffer,
     };

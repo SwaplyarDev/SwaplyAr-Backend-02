@@ -137,7 +137,7 @@ export class AdminTransactionService {
       },
       note: tx.note ? { note_id: tx.note.note_id } : undefined,
       proofOfPayment:
-        tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment[0] : undefined,
+        tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment:[],
       amount: tx.amount,
       isNoteVerified: tx.isNoteVerified,
       noteVerificationExpiresAt: tx.noteVerificationExpiresAt
@@ -244,8 +244,7 @@ export class AdminTransactionService {
       note: formattedNote, // Usamos el objeto de nota formateado
       proofOfPayment:
         transaction.proofsOfPayment && transaction.proofsOfPayment.length > 0
-          ? transaction.proofsOfPayment[0]
-          : undefined,
+          ? transaction.proofsOfPayment:[],
       amount: transaction.amount,
       isNoteVerified: transaction.isNoteVerified,
       noteVerificationExpiresAt: transaction.noteVerificationExpiresAt?.toISOString(),
@@ -455,8 +454,8 @@ export class AdminTransactionService {
       const dto: FileUploadDTO = {
         buffer: file.buffer,
         fieldName: file.fieldname || 'comprobante',
-        mimeType: file.mimetype || 'image/png',
-        originalName: file.originalname || fileName,
+        mimeType: file.mimeType || 'image/png',
+        originalName: file.originalName || fileName,
         size: file.size || file.buffer.length,
       };
       // Crear ProofOfPayment y asociar

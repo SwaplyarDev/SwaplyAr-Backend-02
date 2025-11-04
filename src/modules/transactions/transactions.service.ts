@@ -188,10 +188,10 @@ export class TransactionsService {
   // --------------------------------------------------------------------
   async create(
     createTransactionDto: CreateTransactionDto,
-    file: FileUploadDTO,
+    files: FileUploadDTO[],
   ): Promise<TransactionResponseDto> {
-    if (!file) {
-      throw new BadRequestException('El comprobante de pago (archivo) es obligatorio.');
+    if (!files || files.length === 0) {
+      throw new BadRequestException('Debe subir al menos un archivo comprobante.');
     }
 
     try {
@@ -236,11 +236,17 @@ export class TransactionsService {
         }
       }
 
-      const proofOfPayment = await this.safeExecute(
-        () => this.proofOfPaymentService.create(file),
-        'Error al subir comprobante de pago',
-        BadRequestException,
-      );
+      // 🔹 Subir múltiples comprobantes de pago
+      const proofsOfPayment: ProofOfPayment[] = [];
+
+      for (const file of files) {
+        const proof = await this.safeExecute(
+          () => this.proofOfPaymentService.create(file),
+          'Error al subir comprobante de pago',
+          BadRequestException,
+        );
+        proofsOfPayment.push(proof);
+      }
 
       // 1) Guardar transacción (sin intentar setear OneToMany)
       const txEntity = this.transactionsRepository.create({
@@ -250,25 +256,27 @@ export class TransactionsService {
         senderAccount: financialAccounts.sender,
         receiverAccount: financialAccounts.receiver,
         amount,
-        // desnormalización para listados rápidos
         amountValue: String(amount.amountSent),
         amountCurrency: amount.currencySent,
         userDiscounts,
       });
 
+      // 2) Guardar transacción principal
       const savedTransaction = await this.safeExecute(
         () => this.transactionsRepository.save(txEntity),
         'Error al guardar la transacción',
         InternalServerErrorException,
       );
 
-      // 2) Enlazar el comprobante al lado dueño (ManyToOne)
-      proofOfPayment.transaction = savedTransaction;
-      await this.safeExecute(
-        () => this.proofOfPaymentRepository.save(proofOfPayment),
-        'Error al asociar comprobante a la transacción',
-        InternalServerErrorException,
-      );
+      // 3) Asociar los comprobantes a la transacción
+      for (const proof of proofsOfPayment) {
+        proof.transaction = savedTransaction;
+        await this.safeExecute(
+          () => this.proofOfPaymentRepository.save(proof),
+          'Error al asociar comprobante a la transacción',
+          InternalServerErrorException,
+        );
+      }
 
       const fullTransaction = await this.safeExecute(
         () =>

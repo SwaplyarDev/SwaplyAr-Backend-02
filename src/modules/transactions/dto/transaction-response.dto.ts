@@ -571,7 +571,7 @@ export class TransactionGetResponseDto {
   receiverAccount: ReceiverAccountDto;
 
   @ApiProperty({ type: ProofOfPaymentDto, required: false })
-  proofOfPayment?: ProofOfPaymentDto;
+  proofOfPayment?: ProofOfPaymentDto[];
 
   @ApiProperty({ type: AmountDto })
   amount: AmountDto;

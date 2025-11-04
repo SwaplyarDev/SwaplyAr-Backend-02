@@ -214,7 +214,8 @@ export class AdminTransactionService {
     const formattedNote = transaction.note
       ? {
           note_id: transaction.note.note_id,
-          img_url: transaction.note.img_url,
+          attachments: transaction.note.attachments,
+          //img_url: transaction.note.img_url,
           message: transaction.note.message,
           // Convertimos la fecha (tipo Date) a string ISO, si existe.
           createdAt: transaction.note.createdAt?.toISOString(),

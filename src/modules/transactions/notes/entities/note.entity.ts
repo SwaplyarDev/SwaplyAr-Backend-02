@@ -14,11 +14,15 @@ export class Note {
   @PrimaryGeneratedColumn('uuid', { name: 'note_id' })
   note_id: string;
 
-  @Column({ nullable: true })
-  img_url: string;
+  @Column('text', { array: true, nullable: true })
+  attachments: string[];
+  // img_url: string;
 
   @Column()
   message: string;
+
+  @Column()
+  section: string;
 
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;

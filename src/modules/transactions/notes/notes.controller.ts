@@ -30,9 +30,10 @@ import { OtpService } from '@otp/otp.service';
 import { ValidateNoteCodeDto } from './dto/validate-note-code.dto';
 import { RequestNoteCodeDto } from './dto/request-note-code.dto';
 import { CreateNoteDto } from './dto/create-note.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { validate, validateOrReject } from 'class-validator';
+import { UploadedFiles } from '@nestjs/common';
 
 @ApiTags('Notas')
 @Controller('notes')
@@ -159,7 +160,7 @@ export class NotesController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FilesInterceptor('files', 5))
   @ApiConsumes('multipart/form-data')
   @ApiParam({
     name: 'transactionId',
@@ -167,21 +168,21 @@ export class NotesController {
     example: 'uuid-transaccion',
   })
   @ApiBody({
-    description: 'Datos para crear una nota con imagen opcional',
+    description: 'Datos para crear una nota con archivos opcionales (máximo 5)',
     schema: {
       type: 'object',
 
       properties: {
         message: { type: 'string', example: 'Pago recibido correctamente' },
-
-        image: {
-          type: 'string',
-          format: 'binary',
-          description: 'Archivo de imagen opcional',
+        section: { type: 'string', example: 'datos_envio, datos_recepcion, monto' },
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+          description: 'Archivos opcionales (máximo 5)',
         },
       },
 
-      required: ['message'],
+      required: ['message', 'section'],
     },
   })
   @ApiHeader({
@@ -193,7 +194,7 @@ export class NotesController {
   @Post(':transactionId')
   async create(
     @Param('transactionId') transactionId: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
     @Body() createNoteDto: any,
     @Req() req: Request,
   ) {
@@ -202,7 +203,7 @@ export class NotesController {
     if (!token) throw new BadRequestException('Falta el header note-access-token');
 
     try {
-      return await this.notesService.create(transactionId, createNoteDto, token, file);
+      return await this.notesService.create(transactionId, createNoteDto, token, files);
     } catch (error) {
       throw new HttpException(
         error.message || 'Error interno al crear la nota',

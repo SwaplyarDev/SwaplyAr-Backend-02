@@ -16,7 +16,7 @@ export class NotesService {
     private readonly transactionRepository: Repository<Transaction>,
     private readonly otpService: OtpService,
     private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  ) { }
 
   async markTransactionAsVerified(transactionId: string): Promise<void> {
     const expiration = new Date();
@@ -32,7 +32,7 @@ export class NotesService {
     transactionId: string,
     createNoteDto: CreateNoteDto,
     token: string,
-    file?: Express.Multer.File,
+    files?: Express.Multer.File[],
   ) {
     // Verificar token OTP
     let payload: { transactionId: string };
@@ -71,24 +71,40 @@ export class NotesService {
     }
 
     //  Subir imagen a Cloudinary si existe
-    let img_url: string | undefined;
-    if (file) {
+    let attachments: string[] = [];
+    if (files && files.length > 0) {
       try {
-        img_url = await this.cloudinaryService.uploadFile(
-          file.buffer,
-          'notes',
-          `note-${transactionId}-${Date.now()}`,
-        );
+        for (let i = 0; i < files.length; i++) {
+          const url = await this.cloudinaryService.uploadFile(
+            files[i].buffer,
+            'notes',
+            `note-${transactionId}-${Date.now()}-${i}`,
+          );
+          attachments.push(url);
+        }
       } catch (error) {
-        throw new BadRequestException('Error al subir la imagen a Cloudinary: ' + error.message);
+        throw new BadRequestException('Error al subir archivos a Cloudinary: ' + error.message);
       }
     }
+    // let img_url: string | undefined;
+    // if (file) {
+    //   try {
+    //     img_url = await this.cloudinaryService.uploadFile(
+    //       file.buffer,
+    //       'notes',
+    //       `note-${transactionId}-${Date.now()}`,
+    //     );
+    //   } catch (error) {
+    //     throw new BadRequestException('Error al subir la imagen a Cloudinary: ' + error.message);
+    //   }
+    // }
 
     // Crear nota
     const note = this.notesRepository.create({
       ...createNoteDto,
       transaction,
-      img_url,
+      attachments,
+      // img_url,
     });
 
     //  Guardar nota

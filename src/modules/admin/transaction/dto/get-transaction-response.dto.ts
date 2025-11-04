@@ -16,11 +16,12 @@ class NoteDetailsDto extends NoteDto {
   // Extending NoteIdDto to reuse the note_id property
   @Expose()
   @ApiProperty({
-    example: 'https://res.cloudinary.com/dy1jiclwg/image/upload/...',
-    description: 'URL to the image associated with the note (optional).',
+    example: ['https://res.cloudinary.com/dy1jiclwg/image/upload/...', 'https://res.cloudinary.com/dy1jiclwg/image/upload/...'],
+    description: 'Array of URLs to the files associated with the note (optional).',
     required: false,
+    type: [String],
   })
-  img_url?: string;
+  attachments?: string[];
 
   @Expose()
   @ApiProperty({
@@ -29,6 +30,14 @@ class NoteDetailsDto extends NoteDto {
     required: false,
   })
   message?: string;
+
+  @Expose()
+  @ApiProperty({
+    example: 'datos_envio, datos_recepcion, monto',
+    description: 'Section of the transaction being modified (datos_envio, datos_recepcion, monto).',
+    required: false,
+  })
+  section?: string;
 
   @Expose()
   @ApiProperty({

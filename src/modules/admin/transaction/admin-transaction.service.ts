@@ -136,8 +136,8 @@ export class AdminTransactionService {
         paymentMethod: tx.receiverAccount.paymentMethod,
       },
       note: tx.note ? { note_id: tx.note.note_id } : undefined,
-      proofOfPayment:
-        tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment[0] : undefined,
+      proofsOfPayment:
+        tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment:[],
       amount: tx.amount,
       isNoteVerified: tx.isNoteVerified,
       noteVerificationExpiresAt: tx.noteVerificationExpiresAt
@@ -242,10 +242,9 @@ export class AdminTransactionService {
         paymentMethod: receiver.paymentMethod, // Igual que arriba
       },
       note: formattedNote, // Usamos el objeto de nota formateado
-      proofOfPayment:
+      proofsOfPayment:
         transaction.proofsOfPayment && transaction.proofsOfPayment.length > 0
-          ? transaction.proofsOfPayment[0]
-          : undefined,
+          ? transaction.proofsOfPayment:[],
       amount: transaction.amount,
       isNoteVerified: transaction.isNoteVerified,
       noteVerificationExpiresAt: transaction.noteVerificationExpiresAt?.toISOString(),
@@ -441,69 +440,80 @@ export class AdminTransactionService {
    * Puede recibir archivo (buffer) o comprobante (base64/URL).
    */
   async addTransactionReceipt(
-    transactionId: string,
-    file?: Express.Multer.File,
-    comprobante?: string,
-  ) {
-    if (!transactionId) {
-      throw new Error('Se requiere transactionId en la solicitud');
-    }
-    let url: string | undefined;
-    let proofOfPayment: ProofOfPayment | undefined = undefined;
-    if (file && file.buffer) {
-      const fileName = `voucher_${transactionId}_${Date.now()}`;
+  transactionId: string,
+  file?: Express.Multer.File,
+  comprobante?: string,
+) {
+  if (!transactionId) {
+    throw new Error('Se requiere transactionId en la solicitud');
+  }
+
+  let url: string | undefined;
+  let proofOfPayment: ProofOfPayment; // ✅ cambia a singular
+
+  if (file && file.buffer) {
+    const fileName = `voucher_${transactionId}_${Date.now()}`;
+    const dto: FileUploadDTO = {
+      buffer: file.buffer,
+      fieldName: file.fieldname || 'comprobante',
+      mimeType: file.mimeType || 'image/png', // ⚠️ corrige el nombre del campo
+      originalName: file.originalName || fileName, // ⚠️ corrige el nombre del campo
+      size: file.size || file.buffer.length,
+    };
+
+    proofOfPayment = await this.proofOfPaymentService.create(dto);
+    url = proofOfPayment.imgUrl;
+
+  } else if (comprobante) {
+    const fileName = `voucher_${transactionId}_${Date.now()}`;
+
+    if (comprobante.startsWith('http')) {
+      // 📎 Si es URL
+      proofOfPayment = await this.proofOfPaymentService.create({
+        buffer: Buffer.from(''),
+        fieldName: 'comprobante',
+        mimeType: 'image/png',
+        originalName: fileName,
+        size: 0,
+      });
+      url = comprobante;
+
+    } else if (comprobante.startsWith('data:')) {
+      // 📎 Si es Base64
+      const base64Data = comprobante.split(',')[1];
+      const buffer = Buffer.from(base64Data, 'base64');
+
       const dto: FileUploadDTO = {
-        buffer: file.buffer,
-        fieldName: file.fieldname || 'comprobante',
-        mimeType: file.mimetype || 'image/png',
-        originalName: file.originalname || fileName,
-        size: file.size || file.buffer.length,
+        buffer,
+        fieldName: 'comprobante',
+        mimeType: 'image/png',
+        originalName: fileName,
+        size: buffer.length,
       };
-      // Crear ProofOfPayment y asociar
+
       proofOfPayment = await this.proofOfPaymentService.create(dto);
       url = proofOfPayment.imgUrl;
-    } else if (comprobante) {
-      let buffer: Buffer;
-      const fileName = `voucher_${transactionId}_${Date.now()}`;
-      if (comprobante.startsWith('http')) {
-        url = comprobante;
-        // Crear ProofOfPayment solo con la URL
-        proofOfPayment = await this.proofOfPaymentService.create({
-          buffer: Buffer.from(''),
-          fieldName: 'comprobante',
-          mimeType: 'image/png',
-          originalName: fileName,
-          size: 0,
-        });
-      } else if (comprobante.startsWith('data:')) {
-        const base64Data = comprobante.split(',')[1];
-        buffer = Buffer.from(base64Data, 'base64');
-        const dto: FileUploadDTO = {
-          buffer,
-          fieldName: 'comprobante',
-          mimeType: 'image/png',
-          originalName: fileName,
-          size: buffer.length,
-        };
-        proofOfPayment = await this.proofOfPaymentService.create(dto);
-        url = proofOfPayment.imgUrl;
-      } else {
-        throw new Error(
-          'El formato del comprobante no es válido. Debe ser una URL o una imagen en base64.',
-        );
-      }
+
     } else {
-      throw new Error('Se requiere un archivo o comprobante válido en la solicitud');
+      throw new Error(
+        'El formato del comprobante no es válido. Debe ser una URL o una imagen en base64.',
+      );
     }
-    // Asociar el comprobante a la transacción en el lado dueño (ManyToOne)
-    const tx = await this.transactionsRepository.findOne({ where: { id: transactionId } });
-    if (!tx) {
-      throw new NotFoundException('Transacción no encontrada.');
-    }
-    proofOfPayment.transaction = tx;
-    await this.proofOfPaymentRepository.save(proofOfPayment);
-    return { message: 'Comprobante cargado', url };
+  } else {
+    throw new Error('Se requiere un archivo o comprobante válido en la solicitud');
   }
+
+  // Asociar comprobante a la transacción
+  const tx = await this.transactionsRepository.findOne({ where: { id: transactionId } });
+  if (!tx) {
+    throw new NotFoundException('Transacción no encontrada.');
+  }
+
+  proofOfPayment.transaction = tx;
+  await this.proofOfPaymentRepository.save(proofOfPayment);
+
+  return { message: 'Comprobante cargado', url };
+}
 
   /* -------------------------------------------------------------------------- */
   /*                           FILTER & PAGINATION                              */

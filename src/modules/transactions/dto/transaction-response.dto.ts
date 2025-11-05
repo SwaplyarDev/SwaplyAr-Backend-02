@@ -220,8 +220,8 @@ export class TransactionResponseDto {
 
   @Expose()
   @Type(() => ProofOfPaymentResponseDto)
-  @ApiProperty({ name: 'proofOfPayment', type: ProofOfPaymentResponseDto })
-  proofOfPayment: ProofOfPaymentResponseDto;
+  @ApiProperty({ name: 'proofsOfPayment', type: ProofOfPaymentResponseDto })
+  proofsOfPayment: ProofOfPaymentResponseDto;
 
   @Expose()
   @Type(() => AmountResponseDto)
@@ -291,8 +291,8 @@ export class TransactionGetByIdDto {
 
   @Expose()
   @Type(() => ProofOfPaymentResponseDto)
-  @ApiProperty({ name: 'proofOfPayment', type: ProofOfPaymentResponseDto })
-  proofOfPayment: ProofOfPaymentResponseDto;
+  @ApiProperty({ name: 'proofsOfPayment', type: ProofOfPaymentResponseDto })
+  proofsOfPayment: ProofOfPaymentResponseDto;
 
   @Expose()
   @Type(() => AmountResponseDto)
@@ -571,7 +571,7 @@ export class TransactionGetResponseDto {
   receiverAccount: ReceiverAccountDto;
 
   @ApiProperty({ type: ProofOfPaymentDto, required: false })
-  proofOfPayment?: ProofOfPaymentDto;
+  proofsOfPayment?: ProofOfPaymentDto[];
 
   @ApiProperty({ type: AmountDto })
   amount: AmountDto;

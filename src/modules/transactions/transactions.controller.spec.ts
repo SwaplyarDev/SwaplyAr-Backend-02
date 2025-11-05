@@ -157,7 +157,7 @@ describe('TransactionsController (integración real)', () => {
         amountReceived: 5000,
         currencyReceived: 'ARS',
       },
-      proofOfPayment: {
+      proofsOfPayment: {
         type: 'image',
         url: 'https://example.com/proof.jpg',
       },

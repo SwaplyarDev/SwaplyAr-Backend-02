@@ -36,6 +36,7 @@ import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/pr
 import { MailerService } from '@mailer/mailer.service';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 import { UserDiscount } from '../discounts/entities/user-discount.entity';
+import { validateMaxFiles } from 'src/common/utils/file-validation.util';
 
 // -----------------------------
 // Helper: Mapeo de métodos de pago
@@ -190,11 +191,9 @@ export class TransactionsService {
     createTransactionDto: CreateTransactionDto,
     files: FileUploadDTO[],
   ): Promise<TransactionResponseDto> {
-    if (!files || files.length === 0) {
-      throw new BadRequestException('Debe subir al menos un archivo comprobante.');
-    }
-
     try {
+      // Validar cantidad y tamaño de archivos con una función reutilizable
+      validateMaxFiles(files, 5, 3); // máx 5 archivos y 3MB de tamaño cada uno
       const createdAt = new Date();
 
       const financialAccounts = await this.safeExecute(
@@ -288,7 +287,7 @@ export class TransactionsService {
               'receiverAccount',
               'receiverAccount.paymentMethod',
               'amount',
-              'proofsOfPayment', // <- actualizado
+              'proofsOfPayment',
               'userDiscounts',
               'userDiscounts.discountCode',
             ],
@@ -338,9 +337,10 @@ export class TransactionsService {
         'Error inesperado al crear la transacción',
         error instanceof Error ? error.stack : undefined,
       );
-      throw error instanceof HttpException
-        ? error
-        : new InternalServerErrorException('Error inesperado al crear la transacción.');
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error inesperado al crear la transacción.');
     }
   }
 
@@ -373,7 +373,7 @@ export class TransactionsService {
         senderAccount: true,
         receiverAccount: true,
         amount: true,
-        proofsOfPayment: true, // <- actualizado
+        proofsOfPayment: true,
       },
     });
   }
@@ -400,7 +400,7 @@ export class TransactionsService {
       relations: {
         senderAccount: { paymentMethod: true },
         receiverAccount: { paymentMethod: true },
-        proofsOfPayment: true, // <- actualizado
+        proofsOfPayment: true, 
         amount: true, // Nota: se puede eliminar más adelante y usar amountValue/amountCurrency
         regret: true,
       },
@@ -434,11 +434,17 @@ export class TransactionsService {
           id: tx.receiverAccount.id,
           paymentMethod: mapReceiverPaymentMethod(tx.receiverAccount.paymentMethod),
         },
-        // Compatibilidad con DTO actual: exponer solo el primer comprobante
-        proofOfPayment:
+        proofsOfPayment:
           tx.proofsOfPayment && tx.proofsOfPayment.length > 0
-            ? { id: tx.proofsOfPayment[0].id, imgUrl: tx.proofsOfPayment[0].imgUrl }
-            : undefined,
+            ? tx.proofsOfPayment.map((proof) => ({
+                id: proof.id,
+                imgUrl: proof.imgUrl,
+                createdAt: proof.createAt?.toISOString?.() ?? proof.createAt,
+              }))
+            : [],
+
+        proofOfPaymentUrls:tx.proofsOfPayment?.map((proof) => proof.imgUrl) ?? [],
+
         amount: {
           id: tx.amount.id,
           amountSent: tx.amount.amountSent,

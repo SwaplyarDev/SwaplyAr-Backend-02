@@ -108,7 +108,13 @@ export class NotesController {
   @Post('verify-code')
   async verifyNoteCode(@Body() dto: ValidateNoteCodeDto) {
     const transaction = await this.transactionsService.findOne(dto.transaction_id, {
-      relations: ['senderAccount', 'receiverAccount', 'amount'],
+      relations: [
+        'senderAccount', 
+        'senderAccount.paymentMethod',
+        'receiverAccount', 
+        'receiverAccount.paymentMethod',
+        'amount'
+      ],
     });
 
     if (!transaction) {
@@ -133,12 +139,20 @@ export class NotesController {
     // Generar token para acceder a la nota
     const accessToken = this.otpService.generateOtpToken(dto.transaction_id);
 
+    // Respuesta (simplificada)
+    // return {
+    //   transactionId: transaction.id,
+    //   senderName: transaction.senderAccount.firstName,
+    //   receiverName: transaction.receiverAccount.firstName,
+    //   amountSent: transaction.amount.amountSent,
+    //   currency: transaction.amount.currencySent,
+    //   noteAccessToken: accessToken,
+    //   expiresIn: '5m',
+    // };
+
+    // Respuesta (completa)
     return {
-      transactionId: transaction.id,
-      senderName: transaction.senderAccount.firstName,
-      receiverName: transaction.receiverAccount.firstName,
-      amountSent: transaction.amount.amountSent,
-      currency: transaction.amount.currencySent,
+      transaction,
       noteAccessToken: accessToken,
       expiresIn: '5m',
     };

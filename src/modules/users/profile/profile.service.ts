@@ -30,14 +30,22 @@ export class ProfileService {
   async getUserProfileById(userId: string) {
     const profile = await this.profileRepository.findOne({
       where: { user: { id: userId } },
-      relations: ['user', 'user.locations', 'socials'],
+      relations: ['user', 'user.locations', 'user.verifications', 'socials'],
     });
 
     if (!profile) {
       throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
     }
 
-    return profile;
+    const verificationIds = profile.user?.verifications?.map(v => v.verification_id) ?? [];
+
+    return {
+      ...profile,
+      user: {
+        ...profile.user,
+        verifications: verificationIds,
+      },
+    };
   }
 
   // Obtener un usuario mediante su email dentro de profile

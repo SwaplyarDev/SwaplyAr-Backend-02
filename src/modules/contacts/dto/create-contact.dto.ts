@@ -10,7 +10,7 @@ export class CreateContactDto {
   @IsNotEmpty()
   lastname: string;
 
-  @ApiProperty({ example: 'pedro@mail.com', description: 'Correo electrónico' })
+  @ApiProperty({ example: 'pedrorodriguez@gmail.com', description: 'Correo electrónico' })
   @IsEmail()
   email: string;
 

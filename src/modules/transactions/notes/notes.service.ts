@@ -6,6 +6,7 @@ import { Transaction } from '@transactions/entities/transaction.entity';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { OtpService } from '@otp/otp.service';
 import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
+import { validateMaxFiles } from 'src/common/utils/file-validation.util';
 
 @Injectable()
 export class NotesService {
@@ -70,6 +71,9 @@ export class NotesService {
       throw new NotFoundException('El acceso para crear nota ha expirado o no está habilitado');
     }
 
+    //  Verificar cantidad de archivos (máximo 5) y tamaño de archivo (máximo 3MB por archivo)
+    validateMaxFiles(files || [], 5, 3);
+
     //  Subir imagen a Cloudinary si existe
     let attachments: string[] = [];
     if (files && files.length > 0) {
@@ -86,19 +90,7 @@ export class NotesService {
         throw new BadRequestException('Error al subir archivos a Cloudinary: ' + error.message);
       }
     }
-    // let img_url: string | undefined;
-    // if (file) {
-    //   try {
-    //     img_url = await this.cloudinaryService.uploadFile(
-    //       file.buffer,
-    //       'notes',
-    //       `note-${transactionId}-${Date.now()}`,
-    //     );
-    //   } catch (error) {
-    //     throw new BadRequestException('Error al subir la imagen a Cloudinary: ' + error.message);
-    //   }
-    // }
-
+    
     // Crear nota
     const note = this.notesRepository.create({
       ...createNoteDto,

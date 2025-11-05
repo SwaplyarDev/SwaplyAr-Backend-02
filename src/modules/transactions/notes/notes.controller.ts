@@ -42,7 +42,7 @@ export class NotesController {
     private readonly notesService: NotesService,
     private readonly transactionsService: TransactionsService,
     private readonly otpService: OtpService,
-  ) {}
+  ) { }
 
   @ApiOperation({
     summary: 'Solicitar acceso para crear una nota mediante OTP',
@@ -160,7 +160,7 @@ export class NotesController {
       },
     },
   })
-  @UseInterceptors(FilesInterceptor('files', 5))
+  @UseInterceptors(FilesInterceptor('files'))
   @ApiConsumes('multipart/form-data')
   @ApiParam({
     name: 'transactionId',
@@ -191,11 +191,11 @@ export class NotesController {
     required: true,
   })
   // crea una nota
-  @Post(':transactionId')
+  @Post(':transactionId')  
   async create(
     @Param('transactionId') transactionId: string,
     @UploadedFiles() files: Express.Multer.File[],
-    @Body() createNoteDto: any,
+    @Body() createNoteDto: CreateNoteDto,
     @Req() req: Request,
   ) {
     const token = req.headers['note-access-token'] as string;

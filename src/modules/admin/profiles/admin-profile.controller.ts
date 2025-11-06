@@ -16,14 +16,15 @@ import {
   Body,
   NotFoundException,
 } from '@nestjs/common';
-import { 
+import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
-  ApiUnauthorizedResponse } from '@nestjs/swagger';
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { ProfileService } from '@users/profile/profile.service';
 import { AdminProfileService } from './admin-profile.service';
 import { UpdateAdminProfileDto } from '@admin/profiles/dto/update-admin-profile.dto';

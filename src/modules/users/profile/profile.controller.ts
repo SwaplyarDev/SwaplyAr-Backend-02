@@ -34,7 +34,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import {
   UpdateUserProfileDto,
   UploadImageDto,
-  UploadImageResponseDto
+  UploadImageResponseDto,
 } from './dto/udpate-profile.dto';
 import { ProfileResponseDto, SocialsDto } from '@users/dto/user-response.dto';
 import { UpdateUserSocialsDto } from './dto/update-user-socials.dto';

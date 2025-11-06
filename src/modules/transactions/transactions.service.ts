@@ -400,7 +400,7 @@ export class TransactionsService {
       relations: {
         senderAccount: { paymentMethod: true },
         receiverAccount: { paymentMethod: true },
-        proofsOfPayment: true, 
+        proofsOfPayment: true,
         amount: true, // Nota: se puede eliminar más adelante y usar amountValue/amountCurrency
         regret: true,
       },
@@ -443,7 +443,7 @@ export class TransactionsService {
               }))
             : [],
 
-        proofOfPaymentUrls:tx.proofsOfPayment?.map((proof) => proof.imgUrl) ?? [],
+        proofOfPaymentUrls: tx.proofsOfPayment?.map((proof) => proof.imgUrl) ?? [],
 
         amount: {
           id: tx.amount.id,

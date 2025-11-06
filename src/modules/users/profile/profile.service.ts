@@ -37,7 +37,7 @@ export class ProfileService {
       throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
     }
 
-    const verificationIds = profile.user?.verifications?.map(v => v.verification_id) ?? [];
+    const verificationIds = profile.user?.verifications?.map((v) => v.verification_id) ?? [];
 
     return {
       ...profile,
@@ -185,8 +185,8 @@ export class ProfileService {
 
     const fileDTO: FileUploadDTO = {
       fieldName: file.fieldname,
-      originalName: file.originalName,
-      mimeType: file.mimeType,
+      originalName: file.originalname,
+      mimeType: file.mimetype,
       size: file.size,
       buffer: file.buffer,
     };

@@ -53,7 +53,6 @@ export class AdminProfileService {
     };
   }
 
-
   async updateAdminProfile(profileId: string, updateProfileDto: UpdateAdminProfileDto) {
     const profile = await this.profileRepository.findOne({
       where: { id: profileId },

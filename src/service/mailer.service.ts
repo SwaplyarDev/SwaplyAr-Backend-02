@@ -24,7 +24,7 @@ export class MailerService {
           auth: {
             api_key: sendgridApiKey,
           },
-        })
+        }),
       );
     } else {
       this.logger.log('Usando SMTP tradicional como transport de correo');

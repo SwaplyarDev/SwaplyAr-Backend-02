@@ -235,7 +235,7 @@ export class MailerService {
       EMAIL: sender.createdBy ?? '',
       AMOUNT_SENT: amount.amountSent ?? 0,
       SENT_CURRENCY: amount.currencySent ?? '',
-      PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',      
+      PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
       PAYMENT_METHOD_IMG: this.getPaymentMethodImg(
         sender.paymentMethod?.method ?? '',
         amount.currencySent ?? '',
@@ -253,10 +253,11 @@ export class MailerService {
       MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
     };
 
-    
-    if (receiver.paymentMethod?.method === 'pix' || templateData.RECEIVED_METHOD_IMG ===
-    'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677907/layer1_dw5lwr.png') 
-    {
+    if (
+      receiver.paymentMethod?.method === 'pix' ||
+      templateData.RECEIVED_METHOD_IMG ===
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677907/layer1_dw5lwr.png'
+    ) {
       templateData['PIX_KEY'] = receiver.paymentMethod?.pixKey ?? '';
       templateData['CPF'] = receiver.paymentMethod?.cpf ?? '';
     }
@@ -286,7 +287,8 @@ export class MailerService {
         'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677905/New_Wise_EUR_Claro_ckwcsi.png',
       tether_default:
         'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677905/New_Tether_Claro_zxxqqz.png',
-      pix_default: 'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677907/layer1_dw5lwr.png',
+      pix_default:
+        'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677907/layer1_dw5lwr.png',
     };
     return map[`${method}_${currency.toLowerCase()}`] ?? map[`${method}_default`] ?? '';
   }

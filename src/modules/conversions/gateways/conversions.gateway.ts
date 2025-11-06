@@ -1,5 +1,3 @@
-
-
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -21,9 +19,7 @@ import { CommissionsService } from '../commissions/services/commissions.service'
     origin: '*',
   },
 })
-export class ConversionsGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+export class ConversionsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private logger = new Logger('ConversionsGateway');
 
@@ -45,10 +41,7 @@ export class ConversionsGateway
   }
 
   @SubscribeMessage('ping-conversions')
-  handlePing(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: any,
-  ): void {
+  handlePing(@ConnectedSocket() client: Socket, @MessageBody() data: any): void {
     this.logger.log(`Ping recibido (conversions): ${JSON.stringify(data)}`);
     client.emit('pong-conversions', {
       msg: 'pong desde conversions gateway',
@@ -120,7 +113,7 @@ export class ConversionsGateway
         updatedAt: new Date().toISOString(),
       });
 
-         client.emit('calculationResult', {
+      client.emit('calculationResult', {
         ...conversion,
         commission,
         totalReceived,
@@ -128,7 +121,7 @@ export class ConversionsGateway
         toPlatform: dto.toPlatform,
         message: 'Conversión y comisión calculadas correctamente (actualizaciones emitidas).',
       });
-     
+
       this.logger.log(
         `Conversión completada correctamente y actualizaciones emitidas (cliente: ${client.id})`,
       );
@@ -143,20 +136,3 @@ export class ConversionsGateway
     this.logger.log(`Se emitió conversion-update: ${JSON.stringify(update)}`);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,11 +1,12 @@
-
-
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, IsBoolean, IsDateString, IsEnum } from 'class-validator';
 import { AdminStatus } from 'src/enum/admin-status.enum';
 
 export class UpdateTransactionPayloadDto {
-  @ApiProperty({ description: 'Mensaje asociado a la transacción', example: 'Actualización de prueba desde Swagger' })
+  @ApiProperty({
+    description: 'Mensaje asociado a la transacción',
+    example: 'Actualización de prueba desde Swagger',
+  })
   @IsOptional()
   @IsString()
   message?: string;
@@ -15,7 +16,10 @@ export class UpdateTransactionPayloadDto {
   @IsBoolean()
   isNoteVerified?: boolean;
 
-  @ApiProperty({ description: 'Fecha de expiración de la verificación de la nota', example: '2025-11-01T00:00:00.000Z' })
+  @ApiProperty({
+    description: 'Fecha de expiración de la verificación de la nota',
+    example: '2025-11-01T00:00:00.000Z',
+  })
   @IsOptional()
   @IsDateString()
   noteVerificationExpiresAt?: string;
@@ -29,4 +33,3 @@ export class UpdateTransactionPayloadDto {
   @IsEnum(AdminStatus)
   finalStatus?: AdminStatus;
 }
-

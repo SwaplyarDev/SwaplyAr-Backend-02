@@ -45,7 +45,7 @@ export class ConversionsController {
 
   @Post('indirect')
   @ApiOperation({
-    summary: 'Convertir ARS → EUR/USD/BRL o BRL → USD  (con cálculo indirecto, venta (ARS))' 
+    summary: 'Convertir ARS → EUR/USD/BRL o BRL → USD  (con cálculo indirecto, venta (ARS))',
   })
   @ApiCreatedResponse({ type: ConversionResponseDto })
   async convertIndirect(@Body() request: ConversionRequestDto) {

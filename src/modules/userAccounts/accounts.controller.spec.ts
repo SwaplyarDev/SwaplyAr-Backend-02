@@ -191,6 +191,3 @@ describe('AccountsController', () => {
     });
   });
 });
-
-
-

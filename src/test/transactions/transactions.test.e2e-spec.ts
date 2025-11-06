@@ -17,7 +17,7 @@ interface TransactionResponseDto {
   senderAccount: any;
   receiverAccount: any;
   amount: any;
-  proofOfPayment: any;
+  proofsOfPayment: any;
 }
 
 describe('ENDPOINT DE TRANSACCIONES #api #tra', () => {

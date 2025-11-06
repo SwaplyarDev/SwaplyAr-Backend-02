@@ -10,11 +10,11 @@ import { UsersService } from '@users//users.service';
 import {
   ApiTags,
   ApiOperation,
-  ApiResponse,
   ApiBody,
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiInternalServerErrorResponse,
+  ApiCreatedResponse,
 } from '@nestjs/swagger';
 import { OtpService } from '@otp/otp.service';
 import { DiscountService } from 'src/modules/discounts/discounts.service';
@@ -38,8 +38,7 @@ export class UsersController {
     type: RegisterUserDto,
     required: true,
   })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'Usuario registrado correctamente',
     type: RegisterUserDto,
   })

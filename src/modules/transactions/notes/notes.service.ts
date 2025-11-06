@@ -6,6 +6,7 @@ import { Transaction } from '@transactions/entities/transaction.entity';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { OtpService } from '@otp/otp.service';
 import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
+import { validateMaxFiles } from 'src/common/utils/file-validation.util';
 
 @Injectable()
 export class NotesService {
@@ -16,7 +17,7 @@ export class NotesService {
     private readonly transactionRepository: Repository<Transaction>,
     private readonly otpService: OtpService,
     private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  ) { }
 
   async markTransactionAsVerified(transactionId: string): Promise<void> {
     const expiration = new Date();
@@ -32,7 +33,7 @@ export class NotesService {
     transactionId: string,
     createNoteDto: CreateNoteDto,
     token: string,
-    file?: Express.Multer.File,
+    files?: Express.Multer.File[],
   ) {
     // Verificar token OTP
     let payload: { transactionId: string };
@@ -70,25 +71,32 @@ export class NotesService {
       throw new NotFoundException('El acceso para crear nota ha expirado o no está habilitado');
     }
 
+    //  Verificar cantidad de archivos (máximo 5) y tamaño de archivo (máximo 3MB por archivo)
+    validateMaxFiles(files || [], 5, 3);
+
     //  Subir imagen a Cloudinary si existe
-    let img_url: string | undefined;
-    if (file) {
+    let attachments: string[] = [];
+    if (files && files.length > 0) {
       try {
-        img_url = await this.cloudinaryService.uploadFile(
-          file.buffer,
-          'notes',
-          `note-${transactionId}-${Date.now()}`,
-        );
+        for (let i = 0; i < files.length; i++) {
+          const url = await this.cloudinaryService.uploadFile(
+            files[i].buffer,
+            'notes',
+            `note-${transactionId}-${Date.now()}-${i}`,
+          );
+          attachments.push(url);
+        }
       } catch (error) {
-        throw new BadRequestException('Error al subir la imagen a Cloudinary: ' + error.message);
+        throw new BadRequestException('Error al subir archivos a Cloudinary: ' + error.message);
       }
     }
-
+    
     // Crear nota
     const note = this.notesRepository.create({
       ...createNoteDto,
       transaction,
-      img_url,
+      attachments,
+      // img_url,
     });
 
     //  Guardar nota

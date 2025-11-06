@@ -1,10 +1,4 @@
-
-
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '@users/entities/user.entity';
@@ -68,9 +62,7 @@ export class UpdateStarsService {
 
     const senderEmail = transaction.senderAccount?.createdBy;
     if (!senderEmail) {
-      throw new BadRequestException(
-        'No se encontró el email del remitente de la transacción.',
-      );
+      throw new BadRequestException('No se encontró el email del remitente de la transacción.');
     }
 
     const userProfile = await this.userProfileRepo.findOne({
@@ -183,10 +175,3 @@ export class UpdateStarsService {
     return `¡Felicidades! Completaste un ciclo y se ha generado tu cupón PLUS REWARDS. Código: ${discount.code}, Válido desde: ${discount.validFrom.toLocaleDateString()}, Valor: ${discount.value} ${discount.currencyCode}.`;
   }
 }
-
-
-
-
-
-
-

@@ -130,7 +130,7 @@ export class DiscountsController {
     await this.discountService.deleteUserDiscount(id);
     return { data: undefined };
   }
-  
+
   @Get('stars')
   @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({

@@ -1,5 +1,3 @@
-
-
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommissionsController } from './controllers/commissions.controller';
@@ -9,13 +7,9 @@ import { DynamicCommission } from 'src/modules/dynamic-commissions/entities/dyna
 import { CommissionsGateway } from './gateways/commissions.gateway';
 
 @Module({
-  imports: [
-    DynamicCommissionsModule,
-    TypeOrmModule.forFeature([DynamicCommission]),
-  ],
+  imports: [DynamicCommissionsModule, TypeOrmModule.forFeature([DynamicCommission])],
   controllers: [CommissionsController],
   providers: [CommissionsService, CommissionsGateway],
   exports: [CommissionsService],
 })
 export class CommissionsModule {}
-

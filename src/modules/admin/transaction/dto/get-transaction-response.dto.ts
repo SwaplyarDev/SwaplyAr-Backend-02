@@ -16,7 +16,10 @@ class NoteDetailsDto extends NoteDto {
   // Extending NoteIdDto to reuse the note_id property
   @Expose()
   @ApiProperty({
-    example: ['https://res.cloudinary.com/dy1jiclwg/image/upload/...', 'https://res.cloudinary.com/dy1jiclwg/image/upload/...'],
+    example: [
+      'https://res.cloudinary.com/dy1jiclwg/image/upload/...',
+      'https://res.cloudinary.com/dy1jiclwg/image/upload/...',
+    ],
     description: 'Array of URLs to the files associated with the note (optional).',
     required: false,
     type: [String],

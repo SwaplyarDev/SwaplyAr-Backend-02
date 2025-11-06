@@ -17,7 +17,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
-  ApiUnauthorizedResponse 
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AdminDiscountService } from './admin-discount.service';
 import { UserRole } from 'src/enum/user-role.enum';

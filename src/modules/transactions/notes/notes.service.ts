@@ -17,7 +17,7 @@ export class NotesService {
     private readonly transactionRepository: Repository<Transaction>,
     private readonly otpService: OtpService,
     private readonly cloudinaryService: CloudinaryService,
-  ) { }
+  ) {}
 
   async markTransactionAsVerified(transactionId: string): Promise<void> {
     const expiration = new Date();
@@ -90,7 +90,7 @@ export class NotesService {
         throw new BadRequestException('Error al subir archivos a Cloudinary: ' + error.message);
       }
     }
-    
+
     // Crear nota
     const note = this.notesRepository.create({
       ...createNoteDto,

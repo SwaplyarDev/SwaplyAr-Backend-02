@@ -7,7 +7,7 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
 } from '@nestjs/common';
-import { 
+import {
   ApiBearerAuth,
   ApiOperation,
   ApiTags,
@@ -16,7 +16,7 @@ import {
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,
   ApiForbiddenResponse,
-  ApiNotFoundResponse
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { AdminRoleGuard } from '@common/guards/admin-role.guard';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';

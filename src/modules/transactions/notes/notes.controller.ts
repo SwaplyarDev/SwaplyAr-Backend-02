@@ -42,7 +42,7 @@ export class NotesController {
     private readonly notesService: NotesService,
     private readonly transactionsService: TransactionsService,
     private readonly otpService: OtpService,
-  ) { }
+  ) {}
 
   @ApiOperation({
     summary: 'Solicitar acceso para crear una nota mediante OTP',
@@ -109,11 +109,11 @@ export class NotesController {
   async verifyNoteCode(@Body() dto: ValidateNoteCodeDto) {
     const transaction = await this.transactionsService.findOne(dto.transaction_id, {
       relations: [
-        'senderAccount', 
+        'senderAccount',
         'senderAccount.paymentMethod',
-        'receiverAccount', 
+        'receiverAccount',
         'receiverAccount.paymentMethod',
-        'amount'
+        'amount',
       ],
     });
 
@@ -205,7 +205,7 @@ export class NotesController {
     required: true,
   })
   // crea una nota
-  @Post(':transactionId')  
+  @Post(':transactionId')
   async create(
     @Param('transactionId') transactionId: string,
     @UploadedFiles() files: Express.Multer.File[],

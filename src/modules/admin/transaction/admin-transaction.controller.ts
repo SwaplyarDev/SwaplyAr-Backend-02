@@ -141,7 +141,7 @@ export class AdminTransactionController {
     body: AddVoucherTransactionDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.adminService.addTransactionReceipt(body.transactionId, file );
+    return this.adminService.addTransactionReceipt(body.transactionId, file);
   }
 
   @Get('transactions/status/:id')

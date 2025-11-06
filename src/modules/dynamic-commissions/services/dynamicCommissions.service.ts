@@ -51,7 +51,7 @@ export class DynamicCommissionsService {
     toPlatform: PlatformName;
     commissionRate: number;
   }): Promise<DynamicCommissionResponseDto> {
-    const { fromPlatform, toPlatform} = data;
+    const { fromPlatform, toPlatform } = data;
 
     this.ensureDifferentPlatforms(fromPlatform, toPlatform);
 
@@ -124,12 +124,11 @@ export class DynamicCommissionsService {
   async findOneByPair(
     fromPlatform: PlatformName,
     toPlatform: PlatformName,
-  ): Promise <DynamicCommissionResponseDto | null > {
-
-    const found = await this.commissionRepo.findOne ({
+  ): Promise<DynamicCommissionResponseDto | null> {
+    const found = await this.commissionRepo.findOne({
       where: { fromPlatform, toPlatform },
-  });
-  
-  return found ? this.toResponseDto(found) : null;
-}
+    });
+
+    return found ? this.toResponseDto(found) : null;
+  }
 }

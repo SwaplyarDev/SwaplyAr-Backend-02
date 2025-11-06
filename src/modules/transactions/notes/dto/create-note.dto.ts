@@ -7,7 +7,7 @@ export class CreateNoteDto {
   @IsString({ message: 'El campo "section" debe ser un texto' })
   @IsNotEmpty({ message: 'El campo "section" es obligatorio' })
   @IsIn(['datos_envio', 'datos_recepcion', 'monto'], {
-    message: 'La sección debe ser: datos_envio, datos_recepcion o monto'
+    message: 'La sección debe ser: datos_envio, datos_recepcion o monto',
   })
   section: string;
 }

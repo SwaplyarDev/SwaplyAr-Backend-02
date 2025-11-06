@@ -36,7 +36,11 @@ export class DiscountService {
    * @param value Valor del descuento.
    * @returns El id del descuento de usuario creado.
    */
-  async assignSystemDiscount(user: User, prefix: string, value: number): Promise<{ code: string; value: number; currencyCode: string; validFrom: Date }> {
+  async assignSystemDiscount(
+    user: User,
+    prefix: string,
+    value: number,
+  ): Promise<{ code: string; value: number; currencyCode: string; validFrom: Date }> {
     const codeEntity = this.discountCodeRepo.create({
       code: `${prefix}-${Math.random().toString(36).substr(2, 6)}`.toUpperCase(),
       value,
@@ -53,11 +57,11 @@ export class DiscountService {
     await this.userDiscountRepo.save(userDiscount);
 
     return {
-    code: codeEntity.code,
-    value: codeEntity.value,
-    currencyCode: codeEntity.currencyCode,
-    validFrom: codeEntity.validFrom,
-  };
+      code: codeEntity.code,
+      value: codeEntity.value,
+      currencyCode: codeEntity.currencyCode,
+      validFrom: codeEntity.validFrom,
+    };
   }
 
   /**

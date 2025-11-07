@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiOkResponse, ApiNotFoundResponse } from '@nestjs/swagger';
 
 import { CreateQualificationDto } from './dto/create-qualification.dto';
 import { QualificationService } from './qualifications.service';
@@ -12,8 +12,7 @@ export class QualificationController {
   // Obtener todas las calificaciones
   @Get()
   @ApiOperation({ summary: 'Obtener todas las calificaciones' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Listado de calificaciones retornado correctamente.',
   })
   findAll() {
@@ -24,8 +23,8 @@ export class QualificationController {
   @Get(':id_transaction')
   @ApiOperation({ summary: 'Obtener calificación por ID de transacción' })
   @ApiParam({ name: 'id_transaction', description: 'ID de la transacción' })
-  @ApiResponse({ status: 200, description: 'Calificación encontrada.' })
-  @ApiResponse({ status: 404, description: 'Calificación no encontrada.' })
+  @ApiOkResponse({ description: 'Calificación encontrada.' })
+  @ApiNotFoundResponse({ description: 'Calificación no encontrada.' })
   findByTransactionId(@Param('id_transaction') id: string) {
     return this.qualificationService.findByTransactionId(id);
   }

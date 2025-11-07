@@ -17,39 +17,55 @@ export class AdminProfileService {
   ) {}
 
   async findAll(status?: VerificationStatus, page: number = 1, limit: number = 10) {
-    const whereCondition = status
-      ? { user: { verifications: { verification_status: status } } }
-      : {};
-
-    const [profiles, total] = await this.profileRepository.findAndCount({
-      where: whereCondition,
+    // Traemos todos los perfiles para mapear/verificar el último estado
+    const [profiles] = await this.profileRepository.findAndCount({
       relations: ['user', 'user.verifications', 'user.locations'],
       order: { id: 'ASC' },
-      skip: (page - 1) * limit,
-      take: limit,
     });
 
     if (!profiles.length) {
       throw new NotFoundException('No se encontraron usuarios');
     }
 
-    const mappedProfiles = profiles.map((profile) => ({
-      fechaRegistro: profile.user.createdAt,
-      userId: profile.user.id,
-      profileId: profile.id,
-      nombre: `${profile.firstName} ${profile.lastName}`,
-      email: profile.email,
-      telefono: profile.phone,
-      pais: profile.user.locations?.[0]?.country || null,
-      verifications: profile.user.verifications,
-    }));
+    // Mapear perfiles con su última verificación
+    let mappedProfiles = profiles.map((profile) => {
+      const verifications = profile.user.verifications || [];
+
+      const latestVerification =
+        verifications.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        )[0] || null;
+
+      return {
+        fechaRegistro: profile.user.createdAt,
+        userId: profile.user.id,
+        profileId: profile.id,
+        nombre: `${profile.firstName} ${profile.lastName}`,
+        email: profile.email,
+        telefono: profile.phone,
+        pais: profile.user.locations?.[0]?.country || null,
+        ultimaVerificacion: latestVerification,
+      };
+    });
+
+    if (status) {
+      mappedProfiles = mappedProfiles.filter(
+        (p) => p.ultimaVerificacion?.verification_status === status,
+      );
+    }
+
+    // Total real luego del filtrado
+    const total = mappedProfiles.length;
+
+    const startIndex = (page - 1) * limit;
+    const paginatedResults = mappedProfiles.slice(startIndex, startIndex + limit);
 
     return {
       message: 'Perfiles obtenidos correctamente',
       total,
       page,
       limit,
-      result: mappedProfiles,
+      result: paginatedResults,
     };
   }
 

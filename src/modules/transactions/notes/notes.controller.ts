@@ -139,17 +139,6 @@ export class NotesController {
     // Generar token para acceder a la nota
     const accessToken = this.otpService.generateOtpToken(dto.transaction_id);
 
-    // Respuesta (simplificada)
-    // return {
-    //   transactionId: transaction.id,
-    //   senderName: transaction.senderAccount.firstName,
-    //   receiverName: transaction.receiverAccount.firstName,
-    //   amountSent: transaction.amount.amountSent,
-    //   currency: transaction.amount.currencySent,
-    //   noteAccessToken: accessToken,
-    //   expiresIn: '5m',
-    // };
-
     // Respuesta (completa)
     return {
       transaction,

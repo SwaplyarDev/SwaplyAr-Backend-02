@@ -16,7 +16,6 @@ export class Note {
 
   @Column('text', { array: true, nullable: true })
   attachments: string[];
-  // img_url: string;
 
   @Column()
   message: string;

@@ -2,37 +2,24 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } f
 import { PaymentProviders } from './providers.entity';
 import { User } from '../users/entities/user.entity';
 
-@Entity('bank_accounts')
-export class BankAccounts {
+@Entity('virtual_bank_accounts')
+export class VirtualBankAccounts {
   @PrimaryGeneratedColumn('uuid')
   bank_account_id: string;
 
-  @ManyToOne(() => User, (user) => user.bank_accounts, { nullable: false })
+  @ManyToOne(() => User, (user) => user.virtual_bank_accounts, { nullable: false })
   user: User;
 
-  @ManyToOne(() => PaymentProviders, (provider) => provider.bank_accounts, { nullable: false })
+  @ManyToOne(() => PaymentProviders, (provider) => provider.virtual_bank_accounts, {
+    nullable: false,
+  })
   payment_provider: PaymentProviders;
 
   @Column({ type: 'varchar', nullable: false })
-  holder_name: string;
+  email_account: string;
 
   @Column({ type: 'varchar', nullable: true })
-  document_type: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  document_value: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  bank_name: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  account_number: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  iban: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  swift: string;
+  account_alias: string;
 
   @Column({ type: 'varchar', length: 3, nullable: true })
   currency: string;

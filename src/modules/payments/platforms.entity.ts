@@ -1,10 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-  CreateDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn } from 'typeorm';
 import { PaymentProviders } from './providers.entity';
 
 @Entity('payment_platforms')
@@ -27,7 +21,6 @@ export class PaymentPlatforms {
   @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
   created_at: Date;
 
-  @OneToMany(() => PaymentProviders, (payment_provider) => payment_provider.platform)
+  @OneToMany(() => PaymentProviders, (payment_provider) => payment_provider.payment_platform)
   providers: PaymentProviders[];
 }
-

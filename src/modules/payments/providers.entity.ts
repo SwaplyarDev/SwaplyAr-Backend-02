@@ -8,9 +8,9 @@ import {
   Unique,
 } from 'typeorm';
 import { PaymentPlatforms } from './platforms.entity';
-import { BankAccount } from './bank-accounts.entity';
-import { VirtualBankAccount } from './virtual-bank-accounts.entity';
-import { CryptoAccount } from './crypto-accounts.entity'
+import { BankAccounts } from './bank-accounts.entity';
+import { VirtualBankAccounts } from './virtual-bank-accounts.entity';
+import { CryptoAccounts } from './crypto-accounts.entity';
 
 @Entity('payment_providers')
 @Unique(['payment_platforms', 'code'])
@@ -39,12 +39,12 @@ export class PaymentProviders {
   @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
   created_at: Date;
 
-   @OneToMany(() => BankAccount, (bankAccount) => bankAccount.payment_provider)
-  bank_accounts: BankAccount[];
+  @OneToMany(() => BankAccounts, (bankAccount) => bankAccount.payment_provider)
+  bank_accounts: BankAccounts[];
 
-  @OneToMany(() => VirtualBankAccount, (virtualAccount) => virtualAccount.payment_provider)
-  virtual_bank_accounts: VirtualBankAccount[];
+  @OneToMany(() => VirtualBankAccounts, (virtualAccount) => virtualAccount.payment_provider)
+  virtual_bank_accounts: VirtualBankAccounts[];
 
-  @OneToMany(() => CryptoAccount, (cryptoAccount) => cryptoAccount.payment_provider)
-  crypto_accounts: CryptoAccount[];
+  @OneToMany(() => CryptoAccounts, (cryptoAccount) => cryptoAccount.payment_provider)
+  crypto_accounts: CryptoAccounts[];
 }

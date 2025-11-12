@@ -13,7 +13,7 @@ import { VirtualBankAccounts } from './virtual-bank-accounts.entity';
 import { CryptoAccounts } from './crypto-accounts.entity';
 
 @Entity('payment_providers')
-@Unique(['payment_platforms', 'code'])
+@Unique(['payment_platform', 'code'])
 export class PaymentProviders {
   @PrimaryGeneratedColumn('uuid')
   payment_provider_id: string;

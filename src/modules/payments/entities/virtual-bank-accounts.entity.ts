@@ -1,29 +1,28 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
 import { PaymentProviders } from './providers.entity';
-import { CryptoNetworks } from './crypto-networks.entity';
-import { User } from '../users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 
-@Entity('crypto_accounts')
-export class CryptoAccounts {
+@Entity('virtual_bank_accounts')
+export class VirtualBankAccounts {
   @PrimaryGeneratedColumn('uuid')
   bank_account_id: string;
 
-  @ManyToOne(() => User, (user) => user.crypto_accounts, { nullable: false })
+  @ManyToOne(() => User, (user) => user.virtual_bank_accounts, { nullable: false })
   user: User;
 
-  @ManyToOne(() => PaymentProviders, (provider) => provider.crypto_accounts, { nullable: false })
-  payment_provider: PaymentProviders;
-
-  @ManyToOne(() => CryptoNetworks, (network) => network.crypto_accounts, {
+  @ManyToOne(() => PaymentProviders, (provider) => provider.virtual_bank_accounts, {
     nullable: false,
   })
-  crypto_network: CryptoNetworks;
+  payment_provider: PaymentProviders;
 
   @Column({ type: 'varchar', nullable: false })
-  wallet_address: string;
+  email_account: string;
 
   @Column({ type: 'varchar', nullable: true })
-  tag_or_memo: string;
+  account_alias: string;
+
+  @Column({ type: 'varchar', length: 3, nullable: true })
+  currency: string;
 
   @Column({ type: 'varchar', length: 20, default: 'user' })
   owner_type: string;

@@ -9,7 +9,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AdminStatus } from '../../../enum/admin-status.enum';
+import { Status } from '../../../enum/status.enum';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { AdministracionStatusLog } from './administracion-status-log.entity';
 import { User } from '@users/entities/user.entity';
@@ -34,10 +34,10 @@ export class AdministracionMaster {
 
   @Column({
     type: 'enum',
-    enum: AdminStatus,
-    default: AdminStatus.Pending,
+    enum: Status,
+    default: Status.Pending,
   })
-  status: AdminStatus;
+  status: Status;
 
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;

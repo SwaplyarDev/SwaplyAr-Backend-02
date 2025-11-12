@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 
 export class UpdateStatusDto {
   @ApiProperty({ description: 'ID de la transaccion', example: '1234567890' })
@@ -24,8 +24,8 @@ export class AdditionalDataDto {
 export class UpdateStatusByIdDto {
   @ApiProperty({
     description: 'Estado administrativo de la transacción',
-    example: AdminStatus.Approved,
-    enum: Object.values(AdminStatus),
+    example: Status.Approved,
+    enum: Object.values(Status),
   })
   @IsString()
   @IsNotEmpty()

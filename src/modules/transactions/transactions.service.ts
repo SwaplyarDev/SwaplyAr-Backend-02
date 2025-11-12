@@ -28,7 +28,7 @@ import {
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { UserStatusHistoryResponse } from '@common/interfaces/status-history.interface';
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 
 import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
 import { AmountsService } from './amounts/amounts.service';
@@ -172,10 +172,10 @@ export class TransactionsService {
       message: log.message,
     }));
 
-    if (!history.length || history[0].status !== AdminStatus.Pending) {
+    if (!history.length || history[0].status !== Status.Pending) {
       history.unshift({
         id: '',
-        status: AdminStatus.Pending,
+        status: Status.Pending,
         changedAt: transaction.createdAt,
         message: 'Transacción creada',
       });
@@ -356,7 +356,7 @@ export class TransactionsService {
 
     const history = await this.buildStatusHistory(transaction);
 
-    if (history.length === 1 && history[0].status === AdminStatus.Pending) {
+    if (history.length === 1 && history[0].status === Status.Pending) {
       return {
         status: transaction.finalStatus,
         message: 'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',

@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsUUID, IsEnum, IsOptional, IsString, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 
 export class CreateAdministracionMasterDto {
   @ApiProperty({ description: 'ID de la transaccion', example: '123' })
@@ -17,9 +17,9 @@ export class CreateAdministracionMasterDto {
     description: 'Estado del administrativo',
     example: '1234567890',
   })
-  @IsEnum(AdminStatus)
+  @IsEnum(Status)
   @IsNotEmpty()
-  status: AdminStatus;
+  status: Status;
 
   @ApiProperty({
     description: 'Fecha de inicio de la transaccion',

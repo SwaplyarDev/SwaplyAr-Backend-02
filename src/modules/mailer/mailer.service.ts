@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { ApiClient, TransactionalEmailsApi } from 'sib-api-v3-sdk';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 import Handlebars from 'handlebars';
 
 Handlebars.registerHelper('eq', function (a, b) {
@@ -91,28 +91,28 @@ export class MailerService {
   /** ===========================
    * TRANSACTION STATUS EMAILS
    * =========================== */
-  async sendStatusEmail(transaction: any, status: AdminStatus) {
-    const templates: Record<AdminStatus, { subject: string; file: string }> = {
-      [AdminStatus.Pending]: { subject: 'Transacción Pendiente', file: 'pending.hbs' },
-      [AdminStatus.ReviewPayment]: {
+  async sendStatusEmail(transaction: any, status: Status) {
+    const templates: Record<Status, { subject: string; file: string }> = {
+      [Status.Pending]: { subject: 'Transacción Pendiente', file: 'pending.hbs' },
+      [Status.ReviewPayment]: {
         subject: 'Transacción en Revisión de Pago',
         file: 'review-payment.hbs',
       },
-      [AdminStatus.Approved]: { subject: 'Transacción Aprobada', file: 'approved.hbs' },
-      [AdminStatus.Rejected]: { subject: 'Transacción Rechazada', file: 'reject.hbs' },
-      [AdminStatus.RefundInTransit]: {
+      [Status.Approved]: { subject: 'Transacción Aprobada', file: 'approved.hbs' },
+      [Status.Rejected]: { subject: 'Transacción Rechazada', file: 'reject.hbs' },
+      [Status.RefundInTransit]: {
         subject: 'Reembolso en Tránsito',
         file: 'refund-in-transit.hbs',
       },
-      [AdminStatus.InTransit]: { subject: 'Transacción en Tránsito', file: 'in-transit.hbs' },
-      [AdminStatus.Discrepancy]: {
+      [Status.InTransit]: { subject: 'Transacción en Tránsito', file: 'in-transit.hbs' },
+      [Status.Discrepancy]: {
         subject: 'Discrepancia en la Transacción',
         file: 'discrepancy.hbs',
       },
-      [AdminStatus.Cancelled]: { subject: 'Transacción Cancelada', file: 'canceled.hbs' },
-      [AdminStatus.Modified]: { subject: 'Transacción Modificada', file: 'modified.hbs' },
-      [AdminStatus.Refunded]: { subject: 'Transacción Reembolsada', file: 'refunded.hbs' },
-      [AdminStatus.Completed]: { subject: 'Transacción Completada', file: 'completed.hbs' },
+      [Status.Cancelled]: { subject: 'Transacción Cancelada', file: 'canceled.hbs' },
+      [Status.Modified]: { subject: 'Transacción Modificada', file: 'modified.hbs' },
+      [Status.Refunded]: { subject: 'Transacción Reembolsada', file: 'refunded.hbs' },
+      [Status.Completed]: { subject: 'Transacción Completada', file: 'completed.hbs' },
     };
 
     const selected = templates[status];

@@ -1,10 +1,10 @@
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 import { AdministracionMaster } from '../../modules/admin/entities/administracion-master.entity';
 
 export interface StatusHistoryResponse {
   id: string;
   transaction: AdministracionMaster;
-  status: AdminStatus;
+  status: Status;
   changedAt: Date;
   message: string;
   changedByAdmin: {
@@ -17,7 +17,7 @@ export interface StatusHistoryResponse {
 
 export interface UserStatusHistoryResponse {
   id: string;
-  status: AdminStatus;
+  status: Status;
   changedAt: Date;
   message: string;
 }

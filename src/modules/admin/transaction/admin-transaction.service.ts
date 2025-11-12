@@ -14,7 +14,7 @@ import { AdministracionStatusLog } from '@admin/entities/administracion-status-l
 import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
 import { BankService } from '@financial-accounts/payment-methods/bank/bank.service';
 import { User } from '@users/entities/user.entity';
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { FileUploadDTO } from 'src/modules/file-upload/dto/file-upload.dto';
 import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
@@ -45,21 +45,21 @@ export class AdminTransactionService {
     private readonly proofOfPaymentRepository: Repository<ProofOfPayment>,
   ) {}
 
-  private convertAdminStatusToTransactionStatus(status: AdminStatus): AdminStatus {
-    const statusMap: Record<AdminStatus, AdminStatus> = {
-      [AdminStatus.Pending]: AdminStatus.Pending,
-      [AdminStatus.ReviewPayment]: AdminStatus.ReviewPayment,
-      [AdminStatus.Approved]: AdminStatus.Approved,
-      [AdminStatus.Rejected]: AdminStatus.Rejected,
-      [AdminStatus.RefundInTransit]: AdminStatus.RefundInTransit,
-      [AdminStatus.InTransit]: AdminStatus.InTransit,
-      [AdminStatus.Discrepancy]: AdminStatus.Discrepancy,
-      [AdminStatus.Cancelled]: AdminStatus.Cancelled,
-      [AdminStatus.Modified]: AdminStatus.Modified,
-      [AdminStatus.Refunded]: AdminStatus.Refunded,
-      [AdminStatus.Completed]: AdminStatus.Completed,
+  private convertStatusToTransactionStatus(status: Status): Status {
+    const statusMap: Record<Status, Status> = {
+      [Status.Pending]: Status.Pending,
+      [Status.ReviewPayment]: Status.ReviewPayment,
+      [Status.Approved]: Status.Approved,
+      [Status.Rejected]: Status.Rejected,
+      [Status.RefundInTransit]: Status.RefundInTransit,
+      [Status.InTransit]: Status.InTransit,
+      [Status.Discrepancy]: Status.Discrepancy,
+      [Status.Cancelled]: Status.Cancelled,
+      [Status.Modified]: Status.Modified,
+      [Status.Refunded]: Status.Refunded,
+      [Status.Completed]: Status.Completed,
     };
-    return statusMap[status] || AdminStatus.Pending;
+    return statusMap[status] || Status.Pending;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -335,7 +335,7 @@ export class AdminTransactionService {
   /* -------------------------------------------------------------------------- */
   async updateTransactionStatusByType(
     transactionId: string,
-    status: AdminStatus,
+    status: Status,
     adminUser: User,
     message?: string,
     additionalData?: Record<string, any>,
@@ -355,7 +355,7 @@ export class AdminTransactionService {
       throw new NotFoundException('Transacción no encontrada.');
     }
 
-    if (transaction.finalStatus === AdminStatus.Completed) {
+    if (transaction.finalStatus === Status.Completed) {
       this.logger.warn(
         `Intento de modificar una transacción completada (ID: ${transaction.id}). Estado solicitado: ${status}`,
       );
@@ -391,7 +391,7 @@ export class AdminTransactionService {
 
     await this.statusLogRepository.save(statusLog);
 
-    const transactionStatus = this.convertAdminStatusToTransactionStatus(status);
+    const transactionStatus = this.convertStatusToTransactionStatus(status);
 
     await this.transactionsRepository.update(
       { id: transactionId },
@@ -406,7 +406,7 @@ export class AdminTransactionService {
       `Estado de transacción ${transactionId} actualizado a ${status} por admin ${adminUser.id}`,
     );
 
-    if (status === AdminStatus.Approved) {
+    if (status === Status.Approved) {
       return {
         message: 'Estado cambiado a approved correctamente. No se asignaron recompensas.',
         status: 200,
@@ -414,7 +414,7 @@ export class AdminTransactionService {
       };
     }
 
-    if (status === AdminStatus.Completed) {
+    if (status === Status.Completed) {
       const {
         cycleCompleted,
         ledger,
@@ -594,15 +594,15 @@ export class AdminTransactionService {
 
     const p = (payload as Record<string, unknown>) || {};
 
-    if (transaction.finalStatus === AdminStatus.Completed) {
+    if (transaction.finalStatus === Status.Completed) {
       throw new BadRequestException(
         'No se puede modificar una transacción que ya está marcada como completada.',
       );
     }
 
     const fs = p.finalStatus;
-    if (typeof fs === 'string' && Object.values(AdminStatus).includes(fs as AdminStatus)) {
-      if (fs === AdminStatus.Completed) {
+    if (typeof fs === 'string' && Object.values(Status).includes(fs as Status)) {
+      if (fs === Status.Completed) {
         throw new BadRequestException(
           'No se puede marcar la transacción como completed desde este endpoint.',
         );
@@ -622,8 +622,8 @@ export class AdminTransactionService {
       transaction.noteVerificationExpiresAt = ns instanceof Date ? ns : new Date(ns);
     }
 
-    if (typeof fs === 'string' && Object.values(AdminStatus).includes(fs as AdminStatus)) {
-      transaction.finalStatus = fs as AdminStatus;
+    if (typeof fs === 'string' && Object.values(Status).includes(fs as Status)) {
+      transaction.finalStatus = fs as Status;
     }
 
     await this.transactionsRepository.save(transaction);

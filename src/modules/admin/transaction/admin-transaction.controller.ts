@@ -42,7 +42,7 @@ import {
 } from './dto/get-transaction-response.dto';
 import { AdminTransactionService } from './admin-transaction.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 import {
   UpdateStatusByIdDto,
   UpdateStatusByTypeDto,
@@ -189,7 +189,7 @@ export class AdminTransactionController {
   @ApiBody({ type: UpdateStatusByIdDto })
   async updateTransactionStatus(
     @Param('id') id: string,
-    @Body('status') status: AdminStatus,
+    @Body('status') status: Status,
     @Body('message') message: string,
     @Body('additionalData') additionalData: Record<string, any>,
     @Request() req: { user: User },
@@ -296,7 +296,7 @@ export class AdminTransactionController {
   })
   @Post('transactions/status/:status')
   async updateStatusByType(
-    @Param('status') status: AdminStatus,
+    @Param('status') status: Status,
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
     body: UpdateStatusDto & any,
     @Request() req: { user: User },

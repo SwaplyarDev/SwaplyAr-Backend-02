@@ -1,4 +1,4 @@
-export enum AdminStatus {
+export enum Status {
   Pending = 'pending',
   ReviewPayment = 'review_payment',
   Approved = 'approved',

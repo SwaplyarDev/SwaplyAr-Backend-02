@@ -1,16 +1,15 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('financial_accounts')
-export class FinancialAccount {
+@Entity('financial_account')
+export class FinancialAccounts {
   @PrimaryGeneratedColumn('uuid', { name: 'financial_account_id' })
   financialAccountId: string;
 
   @Column({
-    type: 'enum',
-    enum: ['bank', 'virtual_bank', 'crypto'],
-    name: 'type',
+    type: 'uuid',
+    name: 'payment_platform_id',
   })
-  type: 'bank' | 'virtual_bank' | 'crypto';
+  paymentPlatformId: string; // FK → payment_platforms (bank, virtual_bank, receiver_crypto)
 
   @Column({ type: 'uuid', name: 'reference_id' })
   referenceId: string; // ID de la cuenta específica (p. ej. banco o wallet)

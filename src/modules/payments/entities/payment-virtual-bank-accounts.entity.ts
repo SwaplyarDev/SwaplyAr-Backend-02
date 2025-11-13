@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
-import { PaymentProviders } from './providers.entity';
+import { PaymentProviders } from './payment-providers.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Entity('virtual_bank_accounts')

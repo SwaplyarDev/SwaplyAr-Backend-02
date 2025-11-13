@@ -21,7 +21,7 @@ import {
 import { customAlphabet } from 'nanoid';
 import { Note } from '@transactions/notes/entities/note.entity';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 
 export const nanoidCustom = customAlphabet(
@@ -53,11 +53,11 @@ export class Transaction {
   @Index('idx_transactions_final_status')
   @Column({
     type: 'enum',
-    enum: AdminStatus,
-    default: AdminStatus.Pending,
+    enum: Status,
+    default: Status.Pending,
     name: 'final_status',
   })
-  finalStatus: AdminStatus;
+  finalStatus: Status;
 
   @Index('idx_transactions_sender_account_id')
   @ManyToOne(() => SenderFinancialAccount, (sender) => sender.transactions, {

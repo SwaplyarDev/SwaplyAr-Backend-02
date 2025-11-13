@@ -1,12 +1,12 @@
 import { IsOptional, IsEnum, IsString, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 
 export class UpdateTransactionDto {
   @ApiProperty({ description: 'Estado de la transaccion', example: 'pending' })
   @IsOptional()
-  @IsEnum(AdminStatus)
-  status?: AdminStatus;
+  @IsEnum(Status)
+  status?: Status;
 
   @IsOptional()
   @ApiProperty({

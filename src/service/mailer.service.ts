@@ -6,7 +6,7 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import * as sgTransport from 'nodemailer-sendgrid-transport';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 import Handlebars from 'handlebars';
 
 @Injectable()
@@ -132,7 +132,7 @@ export class MailerService {
     }
   }
 
-  async sendStatusEmail(transaction: any, status: AdminStatus) {
+  async sendStatusEmail(transaction: any, status: Status) {
     this.logger.log(
       `sendStatusEmail called with transactionId=${transaction?.id}, status=${status}`,
     );
@@ -157,48 +157,48 @@ export class MailerService {
         );
       }
 
-      const statusTemplates: Record<AdminStatus, { subject: string; path: string }> = {
-        [AdminStatus.Pending]: {
+      const statusTemplates: Record<Status, { subject: string; path: string }> = {
+        [Status.Pending]: {
           subject: 'Transacción Pendiente',
           path: 'pending.hbs',
         },
-        [AdminStatus.ReviewPayment]: {
+        [Status.ReviewPayment]: {
           subject: 'Transacción en Revisión de Pago',
           path: 'review-payment.hbs',
         },
-        [AdminStatus.Approved]: {
+        [Status.Approved]: {
           subject: 'Transacción Aprobada',
           path: 'approved.hbs',
         },
-        [AdminStatus.Rejected]: {
+        [Status.Rejected]: {
           subject: 'Transacción Rechazada',
           path: 'reject.hbs',
         },
-        [AdminStatus.RefundInTransit]: {
+        [Status.RefundInTransit]: {
           subject: 'Reembolso en Tránsito',
           path: 'refund-in-transit.hbs',
         },
-        [AdminStatus.InTransit]: {
+        [Status.InTransit]: {
           subject: 'Transacción en Tránsito',
           path: 'in-transit.hbs',
         },
-        [AdminStatus.Discrepancy]: {
+        [Status.Discrepancy]: {
           subject: 'Discrepancia en la Transacción',
           path: 'discrepancy.hbs',
         },
-        [AdminStatus.Cancelled]: {
+        [Status.Cancelled]: {
           subject: 'Transacción Cancelada',
           path: 'cancelled.hbs',
         },
-        [AdminStatus.Modified]: {
+        [Status.Modified]: {
           subject: 'Transacción Modificada',
           path: 'modified.hbs',
         },
-        [AdminStatus.Refunded]: {
+        [Status.Refunded]: {
           subject: 'Transacción Reembolsada',
           path: 'refunded.hbs',
         },
-        [AdminStatus.Completed]: {
+        [Status.Completed]: {
           subject: 'Transacción Completada',
           path: 'completed.hbs',
         },

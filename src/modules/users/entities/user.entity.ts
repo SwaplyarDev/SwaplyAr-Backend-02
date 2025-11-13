@@ -22,6 +22,9 @@ import { UserAccount } from 'src/modules/userAccounts/entities/user-account.enti
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
 import { customAlphabet } from 'nanoid';
+import { BankAccounts } from 'src/modules/payments/entities/bank-accounts.entity';
+import { VirtualBankAccounts } from 'src/modules/payments/entities/payment-virtual-bank-accounts.entity';
+import { CryptoAccounts } from 'src/modules/payments/entities/crypto-accounts.entity';
 
 export const nanoidCustom = customAlphabet(
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
@@ -89,6 +92,15 @@ export class User {
     cascade: true,
   })
   rewardsLedger: UserRewardsLedger;
+
+  @OneToMany(() => BankAccounts, (bankAccount) => bankAccount.user)
+  bank_accounts: BankAccounts[];
+
+  @OneToMany(() => VirtualBankAccounts, (virtualBankAccount) => virtualBankAccount.user)
+  virtual_bank_accounts: VirtualBankAccounts[];
+
+  @OneToMany(() => CryptoAccounts, (cryptoAccount) => cryptoAccount.user)
+  crypto_accounts: CryptoAccounts[];
 
   @Column({
     type: 'enum',

@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { PaymentPlatforms } from './payment-platforms.entity';
 import { BankAccounts } from './bank-accounts.entity';
-import { VirtualBankAccounts } from './payment-virtual-bank-accounts.entity';
+import { VirtualBankAccounts } from './virtual-bank-accounts.entity';
 import { CryptoAccounts } from './crypto-accounts.entity';
 
 @Entity('payment_providers')

@@ -23,7 +23,7 @@ import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entit
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
 import { customAlphabet } from 'nanoid';
 import { BankAccounts } from 'src/modules/payments/entities/bank-accounts.entity';
-import { VirtualBankAccounts } from 'src/modules/payments/entities/payment-virtual-bank-accounts.entity';
+import { VirtualBankAccounts } from 'src/modules/payments/entities/virtual-bank-accounts.entity';
 import { CryptoAccounts } from 'src/modules/payments/entities/crypto-accounts.entity';
 
 export const nanoidCustom = customAlphabet(

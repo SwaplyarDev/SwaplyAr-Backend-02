@@ -125,6 +125,7 @@ export class OtpService {
     const user = await this.userRepo
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.profile', 'profile')
+      .leftJoinAndSelect('user.role', 'role') // Agregamos la relación role
       .where('profile.email = :email', { email })
       .getOne();
     if (!user) {

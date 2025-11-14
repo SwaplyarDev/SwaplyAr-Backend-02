@@ -53,7 +53,7 @@ export class AuthService {
   async refreshAccessToken(refreshToken: string) {
     const user = await this.userRepo.findOne({
       where: { refreshToken },
-      relations: ['profile'],
+      relations: ['profile', 'role'], // Agregamos la relación role
     });
 
     if (!user || !user.refreshToken) {

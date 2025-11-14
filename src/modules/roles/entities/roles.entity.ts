@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { Users } from '../../users/entities/users.entity'; // ajusta la ruta según tu estructura
+import { User } from '../../users/entities/user.entity';
 
 @Entity('roles')
 export class Roles {
@@ -25,6 +25,6 @@ export class Roles {
   created_at: Date;
 
   // Si quieres relacionarlo con los usuarios
-  @OneToMany(() => Users, (user) => user.role)
-  users: Users[];
+  @OneToMany(() => User, (user) => user.role)
+  users: User[];
 }

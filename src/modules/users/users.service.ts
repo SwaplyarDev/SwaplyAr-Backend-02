@@ -13,6 +13,7 @@ import { UserProfile } from '@users/entities/user-profile.entity';
 import { UserSocials } from './entities/user-socials.entity';
 import { UserRole } from 'src/enum/user-role.enum';
 import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.entity';
+import { RolesService } from '../roles/roles.service';
 
 @Injectable()
 export class UsersService {
@@ -22,6 +23,7 @@ export class UsersService {
     private profileRepository: Repository<UserProfile>,
     @InjectRepository(UserSocials)
     private socialsRepository: Repository<UserSocials>,
+    private rolesService: RolesService,
   ) {}
 
   // private generateUserCode(): string {
@@ -71,6 +73,7 @@ export class UsersService {
 
       const user = new User();
       const userProfile = new UserProfile();
+      const userRole = await this.rolesService.findByCode('user');
 
       userProfile.firstName = userDto.firstName;
       userProfile.lastName = userDto.lastName;
@@ -78,7 +81,7 @@ export class UsersService {
 
       user.profile = userProfile;
       user.termsAccepted = userDto.termsAccepted ?? false;
-      user.role = UserRole.User;
+      user.role = userRole;
       user.rewardsLedger = new UserRewardsLedger();
 
       return await this.userRepository.save(user);

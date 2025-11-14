@@ -6,6 +6,8 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   BeforeInsert,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { UserProfile } from '@users/entities/user-profile.entity';
 import { UserAlternativeEmail } from '@users/entities/user-alternative-email.entity';
@@ -21,6 +23,7 @@ import { UserRole } from 'src/enum/user-role.enum';
 import { UserAccount } from 'src/modules/userAccounts/entities/user-account.entity';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
+import { Roles } from '../../roles/entities/roles.entity';
 import { customAlphabet } from 'nanoid';
 
 export const nanoidCustom = customAlphabet(
@@ -90,13 +93,13 @@ export class User {
   })
   rewardsLedger: UserRewardsLedger;
 
-  @Column({
-    type: 'enum',
-    enum: UserRole,
-    default: UserRole.User,
-    name: 'user_role',
-  })
-  role: UserRole;
+  // @Column({
+  //   type: 'enum',
+  //   enum: UserRole,
+  //   default: UserRole.User,
+  //   name: 'user_role',
+  // })
+  // role: UserRole;
 
   @Column({ name: 'terms_accepted', default: false })
   termsAccepted: boolean;
@@ -136,4 +139,8 @@ export class User {
 
   @Column({ nullable: true })
   refreshToken?: string;
+
+  @ManyToOne(() => Roles, (role) => role.users)
+  @JoinColumn({ name: 'role_id' })
+  role: Roles;
 }

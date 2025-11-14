@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Post,
@@ -18,7 +17,6 @@ import {
 import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
 import {
   ApiOperation,
-  ApiResponse,
   ApiTags,
   ApiBody,
   ApiParam,
@@ -43,7 +41,6 @@ import {
 } from './dto/get-transaction-response.dto';
 import { AdminTransactionService } from './admin-transaction.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { AddVoucherDto } from './dto/add-voucher.dto';
 import { AdminStatus } from 'src/enum/admin-status.enum';
 import { UpdateStatusByIdDto, UpdateStatusDto } from './dto/update-status.dto';
 import { User } from '@users/entities/user.entity';
@@ -106,7 +103,7 @@ export class AdminTransactionController {
   @ApiUnauthorizedResponse({ description: '❌ No autorizado. Token no válido o no enviado.' })
   @ApiForbiddenResponse({ description: '❌ Acceso no autorizado, Solo para Administradores' })
   @ApiNotFoundResponse({ description: '❌ No se encuentran Transacciones' })
-  @ApiResponse({ status: 500, description: '❌ Error interno del servidor' })
+  @ApiInternalServerErrorResponse({ description: '❌ Error interno del servidor' })
   @Get('transactions')
   async getAllTransactions(
     @Query('page') page = 1,
@@ -253,7 +250,7 @@ export class AdminTransactionController {
     description: 'Transacciones encontradas',
     type: [TransactionByIdAdminResponseDto],
   })
-  @ApiResponse({ status: 404, description: '❌ No se encontraron transacciones con ese email' })
+  @ApiNotFoundResponse({ description: '❌ No se encontraron transacciones con ese email' })
   @Get('transactions/sender/:email')
   async getTransactionsByCreatedBy(
     @Param('email') email: string,

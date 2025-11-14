@@ -9,7 +9,6 @@ import {
   Put,
   Req,
   Body,
-  Delete,
   UploadedFile,
   UnauthorizedException,
   Patch,
@@ -22,17 +21,24 @@ import {
   ApiTags,
   ApiBearerAuth,
   ApiOperation,
-  ApiResponse,
   ApiBody,
   ApiConsumes,
   ApiOkResponse,
+  ApiUnauthorizedResponse,
+  ApiBadRequestResponse,
+  ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
 import { UpdateEmailDto } from './dto/email.profile.dto';
 import { UpdatePhoneDto } from './dto/phone.profile.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UpdateUserProfileDto } from './dto/udpate-profile.dto';
+import { UpdateImageResponseDto, UpdateUserProfileDto } from './dto/udpate-profile.dto';
 import { ProfileResponseDto } from '@users/dto/user-response.dto';
 import { UpdateUserSocialsDto } from './dto/update-user-socials.dto';
+import {
+  UpdateUserProfileResponseDto,
+  UpdateUserSocialsResponseDto,
+  UserProfileResponseDto,
+} from './dto/get-user-profile-response.dto';
 
 @ApiTags('Perfiles')
 @UseGuards(JwtAuthGuard)
@@ -49,55 +55,9 @@ export class ProfileController {
   @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })
   @ApiOkResponse({
     description: 'Perfil del usuario con redes sociales',
-    schema: {
-      example: {
-        id: '3305af05-9a75-46b7-8f82-1cdd10af47de',
-        user: {
-          id: 'd8e5fcb1-cf4b-4de9-823a-b075dfadaca2',
-          locations: [
-            {
-              id: '1a5bcb6c-2f9a-4677-b51e-9ee2fc295a5d',
-              country: 'Colombia',
-              department: 'Antioquia',
-              postalCode: '050021',
-              date: '2025-09-24T00:00:00.000Z',
-            },
-          ],
-          role: 'user',
-          termsAccepted: true,
-          createdAt: '2025-09-25T14:42:02.386Z',
-          validatedAt: null,
-          isActive: true,
-          isValidated: false,
-          userValidated: false,
-        },
-        firstName: 'Nahuel',
-        lastName: 'Davila',
-        nickName: 'JoseDev',
-        email: 'coronajonhatan@gmail.com',
-        identification: null,
-        phone: null,
-        birthday: null,
-        age: null,
-        gender: 'M',
-        lastActivity: null,
-        socials: {
-          id: 'e45ca483-76fb-47df-b5ce-295b4bddbf70',
-          whatsappNumber: '+5731134334567',
-          facebook: 'https://facebook.com/user',
-          instagram: 'https://instagram.com/user',
-          tiktok: 'https://tiktok.com/@user',
-          twitterX: 'https://twitter.com/user',
-          snapchat: 'https://snapchat.com/add/user',
-          linkedin: 'https://linkedin.com/in/user',
-          youtube: 'https://youtube.com/user',
-          pinterest: 'https://pinterest.com/user',
-        },
-        profilePictureUrl: null,
-      },
-    },
+    type: UserProfileResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
+  @ApiUnauthorizedResponse({  description: 'Usuario no autenticado o token inválido' })
   async getMyProfile(@Req() req: any) {
     const userId = req.user?.id;
 
@@ -132,44 +92,10 @@ export class ProfileController {
   @ApiBody({ type: UpdateUserProfileDto })
   @ApiOkResponse({
     description: 'Perfil del usuario',
-    schema: {
-      example: {
-        id: '3305af05-9a75-46b7-8f82-1cdd10af47de',
-        user: {
-          id: 'd8e5fcb1-cf4b-4de9-823a-b075dfadaca2',
-          locations: [
-            {
-              id: '1a5bcb6c-2f9a-4677-b51e-9ee2fc295a5d',
-              country: 'Colombia',
-              department: 'Antioquia',
-              postalCode: '050021',
-              date: '2025-09-24T00:00:00.000Z',
-            },
-          ],
-          role: 'user',
-          termsAccepted: true,
-          createdAt: '2025-09-25T14:42:02.386Z',
-          validatedAt: null,
-          isActive: true,
-          isValidated: false,
-          userValidated: false,
-        },
-        firstName: 'Nahuel',
-        lastName: 'Davila',
-        nickName: 'JoseDev',
-        email: 'coronajonhatan@gmail.com',
-        identification: null,
-        phone: null,
-        birthday: null,
-        age: null,
-        gender: 'M',
-        lastActivity: null,
-        profilePictureUrl: null,
-      },
-    },
+    type: UpdateUserProfileResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Solicitud inválida o datos incompletos' })
-  @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
+  @ApiBadRequestResponse({ description: 'Solicitud inválida o datos incompletos' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
   async updateUserProfile(
     @Req() req: any,
     @Body() updateUserProfileDto: UpdateUserProfileDto,
@@ -213,25 +139,9 @@ export class ProfileController {
   @ApiBody({ type: UpdateUserSocialsDto })
   @ApiOkResponse({
     description: 'Redes sociales actualizadas correctamente',
-    schema: {
-      example: {
-        message: 'Redes sociales actualizadas correctamente',
-        result: {
-          id: 'e45ca483-76fb-47df-b5ce-295b4bddbf70',
-          whatsappNumber: '+5730013425567',
-          facebook: 'https://facebook.com/user',
-          instagram: 'https://instagram.com/user',
-          tiktok: 'https://tiktok.com/@user',
-          twitterX: 'https://twitter.com/user',
-          snapchat: 'https://snapchat.com/add/user',
-          linkedin: 'https://linkedin.com/in/user',
-          youtube: 'https://youtube.com/user',
-          pinterest: 'https://pinterest.com/user',
-        },
-      },
-    },
+    type: UpdateUserSocialsResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Usuario no autenticado o token inválido' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
   async updateSocials(@Req() req: any, @Body() updateUserSocialsDto: UpdateUserSocialsDto) {
     const userId = req.user?.id;
     if (!userId) throw new UnauthorizedException();
@@ -269,19 +179,11 @@ export class ProfileController {
   })
   @ApiOkResponse({
     description: 'Imagen actualizada correctamente',
-    schema: {
-      example: {
-        message: 'Imagen actualizada correctamente',
-        result: {
-          imgUrl:
-            'https://res.cloudinary.com/dy1jiclwg/image/upload/v1759156800/profile-pictures/profile_d8e5fcb1-cf4b-4de9-823a-b075dfadaca2_1759156797456.png',
-        },
-      },
-    },
+    type: UpdateImageResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Archivo no enviado o usuario no autenticado' })
-  @ApiResponse({ status: 401, description: 'Usuario no autenticado' })
-  @ApiResponse({ status: 500, description: 'Error interno al subir la imagen' })
+  @ApiBadRequestResponse({ description: 'Archivo no enviado o usuario no autenticado' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado' })
+  @ApiInternalServerErrorResponse({ description: 'Error interno al subir la imagen' })
   async updateProfilePicture(@UploadedFile() file: Express.Multer.File, @Req() req: any) {
     const userId = req.user?.id;
 
@@ -321,7 +223,7 @@ export class ProfileController {
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Actualizar email del perfil autenticado' })
-  @ApiResponse({ status: 200, description: 'Email actualizado correctamente' })
+  @ApiOkResponse({ description: 'Email actualizado correctamente' })
   async updateUserProfileEmailController(@Req() req, @Body() updateEmailDto: UpdateEmailDto) {
     const userId = req.user.id;
     return this.profileService.updateEmail(userId, updateEmailDto.email);
@@ -337,7 +239,7 @@ export class ProfileController {
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Actualizar telefono del perfil autenticado' })
-  @ApiResponse({ status: 200, description: 'Email actualizado correctamente' })
+  @ApiOkResponse({ description: 'Email actualizado correctamente' })
   async updateUserProfilePhoneController(@Req() req, @Body() updatePhoneDto: UpdatePhoneDto) {
     const userId = req.user.id;
     console.log(userId);

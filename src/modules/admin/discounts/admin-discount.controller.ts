@@ -7,16 +7,20 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { AdminDiscountService } from './admin-discount.service';
 import { UserRole } from 'src/enum/user-role.enum';
 import { Roles } from '@common/decorators/roles.decorator';
-import { DiscountCode } from 'src/modules/discounts/entities/discount-code.entity';
-import { CreateDiscountCodeDto } from './dto/create-discount-code.dto';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { FilterUserDiscountsDto } from './dto/filter-user-discounts.dto';
 import { UserDiscountHistoryDto } from 'src/modules/discounts/dto/user-discount-history.dto';
@@ -96,13 +100,12 @@ export class AdminDiscountsController {
   @ApiOperation({
     summary: 'Obtener descuentos de todos los usuarios con filtro opcional',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Listado de descuentos de usuarios',
     type: [UserDiscount],
   })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @ApiUnauthorizedResponse({ description: 'No autenticado' })
+  @ApiForbiddenResponse({ description: 'No autorizado' })
   @HttpCode(HttpStatus.OK)
   async getAllUserDiscounts(
     @Query() filterDto: FilterUserDiscountsDto,
@@ -116,8 +119,7 @@ export class AdminDiscountsController {
   @ApiOperation({
     summary: 'Obtener historial de cupones de un usuario específico (Admin)',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Historial de descuentos del usuario',
     type: [UserDiscountHistoryDto],
   })

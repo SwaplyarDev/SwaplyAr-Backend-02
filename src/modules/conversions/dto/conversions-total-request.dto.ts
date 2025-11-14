@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString, IsEnum, IsOptional } from 'class-validator';
-/*import { ArsOperationType } from '../../../enum/ars-operation-type.enum';*/
+import { IsNumber, IsString } from 'class-validator';
 
 export class ConversionTotalRequestDto {
   @ApiProperty({ description: 'Monto a convertir', example: 100 })

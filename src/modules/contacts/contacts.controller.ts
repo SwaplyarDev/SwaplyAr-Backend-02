@@ -13,10 +13,12 @@ import {
 import {
   ApiTags,
   ApiOperation,
-  ApiResponse,
   ApiParam,
   ApiBody,
   ApiBearerAuth,
+  ApiOkResponse,
+  ApiNotFoundResponse,
+  ApiCreatedResponse,
 } from '@nestjs/swagger';
 import { ContactService } from './contacts.service';
 import { Contact } from './entities/contants.entity';
@@ -34,7 +36,7 @@ export class ContactController {
   // crea un nuevo contacto
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ summary: 'Crear un nuevo contacto' })
-  @ApiResponse({ status: 201, description: 'Contacto creado correctamente' })
+  @ApiCreatedResponse({ description: 'Contacto creado correctamente' })
   @ApiBody({
     description: 'Datos necesarios para crear un contacto',
     type: CreateContactDto,
@@ -58,7 +60,7 @@ export class ContactController {
 
   // obtiene todos los contactos
   @ApiOperation({ summary: 'Obtener todos los contactos' })
-  @ApiResponse({ status: 200, description: 'Lista de contactos' })
+  @ApiOkResponse({ description: 'Lista de contactos' })
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Get()
   async getAll() {
@@ -68,12 +70,11 @@ export class ContactController {
   // obtiene un contacto por ID
   @ApiOperation({ summary: 'Obtener contacto por ID' })
   @ApiParam({ name: 'id', description: 'ID del contacto', type: 'string' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Contacto encontrado',
     type: Contact,
   })
-  @ApiResponse({ status: 404, description: 'Contacto no encontrado' })
+  @ApiNotFoundResponse({ description: 'Contacto no encontrado' })
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Get(':id')
   async getById(@Param('id') id: string): Promise<Contact> {
@@ -87,12 +88,11 @@ export class ContactController {
     description: 'Email del contacto',
     type: 'string',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Contacto encontrado',
     type: Contact,
   })
-  @ApiResponse({ status: 404, description: 'Contacto no encontrado' })
+  @ApiNotFoundResponse({ description: 'Contacto no encontrado' })
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Get('email/:email')
   async getByEmail(@Param('email') email: string): Promise<Contact> {
@@ -107,12 +107,11 @@ export class ContactController {
     description: 'ID del contacto a actualizar',
     type: 'string',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Contacto actualizado correctamente',
     type: Contact,
   })
-  @ApiResponse({ status: 404, description: 'Contacto no encontrado' })
+  @ApiNotFoundResponse({ description: 'Contacto no encontrado' })
   @ApiBody({
     description: 'Datos a actualizar',
     type: UpdateContactDto,
@@ -140,8 +139,8 @@ export class ContactController {
     description: 'ID del contacto a eliminar',
     type: 'string',
   })
-  @ApiResponse({ status: 200, description: 'Contacto eliminado correctamente' })
-  @ApiResponse({ status: 404, description: 'Contacto no encontrado' })
+  @ApiOkResponse({ description: 'Contacto eliminado correctamente' })
+  @ApiNotFoundResponse({ description: 'Contacto no encontrado' })
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Delete(':id')
   async delete(@Param('id') id: string) {

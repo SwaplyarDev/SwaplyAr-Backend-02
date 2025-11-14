@@ -1,5 +1,5 @@
-import { Body, Controller, Post, BadRequestException, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Post, BadRequestException } from '@nestjs/common';
+import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ConversionsService } from '../services/conversions.service';
 import { ConversionRequestDto } from '../dto/conversions-request.dto';
 import { ConversionResponseDto } from '../dto/conversions-response.dto';
@@ -13,7 +13,7 @@ export class ConversionsController {
   @ApiOperation({
     summary: 'Convertir divisas y/o monedas (excepto EUR/USD → ARS o ARS → EUR/ARS/BRL)',
   })
-  @ApiResponse({ status: 201, type: ConversionResponseDto })
+  @ApiCreatedResponse({ type: ConversionResponseDto })
   async convert(@Body() request: ConversionRequestDto) {
     if (request.to === 'ARS' && (request.from === 'USD' || request.from === 'EUR')) {
       throw new BadRequestException(
@@ -32,7 +32,7 @@ export class ConversionsController {
 
   @Post('ars')
   @ApiOperation({ summary: 'Convertir EUR/USD → ARS con modalidad (compra)' })
-  @ApiResponse({ status: 201, type: ConversionResponseDto })
+  @ApiCreatedResponse({ type: ConversionResponseDto })
   async convertArs(@Body() request: ConversionRequestDto) {
     if (request.to !== 'ARS' || !(request.from === 'USD' || request.from === 'EUR')) {
       throw new BadRequestException(
@@ -47,7 +47,7 @@ export class ConversionsController {
   @ApiOperation({
     summary: 'Convertir ARS → EUR/USD/BRL o BRL → USD  (con cálculo indirecto, venta (ARS))' 
   })
-  @ApiResponse({ status: 201, type: ConversionResponseDto })
+  @ApiCreatedResponse({ type: ConversionResponseDto })
   async convertIndirect(@Body() request: ConversionRequestDto) {
     const { from, to } = request;
     const validPairs = [

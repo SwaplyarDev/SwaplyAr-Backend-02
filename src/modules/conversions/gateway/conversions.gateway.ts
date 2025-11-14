@@ -1,5 +1,3 @@
-
-
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -37,10 +35,7 @@ export class ConversionsGateway
   }
 
   @SubscribeMessage('ping-conversions')
-  handlePing(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: any,
-  ): void {
+  handlePing(@ConnectedSocket() client: Socket, @MessageBody() data: any): void {
     this.logger.log(`Ping recibido (conversions): ${JSON.stringify(data)}`);
     client.emit('pong-conversions', {
       msg: 'pong desde conversions gateway',
@@ -53,11 +48,3 @@ export class ConversionsGateway
     this.logger.log(`Se emitió conversion-update: ${JSON.stringify(update)}`);
   }
 }
-
-
-
-
-
-
-
-

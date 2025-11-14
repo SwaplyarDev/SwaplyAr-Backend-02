@@ -1,7 +1,6 @@
 import { IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Express } from 'express';
 
 export class UpdateUserLocationDto {
   @ApiProperty({ example: 'Colombia', description: 'País del usuario' })
@@ -45,4 +44,20 @@ export class UpdateUserProfileDto {
   @ValidateNested()
   @Type(() => UpdateUserLocationDto)
   location?: UpdateUserLocationDto;
+}
+
+export class UpdateImageDataDto {
+  @ApiProperty({
+    example:
+      'https://res.cloudinary.com/dy1jiclwg/image/upload/v1759156800/profile-pictures/profile_d8e5fcb1-cf4b-4de9-823a-b075dfadaca2_1759156797456.png',
+  })
+  imgUrl: string;
+}
+
+export class UpdateImageResponseDto {
+  @ApiProperty({ example: 'Imagen actualizada correctamente' })
+  message: string;
+
+  @ApiProperty({ type: UpdateImageDataDto })
+  result: UpdateImageDataDto;
 }

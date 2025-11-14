@@ -1,8 +1,15 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { RegretsService } from './regrets.service';
-import { CreateRegretDto } from './dto/create-regret.dto';
+import { CreateRegretDto, CreateRegretResponseDto } from './dto/create-regret.dto';
 import { UpdateRegretDto } from './dto/update-regret.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBody,
+  ApiParam,
+  ApiOkResponse,
+  ApiCreatedResponse,
+} from '@nestjs/swagger';
 
 @ApiTags('Regrets')
 @Controller('regrets')
@@ -10,35 +17,13 @@ export class RegretsController {
   constructor(private readonly regretsService: RegretsService) {}
 
   @ApiOperation({ summary: 'Crear un arrepentimiento de transacción' })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'Arrepentimiento creado correctamente',
-    schema: {
-      example: {
-        id: 'uuid',
-        transaction_id: 'ZrzUcnGWWr',
-        last_name: 'Davila',
-        email: 'nahuel@gmail.com',
-        phone_number: '+1234567890',
-        description: 'Nota de prueba',
-      },
-    },
+    type: CreateRegretResponseDto,
   })
   @ApiBody({
     description: 'Datos para crear un arrepentimiento',
     type: CreateRegretDto,
-    examples: {
-      ejemplo1: {
-        summary: 'Ejemplo de request',
-        value: {
-          transaction_id: 'ZrzUcnGWWr',
-          last_name: 'Davila',
-          email: 'nahuel@gmail.com',
-          phone_number: '+1234567890',
-          description: 'Descripción de prueba',
-        },
-      },
-    },
   })
   @Post()
   create(@Body() createRegretDto: CreateRegretDto) {
@@ -46,21 +31,9 @@ export class RegretsController {
   }
 
   @ApiOperation({ summary: 'Obtener todos los arrepentimientos' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Lista de arrepentimientos',
-    schema: {
-      example: [
-        {
-          id: 'uuid',
-          transaction_id: 'ZrzUcnGWWr',
-          last_name: 'Davila',
-          email: 'nahuel@gmail.com',
-          phone_number: '1234567890',
-          description: 'me arrepenti ',
-        },
-      ],
-    },
+    type: [CreateRegretResponseDto],
   })
   @Get()
   findAll() {
@@ -68,19 +41,9 @@ export class RegretsController {
   }
 
   @ApiOperation({ summary: 'Obtener un arrepentimiento por ID' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Arrepentimiento encontrado',
-    schema: {
-      example: {
-        id: 'uuid',
-        transaction_id: '123',
-        last_name: 'Davila',
-        email: 'nahuel@gmail.com',
-        phone_number: '1234567890',
-        note: 'Nota de prueba',
-      },
-    },
+    type: CreateRegretResponseDto,
   })
   @ApiParam({
     name: 'id',

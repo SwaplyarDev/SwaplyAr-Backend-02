@@ -1,7 +1,13 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { PaymentMethodService } from './payment-method.service';
-import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import {
+  BankPaymentMethodDataResponseDto,
+  CreatePaymentMethodDto,
+  CreatePaymentMethodResponseDto,
+  PixPaymentMethodDataResponseDto,
+} from './dto/create-payment-method.dto';
+import { ApiTags, ApiOperation, ApiBody, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import { PaymentMethodsResponseDto } from './dto/get-payment-methods-response.dto';
 
 @ApiTags('Métodos de Pago')
 @Controller('payment-method')
@@ -9,24 +15,9 @@ export class PaymentMethodController {
   constructor(private readonly paymentMethodService: PaymentMethodService) {}
 
   @ApiOperation({ summary: 'Crear un método de pago' })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'Método de pago creado correctamente',
-    schema: {
-      example: {
-        id: 'uuid',
-        platformId: 'bank',
-        method: 'bank',
-        bank: {
-          currency: 'ARS',
-          bankName: 'Banco Nación',
-          sendMethodKey: 'CBU',
-          sendMethodValue: '1234567890123456789012',
-          documentType: 'DNI',
-          documentValue: '87654321',
-        },
-      },
-    },
+    type: CreatePaymentMethodResponseDto,
   })
   @ApiBody({
     description: 'Datos para crear un método de pago',
@@ -92,21 +83,9 @@ export class PaymentMethodController {
   }
 
   @ApiOperation({ summary: 'Obtener todos los métodos de pago' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Lista de métodos de pago',
-    schema: {
-      example: [
-        {
-          id: 'uuid',
-          platformId: 'bank',
-          method: 'bank',
-          bank: {
-            /* ... */
-          },
-        },
-      ],
-    },
+    type: [PaymentMethodsResponseDto],
   })
   @Get()
   async findAll() {
@@ -114,22 +93,9 @@ export class PaymentMethodController {
   }
 
   @ApiOperation({ summary: 'Obtener todos los métodos de pago tipo banco' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Lista de bancos',
-    schema: {
-      example: [
-        {
-          id: 'uuid',
-          currency: 'ARS',
-          bankName: 'Banco Nación',
-          sendMethodKey: 'CBU',
-          sendMethodValue: '1234567890123456789012',
-          documentType: 'DNI',
-          documentValue: '87654321',
-        },
-      ],
-    },
+    type: [BankPaymentMethodDataResponseDto],
   })
   @Get('/bank')
   async findAllBank() {
@@ -137,20 +103,9 @@ export class PaymentMethodController {
   }
 
   @ApiOperation({ summary: 'Obtener todos los métodos de pago tipo pix' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Lista de pix',
-    schema: {
-      example: [
-        {
-          id: 'uuid',
-          virtualBankId: 'uuid-virtual-bank',
-          pixKey: 'clavePix',
-          pixValue: 'valorPix',
-          cpf: '12345678900',
-        },
-      ],
-    },
+    type: [PixPaymentMethodDataResponseDto],
   })
   @Get('/pix')
   async findAllPix() {

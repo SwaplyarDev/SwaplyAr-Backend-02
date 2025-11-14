@@ -1,4 +1,4 @@
-import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { User } from '@users/entities/user.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,8 +12,7 @@ import {
   FilterUserDiscountsDto,
 } from '../admin/discounts/dto/filter-user-discounts.dto';
 import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
-import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
-import { UpdateStarDto } from './dto/update-star.dto';
+import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';;
 
 export class DiscountService {
   constructor(

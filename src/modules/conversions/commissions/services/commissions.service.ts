@@ -1,5 +1,3 @@
-
-
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { CommissionResponseDto } from '../dto/commissions-response.dto';
 import { DynamicCommissionsService } from 'src/modules/dynamic-commissions/services/dynamicCommissions.service';
@@ -7,23 +5,17 @@ import { PlatformName } from 'src/enum/commissions.enum';
 
 @Injectable()
 export class CommissionsService {
-  constructor(
-    private readonly dynamicCommissionsService: DynamicCommissionsService,
-  ) {}
+  constructor(private readonly dynamicCommissionsService: DynamicCommissionsService) {}
 
   async calculateCommission(
     amount: number,
     fromPlatform: string,
     toPlatform: string,
   ): Promise<CommissionResponseDto> {
-
     const from = fromPlatform as PlatformName;
     const to = toPlatform as PlatformName;
-    
-    const dynamicRule = await this.dynamicCommissionsService.findOneByPair(
-      from,
-      to,
-    );
+
+    const dynamicRule = await this.dynamicCommissionsService.findOneByPair(from, to);
 
     if (!dynamicRule) {
       throw new BadRequestException(
@@ -68,10 +60,7 @@ export class CommissionsService {
     const from = fromPlatform as PlatformName;
     const to = toPlatform as PlatformName;
 
-    const dynamicRule = await this.dynamicCommissionsService.findOneByPair(
-      from,
-      to,
-    );
+    const dynamicRule = await this.dynamicCommissionsService.findOneByPair(from, to);
 
     if (!dynamicRule) {
       return { valid: false };

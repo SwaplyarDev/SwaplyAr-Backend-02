@@ -1,5 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class VerificationIdsDto {
+  @ApiProperty({ example: '2a5bcb6c-2f9a-4677-b51e-9ee2fc295a5d' })
+  verification_id: string;
+}
+
 export class UserLocationDto {
   @ApiProperty({ example: '1a5bcb6c-2f9a-4677-b51e-9ee2fc295a5d' })
   id: string;
@@ -56,9 +61,14 @@ export class UserResponseDto {
   id: string;
 
   @ApiProperty({
-    type: UserLocationDto,
+    type: [UserLocationDto],
   })
   locations: UserLocationDto[];
+
+  @ApiProperty({
+    type: [VerificationIdsDto],
+  })
+  verifications: VerificationIdsDto[];
 
   @ApiProperty({ example: 'admin' })
   role: string;

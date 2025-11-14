@@ -25,24 +25,25 @@ import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import {
   ApiTags,
   ApiOperation,
-  ApiResponse,
   ApiBody,
   ApiConsumes,
   ApiBearerAuth,
   ApiQuery,
   ApiUnauthorizedResponse,
+  ApiCreatedResponse,
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiInternalServerErrorResponse,
+  ApiOkResponse,
+  ApiForbiddenResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { Transaction } from './entities/transaction.entity';
 import {
-  ReceiverAccountDto,
-  SenderAccountDto,
   TransactionGetByIdDto,
   TransactionGetResponseDto,
   TransactionResponseDto,
-  UserDiscountGetDto,
 } from './dto/transaction-response.dto';
 import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -103,50 +104,6 @@ export class TransactionsController {
           type: 'string',
           description:
             'JSON stringificado con la información de la transacción (CreateTransactionDto)',
-          example: JSON.stringify(
-            {
-              countryTransaction: 'Argentina',
-              message: 'Transferencia de prueba',
-              financialAccounts: {
-                senderAccount: {
-                  firstName: 'Juan',
-                  lastName: 'Pérez',
-                  phoneNumber: '+5491123456789',
-                  createdBy: 'coronajonhatan@gmail.com',
-                  paymentMethod: {
-                    platformId: 'bank',
-                    method: 'bank',
-                  },
-                },
-                receiverAccount: {
-                  firstName: 'Alan',
-                  lastName: 'Fernandez',
-                  paymentMethod: {
-                    platformId: 'bank',
-                    method: 'bank',
-                    bank: {
-                      currency: 'ARS',
-                      bankName: 'Banco Galicia',
-                      sendMethodKey: 'CBU',
-                      sendMethodValue: '1234567890123456789012',
-                    },
-                  },
-                },
-              },
-              amount: {
-                amountSent: 1000,
-                currencySent: 'ARS',
-                amountReceived: 900,
-                currencyReceived: 'BRL',
-              },
-              userDiscountIds: [
-                '550e8400-e29b-41d4-a716-446655440000',
-                '550e8400-e29b-41d4-a716-446655440001',
-              ],
-            },
-            null,
-            2,
-          ),
         },
         file: {
           type: 'string',
@@ -157,13 +114,11 @@ export class TransactionsController {
       required: ['createTransactionDto'],
     },
   })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: '✅ Transacción creada correctamente',
     type: TransactionResponseDto,
   })
-  @ApiResponse({
-    status: 400,
+  @ApiBadRequestResponse({
     description: `
     ❌ Error en los datos enviados:
     - El body está vacío.
@@ -173,15 +128,11 @@ export class TransactionsController {
     - Error en la creación de cuentas financieras, monto o comprobante de pago.
   `,
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description:
       '❌ Recurso no encontrado (por ejemplo, cuenta o transacción relacionada no existe)',
   })
-  @ApiResponse({
-    status: 500,
-    description: '❌ Error interno del servidor',
-  })
+  @ApiInternalServerErrorResponse({ description: '❌ Error interno del servidor' })
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async create(@Body() body: CreateTransactionBody, @UploadedFile() file: Express.Multer.File) {
@@ -299,17 +250,14 @@ export class TransactionsController {
   @Get('status/:id')
   @ApiOperation({ summary: 'Obtener historial público de una transacción' })
   @ApiQuery({ name: 'lastName', required: true, type: String })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: '✅ Historial de estados obtenido correctamente',
     type: UserStatusHistoryResponseDto,
   })
-  @ApiResponse({
-    status: 401,
+  @ApiUnauthorizedResponse({
     description: '❌ El apellido no coincide con el remitente de la transacción.',
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: '❌ Transacción no encontrada o sin historial disponible.',
   })
   async getPublicStatusHistory(
@@ -332,18 +280,15 @@ export class TransactionsController {
   @ApiOperation({
     summary: 'Obtener todas las transacciones del usuario autenticado',
   })
-  @ApiResponse({
+  @ApiOkResponse({
     type: [TransactionGetResponseDto],
-    status: 200,
     description: '✅ Lista de transacciones o mensaje indicando que no hay transacciones',
   })
-  @ApiResponse({
-    status: 401,
+  @ApiUnauthorizedResponse({
     description:
       '❌ Token no proporcionado o inválido. El usuario debe autenticarse para acceder a las transacciones.',
   })
-  @ApiResponse({
-    status: 403,
+  @ApiForbiddenResponse({
     description: '❌ Acceso prohibido. El acceso es solo para Usuarios.',
   })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
@@ -377,24 +322,20 @@ export class TransactionsController {
       'siempre que el usuario autenticado sea el creador de la cuenta emisora. ' +
       'Si la transacción no existe o el email no coincide, devuelve un error.',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: '✅ La transacción fue encontrada y el usuario tiene acceso',
     type: TransactionGetByIdDto,
   })
   @ApiUnauthorizedResponse({
     description: 'No autorizado. Token no válido o no enviado.',
   })
-  @ApiResponse({
-    status: 403,
+  @ApiForbiddenResponse({
     description: '❌ Acceso no autorizado a la transacción',
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: '❌ Transacción no encontrada',
   })
-  @ApiResponse({
-    status: 500,
+  @ApiInternalServerErrorResponse({
     description: '⚠️ Error interno del servidor',
   })
   @Get(':transaction_id')

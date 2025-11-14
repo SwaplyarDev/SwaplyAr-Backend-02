@@ -1,5 +1,6 @@
 import { IsString, IsBoolean, IsUUID, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 class PaymentMethodResponseDto {
   @IsString()
@@ -61,4 +62,37 @@ export class CreateUserAccountResponseDto {
   @ValidateNested()
   @Type(() => UserAccountResponseDto)
   userAccount: UserAccountResponseDto;
+}
+
+export class DetailsUserAccountDto {
+  @ApiProperty({ example: 'f4338078-8c08-468c-ad92-134d37e0b405' })
+  account_id: string;
+
+  @ApiProperty({ example: 'dylan.rojo@paypal.com' })
+  email_account: string;
+
+  @ApiProperty({ example: '9876543' })
+  transfer_code: number;
+}
+
+export class AuthenticatedUserAccountResponseDto {
+  @ApiProperty({ example: 'Dylan' })
+  accountName: string;
+
+  @ApiProperty({ example: 'USD' })
+  currency: string;
+
+  @ApiProperty({ example: true })
+  status: boolean;
+
+  @ApiProperty({ example: 'paypal' })
+  payment_type: string;
+
+  @ApiProperty({ type: [DetailsUserAccountDto] })
+  details: [DetailsUserAccountDto];
+}
+
+export class NotFoundUserAccountDto {
+  @ApiProperty({ example: 'Cuenta no encontrada para este usuario' })
+  message: string;
 }

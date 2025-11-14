@@ -76,22 +76,9 @@ export class AdminProfileResultDto {
   pais: string;
 
   @ApiProperty({
-    type: [UserVerificationDto],
-    example: [
-      {
-        verification_id: '1a5bcb6c-2f9a-4677-b51e-9ee2fc295a5d',
-        document_front: 'https://example.com/front.png',
-        document_back: 'https://example.com/back.png',
-        selfie_image: 'https://example.com/selfie.png',
-        verification_status: 'resend-data',
-        note_rejection: 'null',
-        verified_at: '2025-09-24T00:00:00.000Z',
-        created_at: '2025-09-24T00:00:00.000Z',
-        updated_at: '2025-09-24T00:00:00.000Z',
-      },
-    ],
+    type: UserVerificationDto
   })
-  verifications: UserVerificationDto[];
+  ultimaVerificacion: UserVerificationDto;
 }
 
 export class AdminProfileResponseDto {
@@ -107,8 +94,8 @@ export class AdminProfileResponseDto {
   @ApiProperty({ example: 10 })
   limit: number;
 
-  @ApiProperty({ type: AdminProfileResultDto })
-  result: AdminProfileResultDto[];
+  @ApiProperty({ type: [AdminProfileResultDto] })
+  result: AdminProfileResultDto;
 }
 
 export class GetAdminProfilesQueryDto {

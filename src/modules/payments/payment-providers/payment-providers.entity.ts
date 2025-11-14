@@ -7,10 +7,10 @@ import {
   CreateDateColumn,
   Unique,
 } from 'typeorm';
-import { PaymentPlatforms } from './payment-platforms.entity';
-import { BankAccounts } from './bank-accounts.entity';
-import { VirtualBankAccounts } from './virtual-bank-accounts.entity';
-import { CryptoAccounts } from './crypto-accounts.entity';
+import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
+import { BankAccounts } from '../bank-accounts/bank-accounts.entity';
+import { VirtualBankAccounts } from '../virtual-bank-accounts/virtual-bank-accounts.entity';
+import { CryptoAccounts } from '../crypto-accounts/crypto-accounts.entity';
 
 @Entity('payment_providers')
 @Unique(['payment_platform', 'code'])

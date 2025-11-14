@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn } from 'typeorm';
-import { PaymentProviders } from './payment-providers.entity';
-import { FinancialAccounts } from '../../financial-accounts/entities/financial-accounts.entity';
+import { PaymentProviders } from '../payment-providers/payment-providers.entity';
+import { FinancialAccounts } from '../financial-accounts/financial-accounts.entity';
 
 @Entity('payment_platforms')
 export class PaymentPlatforms {

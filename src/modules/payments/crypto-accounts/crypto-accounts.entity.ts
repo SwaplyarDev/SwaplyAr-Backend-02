@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
-import { PaymentProviders } from './payment-providers.entity';
-import { CryptoNetworks } from './crypto-networks.entity';
+import { PaymentProviders } from '../payment-providers/payment-providers.entity';
+import { CryptoNetworks } from '../../catalogs/crypto-networks/crypto-networks.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Entity('crypto_accounts')

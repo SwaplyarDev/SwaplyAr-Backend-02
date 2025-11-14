@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
-import { CryptoAccounts } from './crypto-accounts.entity';
+import { CryptoAccounts } from '../../payments/crypto-accounts/crypto-accounts.entity';
 
 @Entity('crypto_networks')
 export class CryptoNetworks {

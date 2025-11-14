@@ -1,8 +1,9 @@
 import { Expose, Type } from 'class-transformer';
 import { User } from '../../../users/entities/user.entity';
-import { PaymentProviders } from '../../entities/payment-providers.entity';
+import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
+import { CryptoNetworks } from '../../../catalogs/crypto-networks/crypto-networks.entity';
 
-export class VirtualBankAccountResponseDto {
+export class CryptoAccountResponseDto {
   @Expose()
   bank_account_id: string;
 
@@ -15,13 +16,14 @@ export class VirtualBankAccountResponseDto {
   payment_provider: PaymentProviders;
 
   @Expose()
-  email_account: string;
+  @Type(() => CryptoNetworks)
+  crypto_network: CryptoNetworks;
 
   @Expose()
-  account_alias?: string;
+  wallet_address: string;
 
   @Expose()
-  currency?: string;
+  tag_or_memo?: string;
 
   @Expose()
   owner_type: string;

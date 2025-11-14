@@ -14,7 +14,7 @@ import { AdministracionStatusLog } from '@admin/entities/administracion-status-l
 import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
 import { BankService } from '@financial-accounts/payment-methods/bank/bank.service';
 import { User } from '@users/entities/user.entity';
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { FileUploadDTO } from 'src/modules/file-upload/dto/file-upload.dto';
 import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
@@ -45,21 +45,21 @@ export class AdminTransactionService {
     private readonly proofOfPaymentRepository: Repository<ProofOfPayment>,
   ) {}
 
-  private convertAdminStatusToTransactionStatus(status: AdminStatus): AdminStatus {
-    const statusMap: Record<AdminStatus, AdminStatus> = {
-      [AdminStatus.Pending]: AdminStatus.Pending,
-      [AdminStatus.ReviewPayment]: AdminStatus.ReviewPayment,
-      [AdminStatus.Approved]: AdminStatus.Approved,
-      [AdminStatus.Rejected]: AdminStatus.Rejected,
-      [AdminStatus.RefundInTransit]: AdminStatus.RefundInTransit,
-      [AdminStatus.InTransit]: AdminStatus.InTransit,
-      [AdminStatus.Discrepancy]: AdminStatus.Discrepancy,
-      [AdminStatus.Cancelled]: AdminStatus.Cancelled,
-      [AdminStatus.Modified]: AdminStatus.Modified,
-      [AdminStatus.Refunded]: AdminStatus.Refunded,
-      [AdminStatus.Completed]: AdminStatus.Completed,
+  private convertStatusToTransactionStatus(status: Status): Status {
+    const statusMap: Record<Status, Status> = {
+      [Status.Pending]: Status.Pending,
+      [Status.ReviewPayment]: Status.ReviewPayment,
+      [Status.Approved]: Status.Approved,
+      [Status.Rejected]: Status.Rejected,
+      [Status.RefundInTransit]: Status.RefundInTransit,
+      [Status.InTransit]: Status.InTransit,
+      [Status.Discrepancy]: Status.Discrepancy,
+      [Status.Cancelled]: Status.Cancelled,
+      [Status.Modified]: Status.Modified,
+      [Status.Refunded]: Status.Refunded,
+      [Status.Completed]: Status.Completed,
     };
-    return statusMap[status] || AdminStatus.Pending;
+    return statusMap[status] || Status.Pending;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -142,8 +142,8 @@ export class AdminTransactionService {
         paymentMethod: tx.receiverAccount.paymentMethod,
       },
       note: tx.note ? { note_id: tx.note.note_id } : undefined,
-      proofOfPayment:
-        tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment[0] : undefined,
+      proofsOfPayment:
+        tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment : [],
       amount: tx.amount,
       isNoteVerified: tx.isNoteVerified,
       noteVerificationExpiresAt: tx.noteVerificationExpiresAt
@@ -220,7 +220,8 @@ export class AdminTransactionService {
     const formattedNote = transaction.note
       ? {
           note_id: transaction.note.note_id,
-          img_url: transaction.note.img_url,
+          attachments: transaction.note.attachments,
+          //img_url: transaction.note.img_url,
           message: transaction.note.message,
           // Convertimos la fecha (tipo Date) a string ISO, si existe.
           createdAt: transaction.note.createdAt?.toISOString(),
@@ -248,10 +249,10 @@ export class AdminTransactionService {
         paymentMethod: receiver.paymentMethod, // Igual que arriba
       },
       note: formattedNote, // Usamos el objeto de nota formateado
-      proofOfPayment:
+      proofsOfPayment:
         transaction.proofsOfPayment && transaction.proofsOfPayment.length > 0
-          ? transaction.proofsOfPayment[0]
-          : undefined,
+          ? transaction.proofsOfPayment
+          : [],
       amount: transaction.amount,
       isNoteVerified: transaction.isNoteVerified,
       noteVerificationExpiresAt: transaction.noteVerificationExpiresAt?.toISOString(),
@@ -334,7 +335,7 @@ export class AdminTransactionService {
   /* -------------------------------------------------------------------------- */
   async updateTransactionStatusByType(
     transactionId: string,
-    status: AdminStatus,
+    status: Status,
     adminUser: User,
     message?: string,
     additionalData?: Record<string, any>,
@@ -354,7 +355,7 @@ export class AdminTransactionService {
       throw new NotFoundException('Transacción no encontrada.');
     }
 
-   if (transaction.finalStatus === AdminStatus.Completed) {
+    if (transaction.finalStatus === Status.Completed) {
       this.logger.warn(
         `Intento de modificar una transacción completada (ID: ${transaction.id}). Estado solicitado: ${status}`,
       );
@@ -362,60 +363,63 @@ export class AdminTransactionService {
       throw new BadRequestException(
         'No se puede cambiar el estado de una transacción que ya fue completada.',
       );
-   }
+    }
 
-   let adminMaster = await this.adminMasterRepository.findOne({ where: { transactionId } });
+    let adminMaster = await this.adminMasterRepository.findOne({ where: { transactionId } });
 
-   if (!adminMaster) {
+    if (!adminMaster) {
       adminMaster = this.adminMasterRepository.create({
         transactionId,
         status,
         adminUserId: adminUser.id,
       });
       await this.adminMasterRepository.save(adminMaster);
-   } else {
+    } else {
       await this.adminMasterRepository.update(
         { transactionId },
         { status, adminUserId: adminUser.id },
       );
-     }
+    }
 
-     const statusLog = this.statusLogRepository.create({
+    const statusLog = this.statusLogRepository.create({
       transaction: adminMaster,
       status,
       message,
       changedByAdminId: adminUser.id,
       additionalData,
-     });
+    });
 
-     await this.statusLogRepository.save(statusLog);
+    await this.statusLogRepository.save(statusLog);
 
-     const transactionStatus = this.convertAdminStatusToTransactionStatus(status);
+    const transactionStatus = this.convertStatusToTransactionStatus(status);
 
-     await this.transactionsRepository.update(
+    await this.transactionsRepository.update(
       { id: transactionId },
       { finalStatus: transactionStatus },
-     );
+    );
 
-     const updatedTransaction = await this.transactionsRepository.findOne({
+    const updatedTransaction = await this.transactionsRepository.findOne({
       where: { id: transactionId },
-     });
+    });
 
-     this.logger.log(
+    this.logger.log(
       `Estado de transacción ${transactionId} actualizado a ${status} por admin ${adminUser.id}`,
-     );
+    );
 
-     if (status === AdminStatus.Approved) {
+    if (status === Status.Approved) {
       return {
         message: 'Estado cambiado a approved correctamente. No se asignaron recompensas.',
         status: 200,
         transaction: updatedTransaction,
       };
-     }
+    }
 
-     if (status === AdminStatus.Completed) {
-      const { cycleCompleted, ledger, message: starMessage } =
-      await this.updateStars.updateStars(transaction.id);
+    if (status === Status.Completed) {
+      const {
+        cycleCompleted,
+        ledger,
+        message: starMessage,
+      } = await this.updateStars.updateStars(transaction.id);
 
       this.logger.log(
         `Recompensas actualizadas para usuario ${transaction.senderAccount?.createdBy}: +${ledger.quantity}. Ciclo completado: ${cycleCompleted}`,
@@ -437,7 +441,7 @@ export class AdminTransactionService {
       status: 200,
       transaction: updatedTransaction,
     };
-  }  
+  }
 
   /* -------------------------------------------------------------------------- */
   /*                       ADD TRANSACTION RECEIPT (FILE)                       */
@@ -454,8 +458,10 @@ export class AdminTransactionService {
     if (!transactionId) {
       throw new Error('Se requiere transactionId en la solicitud');
     }
+
     let url: string | undefined;
-    let proofOfPayment: ProofOfPayment | undefined = undefined;
+    let proofOfPayment: ProofOfPayment; // ✅ cambia a singular
+
     if (file && file.buffer) {
       const fileName = `voucher_${transactionId}_${Date.now()}`;
       const dto: FileUploadDTO = {
@@ -465,15 +471,14 @@ export class AdminTransactionService {
         originalName: file.originalname || fileName,
         size: file.size || file.buffer.length,
       };
-      // Crear ProofOfPayment y asociar
+
       proofOfPayment = await this.proofOfPaymentService.create(dto);
       url = proofOfPayment.imgUrl;
     } else if (comprobante) {
-      let buffer: Buffer;
       const fileName = `voucher_${transactionId}_${Date.now()}`;
+
       if (comprobante.startsWith('http')) {
-        url = comprobante;
-        // Crear ProofOfPayment solo con la URL
+        // 📎 Si es URL
         proofOfPayment = await this.proofOfPaymentService.create({
           buffer: Buffer.from(''),
           fieldName: 'comprobante',
@@ -481,9 +486,12 @@ export class AdminTransactionService {
           originalName: fileName,
           size: 0,
         });
+        url = comprobante;
       } else if (comprobante.startsWith('data:')) {
+        // 📎 Si es Base64
         const base64Data = comprobante.split(',')[1];
-        buffer = Buffer.from(base64Data, 'base64');
+        const buffer = Buffer.from(base64Data, 'base64');
+
         const dto: FileUploadDTO = {
           buffer,
           fieldName: 'comprobante',
@@ -491,6 +499,7 @@ export class AdminTransactionService {
           originalName: fileName,
           size: buffer.length,
         };
+
         proofOfPayment = await this.proofOfPaymentService.create(dto);
         url = proofOfPayment.imgUrl;
       } else {
@@ -501,13 +510,16 @@ export class AdminTransactionService {
     } else {
       throw new Error('Se requiere un archivo o comprobante válido en la solicitud');
     }
-    // Asociar el comprobante a la transacción en el lado dueño (ManyToOne)
+
+    // Asociar comprobante a la transacción
     const tx = await this.transactionsRepository.findOne({ where: { id: transactionId } });
     if (!tx) {
       throw new NotFoundException('Transacción no encontrada.');
     }
+
     proofOfPayment.transaction = tx;
     await this.proofOfPaymentRepository.save(proofOfPayment);
+
     return { message: 'Comprobante cargado', url };
   }
 
@@ -582,15 +594,15 @@ export class AdminTransactionService {
 
     const p = (payload as Record<string, unknown>) || {};
 
-    if (transaction.finalStatus === AdminStatus.Completed) {
+    if (transaction.finalStatus === Status.Completed) {
       throw new BadRequestException(
         'No se puede modificar una transacción que ya está marcada como completada.',
       );
     }
 
     const fs = p.finalStatus;
-    if (typeof fs === 'string' && Object.values(AdminStatus).includes(fs as AdminStatus)) {
-      if (fs === AdminStatus.Completed) {
+    if (typeof fs === 'string' && Object.values(Status).includes(fs as Status)) {
+      if (fs === Status.Completed) {
         throw new BadRequestException(
           'No se puede marcar la transacción como completed desde este endpoint.',
         );
@@ -610,8 +622,8 @@ export class AdminTransactionService {
       transaction.noteVerificationExpiresAt = ns instanceof Date ? ns : new Date(ns);
     }
 
-    if (typeof fs === 'string' && Object.values(AdminStatus).includes(fs as AdminStatus)) {
-      transaction.finalStatus = fs as AdminStatus;
+    if (typeof fs === 'string' && Object.values(Status).includes(fs as Status)) {
+      transaction.finalStatus = fs as Status;
     }
 
     await this.transactionsRepository.save(transaction);
@@ -631,7 +643,7 @@ export class AdminTransactionService {
       status: 200,
       transaction: updated,
     };
-  }  
+  }
 
   /**
    * Obtiene todas las transacciones con paginación y filtros dinámicos.

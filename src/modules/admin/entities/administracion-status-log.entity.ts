@@ -6,7 +6,7 @@ import {
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { AdminStatus } from '../../../enum/admin-status.enum';
+import { Status } from '../../../enum/status.enum';
 import { AdministracionMaster } from './administracion-master.entity';
 import { User } from '@users/entities/user.entity';
 
@@ -21,8 +21,8 @@ export class AdministracionStatusLog {
   @JoinColumn({ name: 'transaction_id' })
   transaction: AdministracionMaster;
 
-  @Column({ type: 'enum', enum: AdminStatus })
-  status: AdminStatus;
+  @Column({ type: 'enum', enum: Status })
+  status: Status;
 
   @CreateDateColumn({
     type: 'timestamp',

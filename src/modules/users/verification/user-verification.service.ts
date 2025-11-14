@@ -25,7 +25,6 @@ export class UserVerificationService {
 
     @InjectRepository(UserVerificationAttempt)
     private readonly userVerificationAttemptsRepository: Repository<UserVerificationAttempt>,
-
   ) {}
 
   async create(

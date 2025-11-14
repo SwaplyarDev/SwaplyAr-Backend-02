@@ -165,17 +165,7 @@ export class ProfileController {
   })
   @ApiBody({
     description: 'Archivo de imagen a subir',
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-          description: 'Archivo de imagen',
-        },
-      },
-      required: ['file'],
-    },
+    type: UpdateImageResponseDto,
   })
   @ApiOkResponse({
     description: 'Imagen actualizada correctamente',

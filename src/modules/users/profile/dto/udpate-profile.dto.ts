@@ -53,7 +53,6 @@ export class UpdateImageDataDto {
   })
   imgUrl: string;
 }
-
 export class UpdateImageResponseDto {
   @ApiProperty({ example: 'Imagen actualizada correctamente' })
   message: string;

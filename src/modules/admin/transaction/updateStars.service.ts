@@ -8,7 +8,7 @@ import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-l
 import { DiscountCode } from 'src/modules/discounts/entities/discount-code.entity';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { ConversionsService } from 'src/modules/conversions/services/conversions.service';
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 import { DiscountService } from '../../discounts/discounts.service';
 
 @Injectable()
@@ -54,7 +54,7 @@ export class UpdateStarsService {
       throw new NotFoundException('Transacción no encontrada.');
     }
 
-    if (transaction.finalStatus !== AdminStatus.Completed) {
+    if (transaction.finalStatus !== Status.Completed) {
       throw new BadRequestException(
         'Solo se pueden registrar recompensas de transacciones completadas.',
       );
@@ -62,9 +62,7 @@ export class UpdateStarsService {
 
     const senderEmail = transaction.senderAccount?.createdBy;
     if (!senderEmail) {
-      throw new BadRequestException(
-        'No se encontró el email del remitente de la transacción.',
-      );
+      throw new BadRequestException('No se encontró el email del remitente de la transacción.');
     }
 
     const userProfile = await this.userProfileRepo.findOne({
@@ -177,10 +175,3 @@ export class UpdateStarsService {
     return `¡Felicidades! Completaste un ciclo y se ha generado tu cupón PLUS REWARDS. Código: ${discount.code}, Válido desde: ${discount.validFrom.toLocaleDateString()}, Valor: ${discount.value} ${discount.currencyCode}.`;
   }
 }
-
-
-
-
-
-
-

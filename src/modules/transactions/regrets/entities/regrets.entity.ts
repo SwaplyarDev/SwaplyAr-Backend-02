@@ -25,7 +25,7 @@ export class Regret {
 
   @OneToOne(() => ProofOfPayment, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'payment_info_id' })
-  proofOfPayment?: ProofOfPayment;
+  proofsOfPayment?: ProofOfPayment;
 }
 
 /* regrets [icon: x-circle, color: orange] {

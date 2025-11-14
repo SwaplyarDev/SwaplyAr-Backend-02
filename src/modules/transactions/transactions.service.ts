@@ -26,7 +26,7 @@ import {
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { UserStatusHistoryResponse } from '@common/interfaces/status-history.interface';
-import { AdminStatus } from 'src/enum/admin-status.enum';
+import { Status } from 'src/enum/status.enum';
 
 import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
 import { AmountsService } from './amounts/amounts.service';
@@ -34,6 +34,7 @@ import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/pr
 import { MailerService } from '@mailer/mailer.service';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 import { UserDiscount } from '../discounts/entities/user-discount.entity';
+import { validateMaxFiles } from 'src/common/utils/file-validation.util';
 
 // -----------------------------
 // Helper: Mapeo de métodos de pago
@@ -169,10 +170,10 @@ export class TransactionsService {
       message: log.message,
     }));
 
-    if (!history.length || history[0].status !== AdminStatus.Pending) {
+    if (!history.length || history[0].status !== Status.Pending) {
       history.unshift({
         id: '',
-        status: AdminStatus.Pending,
+        status: Status.Pending,
         changedAt: transaction.createdAt,
         message: 'Transacción creada',
       });
@@ -186,13 +187,11 @@ export class TransactionsService {
   // --------------------------------------------------------------------
   async create(
     createTransactionDto: CreateTransactionDto,
-    file: FileUploadDTO,
+    files: FileUploadDTO[],
   ): Promise<TransactionResponseDto> {
-    if (!file) {
-      throw new BadRequestException('El comprobante de pago (archivo) es obligatorio.');
-    }
-
     try {
+      // Validar cantidad y tamaño de archivos con una función reutilizable
+      validateMaxFiles(files, 5, 3); // máx 5 archivos y 3MB de tamaño cada uno
       const createdAt = new Date();
 
       const financialAccounts = await this.safeExecute(
@@ -234,11 +233,17 @@ export class TransactionsService {
         }
       }
 
-      const proofOfPayment = await this.safeExecute(
-        () => this.proofOfPaymentService.create(file),
-        'Error al subir comprobante de pago',
-        BadRequestException,
-      );
+      // 🔹 Subir múltiples comprobantes de pago
+      const proofsOfPayment: ProofOfPayment[] = [];
+
+      for (const file of files) {
+        const proof = await this.safeExecute(
+          () => this.proofOfPaymentService.create(file),
+          'Error al subir comprobante de pago',
+          BadRequestException,
+        );
+        proofsOfPayment.push(proof);
+      }
 
       // 1) Guardar transacción (sin intentar setear OneToMany)
       const txEntity = this.transactionsRepository.create({
@@ -248,25 +253,27 @@ export class TransactionsService {
         senderAccount: financialAccounts.sender,
         receiverAccount: financialAccounts.receiver,
         amount,
-        // desnormalización para listados rápidos
         amountValue: String(amount.amountSent),
         amountCurrency: amount.currencySent,
         userDiscounts,
       });
 
+      // 2) Guardar transacción principal
       const savedTransaction = await this.safeExecute(
         () => this.transactionsRepository.save(txEntity),
         'Error al guardar la transacción',
         InternalServerErrorException,
       );
 
-      // 2) Enlazar el comprobante al lado dueño (ManyToOne)
-      proofOfPayment.transaction = savedTransaction;
-      await this.safeExecute(
-        () => this.proofOfPaymentRepository.save(proofOfPayment),
-        'Error al asociar comprobante a la transacción',
-        InternalServerErrorException,
-      );
+      // 3) Asociar los comprobantes a la transacción
+      for (const proof of proofsOfPayment) {
+        proof.transaction = savedTransaction;
+        await this.safeExecute(
+          () => this.proofOfPaymentRepository.save(proof),
+          'Error al asociar comprobante a la transacción',
+          InternalServerErrorException,
+        );
+      }
 
       const fullTransaction = await this.safeExecute(
         () =>
@@ -278,7 +285,7 @@ export class TransactionsService {
               'receiverAccount',
               'receiverAccount.paymentMethod',
               'amount',
-              'proofsOfPayment', // <- actualizado
+              'proofsOfPayment',
               'userDiscounts',
               'userDiscounts.discountCode',
             ],
@@ -328,9 +335,10 @@ export class TransactionsService {
         'Error inesperado al crear la transacción',
         error instanceof Error ? error.stack : undefined,
       );
-      throw error instanceof HttpException
-        ? error
-        : new InternalServerErrorException('Error inesperado al crear la transacción.');
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error inesperado al crear la transacción.');
     }
   }
 
@@ -346,7 +354,7 @@ export class TransactionsService {
 
     const history = await this.buildStatusHistory(transaction);
 
-    if (history.length === 1 && history[0].status === AdminStatus.Pending) {
+    if (history.length === 1 && history[0].status === Status.Pending) {
       return {
         status: transaction.finalStatus,
         message: 'La transacción aún sigue pendiente, no se ha realizado actualización o cambio.',
@@ -363,7 +371,7 @@ export class TransactionsService {
         senderAccount: true,
         receiverAccount: true,
         amount: true,
-        proofsOfPayment: true, // <- actualizado
+        proofsOfPayment: true,
       },
     });
   }
@@ -390,7 +398,7 @@ export class TransactionsService {
       relations: {
         senderAccount: { paymentMethod: true },
         receiverAccount: { paymentMethod: true },
-        proofsOfPayment: true, // <- actualizado
+        proofsOfPayment: true,
         amount: true, // Nota: se puede eliminar más adelante y usar amountValue/amountCurrency
         regret: true,
       },
@@ -424,11 +432,17 @@ export class TransactionsService {
           id: tx.receiverAccount.id,
           paymentMethod: mapReceiverPaymentMethod(tx.receiverAccount.paymentMethod),
         },
-        // Compatibilidad con DTO actual: exponer solo el primer comprobante
-        proofOfPayment:
+        proofsOfPayment:
           tx.proofsOfPayment && tx.proofsOfPayment.length > 0
-            ? { id: tx.proofsOfPayment[0].id, imgUrl: tx.proofsOfPayment[0].imgUrl }
-            : undefined,
+            ? tx.proofsOfPayment.map((proof) => ({
+                id: proof.id,
+                imgUrl: proof.imgUrl,
+                createdAt: proof.createAt?.toISOString?.() ?? proof.createAt,
+              }))
+            : [],
+
+        proofOfPaymentUrls: tx.proofsOfPayment?.map((proof) => proof.imgUrl) ?? [],
+
         amount: {
           id: tx.amount.id,
           amountSent: tx.amount.amountSent,

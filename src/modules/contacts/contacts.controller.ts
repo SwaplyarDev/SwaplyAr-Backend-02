@@ -40,18 +40,6 @@ export class ContactController {
   @ApiBody({
     description: 'Datos necesarios para crear un contacto',
     type: CreateContactDto,
-    examples: {
-      ejemplo1: {
-        summary: 'Ejemplo de creación',
-        value: {
-          name: 'Dylan',
-          lastname: 'Crowder',
-          email: 'devdylancrowder@outlook.com',
-          message: 'Hola, quiero info',
-          user_id: 'abc123',
-        },
-      },
-    },
   })
   @Post()
   async createContact(@Body() dto: CreateContactDto) {
@@ -115,14 +103,6 @@ export class ContactController {
   @ApiBody({
     description: 'Datos a actualizar',
     type: UpdateContactDto,
-    examples: {
-      ejemplo1: {
-        summary: 'Ejemplo de actualización',
-        value: {
-          message: 'Nuevo mensaje actualizado',
-        },
-      },
-    },
   })
 
   //actualiza un contacto por ID

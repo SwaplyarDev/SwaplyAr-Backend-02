@@ -13,12 +13,10 @@ import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
-    origin: '*', 
+    origin: '*',
   },
 })
-export class CommissionsGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+export class CommissionsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private logger = new Logger('CommissionsGateway');
 
@@ -35,10 +33,7 @@ export class CommissionsGateway
   }
 
   @SubscribeMessage('ping-commissions')
-  handlePing(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: any,
-  ): void {
+  handlePing(@ConnectedSocket() client: Socket, @MessageBody() data: any): void {
     this.logger.log(`Ping recibido (commissions): ${JSON.stringify(data)}`);
     client.emit('pong-commissions', {
       msg: 'pong desde commissions gateway',
@@ -51,7 +46,3 @@ export class CommissionsGateway
     this.logger.log(`Se emitió commission-update: ${JSON.stringify(update)}`);
   }
 }
-
-
-
-

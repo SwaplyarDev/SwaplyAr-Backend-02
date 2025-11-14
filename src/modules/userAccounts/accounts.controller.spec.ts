@@ -6,6 +6,7 @@ import { RolesGuard } from '@common/guards/roles.guard';
 import { CreateUserAccountDto } from './dto/create-user-account.dto';
 import { DeleteBankAccountDto } from './dto/delete-user-account.dto';
 import { BadRequestException } from '@nestjs/common';
+import { Platform } from 'src/enum/platform.enum';
 
 const mockJwtAuthGuard = { canActivate: jest.fn(() => true) };
 const mockRolesGuard = { canActivate: jest.fn(() => true) };
@@ -22,7 +23,7 @@ describe('AccountsController', () => {
   const mockRequest = { user: { id: 'user-uuid-123' } };
 
   const createBankAccountDto: CreateUserAccountDto = {
-    platformId: 'bank' as any,
+    platformId: Platform.Bank,
     method: 'bank',
     firstName: 'Juan',
     lastName: 'Pérez',
@@ -190,6 +191,3 @@ describe('AccountsController', () => {
     });
   });
 });
-
-
-

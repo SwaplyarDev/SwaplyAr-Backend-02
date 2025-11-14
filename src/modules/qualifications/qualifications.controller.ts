@@ -8,7 +8,6 @@ import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
-
 import { CreateQualificationDto } from './dto/create-qualification.dto';
 import { QualificationService } from './qualifications.service';
 

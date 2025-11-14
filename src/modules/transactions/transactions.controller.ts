@@ -5,7 +5,7 @@ import {
   Get,
   Param,
   Post,
-  UploadedFile,
+  UploadedFiles,
   UseInterceptors,
   UseGuards,
   Query,
@@ -19,7 +19,7 @@ import {
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import {
@@ -53,7 +53,7 @@ import { VirtualBankType } from 'src/enum/virtual-bank.enum';
 
 interface CreateTransactionBody {
   createTransactionDto: string;
-  file?: Express.Multer.File;
+  files?: Express.Multer.File;
 }
 
 interface RequestWithUser extends Request {
@@ -105,10 +105,13 @@ export class TransactionsController {
           description:
             'JSON stringificado con la información de la transacción (CreateTransactionDto)',
         },
-        file: {
-          type: 'string',
-          format: 'binary',
+        files: {
+          type: 'array',
           description: 'Archivo del comprobante de pago (JPG, PNG o PDF)',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
         },
       },
       required: ['createTransactionDto'],
@@ -134,16 +137,16 @@ export class TransactionsController {
   })
   @ApiInternalServerErrorResponse({ description: '❌ Error interno del servidor' })
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  async create(@Body() body: CreateTransactionBody, @UploadedFile() file: Express.Multer.File) {
+  @UseInterceptors(FilesInterceptor('files'))
+  async create(@Body() body: CreateTransactionBody, @UploadedFiles() files: FileUploadDTO[]) {
     // Validación del body
     if (!body || !body.createTransactionDto) {
       throw new BadRequestException('El body o el campo createTransactionDto están vacíos');
     }
 
     // Validación de archivo obligatorio
-    if (!file) {
-      throw new BadRequestException('El archivo del comprobante es obligatorio');
+    if (!files || files.length === 0) {
+      throw new BadRequestException('Debe subir al menos un comprobante de pago');
     }
 
     // Parseo JSON con try/catch
@@ -221,17 +224,17 @@ export class TransactionsController {
     }
 
     // Construcción del fileData
-    const fileData: FileUploadDTO = {
-      buffer: file.buffer,
-      fieldName: file.fieldname,
-      mimeType: file.mimetype,
-      originalName: file.originalname,
-      size: file.size,
-    };
+    const filesData: FileUploadDTO[] = files.map((files) => ({
+      buffer: files.buffer,
+      fieldName: files.fieldName,
+      mimeType: files.mimeType,
+      originalName: files.originalName,
+      size: files.size,
+    }));
 
     try {
       // Llamada al servicio
-      return await this.transactionsService.create(createTransactionDto, fileData);
+      return await this.transactionsService.create(createTransactionDto, filesData);
     } catch (error: unknown) {
       // Captura errores específicos de Postgres (ej.: NOT NULL violation 23502)
       let pgCode: string | undefined;

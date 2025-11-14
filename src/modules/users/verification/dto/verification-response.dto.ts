@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'; 
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class DocumentsDto {
   @ApiProperty({ example: 'https://.../front.png' })

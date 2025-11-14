@@ -10,7 +10,6 @@ import {
   HttpStatus,
   NotFoundException,
   BadRequestException,
-  UploadedFile,
   UseInterceptors,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -31,11 +30,12 @@ import { OtpService } from '@otp/otp.service';
 import { ValidateNoteCodeDto } from './dto/validate-note-code.dto';
 import { RequestNoteCodeDto } from './dto/request-note-code.dto';
 import { CreateNoteOTPDto, CreateNoteResponseDto, CreateNoteDto } from './dto/create-note.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { SendCodeResponseDto } from './dto/send-code-response.dto';
 import { ValidateOTPCodeResponseDto } from './dto/validate-otp-code-response.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { DeleteNoteResponseDto } from './dto/delete-note.dto';
+import { UploadedFiles } from '@nestjs/common';
 
 @ApiTags('Notas')
 @Controller('notes')
@@ -76,7 +76,13 @@ export class NotesController {
   @Post('verify-code')
   async verifyNoteCode(@Body() dto: ValidateNoteCodeDto) {
     const transaction = await this.transactionsService.findOne(dto.transaction_id, {
-      relations: ['senderAccount', 'receiverAccount', 'amount'],
+      relations: [
+        'senderAccount',
+        'senderAccount.paymentMethod',
+        'receiverAccount',
+        'receiverAccount.paymentMethod',
+        'amount',
+      ],
     });
 
     if (!transaction) {
@@ -101,12 +107,20 @@ export class NotesController {
     // Generar token para acceder a la nota
     const accessToken = this.otpService.generateOtpToken(dto.transaction_id);
 
+    // Respuesta (simplificada)
+    // return {
+    //   transactionId: transaction.id,
+    //   senderName: transaction.senderAccount.firstName,
+    //   receiverName: transaction.receiverAccount.firstName,
+    //   amountSent: transaction.amount.amountSent,
+    //   currency: transaction.amount.currencySent,
+    //   noteAccessToken: accessToken,
+    //   expiresIn: '5m',
+    // };
+
+    // Respuesta (completa)
     return {
-      transactionId: transaction.id,
-      senderName: transaction.senderAccount.firstName,
-      receiverName: transaction.receiverAccount.firstName,
-      amountSent: transaction.amount.amountSent,
-      currency: transaction.amount.currencySent,
+      transaction,
       noteAccessToken: accessToken,
       expiresIn: '5m',
     };
@@ -117,7 +131,7 @@ export class NotesController {
     description: 'Nota creada correctamente',
     type: CreateNoteResponseDto,
   })
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FilesInterceptor('files'))
   @ApiConsumes('multipart/form-data')
   @ApiParam({
     name: 'transactionId',
@@ -125,21 +139,21 @@ export class NotesController {
     example: 'uuid-transaccion',
   })
   @ApiBody({
-    description: 'Datos para crear una nota con imagen opcional',
+    description: 'Datos para crear una nota con archivos opcionales (máximo 5)',
     schema: {
       type: 'object',
 
       properties: {
         message: { type: 'string', example: 'Pago recibido correctamente' },
-
-        image: {
-          type: 'string',
-          format: 'binary',
-          description: 'Archivo de imagen opcional',
+        section: { type: 'string', example: 'datos_envio, datos_recepcion, monto' },
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+          description: 'Archivos opcionales (máximo 5)',
         },
       },
 
-      required: ['message'],
+      required: ['message', 'section'],
     },
   })
   @ApiHeader({
@@ -151,8 +165,8 @@ export class NotesController {
   @Post(':transactionId')
   async create(
     @Param('transactionId') transactionId: string,
-    @UploadedFile() file: Express.Multer.File,
-    @Body() createNoteDto: any,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() createNoteDto: CreateNoteDto,
     @Req() req: Request,
   ) {
     const token = req.headers['note-access-token'] as string;
@@ -160,7 +174,7 @@ export class NotesController {
     if (!token) throw new BadRequestException('Falta el header note-access-token');
 
     try {
-      return await this.notesService.create(transactionId, createNoteDto, token, file);
+      return await this.notesService.create(transactionId, createNoteDto, token, files);
     } catch (error) {
       throw new HttpException(
         error.message || 'Error interno al crear la nota',

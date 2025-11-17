@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Roles } from './entities/roles.entity';
@@ -6,13 +6,17 @@ import { CreateRoleDto } from './dto/create-roles.dto';
 import { User } from '../users/entities/user.entity';
 
 @Injectable()
-export class RolesService {
+export class RolesService implements OnModuleInit {
     constructor(
         @InjectRepository(Roles)
         private roleRepository: Repository<Roles>,
         @InjectRepository(User)
         private userRepository: Repository<User>
     ) { }
+
+    async onModuleInit() {
+        await this.seedRoles();
+    }
 
     async createRole(createRoleDto: CreateRoleDto): Promise<Roles> {
         const role = this.roleRepository.create(createRoleDto);

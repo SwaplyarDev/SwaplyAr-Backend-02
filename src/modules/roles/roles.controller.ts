@@ -26,31 +26,6 @@ import { RolesService } from './roles.service';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
 import { UpdateUserRoleDto, UpdateUserRoleResponseDto } from './dto/update-user-role.dto';
 
-// Controlador original para manejo de roles
-// @Controller('roles')
-// @UseGuards(JwtAuthGuard)
-// export class RolesController {
-//   constructor(private rolesService: RolesService) {}
-
-//   @Post()
-//   @UseGuards(AdminRoleGuard)
-//   async createRole(@Body() createRoleDto: CreateRoleDto) {
-//     return await this.rolesService.createRole(createRoleDto);
-//   }
-
-//   @Post('seed')
-//   @UseGuards(AdminRoleGuard)
-//   async seedRoles() {
-//     const roles = await this.rolesService.seedRoles();
-//     return {
-//       message: 'Roles creados exitosamente',
-//       roles,
-//       count: roles.length
-//     };
-//   }
-// }
-
-// Nuevo controlador estilo admin para manejo de roles de usuarios
 @ApiTags('Roles (Admin)')
 @Controller('admin/roles')
 @UseGuards(JwtAuthGuard, AdminRoleGuard)
@@ -107,15 +82,4 @@ export class RolesController {
     return await this.rolesService.createRole(createRoleDto);
   }
 
-  // Endpoint para establecer roles por defecto
-  @Post('seed')
-  @ApiOperation({ summary: 'Crear roles por defecto del sistema' })
-  async seedRoles() {
-    const roles = await this.rolesService.seedRoles();
-    return {
-      message: 'Roles creados exitosamente',
-      roles,
-      count: roles.length
-    };
-  }
 }

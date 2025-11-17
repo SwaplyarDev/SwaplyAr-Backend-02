@@ -1,5 +1,11 @@
 import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AbandonedTransactionsService } from './abandoned-transactions.service';
 import { CreateAbandonedTransactionDto } from '../dto/create-abandoned-transaction.dto';
 import { AbandonedTransaction } from '../entities/abandoned-transaction.entity';
@@ -11,8 +17,7 @@ export class AbandonedTransactionsController {
 
   @Post()
   @ApiOperation({ summary: 'Crear una nueva transacción abandonada' })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'La transacción abandonada ha sido creada exitosamente',
     type: AbandonedTransaction,
   })
@@ -24,8 +29,7 @@ export class AbandonedTransactionsController {
 
   @Get()
   @ApiOperation({ summary: 'Obtener todas las transacciones abandonadas' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Lista de todas las transacciones abandonadas',
     type: [AbandonedTransaction],
   })
@@ -35,13 +39,11 @@ export class AbandonedTransactionsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una transacción abandonada por ID' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'La transacción abandonada ha sido encontrada',
     type: AbandonedTransaction,
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: 'La transacción abandonada no fue encontrada',
   })
   async findOne(@Param('id') id: string): Promise<AbandonedTransaction> {
@@ -50,13 +52,11 @@ export class AbandonedTransactionsController {
 
   @Put(':id')
   @ApiOperation({ summary: 'Actualizar una transacción abandonada' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'La transacción abandonada ha sido actualizada',
     type: AbandonedTransaction,
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: 'La transacción abandonada no fue encontrada',
   })
   async update(
@@ -69,12 +69,10 @@ export class AbandonedTransactionsController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar una transacción abandonada' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'La transacción abandonada ha sido eliminada',
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: 'La transacción abandonada no fue encontrada',
   })
   async remove(@Param('id') id: string): Promise<void> {

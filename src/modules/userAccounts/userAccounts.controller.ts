@@ -18,14 +18,24 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import {
   ApiTags,
   ApiOperation,
-  ApiResponse,
   ApiBody,
   ApiBearerAuth,
   ApiQuery,
+  ApiCreatedResponse,
+  ApiBadRequestResponse,
+  ApiUnauthorizedResponse,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
-import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
-import { CreateUserAccountResponseDto } from './dto/user-account-response.dto';
+import {
+  AuthenticatedUserAccountResponseDto,
+  CreateUserAccountResponseDto,
+  NotFoundUserAccountDto,
+} from './dto/user-account-response.dto';
 import { CreateUserAccountDto } from './dto/create-user-account.dto';
+import { CreateFinancialAccountResponseDto } from './dto/create-financial-account.dto';
+import { UserAccountsResponseDto } from './dto/get-user-accounts-response.dto';
 
 @ApiTags('Cuentas de Usuario')
 @ApiBearerAuth()
@@ -38,38 +48,9 @@ export class AccountsController {
   @ApiOperation({
     summary: 'Crear una cuenta financiera para el usuario autenticado',
   })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'Cuenta financiera creada correctamente',
-    schema: {
-      example: {
-        message: 'Cuenta financiera creada correctamente',
-        bank: {
-          accountId: '29e11aa2-4f5f-45c4-aac9-52da305c5313',
-          accountName: 'Cuenta Principal',
-          createdAt: '2025-09-19T14:06:28.075Z',
-          updatedAt: '2025-09-19T14:06:28.113Z',
-          status: true,
-          userId: 'e98d5deb-02f5-4466-8aaa-0ae638836422',
-          financialAccount: {
-            id: 'a8fcf65d-1cfc-4100-b5be-ce5c014520bf',
-            firstName: 'Juan',
-            lastName: 'Pérez',
-            paymentMethod: {
-              id: 'af2927b8-c901-4bc9-93fe-5f1cf58a516e',
-              platformId: 'bank',
-              method: 'bank',
-              currency: 'ARS',
-              bankName: 'Banco Nación',
-              sendMethodKey: 'CBU',
-              sendMethodValue: '1234567890123456789012',
-              documentType: 'DNI',
-              documentValue: '87654321',
-            },
-          },
-        },
-      },
-    },
+    type: CreateFinancialAccountResponseDto,
   })
   @ApiBody({
     description: 'Datos para crear la cuenta financiera',
@@ -140,17 +121,14 @@ export class AccountsController {
       },
     },
   })
-  @ApiResponse({
-    status: 400,
+  @ApiBadRequestResponse({
     description:
       'Solicitud inválida. Asegúrate de que los datos de entrada sean correctos y válidos.',
   })
-  @ApiResponse({
-    status: 401,
+  @ApiUnauthorizedResponse({
     description: 'No autorizado. Se requiere un token de autenticación válido.',
   })
-  @ApiResponse({
-    status: 403,
+  @ApiForbiddenResponse({
     description:
       'Prohibido. El usuario no tiene los permisos necesarios para crear una cuenta financiera.',
   })
@@ -180,19 +158,12 @@ export class AccountsController {
   @ApiBody({
     type: DeleteBankAccountDto,
     description: 'DTO con el ID de la cuenta a eliminar',
-    examples: {
-      ejemplo1: {
-        summary: 'Ejemplo de request',
-        value: { userAccountId: 'uuid-de-la-cuenta' },
-      },
-    },
   })
-  @ApiResponse({ status: 200, description: 'Cuenta eliminada correctamente' })
-  @ApiResponse({
-    status: 400,
+  @ApiOkResponse({ description: 'Cuenta eliminada correctamente' })
+  @ApiBadRequestResponse({
     description: 'Cuenta no encontrada o no pertenece al usuario',
   })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @ApiForbiddenResponse({ description: 'No autorizado' })
   @UseGuards(RolesGuard)
   @Roles('user', 'admin')
   @Delete()
@@ -225,26 +196,9 @@ export class AccountsController {
     description: 'ID del usuario',
     type: String,
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Lista de cuentas del usuario',
-    schema: {
-      example: [
-        {
-          id: 'uuid',
-          typeAccount: 'bank',
-          formData: {},
-          userAccValues: {
-            first_name: 'Juan',
-            last_name: 'Pérez',
-            identification: '12345678',
-            currency: 'ARS',
-            account_name: 'Cuenta Principal',
-            account_type: 1,
-          },
-        },
-      ],
-    },
+    type: [UserAccountsResponseDto],
   })
   @UseGuards(RolesGuard)
   @Roles('admin')
@@ -269,31 +223,13 @@ export class AccountsController {
     description: 'ID específico de la cuenta bancaria',
     type: String,
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Cuenta bancaria específica encontrada',
-    schema: {
-      example: {
-        accountName: 'Dylan',
-        currency: 'USD',
-        status: true,
-        payment_type: 'paypal',
-        details: [
-          {
-            account_id: 'f4338078-8c08-468c-ad92-134d37e0b405',
-            email_account: 'dylan.rojo@paypal.com',
-            transfer_code: 987654,
-          },
-        ],
-      },
-    },
+    type: AuthenticatedUserAccountResponseDto,
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: 'Cuenta bancaria no encontrada o no pertenece al usuario',
-    schema: {
-      example: { message: 'Cuenta no encontrada para este usuario' },
-    },
+    type: NotFoundUserAccountDto,
   })
   @UseGuards(RolesGuard)
   @Roles('admin')

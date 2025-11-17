@@ -18,7 +18,6 @@ import { RefreshToken } from '@users/entities/resfresh-token.entity';
 import { Exclude } from 'class-transformer';
 import { OtpCode } from '@auth/entities/otp-code.entity';
 import { UserRole } from 'src/enum/user-role.enum';
-import { UserAccount } from 'src/modules/userAccounts/entities/user-account.entity';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
 import { customAlphabet } from 'nanoid';

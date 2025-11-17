@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProofOfPaymentDto } from './dto/create-proof-of-payment.dto';
-import { UpdateProofOfPaymentDto } from './dto/update-proof-of-payment.dto';
 import { FileUploadDTO } from 'src/modules/file-upload/dto/file-upload.dto';
 import { FileUploadService } from 'src/modules/file-upload/file-upload.service';
 import { ProofOfPayment } from './entities/proof-of-payment.entity';

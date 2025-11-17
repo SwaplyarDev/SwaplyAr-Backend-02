@@ -37,3 +37,29 @@ export class CreateRegretDto {
   @IsString()
   description: string;
 }
+
+export class CreateRegretResponseDto {
+  @ApiProperty({ description: 'ID del arrepentimiento', example: 'PdzgckGlWq' })
+  id: string;
+
+  @ApiProperty({ description: 'ID de la transaccion', example: 'ZrzUcnGWWr' })
+  transaction_id: string;
+
+  @ApiProperty({ description: 'Apellido del usuario', example: 'Davila' })
+  last_name: string;
+
+  @ApiProperty({
+    description: 'e-mail del usuario',
+    example: 'nahuel@gmail.com',
+  })
+  email: string;
+
+  @ApiProperty({ description: 'Telefono del usuario', example: '+1234567890' })
+  phone_number: string;
+
+  @ApiProperty({
+    description: 'Nota de la transaccion',
+    example: 'Nota de prueba',
+  })
+  description: string;
+}

@@ -10,7 +10,6 @@ import {
   HttpStatus,
   NotFoundException,
   BadRequestException,
-  UploadedFile,
   UseInterceptors,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -19,20 +18,23 @@ import { NotesService } from './notes.service';
 import {
   ApiTags,
   ApiOperation,
-  ApiResponse,
   ApiBody,
   ApiParam,
   ApiHeader,
   ApiConsumes,
+  ApiOkResponse,
+  ApiCreatedResponse,
 } from '@nestjs/swagger';
 import { TransactionsService } from '@transactions/transactions.service';
 import { OtpService } from '@otp/otp.service';
 import { ValidateNoteCodeDto } from './dto/validate-note-code.dto';
 import { RequestNoteCodeDto } from './dto/request-note-code.dto';
-import { CreateNoteDto } from './dto/create-note.dto';
+import { CreateNoteOTPDto, CreateNoteResponseDto, CreateNoteDto } from './dto/create-note.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { plainToClass, plainToInstance } from 'class-transformer';
-import { validate, validateOrReject } from 'class-validator';
+import { SendCodeResponseDto } from './dto/send-code-response.dto';
+import { ValidateOTPCodeResponseDto } from './dto/validate-otp-code-response.dto';
+import { UpdateNoteDto } from './dto/update-note.dto';
+import { DeleteNoteResponseDto } from './dto/delete-note.dto';
 import { UploadedFiles } from '@nestjs/common';
 
 @ApiTags('Notas')
@@ -47,23 +49,10 @@ export class NotesController {
   @ApiOperation({
     summary: 'Solicitar acceso para crear una nota mediante OTP',
   })
-  @ApiBody({
-    schema: {
-      example: {
-        transactionId: 'wFHi5iOLbC',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 200,
+  @ApiBody({ type: CreateNoteOTPDto })
+  @ApiOkResponse({
     description: 'Código enviado con éxito al correo asociado.',
-
-    schema: {
-      example: {
-        message: 'Código enviado con éxito al correo asociado.',
-        code_sent: true,
-      },
-    },
+    type: SendCodeResponseDto,
   })
   @Post('request-access')
   async requestAccess(@Body() dto: RequestNoteCodeDto) {
@@ -77,31 +66,10 @@ export class NotesController {
   }
 
   @ApiOperation({ summary: 'Verifica el código OTP para una transacción' })
-  @ApiBody({
-    schema: {
-      example: { transaction_id: '123', code: '123' },
-    },
-  })
-  @ApiResponse({
-    status: 200,
+  @ApiBody({ type: ValidateNoteCodeDto })
+  @ApiOkResponse({
     description: 'Código verificado y transacción retornada',
-
-    schema: {
-      example: {
-        transaction: {
-          id: 'uuid',
-          amount: 50000,
-          currency: 'COP',
-          senderAccount: { id: 'uuid-sender', email: 'sender@mail.com' },
-          receiverAccount: {
-            id: 'uuid-receiver',
-            email: 'receiver@mail.com',
-            paymentMethod: { type: 'PIX' },
-          },
-          createdAt: '2024-01-01T00:00:00Z',
-        },
-      },
-    },
+    type: ValidateOTPCodeResponseDto,
   })
 
   // VERIFICA EL CODIGO OTP PARA UNA TRANSACCIÓN
@@ -159,20 +127,9 @@ export class NotesController {
   }
 
   @ApiOperation({ summary: 'Crear una nota para una transacción' })
-  @ApiResponse({
-    status: 201,
-
+  @ApiCreatedResponse({
     description: 'Nota creada correctamente',
-
-    schema: {
-      example: {
-        note_id: 'uuid',
-        message: 'Nota de prueba',
-        img_url: 'https://url.com/nota.png',
-        createdAt: '2024-01-01T00:00:00Z',
-        transaction: { id: 'uuid-transaccion' },
-      },
-    },
+    type: CreateNoteResponseDto,
   })
   @UseInterceptors(FilesInterceptor('files'))
   @ApiConsumes('multipart/form-data')
@@ -227,21 +184,9 @@ export class NotesController {
   }
   // obtiene todas las notas
   @ApiOperation({ summary: 'Obtener todas las notas' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Lista de notas',
-
-    schema: {
-      example: [
-        {
-          note_id: 'uuid',
-          message: 'Nota de prueba',
-          img_url: 'https://url.com/nota.png',
-          createdAt: '2024-01-01T00:00:00Z',
-          transaction: { id: 'uuid-transaccion' },
-        },
-      ],
-    },
+    type: [CreateNoteResponseDto]
   })
   @Get()
   async findAll() {
@@ -256,19 +201,9 @@ export class NotesController {
   }
 
   @ApiOperation({ summary: 'Obtener una nota por ID' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Nota encontrada',
-
-    schema: {
-      example: {
-        note_id: 'uuid',
-        message: 'Nota de prueba',
-        img_url: 'https://url.com/nota.png',
-        createdAt: '2024-01-01T00:00:00Z',
-        transaction: { id: 'uuid-transaccion' },
-      },
-    },
+    type: CreateNoteResponseDto,
   })
   @ApiParam({ name: 'id', description: 'ID de la nota', example: 'uuid' })
   @Get(':id')
@@ -283,28 +218,14 @@ export class NotesController {
     }
   }
   @ApiOperation({ summary: 'Actualizar una nota' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Nota actualizada correctamente',
-    schema: {
-      example: {
-        note_id: 'uuid',
-        message: 'Nota actualizada',
-        img_url: 'https://url.com/nota.png',
-        createdAt: '2024-01-01T00:00:00Z',
-        transaction: { id: 'uuid-transaccion' },
-      },
-    },
+    type: CreateNoteResponseDto,
   })
   @ApiParam({ name: 'id', description: 'ID de la nota', example: 'uuid' })
   @ApiBody({
     description: 'Datos para actualizar la nota',
-    schema: {
-      example: {
-        message: 'Nota actualizada',
-        img_url: 'https://url.com/nota.png',
-      },
-    },
+    type: UpdateNoteDto,
   })
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateNoteDto: any) {
@@ -318,12 +239,9 @@ export class NotesController {
     }
   }
   @ApiOperation({ summary: 'Eliminar una nota' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Nota eliminada correctamente',
-    schema: {
-      example: { message: 'Nota eliminada correctamente' },
-    },
+    type: DeleteNoteResponseDto,
   })
   @ApiParam({ name: 'id', description: 'ID de la nota', example: 'uuid' })
   @Delete(':id')

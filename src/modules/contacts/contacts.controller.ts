@@ -13,13 +13,12 @@ import {
 import {
   ApiTags,
   ApiOperation,
-  ApiResponse,
   ApiParam,
   ApiBody,
   ApiBearerAuth,
-  ApiCreatedResponse,
   ApiOkResponse,
   ApiNotFoundResponse,
+  ApiCreatedResponse,
 } from '@nestjs/swagger';
 import { ContactService } from './contacts.service';
 import { Contact } from './entities/contants.entity';
@@ -63,7 +62,7 @@ export class ContactController {
     description: 'Contacto encontrado',
     type: Contact,
   })
-  @ApiResponse({ status: 404, description: 'Contacto no encontrado' })
+  @ApiNotFoundResponse({ description: 'Contacto no encontrado' })
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Get(':id')
   async getById(@Param('id') id: string): Promise<Contact> {

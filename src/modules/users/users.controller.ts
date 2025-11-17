@@ -58,8 +58,6 @@ export class UsersController {
 
     await this.otpService.generateAndSendOtp(user);
 
-    await this.discountService.assignSystemDiscount(user, 'WELCOME', 3);
-
     return user as unknown as RegisterUserDto;
   }
 }

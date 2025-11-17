@@ -256,15 +256,6 @@ export class UserVerificationService {
 
     if (status === VerificationStatus.VERIFIED) {
       verification.verified_at = new Date();
-      const user = await this.userRepository.findOne({
-        where: { id: verification.user.id },
-      });
-
-      if (user) {
-        await this.discountService.assignSystemDiscount(user, 'VERIFY', 5);
-      } else {
-        throw new NotFoundException('Usuario no encontrado. No se aplicó el descuento');
-      }
     }
 
     return this.userVerificationRepository.save(verification);

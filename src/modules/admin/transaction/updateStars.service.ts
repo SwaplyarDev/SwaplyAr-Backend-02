@@ -170,8 +170,6 @@ export class UpdateStarsService {
       throw new NotFoundException('Usuario no encontrado en el ledger.');
     }
 
-    const discount = await this.discountService.assignSystemDiscount(user, 'PLUS', 10);
-
     return `¡Felicidades! Completaste un ciclo y se ha generado tu cupón PLUS REWARDS. Código: ${discount.code}, Válido desde: ${discount.validFrom.toLocaleDateString()}, Valor: ${discount.value} ${discount.currencyCode}.`;
   }
 }

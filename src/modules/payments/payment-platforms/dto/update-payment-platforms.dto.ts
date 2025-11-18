@@ -1,21 +1,4 @@
-import { IsOptional, IsString, IsBoolean, Length } from 'class-validator';
+import { PartialType } from '@nestjs/swagger';
+import { CreatePaymentPlatformsDto } from './create-payment-platforms.dto';
 
-export class UpdatePaymentPlatformDto {
-  @IsOptional()
-  @IsString()
-  @Length(1, 50)
-  code?: string;
-
-  @IsOptional()
-  @IsString()
-  @Length(1, 100)
-  title?: string;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  is_active?: boolean;
-}
+export class UpdatePaymentPlatformsDto extends PartialType(CreatePaymentPlatformsDto) {}

@@ -18,9 +18,6 @@ export class PaymentProviders {
   @PrimaryGeneratedColumn('uuid')
   payment_provider_id: string;
 
-  @ManyToOne(() => PaymentPlatforms, (platform) => platform.providers, { nullable: false })
-  payment_platform: PaymentPlatforms;
-
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
@@ -38,6 +35,9 @@ export class PaymentProviders {
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
   created_at: Date;
+
+  @ManyToOne(() => PaymentPlatforms, (platform) => platform.providers, { nullable: false })
+  payment_platform: PaymentPlatforms;
 
   @OneToMany(() => BankAccounts, (bankAccount) => bankAccount.payment_provider)
   bank_accounts: BankAccounts[];

@@ -9,7 +9,7 @@ export class PaymentPlatformsController {
   constructor(private readonly service: PaymentPlatformsService) {}
 
   // ===============================================
-  // GET ALL PAYMENT PLATFORMS
+  // MOSTRAR TODAS LAS PLATAFORMAS DE PAGO
   // ===============================================
   @ApiOperation({ summary: 'Obtener todas las plataformas de pago registradas' })
   @ApiResponse({ status: 200, description: 'Lista de plataformas de pago obtenida correctamente.' })
@@ -19,7 +19,7 @@ export class PaymentPlatformsController {
   }
 
   // ===============================================
-  // GET PAYMENT PLATFORMS BY ID
+  // MOSTRAR UNA PLATAFORMA DE PAGO POR ID
   // ===============================================
   @ApiOperation({ summary: 'Obtener plataformas de pago por ID' })
   @ApiResponse({ status: 200, description: 'Plataforma de pago obtenida correctamente.' })
@@ -29,7 +29,7 @@ export class PaymentPlatformsController {
   }
 
   // ===============================================
-  // CREATE A PAYMENT PLATFORM
+  // CREAR UNA PLATAFORMA DE PAGO
   // ===============================================
   @ApiOperation({ summary: 'Crear una plataforma de pago' })
   @ApiResponse({ status: 200, description: 'Plataforma de pago creada correctamente.' })
@@ -39,7 +39,7 @@ export class PaymentPlatformsController {
   }
 
   // ===============================================
-  // UPDATE A PAYMENT PLATFORM
+  // ACTUALIZAR UNA PLATAFORMA DE PAGO
   // ===============================================
   @ApiOperation({ summary: 'Actualizar una plataforma de pago' })
   @ApiResponse({ status: 200, description: 'Plataforma de pago actualizada correctamente.' })
@@ -47,9 +47,17 @@ export class PaymentPlatformsController {
   update(@Param('id') id: string, @Body() data: any) {
     return this.service.update(id, data);
   }
-
   // ===============================================
-  // DELETE A PAYMENT PLATFORM
+  // INACTIVAR (SOFT-DELETE) UNA PLATAFORMA DE PAGO
+  // ===============================================
+  @ApiOperation({ summary: 'Inactivar una plataforma de pago' })
+  @ApiResponse({ status: 200, description: 'Plataforma de pago inactivada correctamente.' })
+  @Patch(':id/inactivate')
+  inactivate(@Param('id') id: string) {
+    return this.service.inactivate(id);
+  }
+  // ===============================================
+  // BORRAR UNA PLATAFORMA DE PAGO
   // ===============================================
   @ApiOperation({ summary: 'Eliminar una plataforma de pago' })
   @ApiResponse({ status: 200, description: 'Plataforma de pago eliminada correctamente.' })

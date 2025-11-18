@@ -41,6 +41,12 @@ export class PaymentPlatformsService {
     return this.repo.save(platform);
   }
 
+  async inactivate(id: string): Promise<PaymentPlatforms> {
+    const platform = await this.findOne(id);
+    platform.is_active = false;
+    return this.repo.save(platform);
+  }
+
   async delete(id: string): Promise<void> {
     const result = await this.repo.delete(id);
     if (result.affected === 0) {

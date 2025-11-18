@@ -25,6 +25,6 @@ export class PaymentPlatforms {
   @OneToMany(() => PaymentProviders, (payment_provider) => payment_provider.payment_platform)
   providers: PaymentProviders[];
 
-  @OneToMany(() => FinancialAccounts, (account) => account.paymentPlatformId)
+  @OneToMany(() => FinancialAccounts, (account) => account.payment_platform)
   financialAccounts: FinancialAccounts[];
 }

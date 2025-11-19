@@ -175,7 +175,7 @@ export class NotesController {
   @ApiOperation({ summary: 'Obtener todas las notas' })
   @ApiOkResponse({
     description: 'Lista de notas',
-    type: [CreateNoteResponseDto]
+    type: [CreateNoteResponseDto],
   })
   @Get()
   async findAll() {

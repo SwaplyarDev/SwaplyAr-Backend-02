@@ -11,10 +11,20 @@ import {
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
-import { UpdateQuestionDto } from './dto/update-question.dto';
 import { NotFoundException } from '@nestjs/common';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBody,
+  ApiOkResponse,
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+} from '@nestjs/swagger';
 import { Question } from './entities/question.entity';
 import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { createQuestionSchema, deleteQuestionSchema } from './validation/question.schema';
@@ -27,8 +37,7 @@ export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
 
   @ApiOperation({ summary: 'Obtener todas las preguntas' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Preguntas obtenidas correctamente',
     type: [Question],
   })
@@ -38,19 +47,14 @@ export class QuestionsController {
   }
 
   @ApiOperation({ summary: 'Obtener todas las preguntas por página' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Preguntas obtenidas correctamente por página',
     type: [Question],
   })
-  @ApiResponse({
-    status: 400,
+  @ApiBadRequestResponse({
     description: 'El parámetro "page" debe ser un número',
   })
-  @ApiResponse({
-    status: 500,
-    description: 'Error al obtener las preguntas paginadas',
-  })
+  @ApiResponse({ description: 'Error al obtener las preguntas paginadas' })
   @Get('paginated')
   async getAllQuestionsPaginated(
     @Query('page') page: string = '1',
@@ -75,12 +79,11 @@ export class QuestionsController {
   }
 
   @ApiOperation({ summary: 'Obtener una pregunta por ID' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Pregunta encontrada',
     type: Question,
   })
-  @ApiResponse({ status: 404, description: 'Pregunta no encontrada' })
+  @ApiNotFoundResponse({ description: 'Pregunta no encontrada' })
   @Get(':id')
   async getQuestionById(@Param('id') id: string): Promise<Question> {
     const question = await this.questionsService.findById(id);
@@ -93,8 +96,7 @@ export class QuestionsController {
   }
 
   @ApiOperation({ summary: 'Crear una nueva pregunta (admin solo)' })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'Pregunta creada correctamente',
     type: Question,
   })
@@ -129,8 +131,8 @@ export class QuestionsController {
   // }
 
   @ApiOperation({ summary: 'Eliminar una pregunta (admin solo)' })
-  @ApiResponse({ status: 204, description: 'Pregunta eliminada correctamente' })
-  @ApiResponse({ status: 404, description: 'Pregunta no encontrada' })
+  @ApiNoContentResponse({ description: 'Pregunta eliminada correctamente' })
+  @ApiNotFoundResponse({ description: 'Pregunta no encontrada' })
   @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Delete(':id')
   async deleteQuestion(@Param('id') id: string): Promise<void> {

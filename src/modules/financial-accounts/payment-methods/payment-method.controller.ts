@@ -1,12 +1,13 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { PaymentMethodService } from './payment-method.service';
-import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
-import { ApiTags, ApiOperation, ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import {
+  BankPaymentMethodDataResponseDto,
+  CreatePaymentMethodDto,
   CreatePaymentMethodResponseDto,
-  TypeBankDataDto,
-  TypePixDataDto,
-} from './dto/create-payment-method-response.dto';
+  PixPaymentMethodDataResponseDto,
+} from './dto/create-payment-method.dto';
+import { ApiTags, ApiOperation, ApiBody, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import { PaymentMethodsResponseDto } from './dto/get-payment-methods-response.dto';
 
 @ApiTags('Métodos de Pago')
 @Controller('payment-method')
@@ -84,7 +85,7 @@ export class PaymentMethodController {
   @ApiOperation({ summary: 'Obtener todos los métodos de pago' })
   @ApiOkResponse({
     description: 'Lista de métodos de pago',
-    type: [CreatePaymentMethodResponseDto],
+    type: [PaymentMethodsResponseDto],
   })
   @Get()
   async findAll() {
@@ -94,7 +95,7 @@ export class PaymentMethodController {
   @ApiOperation({ summary: 'Obtener todos los métodos de pago tipo banco' })
   @ApiOkResponse({
     description: 'Lista de bancos',
-    type: [TypeBankDataDto],
+    type: [BankPaymentMethodDataResponseDto],
   })
   @Get('/bank')
   async findAllBank() {
@@ -104,7 +105,7 @@ export class PaymentMethodController {
   @ApiOperation({ summary: 'Obtener todos los métodos de pago tipo pix' })
   @ApiOkResponse({
     description: 'Lista de pix',
-    type: [TypePixDataDto],
+    type: [PixPaymentMethodDataResponseDto],
   })
   @Get('/pix')
   async findAllPix() {

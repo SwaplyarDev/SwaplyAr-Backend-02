@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNumber, Min, Max, IsString } from 'class-validator';
+import { IsEnum, IsNumber, Min, Max } from 'class-validator';
 import { PlatformName } from 'src/enum/commissions.enum';
 
 export class CreateDynamicCommissionDto {

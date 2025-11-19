@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaymentPlatforms } from './payment-platforms.entity';
-import { CreatePaymentPlatformDto } from './dto/create-payment-platforms.dto';
+import { CreatePaymentPlatformsDto } from './dto/create-payment-platforms.dto';
 
 @Injectable()
 export class PaymentPlatformsService {
@@ -30,7 +30,7 @@ export class PaymentPlatformsService {
     return platform;
   }
 
-  async create(data: CreatePaymentPlatformDto): Promise<PaymentPlatforms> {
+  async create(data: CreatePaymentPlatformsDto): Promise<PaymentPlatforms> {
     const entity: PaymentPlatforms = this.repo.create(data);
     return this.repo.save(entity);
   }

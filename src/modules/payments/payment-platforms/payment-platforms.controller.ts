@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { PaymentPlatformsService } from './payment-platforms.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CreatePaymentPlatformDto } from './dto/create-payment-platforms.dto';
+import { CreatePaymentPlatformsDto } from './dto/create-payment-platforms.dto';
 
 @ApiTags('Payment Platforms')
 @Controller('payment-platforms')
@@ -34,7 +34,7 @@ export class PaymentPlatformsController {
   @ApiOperation({ summary: 'Crear una plataforma de pago' })
   @ApiResponse({ status: 200, description: 'Plataforma de pago creada correctamente.' })
   @Post()
-  create(@Body() data: CreatePaymentPlatformDto) {
+  create(@Body() data: CreatePaymentPlatformsDto) {
     return this.service.create(data);
   }
 

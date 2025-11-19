@@ -12,7 +12,10 @@ export class CreatePaymentPlatformsDto {
   @MaxLength(100)
   title: string;
 
-  @ApiProperty({ description: 'Descripción de la plataforma de pago', example: 'Plataforma bancaria tradicional' })
+  @ApiProperty({
+    description: 'Descripción de la plataforma de pago',
+    example: 'Plataforma bancaria tradicional',
+  })
   @IsOptional()
   @IsString()
   description?: string;

@@ -76,7 +76,7 @@ export class AdminProfileResultDto {
   pais: string;
 
   @ApiProperty({
-    type: UserVerificationDto
+    type: UserVerificationDto,
   })
   ultimaVerificacion: UserVerificationDto;
 }

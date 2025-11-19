@@ -15,6 +15,7 @@ export class CreatePaymentProvidersDto {
   @IsString()
   @MaxLength(100)
   name: string;
+
   @ApiProperty({ description: 'Código único del proveedor', example: 'PAYPAL' })
   @IsString()
   @Length(2, 50)

@@ -1,7 +1,8 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { PaymentPlatformsService } from './payment-platforms.service';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CreatePaymentPlatformsDto } from './dto/create-payment-platforms.dto';
+import { UpdatePaymentPlatformsDto } from './dto/update-payment-platforms.dto';
 
 @ApiTags('Payment Platforms')
 @Controller('payment-platforms')
@@ -43,9 +44,10 @@ export class PaymentPlatformsController {
   // ===============================================
   @ApiOperation({ summary: 'Actualizar una plataforma de pago' })
   @ApiResponse({ status: 200, description: 'Plataforma de pago actualizada correctamente.' })
+  @ApiBody({ type: UpdatePaymentPlatformsDto })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: any) {
-    return this.service.update(id, data);
+  update(@Param('id') id: string, @Body() dto: UpdatePaymentPlatformsDto) {
+    return this.service.update(id, dto);
   }
   // ===============================================
   // INACTIVAR (SOFT-DELETE) UNA PLATAFORMA DE PAGO

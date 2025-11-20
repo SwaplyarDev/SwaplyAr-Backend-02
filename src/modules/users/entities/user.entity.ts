@@ -1,12 +1,15 @@
 import {
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
   Entity,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   BeforeInsert,
   ManyToOne,
+  ManyToMany,
+  JoinTable,
   JoinColumn,
 } from 'typeorm';
 import { UserProfile } from '@users/entities/user-profile.entity';
@@ -121,6 +124,9 @@ export class User {
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;
 
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
+  updatedAt: Date;
+
   @Column({
     name: 'validated_at',
     nullable: true,
@@ -140,7 +146,20 @@ export class User {
   @Column({ nullable: true })
   refreshToken?: string;
 
-  @ManyToOne(() => Roles, (role) => role.users)
-  @JoinColumn({ name: 'role_id' })
-  role: Roles;
+  @Column({ name: 'role_code', nullable: true })
+  roleCode: string;
+
+  @Column({ name: 'role_name', nullable: true })
+  roleName: string;
+
+  @Column({ name: 'role_description', nullable: true })
+  roleDescription: string;
+
+  @ManyToMany(() => Roles, (role) => role.users)
+  @JoinTable({
+    name: 'user_roles',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'role_id', referencedColumnName: 'role_id' }
+  })
+  roles: Roles[];
 }

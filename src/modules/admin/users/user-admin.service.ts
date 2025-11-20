@@ -22,12 +22,12 @@ export class AdminUserService {
     }
 
     const roleEntity = await this.rolesService.findByCode(role);
-    user.role = roleEntity;
+    user.roles = [roleEntity];
     const updatedUser = await this.userRepository.save(user);
 
     return {
       userId: updatedUser.id,
-      role: updatedUser.role,
+      roles: updatedUser.roles,
     };
   }
 

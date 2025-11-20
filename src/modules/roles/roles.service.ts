@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Roles } from './entities/roles.entity';
@@ -19,6 +19,10 @@ export class RolesService implements OnModuleInit {
     }
 
     async createRole(createRoleDto: CreateRoleDto): Promise<Roles> {
+        const exists = await this.roleRepository.findOne({ where: { code: createRoleDto.code } });
+        if (exists) {
+            throw new ConflictException(`El rol con código '${createRoleDto.code}' ya existe`);
+        }
         const role = this.roleRepository.create(createRoleDto);
         return await this.roleRepository.save(role);
     }
@@ -54,29 +58,80 @@ export class RolesService implements OnModuleInit {
         // 1. Verificar que el rol existe en la tabla
         const role = await this.findByCode(roleCode);
         
-        // 2. Buscar el usuario y actualizar su rol
+        // 2. Buscar el usuario y actualizar sus roles
         const user = await this.userRepository.findOne({ 
             where: { id: userId },
-            relations: ['role']
+            relations: ['roles']
         });
         
         if (!user) {
             throw new NotFoundException('Usuario no encontrado');
         }
         
-        // 3. Actualizar la relación usuario-rol
-        user.role = role;
+        // 3. Actualizar la relación usuario-roles
+        user.roles = [role];
         const updatedUser = await this.userRepository.save(user);
+        
+        // 4. Sincronizar columnas desnormalizadas
+        await this.syncUserRoleColumns(userId);
         
         return {
             userId: updatedUser.id,
-            role: {
-                role_id: role.role_id,
-                code: role.code,
-                name: role.name,
-                description: role.description
-            }
+            roles: updatedUser.roles.map(r => ({
+                role_id: r.role_id,
+                code: r.code,
+                name: r.name,
+                description: r.description
+            }))
         };
+    }
+    
+    // Método para agregar rol adicional a usuario
+    async addUserRole(userId: string, roleCode: string) {
+        const role = await this.findByCode(roleCode);
+        
+        const user = await this.userRepository.findOne({ 
+            where: { id: userId },
+            relations: ['roles']
+        });
+        
+        if (!user) {
+            throw new NotFoundException('Usuario no encontrado');
+        }
+        
+        // Verificar si ya tiene el rol
+        const hasRole = user.roles.some(r => r.code === roleCode);
+        if (hasRole) {
+            throw new ConflictException(`El usuario ya tiene el rol '${roleCode}'`);
+        }
+        
+        user.roles.push(role);
+        const updatedUser = await this.userRepository.save(user);
+        
+        // Sincronizar columnas desnormalizadas
+        await this.syncUserRoleColumns(userId);
+        
+        return {
+            userId: updatedUser.id,
+            roles: updatedUser.roles.map(r => ({
+                role_id: r.role_id,
+                code: r.code,
+                name: r.name,
+                description: r.description
+            }))
+        };
+    }
+    
+    // Método privado para sincronizar columnas desnormalizadas
+    private async syncUserRoleColumns(userId: string) {
+        await this.userRepository.query(`
+            UPDATE users 
+            SET 
+                role_code = COALESCE((SELECT string_agg(r.code, ', ' ORDER BY r.code) FROM user_roles ur JOIN roles r ON ur.role_id = r.role_id WHERE ur.user_id = $1), ''),
+                role_name = COALESCE((SELECT string_agg(r.name, ', ' ORDER BY r.code) FROM user_roles ur JOIN roles r ON ur.role_id = r.role_id WHERE ur.user_id = $1), ''),
+                role_description = COALESCE((SELECT string_agg(r.description, ', ' ORDER BY r.code) FROM user_roles ur JOIN roles r ON ur.role_id = r.role_id WHERE ur.user_id = $1), '')
+            WHERE user_id = $1
+        `, [userId]);
     }
     
     // Método para obtener todos los roles disponibles

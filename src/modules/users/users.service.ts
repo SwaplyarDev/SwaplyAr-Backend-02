@@ -81,7 +81,7 @@ export class UsersService {
 
       user.profile = userProfile;
       user.termsAccepted = userDto.termsAccepted ?? false;
-      user.role = userRole;
+      user.roles = [userRole];
       user.rewardsLedger = new UserRewardsLedger();
 
       return await this.userRepository.save(user);
@@ -98,19 +98,21 @@ export class UsersService {
   async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: { profile: { email } },
-      relations: { profile: true },
+      relations: { profile: true, roles: true },
     });
   }
 
   async findById(id: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: { id },
-      relations: { profile: true, rewardsLedger: true },
+      relations: { profile: true, rewardsLedger: true, roles: true },
     });
   }
 
   async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+    return this.userRepository.find({
+      relations: { profile: true, roles: true }
+    });
   }
 
   async save(user: User): Promise<User> {

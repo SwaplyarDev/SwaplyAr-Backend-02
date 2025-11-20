@@ -3,7 +3,10 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
@@ -13,10 +16,10 @@ export class Roles {
   role_id: string;
 
   @Column({ type: 'varchar', length: 50, unique: true })
-  code: string; 
+  code: string;
 
   @Column({ type: 'varchar', length: 100 })
-  name: string; 
+  name: string;
 
   @Column({ type: 'text', nullable: true })
   description?: string;
@@ -24,6 +27,9 @@ export class Roles {
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 
-  @OneToMany(() => User, (user) => user.role)
+  @UpdateDateColumn({ type: 'timestamptz' })
+  updated_at: Date;
+
+  @ManyToMany(() => User, (user) => user.roles)
   users: User[];
 }

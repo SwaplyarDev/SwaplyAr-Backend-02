@@ -60,11 +60,16 @@ export class UserResponseDto {
   })
   locations: UserLocationDto[];
 
-  @ApiProperty({ example: 'admin' })
-  role: {
+  @ApiProperty({ 
+    example: [
+      { code: 'admin', name: 'Administrador' },
+      { code: 'moderator', name: 'Moderador' }
+    ] 
+  })
+  roles: {
     code: string;
     name: string;
-  };
+  }[];
 
   @ApiProperty({ example: true })
   termsAccepted: boolean;

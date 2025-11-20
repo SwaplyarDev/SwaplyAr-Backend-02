@@ -1,7 +1,10 @@
-import { IsString, IsOptional, IsBoolean, Length, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsUUID, Length, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePaymentPlatformsDto {
+  @IsUUID()
+  payment_platform_id: string;
+
   @ApiProperty({ description: 'Código único de la plataforma de pago', example: 'BANK' })
   @IsString()
   @Length(2, 50)

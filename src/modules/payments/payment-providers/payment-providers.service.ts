@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaymentProviders } from './payment-providers.entity';
@@ -33,29 +33,19 @@ export class PaymentProvidersService {
     return provider;
   }
 
-  async create(dto: CreatePaymentProvidersDto): Promise<PaymentProviders> {
-    // verificar plataforma asociada
-    const platform = await this.platformsRepo.findOne({
-      where: {
-        code: dto.payment_platform.code,
-      },
+  async create(dto: CreatePaymentProvidersDto) {
+    // 1. Obtener la platform real desde la DB
+    const platform = await this.platformsRepo.findOneByOrFail({
+      payment_platform_id: dto.payment_platform.payment_platform_id,
     });
 
-    if (!platform) {
-      throw new NotFoundException('Payment platform not found');
-    }
-
-    const exists = await this.providersRepo.findOne({
-      where: { code: dto.code },
-    });
-
-    if (exists) throw new ConflictException('Provider code already exists');
-
+    // 2. Construir el provider
     const provider = this.providersRepo.create({
       ...dto,
       payment_platform: platform,
     });
 
+    // 3. Guardar
     return this.providersRepo.save(provider);
   }
 
@@ -71,6 +61,7 @@ export class PaymentProvidersService {
 
       if (!platform) throw new NotFoundException('Payment platform not found');
       provider.payment_platform = platform;
+      provider.payment_platform_id = platform.payment_platform_id;
     }
 
     Object.assign(provider, dto);

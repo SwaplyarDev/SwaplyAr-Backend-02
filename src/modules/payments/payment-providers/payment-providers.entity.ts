@@ -6,6 +6,7 @@ import {
   OneToMany,
   CreateDateColumn,
   Unique,
+  JoinColumn,
 } from 'typeorm';
 import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
 import { BankAccounts } from '../bank-accounts/bank-accounts.entity';
@@ -37,7 +38,11 @@ export class PaymentProviders {
   created_at: Date;
 
   @ManyToOne(() => PaymentPlatforms, (platform) => platform.providers, { nullable: false })
+  @JoinColumn({ name: 'payment_platform_id' })
   payment_platform: PaymentPlatforms;
+
+  @Column({ type: 'uuid' })
+  payment_platform_id: string;
 
   @OneToMany(() => BankAccounts, (bankAccount) => bankAccount.payment_provider)
   bank_accounts: BankAccounts[];

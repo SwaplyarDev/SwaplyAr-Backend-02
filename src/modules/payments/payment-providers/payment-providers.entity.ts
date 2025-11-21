@@ -41,9 +41,6 @@ export class PaymentProviders {
   @JoinColumn({ name: 'payment_platform_id' })
   payment_platform: PaymentPlatforms;
 
-  @Column({ type: 'uuid' })
-  payment_platform_id: string;
-
   @OneToMany(() => BankAccounts, (bankAccount) => bankAccount.payment_provider)
   bank_accounts: BankAccounts[];
 

@@ -42,7 +42,16 @@ export class CreatePaymentProvidersDto {
 
   @ApiProperty({
     description: 'Id la plataforma de pago asociada',
-    example: 'c2f08fd7-5ab5-4c66-8fa5-85103a49db31',
+    example: {
+    "payment_platform_id": "e4d6db73-2064-4b53-ad4f-bd6c5d7170ca",
+    "code": "BANK",
+    "title": "Bank Platform",
+    "description": "Plataforma bancaria tradicional edit",
+    "is_active": true,
+    "created_at": "2025-11-18T12:24:18.058Z",
+    "providers": [],
+    "financialAccounts": []
+    },
   })
   @ValidateNested()
   @Type(() => CreatePaymentPlatformsDto)

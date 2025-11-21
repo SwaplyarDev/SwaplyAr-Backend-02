@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePaymentPlatformsDto {
   @IsUUID()
+  @IsOptional()
   payment_platform_id: string;
 
   @ApiProperty({ description: 'Código único de la plataforma de pago', example: 'BANK' })
@@ -27,4 +28,28 @@ export class CreatePaymentPlatformsDto {
   @IsOptional()
   @IsBoolean()
   is_active?: boolean;
+
+  @ApiProperty({
+    description: 'Fecha de creación',
+    example: '2025-11-18T12:24:18.058Z',
+    required: false,
+  })
+  @IsOptional()
+  created_at?: string;
+
+  @ApiProperty({
+    description: 'Lista de proveedores asociados',
+    required: false,
+    example: [],
+  })
+  @IsOptional()
+  providers?: any[];
+
+  @ApiProperty({
+    description: 'Cuentas financieras asociadas',
+    required: false,
+    example: [],
+  })
+  @IsOptional()
+  financialAccounts?: any[];
 }

@@ -61,7 +61,6 @@ export class PaymentProvidersService {
 
       if (!platform) throw new NotFoundException('Payment platform not found');
       provider.payment_platform = platform;
-      provider.payment_platform_id = platform.payment_platform_id;
     }
 
     Object.assign(provider, dto);

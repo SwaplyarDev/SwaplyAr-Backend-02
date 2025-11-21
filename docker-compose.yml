@@ -54,15 +54,43 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
     ports:
-      # Cambia el puerto externo si ya tienes un postgres local en 5432 (ej: "5433:5432")
-      - "${POSTGRES_PORT:-5432}:5432"
+      # Cambiamos el puerto externo para no chocar con otros Postgres locales
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-swaplyar}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-swaplyar}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  app:
+    build: .
+    container_name: swaplyar_app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://postgres:admin@postgres:5432/swaplyar
+      # Resto de variables sensibles se pasan desde el host o un .env.
+      # JWT_SECRET: ${JWT_SECRET}
+      # JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      # CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      # CLOUDINARY_CLOUD_API_KEY: ${CLOUDINARY_CLOUD_API_KEY}
+      # CLOUDINARY_CLOUD_API_SECRET: ${CLOUDINARY_CLOUD_API_SECRET}
+      # BREVO_API_KEY: ${BREVO_API_KEY}
+      # etc.
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -74,7 +102,7 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@swaplyar.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin_password}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     volumes:
@@ -94,7 +122,11 @@ services:
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_TEST_USER:-testuser} -d ${POSTGRES_TEST_DB:-testdb}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_TEST_USER:-testuser} -d ${POSTGRES_TEST_DB:-testdb}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5

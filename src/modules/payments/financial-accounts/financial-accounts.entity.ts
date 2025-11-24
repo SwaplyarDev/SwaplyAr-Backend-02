@@ -1,34 +1,40 @@
 import {
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
 import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
+import { User } from '../../users/entities/user.entity';
 
-@Entity('financial_account')
+@Entity({ name: 'financial_accounts' })
 export class FinancialAccounts {
   @PrimaryGeneratedColumn('uuid', { name: 'financial_account_id' })
   financialAccountId: string;
 
   @ManyToOne(() => PaymentPlatforms, (platform) => platform.financialAccounts, { nullable: false })
-  @JoinColumn({ name: 'payment_platform_id' }) // FK real
-  payment_platform: PaymentPlatforms;
+  @JoinColumn({ name: 'payment_platform_id' })
+  paymentPlatform: PaymentPlatforms;
 
   @Column({ type: 'uuid', name: 'reference_id' })
-  referenceId: string; // ID de la cuenta específica (p. ej. banco o wallet)
+  referenceId: string;
 
-  @Column({ type: 'uuid', name: 'user_id' })
-  userId: string; // Usuario propietario
+  @Column({ type: 'uuid', nullable: true, name: 'user_id' })
+  userId: string;
 
-  @Column({ type: 'varchar', length: 20, name: 'owner_type' })
-  ownerType: string; // Ejemplo: 'admin'
+  @Column({ type: 'varchar', length: 20, default: 'user', name: 'owner_type' })
+  ownerType: string;
 
-  @Column({ type: 'uuid', name: 'created_by' })
-  createdBy: string; // ID del usuario que crea el registro
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'created_by' })
+  createdBy: User;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz', default: () => 'now()' })
   createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', default: () => 'now()' })
+  updatedAt: Date;
 }

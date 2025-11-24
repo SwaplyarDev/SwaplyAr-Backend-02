@@ -92,14 +92,17 @@ export class User {
   })
   rewardsLedger: UserRewardsLedger;
 
-  @OneToMany(() => BankAccounts, (bankAccount) => bankAccount.user)
-  bank_accounts: BankAccounts[];
+  @OneToMany(() => BankAccounts, (bankAccount: BankAccounts) => bankAccount.user)
+  bankAccounts: BankAccounts[];
 
-  @OneToMany(() => VirtualBankAccounts, (virtualBankAccount) => virtualBankAccount.user)
-  virtual_bank_accounts: VirtualBankAccounts[];
+  @OneToMany(
+    () => VirtualBankAccounts,
+    (virtualBankAccount: VirtualBankAccounts) => virtualBankAccount.user,
+  )
+  virtualBankAccounts: VirtualBankAccounts[];
 
-  @OneToMany(() => CryptoAccounts, (cryptoAccount) => cryptoAccount.user)
-  crypto_accounts: CryptoAccounts[];
+  @OneToMany(() => CryptoAccounts, (cryptoAccount: CryptoAccounts) => cryptoAccount.user)
+  cryptoAccounts: CryptoAccounts[];
 
   @Column({
     type: 'enum',

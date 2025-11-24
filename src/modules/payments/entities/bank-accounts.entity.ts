@@ -7,7 +7,7 @@ export class BankAccounts {
   @PrimaryGeneratedColumn('uuid')
   bank_account_id: string;
 
-  @ManyToOne(() => User, (user) => user.bank_accounts, { nullable: false })
+  @ManyToOne(() => User, (user) => user.bankAccounts, { nullable: false })
   user: User;
 
   @ManyToOne(() => PaymentProviders, (provider) => provider.bank_accounts, { nullable: false })

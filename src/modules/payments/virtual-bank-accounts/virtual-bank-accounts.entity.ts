@@ -1,38 +1,52 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
 import { PaymentProviders } from '../payment-providers/payment-providers.entity';
 import { User } from '../../users/entities/user.entity';
 
-@Entity('virtual_bank_accounts')
+@Entity({ name: 'virtual_bank_accounts' })
 export class VirtualBankAccounts {
-  @PrimaryGeneratedColumn('uuid')
-  bank_account_id: string;
+  @PrimaryGeneratedColumn('uuid', { name: 'virtual_bank_account_id' })
+  virtualBankAccountId: string;
 
-  @ManyToOne(() => User, (user) => user.virtual_bank_accounts, { nullable: false })
+  @ManyToOne(() => User, (user) => user.virtualBankAccounts, { nullable: false })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => PaymentProviders, (provider) => provider.virtual_bank_accounts, {
+  @ManyToOne(() => PaymentProviders, (provider) => provider.virtualBankAccounts, {
     nullable: false,
   })
-  payment_provider: PaymentProviders;
+  @JoinColumn({ name: 'payment_provider_id' })
+  paymentProvider: PaymentProviders;
 
-  @Column({ type: 'varchar', nullable: false })
-  email_account: string;
+  @Column({ type: 'varchar', nullable: false, name: 'email_account' })
+  emailAccount: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  account_alias: string;
+  @Column({ type: 'varchar', nullable: true, name: 'account_alias' })
+  accountAlias: string;
 
   @Column({ type: 'varchar', length: 3, nullable: true })
   currency: string;
 
-  @Column({ type: 'varchar', length: 20, default: 'user' })
-  owner_type: string;
+  @Column({ type: 'varchar', length: 20, default: 'user', name: 'owner_type' })
+  ownerType: string;
 
   @ManyToOne(() => User, { nullable: false })
-  created_by: User;
+  @JoinColumn({ name: 'created_by' })
+  createdBy: User;
 
-  @Column({ type: 'boolean', default: true })
-  is_active: boolean;
+  @Column({ type: 'boolean', default: true, name: 'is_active' })
+  isActive: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
-  created_at: Date;
+  @CreateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'updated_at' })
+  updatedAt: Date;
 }

@@ -4,62 +4,63 @@ import {
   IsBoolean,
   Length,
   MaxLength,
-  ValidateNested,
+  IsUUID,
+  IsIn,
+  IsUrl,
+  IsUppercase,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { CreatePaymentPlatformsDto } from '../../payment-platforms/dto/create-payment-platforms.dto';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreatePaymentProvidersDto {
-  @ApiProperty({ description: 'Nombre del proveedor', example: 'PAYPAL' })
+  @ApiProperty({ description: 'Nombre del proveedor', example: 'PayPal' })
   @IsString()
   @MaxLength(100)
   name: string;
 
-  @ApiProperty({ description: 'Código único del proveedor', example: 'PAYPAL' })
+  @ApiProperty({ description: 'Código único del proveedor', example: 'paypal' })
   @IsString()
   @Length(2, 50)
   code: string;
 
-  @ApiProperty({ description: 'País del proveedor', example: 'ARG' })
+  @ApiPropertyOptional({ description: 'Código de país ISO 3166-1 alpha-3', example: 'ARG' })
   @IsOptional()
   @IsString()
-  @Length(2, 3)
+  @Length(3, 3)
+  @IsUppercase()
   countryCode?: string;
 
-  @ApiProperty({
-    description: 'Logo del proveedor',
+  @ApiPropertyOptional({
+    description: 'URL del logo del proveedor',
     example: 'https://res.cloudinary.com/dwrhturiy/image/upload/v1726600628/paypal.dark_lgvm7j.png',
   })
   @IsOptional()
   @IsString()
+  @IsUrl()
   logoUrl?: string;
 
-  @ApiProperty({ description: 'Tipo de operación', example: 'both' })
+  @ApiPropertyOptional({
+    description: 'Tipo de operación permitida',
+    example: 'both',
+    enum: ['send', 'receive', 'both'],
+  })
   @IsOptional()
   @IsString()
+  @IsIn(['send', 'receive', 'both'])
   operationType?: string;
 
-  @ApiProperty({ description: 'Indica si el proveedor esta activo', example: 'true' })
+  @ApiPropertyOptional({
+    description: 'Indica si el proveedor esta activo',
+    example: true,
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 
   @ApiProperty({
-    description: 'Id la plataforma de pago asociada',
-    example: {
-      paymentPlatformId: 'e4d6db73-2064-4b53-ad4f-bd6c5d7170ca',
-      code: 'BANK',
-      title: 'Bank Platform',
-      description: 'Plataforma bancaria tradicional edit',
-      isActive: true,
-      createdAt: '2025-11-18T12:24:18.058Z',
-      providers: [],
-      financialAccounts: [],
-    },
+    description: 'ID de la plataforma de pago asociada (UUID)',
+    example: 'e4d6db73-2064-4b53-ad4f-bd6c5d7170ca',
   })
-  @ValidateNested()
-  @Type(() => CreatePaymentPlatformsDto)
-  @IsOptional()
-  paymentPlatform: CreatePaymentPlatformsDto;
+  @IsUUID()
+  paymentPlatformId: string;
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaymentPlatforms } from './payment-platforms.entity';
@@ -31,6 +31,10 @@ export class PaymentPlatformsService {
   }
 
   async create(data: CreatePaymentPlatformsDto): Promise<PaymentPlatforms> {
+    const existingPlatform = await this.repo.findOne({ where: { code: data.code } });
+    if (existingPlatform) {
+      throw new ConflictException(`PaymentPlatform with code ${data.code} already exists`);
+    }
     const entity: PaymentPlatforms = this.repo.create(data);
     return this.repo.save(entity);
   }

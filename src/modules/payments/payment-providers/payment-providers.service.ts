@@ -35,21 +35,19 @@ export class PaymentProvidersService {
 
   async create(dto: CreatePaymentProvidersDto) {
     // 1. Obtener la platform real desde la DB
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
-    const platformId = dto.paymentPlatform?.paymentPlatformId;
+    const { paymentPlatformId, ...providerData } = dto;
 
-    if (!platformId) {
-      throw new NotFoundException('Payment Platform ID is required');
-    }
-
-    const platform = await this.platformsRepo.findOneByOrFail({
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      paymentPlatformId: platformId,
+    const platform = await this.platformsRepo.findOneBy({
+      paymentPlatformId,
     });
+
+    if (!platform) {
+      throw new NotFoundException(`Payment Platform with ID ${paymentPlatformId} not found`);
+    }
 
     // 2. Construir el provider
     const provider = this.providersRepo.create({
-      ...dto,
+      ...providerData,
       paymentPlatform: platform,
     });
 
@@ -59,21 +57,20 @@ export class PaymentProvidersService {
 
   async update(id: string, dto: UpdatePaymentProvidersDto): Promise<PaymentProviders> {
     const provider = await this.findOne(id);
+    const { paymentPlatformId, ...updateData } = dto;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (dto.paymentPlatform?.code) {
-      const platform = await this.platformsRepo.findOne({
-        where: {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
-          code: dto.paymentPlatform.code,
-        },
+    if (paymentPlatformId) {
+      const platform = await this.platformsRepo.findOneBy({
+        paymentPlatformId,
       });
 
-      if (!platform) throw new NotFoundException('Payment platform not found');
+      if (!platform) {
+        throw new NotFoundException(`Payment Platform with ID ${paymentPlatformId} not found`);
+      }
       provider.paymentPlatform = platform;
     }
 
-    Object.assign(provider, dto);
+    Object.assign(provider, updateData);
 
     return this.providersRepo.save(provider);
   }

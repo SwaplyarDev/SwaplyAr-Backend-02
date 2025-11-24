@@ -1,12 +1,8 @@
-import { IsString, IsOptional, IsBoolean, IsUUID, Length, MaxLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsOptional, IsBoolean, Length, MaxLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreatePaymentPlatformsDto {
-  @IsUUID()
-  @IsOptional()
-  paymentPlatformId: string;
-
-  @ApiProperty({ description: 'Código único de la plataforma de pago', example: 'BANK' })
+  @ApiProperty({ description: 'Código único de la plataforma de pago', example: 'bank' })
   @IsString()
   @Length(2, 50)
   code: string;
@@ -16,7 +12,7 @@ export class CreatePaymentPlatformsDto {
   @MaxLength(100)
   title: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Descripción de la plataforma de pago',
     example: 'Plataforma bancaria tradicional',
   })
@@ -24,32 +20,12 @@ export class CreatePaymentPlatformsDto {
   @IsString()
   description?: string;
 
-  @ApiProperty({ description: 'Indica si la plataforma de pago está activa', example: true })
+  @ApiPropertyOptional({
+    description: 'Indica si la plataforma de pago está activa',
+    example: true,
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
-
-  @ApiProperty({
-    description: 'Fecha de creación',
-    example: '2025-11-18T12:24:18.058Z',
-    required: false,
-  })
-  @IsOptional()
-  createdAt?: string;
-
-  @ApiProperty({
-    description: 'Lista de proveedores asociados',
-    required: false,
-    example: [],
-  })
-  @IsOptional()
-  providers?: any[];
-
-  @ApiProperty({
-    description: 'Cuentas financieras asociadas',
-    required: false,
-    example: [],
-  })
-  @IsOptional()
-  financialAccounts?: any[];
 }

@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsUUID, IsString, IsOptional, IsBoolean, Length, MaxLength, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsUUID,
+  IsString,
+  IsOptional,
+  IsBoolean,
+  Length,
+  MaxLength,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateBankAccountDetailDto {

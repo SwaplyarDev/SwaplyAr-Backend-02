@@ -1,34 +1,44 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { User } from '../../../users/entities/user.entity';
 import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
 
 export class VirtualBankAccountResponseDto {
+  @ApiProperty()
   @Expose()
-  bank_account_id: string;
+  virtualBankAccountId: string;
 
+  @ApiProperty({ type: () => User })
   @Expose()
   @Type(() => User)
   user: User;
 
+  @ApiProperty({ type: () => PaymentProviders })
   @Expose()
   @Type(() => PaymentProviders)
-  payment_provider: PaymentProviders;
+  paymentProvider: PaymentProviders;
 
+  @ApiProperty()
   @Expose()
-  email_account: string;
+  emailAccount: string;
 
+  @ApiPropertyOptional()
   @Expose()
-  account_alias?: string;
+  accountAlias?: string;
 
+  @ApiPropertyOptional()
   @Expose()
   currency?: string;
 
+  @ApiProperty()
   @Expose()
-  owner_type: string;
+  ownerType: string;
 
+  @ApiProperty()
   @Expose()
-  is_active: boolean;
+  isActive: boolean;
 
+  @ApiProperty()
   @Expose()
-  created_at: Date;
+  createdAt: Date;
 }

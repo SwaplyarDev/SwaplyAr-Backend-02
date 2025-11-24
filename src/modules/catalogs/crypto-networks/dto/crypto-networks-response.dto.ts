@@ -3,7 +3,7 @@ import { CryptoAccounts } from '../../../payments/crypto-accounts/crypto-account
 
 export class CryptoNetworkResponseDto {
   @Expose()
-  crypto_network_id: string;
+  cryptoNetworkId: string;
 
   @Expose()
   code: string;
@@ -12,18 +12,18 @@ export class CryptoNetworkResponseDto {
   title: string;
 
   @Expose()
-  logo_url?: string;
+  logoUrl?: string;
 
   @Expose()
   description?: string;
 
   @Expose()
-  is_active: boolean;
+  isActive: boolean;
 
   @Expose()
-  created_at: Date;
+  createdAt: Date;
 
   @Expose()
   @Type(() => CryptoAccounts)
-  crypto_accounts?: CryptoAccounts[];
+  cryptoAccounts?: CryptoAccounts[];
 }

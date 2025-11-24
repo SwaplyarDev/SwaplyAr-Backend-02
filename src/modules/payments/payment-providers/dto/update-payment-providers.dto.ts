@@ -5,10 +5,10 @@ import { IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdatePaymentProvidersDto extends PartialType(
-  OmitType(CreatePaymentProvidersDto, ['payment_platform']),
+  OmitType(CreatePaymentProvidersDto, ['paymentPlatform']),
 ) {
   @ValidateNested()
   @Type(() => UpdatePaymentPlatformsDto)
   @IsOptional()
-  payment_platform?: UpdatePaymentPlatformsDto;
+  paymentPlatform?: UpdatePaymentPlatformsDto;
 }

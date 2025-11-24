@@ -19,7 +19,7 @@ export class PaymentPlatformsService {
 
   async findOne(id: string): Promise<PaymentPlatforms> {
     const platform = await this.repo.findOne({
-      where: { payment_platform_id: id },
+      where: { paymentPlatformId: id },
       relations: ['providers', 'financialAccounts'],
     });
 
@@ -43,7 +43,7 @@ export class PaymentPlatformsService {
 
   async inactivate(id: string): Promise<PaymentPlatforms> {
     const platform = await this.findOne(id);
-    platform.is_active = false;
+    platform.isActive = false;
     return this.repo.save(platform);
   }
 

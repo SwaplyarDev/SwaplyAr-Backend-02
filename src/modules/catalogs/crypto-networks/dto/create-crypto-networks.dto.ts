@@ -1,23 +1,29 @@
 import { IsString, IsOptional, IsBoolean, Length } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCryptoNetworkDto {
+  @ApiProperty({ description: 'Código de la red (ej: TRC20)', example: 'TRC20' })
   @IsString()
   @Length(1, 20)
   code: string;
 
+  @ApiProperty({ description: 'Título de la red', example: 'Tron Network (TRC20)' })
   @IsString()
   @Length(1, 100)
   title: string;
 
+  @ApiProperty({ description: 'URL del logo', required: false })
   @IsOptional()
   @IsString()
-  logo_url?: string;
+  logoUrl?: string;
 
+  @ApiProperty({ description: 'Descripción de la red', required: false })
   @IsOptional()
   @IsString()
   description?: string;
 
+  @ApiProperty({ description: 'Si la red está activa', default: true, required: false })
   @IsOptional()
   @IsBoolean()
-  is_active?: boolean;
+  isActive?: boolean;
 }

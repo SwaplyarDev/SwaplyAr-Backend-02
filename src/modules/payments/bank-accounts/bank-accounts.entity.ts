@@ -3,12 +3,14 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
+  OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
 } from 'typeorm';
 import { PaymentProviders } from '../payment-providers/payment-providers.entity';
 import { User } from '../../users/entities/user.entity';
+import { BankAccountDetails } from './bank-account-details.entity';
 
 @Entity({ name: 'bank_accounts' })
 export class BankAccounts {
@@ -22,6 +24,9 @@ export class BankAccounts {
   @ManyToOne(() => PaymentProviders, (provider) => provider.bankAccounts, { nullable: false })
   @JoinColumn({ name: 'payment_provider_id' })
   paymentProvider: PaymentProviders;
+
+  @OneToMany(() => BankAccountDetails, (detail) => detail.bankAccount)
+  details: BankAccountDetails[];
 
   @Column({ type: 'varchar', length: 3, nullable: false, name: 'country_code' })
   countryCode: string;

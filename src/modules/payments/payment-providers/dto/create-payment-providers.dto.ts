@@ -25,7 +25,7 @@ export class CreatePaymentProvidersDto {
   @IsOptional()
   @IsString()
   @Length(2, 3)
-  country?: string;
+  countryCode?: string;
 
   @ApiProperty({
     description: 'Logo del proveedor',
@@ -33,22 +33,27 @@ export class CreatePaymentProvidersDto {
   })
   @IsOptional()
   @IsString()
-  logo_url?: string;
+  logoUrl?: string;
+
+  @ApiProperty({ description: 'Tipo de operación', example: 'both' })
+  @IsOptional()
+  @IsString()
+  operationType?: string;
 
   @ApiProperty({ description: 'Indica si el proveedor esta activo', example: 'true' })
   @IsOptional()
   @IsBoolean()
-  is_active?: boolean;
+  isActive?: boolean;
 
   @ApiProperty({
     description: 'Id la plataforma de pago asociada',
     example: {
-      payment_platform_id: 'e4d6db73-2064-4b53-ad4f-bd6c5d7170ca',
+      paymentPlatformId: 'e4d6db73-2064-4b53-ad4f-bd6c5d7170ca',
       code: 'BANK',
       title: 'Bank Platform',
       description: 'Plataforma bancaria tradicional edit',
-      is_active: true,
-      created_at: '2025-11-18T12:24:18.058Z',
+      isActive: true,
+      createdAt: '2025-11-18T12:24:18.058Z',
       providers: [],
       financialAccounts: [],
     },
@@ -56,5 +61,5 @@ export class CreatePaymentProvidersDto {
   @ValidateNested()
   @Type(() => CreatePaymentPlatformsDto)
   @IsOptional()
-  payment_platform: CreatePaymentPlatformsDto;
+  paymentPlatform: CreatePaymentPlatformsDto;
 }

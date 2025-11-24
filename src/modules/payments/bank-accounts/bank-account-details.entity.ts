@@ -14,7 +14,10 @@ export class BankAccountDetails {
   @PrimaryGeneratedColumn('uuid', { name: 'bank_account_detail_id' })
   bankAccountDetailId: string;
 
-  @ManyToOne(() => BankAccounts, { nullable: false })
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  @ManyToOne(() => BankAccounts, (bankAccount: BankAccounts) => bankAccount.details, {
+    nullable: false,
+  })
   @JoinColumn({ name: 'bank_account_id' })
   bankAccount: BankAccounts;
 

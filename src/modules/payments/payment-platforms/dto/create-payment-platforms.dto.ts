@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreatePaymentPlatformsDto {
   @IsUUID()
   @IsOptional()
-  payment_platform_id: string;
+  paymentPlatformId: string;
 
   @ApiProperty({ description: 'Código único de la plataforma de pago', example: 'BANK' })
   @IsString()
@@ -27,7 +27,7 @@ export class CreatePaymentPlatformsDto {
   @ApiProperty({ description: 'Indica si la plataforma de pago está activa', example: true })
   @IsOptional()
   @IsBoolean()
-  is_active?: boolean;
+  isActive?: boolean;
 
   @ApiProperty({
     description: 'Fecha de creación',
@@ -35,7 +35,7 @@ export class CreatePaymentPlatformsDto {
     required: false,
   })
   @IsOptional()
-  created_at?: string;
+  createdAt?: string;
 
   @ApiProperty({
     description: 'Lista de proveedores asociados',

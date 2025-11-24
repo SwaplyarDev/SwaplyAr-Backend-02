@@ -18,15 +18,15 @@ export class PaymentProvidersService {
 
   async findAll(): Promise<PaymentProviders[]> {
     return this.providersRepo.find({
-      relations: ['payment_platform'],
-      order: { created_at: 'DESC' },
+      relations: ['paymentPlatform'],
+      order: { createdAt: 'DESC' },
     });
   }
 
   async findOne(id: string): Promise<PaymentProviders> {
     const provider = await this.providersRepo.findOne({
-      where: { payment_provider_id: id },
-      relations: ['payment_platform'],
+      where: { paymentProviderId: id },
+      relations: ['paymentPlatform'],
     });
 
     if (!provider) throw new NotFoundException('Payment provider not found');
@@ -35,14 +35,22 @@ export class PaymentProvidersService {
 
   async create(dto: CreatePaymentProvidersDto) {
     // 1. Obtener la platform real desde la DB
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+    const platformId = dto.paymentPlatform?.paymentPlatformId;
+
+    if (!platformId) {
+      throw new NotFoundException('Payment Platform ID is required');
+    }
+
     const platform = await this.platformsRepo.findOneByOrFail({
-      payment_platform_id: dto.payment_platform.payment_platform_id,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      paymentPlatformId: platformId,
     });
 
     // 2. Construir el provider
     const provider = this.providersRepo.create({
       ...dto,
-      payment_platform: platform,
+      paymentPlatform: platform,
     });
 
     // 3. Guardar
@@ -52,15 +60,17 @@ export class PaymentProvidersService {
   async update(id: string, dto: UpdatePaymentProvidersDto): Promise<PaymentProviders> {
     const provider = await this.findOne(id);
 
-    if (dto.payment_platform) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (dto.paymentPlatform?.code) {
       const platform = await this.platformsRepo.findOne({
         where: {
-          code: dto.payment_platform.code,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+          code: dto.paymentPlatform.code,
         },
       });
 
       if (!platform) throw new NotFoundException('Payment platform not found');
-      provider.payment_platform = platform;
+      provider.paymentPlatform = platform;
     }
 
     Object.assign(provider, dto);
@@ -70,7 +80,7 @@ export class PaymentProvidersService {
 
   async inactivate(id: string): Promise<PaymentProviders> {
     const provider = await this.findOne(id);
-    provider.is_active = false;
+    provider.isActive = false;
     return this.providersRepo.save(provider);
   }
 

@@ -1,28 +1,38 @@
-import { IsUUID, IsEmail, IsOptional, IsString, Length } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsUUID, IsEmail, IsOptional, IsString, Length, IsBoolean } from 'class-validator';
 
 export class CreateVirtualBankAccountDto {
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsUUID()
-  user_id: string;
+  userId?: string;
 
+  @ApiProperty()
   @IsUUID()
-  payment_provider_id: string;
+  paymentProviderId: string;
 
+  @ApiProperty()
   @IsEmail()
-  email_account: string;
+  emailAccount: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  account_alias?: string;
+  accountAlias?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @Length(3, 3)
   currency?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  owner_type?: string;
+  ownerType?: string;
 
-  @IsUUID()
-  created_by_id: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

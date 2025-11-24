@@ -99,6 +99,32 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    container_name: swaplyar_backend
+    build: .
+    restart: unless-stopped
+    profiles: ["production"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT:-8081}
+      # Conexión interna a la DB usando el nombre del servicio 'postgres'
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-admin}@postgres:5432/${POSTGRES_DB:-swaplyar}
+      # Variables críticas
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_CLOUD_API_KEY: ${CLOUDINARY_CLOUD_API_KEY}
+      CLOUDINARY_CLOUD_API_SECRET: ${CLOUDINARY_CLOUD_API_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      CONVERSION_API_URL: ${CONVERSION_API_URL}
+    ports:
+      - "${PORT:-8081}:${PORT:-8081}"
+
 volumes:
   postgres_data:
   pgadmin_data:

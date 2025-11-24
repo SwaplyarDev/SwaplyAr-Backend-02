@@ -1,4 +1,3 @@
-````markdown
 # Guía de Migraciones (TypeORM)
 
 **Archivo principal:** `src/database/data-source.ts`
@@ -64,12 +63,26 @@ Flujo cada vez que modificas o agregas entidades:
 ## 4. Entornos
 
 * **Desarrollo:** Generas y aplicas normalmente.
-* **Producción:**
+* **Producción (Servidor tradicional):**
 
   1. Compila: `npm run build`
   2. Asegúrate de tener `DATABASE_URL` definida.
   3. Ejecuta: `npm run mig:run`
      (El `DataSource` ya apunta a rutas `dist` si `NODE_ENV=production`).
+
+* **Producción (Docker):**
+
+  Para ejecutar migraciones dentro del contenedor de producción:
+
+  ```bash
+  # Ejecutar migraciones en el contenedor 'app' ya corriendo
+  docker compose --profile production exec app npm run migration:run:prod
+  ```
+
+  Para revertir migraciones:
+  ```bash
+  docker compose --profile production exec app npm run migration:revert:prod
+  ```
 
 ---
 

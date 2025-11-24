@@ -29,10 +29,12 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
   const isTest = isTestEnv;
   const isCompiled = __filename.endsWith('.js'); // si estamos en dist
 
+  const sslEnabled = process.env.DB_SSL === 'true' || (isProduction && process.env.DB_SSL !== 'false');
+
   return {
     type: 'postgres',
     url: databaseUrl,
-    ssl: isProduction ? { rejectUnauthorized: false } : false, // SSL solo en producción
+    ssl: sslEnabled ? { rejectUnauthorized: false } : false, // SSL configurable
     // En producción no sincronizamos; en dev/test sí para iterar y e2e
     synchronize: !isProduction,
     // En test reiniciamos el esquema para pruebas limpias

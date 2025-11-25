@@ -86,6 +86,10 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:-tu_clave_secreta}
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+      DB_SSL: "false"
       # Conexión interna: host = nombre del servicio `postgres`
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-admin}@postgres:5432/${POSTGRES_DB:-swaplyar}
     ports:

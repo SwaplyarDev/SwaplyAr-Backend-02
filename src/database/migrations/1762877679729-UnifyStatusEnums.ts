@@ -2,7 +2,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class UnifyStatusEnums1762877679729 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // 1. Crear el nuevo enum 
+    // 1. Crear el nuevo enum
     await queryRunner.query(`
       CREATE TYPE "status_enum" AS ENUM(
         'pending', 'review_payment', 'approved', 'rejected', 
@@ -17,14 +17,14 @@ export class UnifyStatusEnums1762877679729 implements MigrationInterface {
       ALTER TABLE "transactions" 
       ALTER COLUMN "final_status" DROP DEFAULT
     `);
-    
+
     // Cambiar el tipo de columna
     await queryRunner.query(`
       ALTER TABLE "transactions" 
       ALTER COLUMN "final_status" TYPE "status_enum" 
       USING "final_status"::text::"status_enum"
     `);
-    
+
     // Restaurar el valor por defecto
     await queryRunner.query(`
       ALTER TABLE "transactions" 
@@ -36,13 +36,13 @@ export class UnifyStatusEnums1762877679729 implements MigrationInterface {
       ALTER TABLE "administracion_master" 
       ALTER COLUMN "status" DROP DEFAULT
     `);
-    
+
     await queryRunner.query(`
       ALTER TABLE "administracion_master" 
       ALTER COLUMN "status" TYPE "status_enum" 
       USING "status"::text::"status_enum"
     `);
-    
+
     await queryRunner.query(`
       ALTER TABLE "administracion_master" 
       ALTER COLUMN "status" SET DEFAULT 'pending'::"status_enum"

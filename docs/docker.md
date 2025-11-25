@@ -31,6 +31,9 @@ PGADMIN_DEFAULT_PASSWORD=admin_password
 PGADMIN_PORT=5050
 
 APP_PORT=3000
+JWT_SECRET=tu_clave_secreta
+BREVO_API_KEY=xkeysib-...
+EMAIL_FROM=brasil@swaplyar.com
 ```
 
 ## Comandos básicos

@@ -57,7 +57,7 @@ export class ProfileController {
     description: 'Perfil del usuario con redes sociales',
     type: UserProfileResponseDto,
   })
-  @ApiUnauthorizedResponse({  description: 'Usuario no autenticado o token inválido' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
   async getMyProfile(@Req() req: any) {
     const userId = req.user?.id;
 

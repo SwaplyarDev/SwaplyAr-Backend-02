@@ -27,4 +27,7 @@ export class OtpCode {
 
   @Column({ name: 'email', nullable: true })
   email?: string;
+
+  @Column({ name: 'phone', nullable: true })
+  phone?: string;
 }

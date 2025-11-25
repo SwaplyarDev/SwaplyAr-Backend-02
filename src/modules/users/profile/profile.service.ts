@@ -37,7 +37,7 @@ export class ProfileService {
       throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
     }
 
-    const verificationIds = profile.user?.verifications?.map(v => v.verification_id) ?? [];
+    const verificationIds = profile.user?.verifications?.map((v) => v.verification_id) ?? [];
 
     return {
       ...profile,

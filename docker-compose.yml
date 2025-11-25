@@ -97,6 +97,17 @@ services:
       - "${PORT:-3000}:${PORT:-3000}"
     restart: unless-stopped
 
+  # -----------------------------------------------------------
+  # Cloudflare Tunnel
+  # -----------------------------------------------------------
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: swaplyar_tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+
 # =============================================================
 # Volúmenes persistentes
 # =============================================================

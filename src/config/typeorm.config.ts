@@ -29,7 +29,8 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
   const isTest = isTestEnv;
   const isCompiled = __filename.endsWith('.js'); // si estamos en dist
 
-  const sslEnabled = process.env.DB_SSL === 'true' || (isProduction && process.env.DB_SSL !== 'false');
+  const sslEnabled =
+    process.env.DB_SSL === 'true' || (isProduction && process.env.DB_SSL !== 'false');
 
   return {
     type: 'postgres',

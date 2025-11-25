@@ -12,7 +12,7 @@ import {
   FilterUserDiscountsDto,
 } from '../admin/discounts/dto/filter-user-discounts.dto';
 import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
-import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';;
+import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
 
 export class DiscountService {
   constructor(

@@ -1,36 +1,39 @@
-# Usa una imagen base de Node.js optimizada para producción
-FROM node:20-alpine AS base
+FROM node:20-alpine AS builder
 
-# Instala dependencias del sistema necesarias para NestJS y PostgreSQL
-RUN apk add --no-cache dumb-init
-
-# Establece el directorio de trabajo
 WORKDIR /app
 
-# Copia los archivos de configuración de dependencias
 COPY package*.json ./
 
-# Instala dependencias de producción
+# Instala todas las dependencias (incluyendo dev) para compilar
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+FROM node:20-alpine AS production
+
+RUN apk add --no-cache dumb-init
+
+WORKDIR /app
+
+COPY package*.json ./
+
+# Instala solo dependencias de producción
 RUN npm ci --only=production && npm cache clean --force
 
-# Copia el código compilado
-FROM base AS production
-COPY --from=base /app/node_modules ./node_modules
-COPY dist ./dist
+# Copia el build desde la etapa builder
+COPY --from=builder /app/dist ./dist
 
-# Crea un usuario no-root para seguridad
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nestjs -u 1001
+RUN addgroup -g 1001 -S nodejs \
+	&& adduser -S nestjs -u 1001 \
+	&& chown -R nestjs:nodejs /app
 
-# Cambia la propiedad de los archivos al usuario nestjs
-RUN chown -R nestjs:nodejs /app
 USER nestjs
 
-# Expone el puerto (Render lo asigna dinámicamente)
-EXPOSE 3001
+EXPOSE 3000
 
-# Usa dumb-init para manejar señales correctamente
 ENTRYPOINT ["dumb-init", "--"]
 
-# Comando para iniciar la aplicación
-CMD ["node", "dist/src/main.js"]
+# Ejecuta migraciones y arranca la app (sin reconstruir)
+CMD ["npm", "run", "start:prod:migrate"]

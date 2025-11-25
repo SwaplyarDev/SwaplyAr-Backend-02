@@ -63,6 +63,24 @@ export class CreateBankAccountDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  bankName?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  accountNumber?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  iban?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  swift?: string;
+  @IsOptional()
+  @IsString()
   @Length(2, 3)
   currency?: string;
 

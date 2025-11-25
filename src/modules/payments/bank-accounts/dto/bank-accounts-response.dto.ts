@@ -50,6 +50,22 @@ export class BankAccountResponseDto {
 
   @ApiPropertyOptional()
   @Expose()
+  bankName?: string;
+
+  @ApiPropertyOptional()
+  @Expose()
+  accountNumber?: string;
+
+  @ApiPropertyOptional()
+  @Expose()
+  iban?: string;
+
+  @ApiPropertyOptional()
+  @Expose()
+  swift?: string;
+
+  @ApiPropertyOptional()
+  @Expose()
   currency?: string;
 
   @ApiProperty()
@@ -63,6 +79,10 @@ export class BankAccountResponseDto {
   @ApiProperty()
   @Expose()
   createdAt: Date;
+
+  @ApiProperty()
+  @Expose()
+  createdById: string;
 
   @ApiPropertyOptional({ type: [BankAccountDetailResponseDto] })
   @Expose()

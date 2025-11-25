@@ -31,7 +31,8 @@ export class CreatePaymentProvidersDto {
 
   @ApiPropertyOptional({
     description: 'URL del logo del proveedor',
-    example: 'https://res.cloudinary.com/dwrhturiy/image/upload/v1726600628/paypal.dark_lgvm7j.png',
+    example:
+      'https://res.cloudinary.com/dwrhturiy/image/upload/v1726600628/paypal.dark_lgvm7j.png',
   })
   @IsOptional()
   @IsString()
@@ -64,3 +65,4 @@ export class CreatePaymentProvidersDto {
   @IsUUID()
   paymentPlatformId: string;
 }
+

@@ -40,6 +40,18 @@ export class BankAccounts {
   @Column({ type: 'varchar', nullable: true, name: 'document_value' })
   documentValue: string;
 
+  @Column({ type: 'varchar', nullable: true, name: 'bank_name' })
+  bankName: string;
+
+  @Column({ type: 'varchar', nullable: true, name: 'account_number' })
+  accountNumber: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  iban: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  swift: string;
+
   @Column({ type: 'varchar', length: 3, nullable: true })
   currency: string;
 

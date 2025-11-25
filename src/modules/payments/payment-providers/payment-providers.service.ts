@@ -34,7 +34,6 @@ export class PaymentProvidersService {
   }
 
   async create(dto: CreatePaymentProvidersDto) {
-    // 1. Obtener la platform real desde la DB
     const { paymentPlatformId, ...providerData } = dto;
 
     const platform = await this.platformsRepo.findOneBy({
@@ -45,13 +44,11 @@ export class PaymentProvidersService {
       throw new NotFoundException(`Payment Platform with ID ${paymentPlatformId} not found`);
     }
 
-    // 2. Construir el provider
     const provider = this.providersRepo.create({
       ...providerData,
       paymentPlatform: platform,
     });
 
-    // 3. Guardar
     return this.providersRepo.save(provider);
   }
 

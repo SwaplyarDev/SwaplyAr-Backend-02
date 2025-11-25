@@ -7,7 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { PaymentPlatforms } from '../entities/payment-platforms.entity';
+import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Entity({ name: 'financial_accounts' })

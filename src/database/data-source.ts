@@ -13,7 +13,7 @@ if (!databaseUrl) {
 export const AppDataSource = new DataSource({
   type: 'postgres',
   url: databaseUrl,
-  ssl: isProd ? { rejectUnauthorized: false } : false,
+  ssl:  false,
   synchronize: false, // siempre migraciones, no sync
   migrationsTableName: 'migrations', // nombre estándar
   entities: [isProd ? 'dist/**/*.entity.js' : 'src/**/*.entity.ts'],

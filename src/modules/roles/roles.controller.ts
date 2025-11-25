@@ -25,7 +25,7 @@ import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { CreateRoleDto, CreateRoleResponseDto } from './dto/create-roles.dto';
 import { RolesService } from './roles.service';
 import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
-import { UpdateUserRoleDto, UpdateUserRoleResponseDto, AddUserRoleDto } from './dto/update-user-role.dto';
+import { UpdateUserRoleResponseDto, AddUserRoleDto } from './dto/update-user-role.dto';
 
 @ApiTags('Roles (Admin)')
 @Controller('admin/roles')
@@ -34,34 +34,6 @@ import { UpdateUserRoleDto, UpdateUserRoleResponseDto, AddUserRoleDto } from './
 @UseInterceptors(ClassSerializerInterceptor)
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
-
-  // Endpoint para actualizar rol de usuario
-  @Patch('user/:userId/role')
-  @UseInterceptors(ClassSerializerInterceptor)
-  @ApiOperation({ summary: 'Actualizar el rol de un usuario usando códigos de la tabla roles' })
-  @ApiParam({
-    name: 'userId',
-    description: 'ID del usuario a actualizar',
-    type: 'string',
-  })
-  @ApiOkResponse({
-    description: 'Rol de usuario actualizado correctamente',
-    type: UpdateUserRoleResponseDto,
-  })
-  @ApiBadRequestResponse({ description: 'Campo inválido o no se envió' })
-  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
-  @ApiForbiddenResponse({ description: 'No autorizado, Solo para Administradores' })
-  @ApiNotFoundResponse({ description: 'Usuario o rol no encontrado' })
-  async updateUserRole(
-    @Param('userId') userId: string, 
-    @Body() updateRoleDto: UpdateUserRoleDto
-  ) {
-    const roleCode = updateRoleDto.roleCode || updateRoleDto.role;
-    if (!roleCode) {
-      throw new BadRequestException('roleCode o role es requerido');
-    }
-    return this.rolesService.updateUserRole(userId, roleCode);
-  }
 
   // Endpoint para obtener todos los roles disponibles
   @Get()

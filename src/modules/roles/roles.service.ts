@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Roles } from './entities/roles.entity';
 import { CreateRoleDto } from './dto/create-roles.dto';
 import { User } from '../users/entities/user.entity';
+import { UserProfile } from '../users/entities/user-profile.entity';
 
 @Injectable()
 export class RolesService implements OnModuleInit {
@@ -11,11 +12,14 @@ export class RolesService implements OnModuleInit {
         @InjectRepository(Roles)
         private roleRepository: Repository<Roles>,
         @InjectRepository(User)
-        private userRepository: Repository<User>
+        private userRepository: Repository<User>,
+        @InjectRepository(UserProfile)
+        private userProfileRepository: Repository<UserProfile>
     ) { }
 
     async onModuleInit() {
         await this.seedRoles();
+        await this.createDefaultAdmin();
     }
 
     async createRole(createRoleDto: CreateRoleDto): Promise<Roles> {
@@ -43,6 +47,37 @@ export class RolesService implements OnModuleInit {
             }
         }
         return roles;
+    }
+
+    async createDefaultAdmin(): Promise<void> {
+        const adminEmail = 'fsepulveda.87@gmail.com';
+        
+        const existingProfile = await this.userProfileRepository.findOne({ 
+            where: { email: adminEmail } 
+        });
+        
+        if (existingProfile) return;
+        
+        const adminRole = await this.findByCode('admin');
+        
+        const adminUser = this.userRepository.create({
+            termsAccepted: true,
+            memberCode: 'ADMIN001',
+            isActive: true,
+            roles: [adminRole]
+        });
+        
+        const savedUser = await this.userRepository.save(adminUser);
+        
+        const adminProfile = this.userProfileRepository.create({
+            firstName: 'Admin',
+            lastName: 'System',
+            email: adminEmail,
+            user: savedUser
+        });
+        
+        await this.userProfileRepository.save(adminProfile);
+        await this.syncUserRoleColumns(savedUser.id);
     }
 
     async findByCode(code: string): Promise<Roles> {

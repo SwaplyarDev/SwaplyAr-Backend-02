@@ -3,6 +3,7 @@ import { PaymentPlatformsService } from './payment-platforms.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CreatePaymentPlatformsDto } from './dto/create-payment-platforms.dto';
 import { UpdatePaymentPlatformsDto } from './dto/update-payment-platforms.dto';
+import { PaymentPlatformResponseDto } from './dto/payment-platforms-response.dto';
 
 @ApiTags('Payment Platforms')
 @Controller('payment-platforms')
@@ -13,7 +14,11 @@ export class PaymentPlatformsController {
   // MOSTRAR TODAS LAS PLATAFORMAS DE PAGO
   // ===============================================
   @ApiOperation({ summary: 'Obtener todas las plataformas de pago registradas' })
-  @ApiResponse({ status: 200, description: 'Lista de plataformas de pago obtenida correctamente.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de plataformas de pago obtenida correctamente.',
+    type: [PaymentPlatformResponseDto],
+  })
   @Get()
   findAll() {
     return this.service.findAll();
@@ -23,7 +28,11 @@ export class PaymentPlatformsController {
   // MOSTRAR UNA PLATAFORMA DE PAGO POR ID
   // ===============================================
   @ApiOperation({ summary: 'Obtener plataformas de pago por ID' })
-  @ApiResponse({ status: 200, description: 'Plataforma de pago obtenida correctamente.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Plataforma de pago obtenida correctamente.',
+    type: PaymentPlatformResponseDto,
+  })
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
@@ -33,7 +42,12 @@ export class PaymentPlatformsController {
   // CREAR UNA PLATAFORMA DE PAGO
   // ===============================================
   @ApiOperation({ summary: 'Crear una plataforma de pago' })
-  @ApiResponse({ status: 200, description: 'Plataforma de pago creada correctamente.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Plataforma de pago creada correctamente.',
+    type: PaymentPlatformResponseDto,
+  })
+  @ApiBody({ type: CreatePaymentPlatformsDto })
   @Post()
   create(@Body() data: CreatePaymentPlatformsDto) {
     return this.service.create(data);
@@ -43,7 +57,11 @@ export class PaymentPlatformsController {
   // ACTUALIZAR UNA PLATAFORMA DE PAGO
   // ===============================================
   @ApiOperation({ summary: 'Actualizar una plataforma de pago' })
-  @ApiResponse({ status: 200, description: 'Plataforma de pago actualizada correctamente.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Plataforma de pago actualizada correctamente.',
+    type: PaymentPlatformResponseDto,
+  })
   @ApiBody({ type: UpdatePaymentPlatformsDto })
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdatePaymentPlatformsDto) {
@@ -53,7 +71,11 @@ export class PaymentPlatformsController {
   // INACTIVAR (SOFT-DELETE) UNA PLATAFORMA DE PAGO
   // ===============================================
   @ApiOperation({ summary: 'Inactivar una plataforma de pago' })
-  @ApiResponse({ status: 200, description: 'Plataforma de pago inactivada correctamente.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Plataforma de pago inactivada correctamente.',
+    type: PaymentPlatformResponseDto,
+  })
   @Patch(':id/inactivate')
   inactivate(@Param('id') id: string) {
     return this.service.inactivate(id);

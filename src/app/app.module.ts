@@ -5,7 +5,11 @@ import { ConfigModule } from '@config/config.module';
 import typeormConfig from '@config/typeorm.config';
 import { UsersModule } from '@users/users.module';
 import { TransactionsModule } from '@transactions/transactions.module';
-import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
+import { FinancialAccountsModule } from 'src/modules/payments/financial-accounts/financial-accounts.module';
+import { BankAccountsModule } from 'src/modules/payments/bank-accounts/bank-accounts.module';
+import { VirtualBankAccountsModule } from 'src/modules/payments/virtual-bank-accounts/virtual-bank-accounts.module';
+import { CryptoAccountsModule } from 'src/modules/payments/crypto-accounts/crypto-accounts.module';
+import { CryptoNetworksModule } from 'src/modules/catalogs/crypto-networks/crypto-networks.module';
 import { AuthModule } from '@auth/auth.module';
 import { MailerModule } from '@mailer/mailer.module';
 import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
@@ -56,6 +60,10 @@ import { PaymentProvidersModule } from 'src/modules/payments/payment-providers/p
     DynamicCommissionsModule,
     PaymentPlatformsModule,
     PaymentProvidersModule,
+    BankAccountsModule,
+    VirtualBankAccountsModule,
+    CryptoAccountsModule,
+    CryptoNetworksModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',
       signOptions: { expiresIn: '1d' },

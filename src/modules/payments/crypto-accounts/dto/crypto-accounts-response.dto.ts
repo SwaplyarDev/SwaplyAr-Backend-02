@@ -1,36 +1,46 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { User } from '../../../users/entities/user.entity';
 import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
 import { CryptoNetworks } from '../../../catalogs/crypto-networks/crypto-networks.entity';
 
 export class CryptoAccountResponseDto {
+  @ApiProperty()
   @Expose()
-  bank_account_id: string;
+  cryptoAccountId: string;
 
+  @ApiProperty({ type: () => User })
   @Expose()
   @Type(() => User)
   user: User;
 
+  @ApiProperty({ type: () => PaymentProviders })
   @Expose()
   @Type(() => PaymentProviders)
-  payment_provider: PaymentProviders;
+  paymentProvider: PaymentProviders;
 
+  @ApiProperty({ type: () => CryptoNetworks })
   @Expose()
   @Type(() => CryptoNetworks)
-  crypto_network: CryptoNetworks;
+  cryptoNetwork: CryptoNetworks;
 
+  @ApiProperty()
   @Expose()
-  wallet_address: string;
+  walletAddress: string;
 
+  @ApiPropertyOptional()
   @Expose()
-  tag_or_memo?: string;
+  tagOrMemo?: string;
 
+  @ApiProperty()
   @Expose()
-  owner_type: string;
+  ownerType: string;
 
+  @ApiProperty()
   @Expose()
-  is_active: boolean;
+  isActive: boolean;
 
+  @ApiProperty()
   @Expose()
-  created_at: Date;
+  createdAt: Date;
 }

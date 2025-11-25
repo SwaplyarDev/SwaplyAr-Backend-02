@@ -1,52 +1,91 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 
+export class BankAccountDetailResponseDto {
+  @ApiProperty()
+  @Expose()
+  fieldKey: string;
+
+  @ApiProperty()
+  @Expose()
+  fieldLabel: string;
+
+  @ApiProperty()
+  @Expose()
+  fieldValue: string;
+
+  @ApiProperty()
+  @Expose()
+  isEncrypted: boolean;
+}
+
 export class BankAccountResponseDto {
+  @ApiProperty()
   @Expose()
-  bank_account_id: string;
+  bankAccountId: string;
 
+  @ApiProperty()
   @Expose()
-  holder_name: string;
+  userId: string;
 
+  @ApiProperty()
   @Expose()
-  document_type?: string;
+  paymentProviderId: string;
 
+  @ApiProperty()
   @Expose()
-  document_value?: string;
+  countryCode: string;
 
+  @ApiProperty()
   @Expose()
-  bank_name?: string;
+  holderName: string;
 
+  @ApiPropertyOptional()
   @Expose()
-  account_number?: string;
+  documentType?: string;
 
+  @ApiPropertyOptional()
+  @Expose()
+  documentValue?: string;
+
+  @ApiPropertyOptional()
+  @Expose()
+  bankName?: string;
+
+  @ApiPropertyOptional()
+  @Expose()
+  accountNumber?: string;
+
+  @ApiPropertyOptional()
   @Expose()
   iban?: string;
 
+  @ApiPropertyOptional()
   @Expose()
   swift?: string;
 
+  @ApiPropertyOptional()
   @Expose()
   currency?: string;
 
+  @ApiProperty()
   @Expose()
-  owner_type: string;
+  ownerType: string;
 
+  @ApiProperty()
   @Expose()
-  is_active: boolean;
+  isActive: boolean;
 
+  @ApiProperty()
   @Expose()
-  created_at: Date;
+  createdAt: Date;
 
-  // Relaciones simplificadas
+  @ApiProperty()
   @Expose()
-  @Type(() => String)
-  user_id: string;
+  createdById: string;
 
+  @ApiPropertyOptional({ type: [BankAccountDetailResponseDto] })
   @Expose()
-  @Type(() => String)
-  payment_provider_id: string;
-
-  @Expose()
-  @Type(() => String)
-  created_by_id: string;
+  @Type(() => BankAccountDetailResponseDto)
+  details?: BankAccountDetailResponseDto[];
 }

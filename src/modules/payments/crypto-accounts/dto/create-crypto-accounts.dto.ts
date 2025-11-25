@@ -1,27 +1,37 @@
-import { IsUUID, IsString, IsOptional, Length } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsUUID, IsString, IsOptional, Length, IsBoolean } from 'class-validator';
 
 export class CreateCryptoAccountDto {
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsUUID()
-  user_id: string;
+  userId?: string;
 
+  @ApiProperty()
   @IsUUID()
-  payment_provider_id: string;
+  paymentProviderId: string;
 
+  @ApiProperty()
   @IsUUID()
-  crypto_network_id: string;
+  cryptoNetworkId: string;
 
+  @ApiProperty()
   @IsString()
-  wallet_address: string;
+  walletAddress: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  tag_or_memo?: string;
+  tagOrMemo?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @Length(1, 20)
-  owner_type?: string;
+  ownerType?: string;
 
-  @IsUUID()
-  created_by_id: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

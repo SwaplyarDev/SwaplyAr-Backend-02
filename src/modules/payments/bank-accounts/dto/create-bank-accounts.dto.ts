@@ -1,54 +1,104 @@
-import { IsUUID, IsString, IsOptional, IsBoolean, Length, MaxLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsUUID,
+  IsString,
+  IsOptional,
+  IsBoolean,
+  Length,
+  MaxLength,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class CreateBankAccountDetailDto {
+  @ApiProperty()
+  @IsString()
+  fieldKey: string;
+
+  @ApiProperty()
+  @IsString()
+  fieldLabel: string;
+
+  @ApiProperty()
+  @IsString()
+  fieldValue: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isEncrypted?: boolean;
+}
 
 export class CreateBankAccountDto {
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsUUID()
-  user_id: string;
+  userId?: string;
 
+  @ApiProperty()
   @IsUUID()
-  payment_provider_id: string;
+  paymentProviderId: string;
 
+  @ApiProperty()
+  @IsString()
+  @Length(3, 3)
+  countryCode: string;
+
+  @ApiProperty()
   @IsString()
   @MaxLength(150)
-  holder_name: string;
+  holderName: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  document_type?: string;
+  documentType?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  document_value?: string;
+  documentValue?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  bank_name?: string;
+  bankName?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  account_number?: string;
+  accountNumber?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   iban?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   swift?: string;
-
   @IsOptional()
   @IsString()
   @Length(2, 3)
   currency?: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(20)
-  owner_type?: string;
+  ownerType?: string;
 
-  @IsUUID()
-  created_by_id: string;
-
+  @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
-  is_active?: boolean;
+  isActive?: boolean;
+
+  @ApiPropertyOptional({ type: [CreateBankAccountDetailDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateBankAccountDetailDto)
+  details?: CreateBankAccountDetailDto[];
 }

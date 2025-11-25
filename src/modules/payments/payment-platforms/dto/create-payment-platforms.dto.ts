@@ -1,8 +1,8 @@
 import { IsString, IsOptional, IsBoolean, Length, MaxLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreatePaymentPlatformsDto {
-  @ApiProperty({ description: 'Código único de la plataforma de pago', example: 'BANK' })
+  @ApiProperty({ description: 'Código único de la plataforma de pago', example: 'bank' })
   @IsString()
   @Length(2, 50)
   code: string;
@@ -12,7 +12,7 @@ export class CreatePaymentPlatformsDto {
   @MaxLength(100)
   title: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Descripción de la plataforma de pago',
     example: 'Plataforma bancaria tradicional',
   })
@@ -20,8 +20,12 @@ export class CreatePaymentPlatformsDto {
   @IsString()
   description?: string;
 
-  @ApiProperty({ description: 'Indica si la plataforma de pago está activa', example: true })
+  @ApiPropertyOptional({
+    description: 'Indica si la plataforma de pago está activa',
+    example: true,
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
-  is_active?: boolean;
+  isActive?: boolean;
 }

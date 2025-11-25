@@ -1,28 +1,38 @@
-import { IsUUID, IsEmail, IsOptional, IsString, Length } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsUUID, IsEmail, IsOptional, IsString, Length, IsBoolean } from 'class-validator';
 
 export class CreateVirtualBankAccountDto {
+  @ApiPropertyOptional({ description: 'ID del usuario dueño de la cuenta' })
+  @IsOptional()
   @IsUUID()
-  user_id: string;
+  userId?: string;
 
+  @ApiProperty({ description: 'ID del proveedor de pago asociado' })
   @IsUUID()
-  payment_provider_id: string;
+  paymentProviderId: string;
 
+  @ApiProperty({ description: 'Email de la cuenta virtual' })
   @IsEmail()
-  email_account: string;
+  emailAccount: string;
 
+  @ApiPropertyOptional({ description: 'Alias de la cuenta virtual' })
   @IsOptional()
   @IsString()
-  account_alias?: string;
+  accountAlias?: string;
 
+  @ApiPropertyOptional({ description: 'Moneda de la cuenta (ISO 4217)' })
   @IsOptional()
   @IsString()
   @Length(3, 3)
   currency?: string;
 
+  @ApiPropertyOptional({ description: 'Tipo de dueño de la cuenta' })
   @IsOptional()
   @IsString()
-  owner_type?: string;
+  ownerType?: string;
 
-  @IsUUID()
-  created_by_id: string;
+  @ApiPropertyOptional({ description: 'Indica si la cuenta está activa' })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

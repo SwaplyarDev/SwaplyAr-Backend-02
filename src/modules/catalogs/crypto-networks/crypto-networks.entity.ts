@@ -1,10 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { CryptoAccounts } from '../../payments/crypto-accounts/crypto-accounts.entity';
 
-@Entity('crypto_networks')
+@Entity({ name: 'crypto_networks' })
 export class CryptoNetworks {
   @PrimaryGeneratedColumn('uuid', { name: 'crypto_network_id' })
-  crypto_network_id: string;
+  cryptoNetworkId: string;
 
   @Column({ type: 'varchar', length: 20, unique: true })
   code: string;
@@ -12,18 +12,21 @@ export class CryptoNetworks {
   @Column({ type: 'varchar', length: 100 })
   title: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  logo_url: string;
+  @Column({ type: 'varchar', nullable: true, name: 'logo_url' })
+  logoUrl: string;
 
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'boolean', default: true })
-  is_active: boolean;
+  @Column({ type: 'boolean', default: true, name: 'is_active' })
+  isActive: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
-  created_at: Date;
+  @CreateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'created_at' })
+  createdAt: Date;
 
-  @OneToMany(() => CryptoAccounts, (account) => account.crypto_network)
-  crypto_accounts: CryptoAccounts[];
+  @UpdateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'updated_at' })
+  updatedAt: Date;
+
+  @OneToMany(() => CryptoAccounts, (account: CryptoAccounts) => account.cryptoNetwork)
+  cryptoAccounts: CryptoAccounts[];
 }

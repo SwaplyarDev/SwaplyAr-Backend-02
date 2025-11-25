@@ -18,12 +18,8 @@ README.md
 .prettierignore
 jest.config.ts
 jest-e2e.json
-tsconfig*.json
-nest-cli.json
-docker-compose.yml
 docs
 scripts
 test
-src
 Dockerfile*
 .dockerignore

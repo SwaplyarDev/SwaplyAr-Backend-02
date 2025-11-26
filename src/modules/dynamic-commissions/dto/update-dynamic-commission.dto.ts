@@ -29,10 +29,10 @@ export class UpdateDynamicCommissionDto {
 
   @ApiProperty({
     example: 0.14,
-    description: 'Nuevo valor de la comisión (entre 0 y 1)',
+    description: 'Nuevo valor de la comisión (entre -1 y 1)',
   })
   @IsNumber({}, { message: 'commissionRate debe ser un número' })
-  @Min(0, { message: 'commissionRate no puede ser menor que 0' })
+  @Min(-1, { message: 'commissionRate no puede ser menor que -1' })
   @Max(1, { message: 'commissionRate no puede ser mayor que 1' })
   commissionRate: number;
 }

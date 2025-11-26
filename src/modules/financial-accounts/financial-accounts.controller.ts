@@ -54,151 +54,39 @@ export class FinancialAccountController {
     type: CreateFinancialAccountDto,
     examples: {
       bankExample: {
-        summary: 'Ejemplo con método bank',
+        summary: 'Ejemplo con plataforma bank',
         value: {
-          senderAccount: {
-            firstName: 'Juan',
-            lastName: 'Pérez',
-            paymentMethod: {
-              platformId: 'bank',
-              method: 'bank',
-              bank: {
-                currency: 'ARS',
-                bankName: 'Banco Nación',
-                sendMethodKey: 'CBU',
-                sendMethodValue: '1234567890123456789012',
-                documentType: 'DNI',
-                documentValue: '87654321',
-              },
-            },
-          },
-          receiverAccount: {
-            firstName: 'Ana',
-            lastName: 'García',
-            document_value: '12345678',
-            phoneNumber: '1122334455',
-            email: 'ana@example.com',
-            bank_name: 'Banco Galicia',
-            paymentMethod: {
-              platformId: 'bank',
-              method: 'bank',
-              bank: {
-                currency: 'ARS',
-                bankName: 'Banco Galicia',
-                sendMethodKey: 'CBU',
-                sendMethodValue: '1234567890123456789012',
-                documentType: 'DNI',
-                documentValue: '12345678',
-              },
-            },
-          },
-        },
-      },
-      pixExample: {
-        summary: 'Ejemplo con método pix',
-        value: {
-          senderAccount: {
-            firstName: 'Carlos',
-            lastName: 'Lopez',
-            paymentMethod: {
-              platformId: 'pix',
-              method: 'pix',
-              pix: {
-                pixId: 'vb123',
-                pixKey: 'email',
-                pixValue: 'carlos@example.com',
-                cpf: '12345678901',
-              },
-            },
-          },
-          receiverAccount: {
-            firstName: 'Lucía',
-            lastName: 'Martínez',
-            document_value: '87654321',
-            phoneNumber: '1199887766',
-            email: 'lucia@example.com',
-            bank_name: 'Banco Santander',
-            paymentMethod: {
-              platformId: 'pix',
-              method: 'pix',
-              pix: {
-                pixId: 'vb456',
-                pixKey: 'phone',
-                pixValue: '1199887766',
-                cpf: '10987654321',
-              },
-            },
-          },
-        },
-      },
-      receiverCryptoExample: {
-        summary: 'Ejemplo con método receiver-crypto',
-        value: {
-          senderAccount: {
-            firstName: 'Diego',
-            lastName: 'Fernández',
-            paymentMethod: {
-              platformId: 'receiver_crypto',
-              method: 'receiver-crypto',
-              receiverCrypto: {
-                currency: 'ARS',
-                network: 'Bitcoin',
-                wallet: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
-              },
-            },
-          },
-          receiverAccount: {
-            firstName: 'María',
-            lastName: 'González',
-            document_value: '34567890',
-            phoneNumber: '1144778899',
-            email: 'maria@example.com',
-            bank_name: 'Crypto Bank',
-            paymentMethod: {
-              platformId: 'receiver_crypto',
-              method: 'receiver-crypto',
-              receiverCrypto: {
-                currency: 'ETH',
-                network: 'Ethereum',
-                wallet: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-              },
-            },
-          },
+          paymentPlatformId: '11111111-1111-1111-1111-111111111111',
+          referenceId: '22222222-2222-2222-2222-222222222222',
+          userId: '33333333-3333-3333-3333-333333333333',
+          ownerType: 'user',
         },
       },
       virtualBankExample: {
-        summary: 'Ejemplo con método virtual-bank',
+        summary: 'Ejemplo con plataforma virtual_bank',
         value: {
-          senderAccount: {
-            firstName: 'Sofía',
-            lastName: 'Ruiz',
-            paymentMethod: {
-              platformId: 'virtual_bank',
-              method: 'virtual-bank',
-              virtualBank: {
-                currency: 'ARS',
-                emailAccount: 'sofia@example.com',
-                transferCode: 'TC123456',
-              },
-            },
-          },
-          receiverAccount: {
-            firstName: 'Pedro',
-            lastName: 'Santos',
-            document_value: '56789012',
-            phoneNumber: '1177665544',
-            email: 'pedro@example.com',
-            bank_name: 'Banco Virtual',
-            paymentMethod: {
-              platformId: 'virtual_bank',
-              method: 'virtual-bank',
-              virtualBank: {
-                currency: 'ARS',
-                emailAccount: 'pedro@example.com',
-                transferCode: 'TC654321',
-              },
-            },
-          },
+          paymentPlatformId: 'aaaaaaa0-1111-4444-9999-bbbbbbbbbbbb',
+          referenceId: 'bbbbbbb0-2222-5555-aaaa-cccccccccccc',
+          userId: '33333333-3333-3333-3333-333333333333',
+          ownerType: 'user',
+        },
+      },
+      pixExample: {
+        summary: 'Ejemplo con plataforma pix',
+        value: {
+          paymentPlatformId: 'ddddddd0-3333-6666-cccc-eeeeeeeeeeee',
+          referenceId: 'eeeeeee0-7777-8888-dddd-ffffffffffff',
+          userId: '33333333-3333-3333-3333-333333333333',
+          ownerType: 'admin',
+        },
+      },
+      receiverCryptoExample: {
+        summary: 'Ejemplo con plataforma receiver_crypto',
+        value: {
+          paymentPlatformId: '99999999-aaaa-bbbb-cccc-dddddddddddd',
+          referenceId: '12121212-3434-5656-7878-909090909090',
+          userId: '33333333-3333-3333-3333-333333333333',
+          ownerType: 'admin',
         },
       },
     },

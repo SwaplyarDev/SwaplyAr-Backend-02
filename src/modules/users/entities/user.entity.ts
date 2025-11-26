@@ -25,6 +25,7 @@ import { customAlphabet } from 'nanoid';
 import { BankAccounts } from 'src/modules/payments/entities/bank-accounts.entity';
 import { VirtualBankAccounts } from 'src/modules/payments/entities/payment-virtual-bank-accounts.entity';
 import { CryptoAccounts } from 'src/modules/payments/entities/crypto-accounts.entity';
+import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
 
 export const nanoidCustom = customAlphabet(
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
@@ -101,6 +102,11 @@ export class User {
 
   @OneToMany(() => CryptoAccounts, (cryptoAccount) => cryptoAccount.user)
   crypto_accounts: CryptoAccounts[];
+
+  @OneToMany(() => AdministracionMaster, (adminMaster) => adminMaster.adminUser, {
+    cascade: true,
+  })
+  a: AdministracionMaster[];
 
   @Column({
     type: 'enum',

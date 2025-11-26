@@ -34,7 +34,7 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
     url: databaseUrl,
     ssl: isProduction ? { rejectUnauthorized: false } : false, // SSL solo en producción
     // En producción no sincronizamos; en dev/test sí para iterar y e2e
-    synchronize: !isProduction,
+    synchronize: false,
     // En test reiniciamos el esquema para pruebas limpias
     dropSchema: isTest,
     // Soporte para correr desde ts-node (src) y desde dist

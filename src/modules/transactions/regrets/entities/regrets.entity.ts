@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToOne,
+  JoinColumn,
+  CreateDateColumn,
+  ManyToOne,
+} from 'typeorm';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
 
@@ -23,9 +31,15 @@ export class Regret {
   @JoinColumn({ name: 'transaction_id' })
   transaction: Transaction;
 
-  @OneToOne(() => ProofOfPayment, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => ProofOfPayment, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'payment_info_id' })
   proofsOfPayment?: ProofOfPayment;
+
+  @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
+  createdAt: Date;
+
+  @CreateDateColumn({ type: 'timestamp', name: 'updated_at' })
+  updatedAt: Date;
 }
 
 /* regrets [icon: x-circle, color: orange] {

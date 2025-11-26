@@ -1,5 +1,4 @@
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
-import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
 import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
 import { Amount } from '@transactions/amounts/entities/amount.entity';
 
@@ -14,15 +13,18 @@ import {
   BeforeInsert,
   PrimaryColumn,
   Index,
-  ManyToMany,
-  JoinTable,
 } from 'typeorm';
 
 import { customAlphabet } from 'nanoid';
 import { Note } from '@transactions/notes/entities/note.entity';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';
 import { Status } from 'src/enum/status.enum';
-import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
+import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
+import { IsOptional } from 'class-validator';
+import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
+import { TransactionUserDiscounts } from './transaction-user-discounts.entity';
+import { Qualification } from 'src/modules/qualifications/entities/qualification.entity';
+import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
 
 export const nanoidCustom = customAlphabet(
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
@@ -39,18 +41,13 @@ export class Transaction {
     this.id = nanoidCustom(); // genera un string de 10 caracteres sin "-" ni "_"
   }
 
-  @Index('idx_transactions_country_transaction')
   @Column({ name: 'country_transaction' })
   countryTransaction: string;
 
   @Column({ name: 'message', nullable: true })
+  @IsOptional()
   message: string;
 
-  @Index('idx_transactions_created_at')
-  @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
-  createdAt: Date;
-
-  @Index('idx_transactions_final_status')
   @Column({
     type: 'enum',
     enum: Status,
@@ -59,33 +56,60 @@ export class Transaction {
   })
   finalStatus: Status;
 
+  @Column({ name: 'is_note_verified', default: false })
+  isNoteVerified: boolean;
+
+  @Column({ name: 'note_verification_expires_at', type: 'timestamp', nullable: true })
+  noteVerificationExpiresAt?: Date;
+
   @Index('idx_transactions_sender_account_id')
   @ManyToOne(() => SenderFinancialAccount, (sender) => sender.transactions, {
     onDelete: 'RESTRICT',
   })
-  @JoinColumn({ name: 'sender_account_id' })
+  @JoinColumn({ name: 'sender_account' })
   senderAccount: SenderFinancialAccount;
 
-  @Index('idx_transactions_receiver_account_id')
-  @ManyToOne(() => ReceiverFinancialAccount, (receiver) => receiver.transactions, {
+  @ManyToOne(() => FinancialAccount, (financial) => financial.transactions, {
     onDelete: 'RESTRICT',
   })
-  @JoinColumn({ name: 'receiver_account_id' })
-  receiverAccount: ReceiverFinancialAccount;
-
+  @JoinColumn({ name: 'financial_accounts' })
+  financialAccounts: FinancialAccount;
+//listo
   // Mantener OneToOne pero opcional y sin obligar existencia
   @OneToOne(() => Note, (note) => note.transaction, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'note_id' })
   note?: Note | null;
-
+//listo
   @OneToOne(() => Regret, (regret) => regret.transaction, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'regret_id' })
   regret?: Regret | null;
-
+//listo
   // Cambiar a OneToMany (una transacción puede tener varios comprobantes)
   @OneToMany(() => ProofOfPayment, (proof) => proof.transaction, { cascade: true })
   proofsOfPayment?: ProofOfPayment[];
 
+  @OneToMany(() => AdministracionStatusLog, (adminStatusLog) => adminStatusLog.transaction, {
+    cascade: true,
+  })
+  administrationStatusLog?: AdministracionStatusLog[];
+
+  @OneToMany(
+    () => TransactionUserDiscounts,
+    (transactionUserDiscounts) => transactionUserDiscounts.transaction,
+    { cascade: true },
+  )
+  transactionUserDiscounts: TransactionUserDiscounts[];
+//listo
+  @OneToMany(() => Qualification, (qualification) => qualification.transaction_id, {
+    cascade: true,
+  })
+  qualifications: Qualification[];
+//listo
+  @OneToMany(() => AdministracionMaster, (adminMaster) => adminMaster.transactionId, {
+    cascade: true,
+  })
+  administrationMasters: AdministracionMaster[];
+//listo
   // Mantener relación con Amount, pero agregar columnas desnormalizadas para consultas rápidas
   @OneToOne(() => Amount)
   @JoinColumn({ name: 'amount_id' })
@@ -97,17 +121,9 @@ export class Transaction {
   @Column({ type: 'varchar', length: 3, name: 'amount_currency', nullable: true })
   amountCurrency?: string;
 
-  @ManyToMany(() => UserDiscount, (ud) => ud.transactions)
-  @JoinTable({
-    name: 'transaction_user_discounts',
-    joinColumn: { name: 'transaction_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'user_discount_id', referencedColumnName: 'id' },
-  })
-  userDiscounts: UserDiscount[];
+  @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
+  createdAt: Date;
 
-  @Column({ default: false })
-  isNoteVerified: boolean;
-
-  @Column({ type: 'timestamp', nullable: true })
-  noteVerificationExpiresAt?: Date;
+  @CreateDateColumn({ type: 'timestamp', name: 'updated_at' })
+  updatedAt: Date;
 }

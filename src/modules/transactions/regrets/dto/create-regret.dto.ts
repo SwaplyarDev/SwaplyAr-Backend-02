@@ -3,11 +3,6 @@ import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateRegretDto {
-  @ApiProperty({ description: 'ID de la transaccion', example: 'ZrzUcnGWWr' })
-  @Transform(({ value, obj }) => value ?? obj.transaction_id)
-  @IsString()
-  transaction_id: string;
-
   @ApiProperty({ description: 'Apellido del usuario', example: 'Davila' })
   @Transform(({ value, obj }) => value ?? obj.last_name)
   @IsString()
@@ -36,4 +31,14 @@ export class CreateRegretDto {
   @IsOptional()
   @IsString()
   description: string;
+
+  @ApiProperty({ description: 'ID de la transaccion', example: 'ZrzUcnGWWr' })
+  @Transform(({ value, obj }) => value ?? obj.transaction_id)
+  @IsString()
+  transaction_id: string;
+
+  @ApiProperty({ description: 'ID de la información de pago', example: 'PjkUcnGWWr' })
+  @Transform(({ value, obj }) => value ?? obj.payment_info_id)
+  @IsString()
+  payment_info_id: string;
 }

@@ -1,38 +1,35 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  TableInheritance,
-} from 'typeorm';
-import { PaymentMethod } from '@financial-accounts/payment-methods/entities/payment-method.entity';
-import { IsOptional } from 'class-validator';
+import { Transaction } from '@transactions/entities/transaction.entity';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('financial_accounts')
-@TableInheritance({ column: { type: 'varchar', name: 'type' } })
-@Index(['paymentMethod'])
-@Index('idx_financial_accounts_name', ['lastName', 'firstName'])
 export class FinancialAccount {
   @PrimaryGeneratedColumn('uuid', { name: 'financial_account_id' })
-  id: string;
+  financialAccountId: string;
 
-  @Index('idx_financial_accounts_first_name')
-  @Column({ name: 'first_name' })
-  @IsOptional()
-  firstName: string;
-
-  @Index('idx_financial_accounts_last_name')
-  @Column({ name: 'last_name' })
-  @IsOptional()
-  lastName: string;
-
-  @OneToOne(() => PaymentMethod, {
-    nullable: false,
-    onDelete: 'CASCADE',
-    cascade: true,
+  @Column({
+    type: 'uuid',
+    name: 'payment_platform_id',
   })
-  @JoinColumn({ name: 'payment_method_id' })
-  paymentMethod: PaymentMethod;
+  paymentPlatformId: string; // FK → payment_platforms (bank, virtual_bank, receiver_crypto)
+
+  @Column({ type: 'uuid', name: 'reference_id' })
+  referenceId: string; // ID de la cuenta específica (p. ej. banco o wallet)
+
+  @Column({ type: 'uuid', name: 'user_id' })
+  userId: string; // Usuario propietario
+
+  @Column({ type: 'varchar', length: 20, name: 'owner_type' })
+  ownerType: string; // Ejemplo: 'admin'
+
+  @Column({ type: 'uuid', name: 'created_by' })
+  createdBy: string; // ID del usuario que crea el registro
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  createdAt: Date;
+
+  @CreateDateColumn({ name: 'updated_at', type: 'timestamp' })
+  updatedAt: Date;
+
+  @OneToMany(() => Transaction, (transaction) => transaction.financialAccounts)
+  transactions: Transaction[];
 }

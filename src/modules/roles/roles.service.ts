@@ -50,7 +50,10 @@ export class RolesService implements OnModuleInit {
     }
 
     async createDefaultAdmin(): Promise<void> {
-        const adminEmail = 'fsepulveda.87@gmail.com';
+        const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || 'admin@swaplyar.com';
+        const firstName = process.env.DEFAULT_ADMIN_FIRST_NAME || 'Admin';
+        const lastName = process.env.DEFAULT_ADMIN_LAST_NAME || 'System';
+        const memberCode = process.env.DEFAULT_ADMIN_MEMBER_CODE || 'ADMIN001';
         
         const existingProfile = await this.userProfileRepository.findOne({ 
             where: { email: adminEmail } 
@@ -62,7 +65,7 @@ export class RolesService implements OnModuleInit {
         
         const adminUser = this.userRepository.create({
             termsAccepted: true,
-            memberCode: 'ADMIN001',
+            memberCode,
             isActive: true,
             roles: [adminRole]
         });
@@ -70,8 +73,8 @@ export class RolesService implements OnModuleInit {
         const savedUser = await this.userRepository.save(adminUser);
         
         const adminProfile = this.userProfileRepository.create({
-            firstName: 'Admin',
-            lastName: 'System',
+            firstName,
+            lastName,
             email: adminEmail,
             user: savedUser
         });

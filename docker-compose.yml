@@ -87,12 +87,31 @@ services:
     environment:
       NODE_ENV: production
       PORT: ${PORT:-3000}
-      JWT_SECRET: ${JWT_SECRET:-tu_clave_secreta}
-      BREVO_API_KEY: ${BREVO_API_KEY}
-      EMAIL_FROM: ${EMAIL_FROM}
       DB_SSL: "false"
       # Conexión interna: host = nombre del servicio `postgres`
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-admin}@postgres:5432/${POSTGRES_DB:-swaplyar}
+
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-tu_clave_secreta}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+
+      # Email (Brevo)
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+
+      # Cloudinary
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_CLOUD_API_KEY: ${CLOUDINARY_CLOUD_API_KEY}
+      CLOUDINARY_CLOUD_API_SECRET: ${CLOUDINARY_CLOUD_API_SECRET}
+
+      # API externa de conversiones
+      CONVERSION_API_URL: ${CONVERSION_API_URL}
+
+      # CORS
+      CORS_ORIGINS: ${CORS_ORIGINS}
+
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
     restart: unless-stopped

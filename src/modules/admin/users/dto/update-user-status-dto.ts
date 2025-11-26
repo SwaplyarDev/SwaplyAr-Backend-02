@@ -10,6 +10,14 @@ export class UpdateUserStatusDto {
   isActive: boolean;
 }
 
+export class UpdateUserRoleResponseDto {
+  @ApiProperty({ example: '7c6e9c4a-8f32-4d89-9a20-bf5d8a1c9f45' })
+  userId: string;
+
+  @ApiProperty({ example: 'admin' })
+  role: string;
+}
+
 export class UpdateUserStatusResponseDto {
   @ApiProperty({
     description: 'Id del usuario',

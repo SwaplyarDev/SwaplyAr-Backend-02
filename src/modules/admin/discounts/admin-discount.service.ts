@@ -5,8 +5,6 @@ import { DiscountCode } from 'src/modules/discounts/entities/discount-code.entit
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
 import { Repository } from 'typeorm';
-import { CreateDiscountCodeDto } from './dto/create-discount-code.dto';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FilterTypeEnum, FilterUserDiscountsDto } from './dto/filter-user-discounts.dto';
 import { UserDiscountHistoryDto } from 'src/modules/discounts/dto/user-discount-history.dto';
 

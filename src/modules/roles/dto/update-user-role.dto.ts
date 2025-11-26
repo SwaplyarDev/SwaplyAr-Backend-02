@@ -2,21 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 
-// export class UpdateUserRoleDto {
-//   @ApiProperty({
-//     description: 'Código del rol a asignar al usuario',
-//     example: 'admin',
-//   })
-//   @Transform(({ obj }) => obj.roleCode || obj.role, { toClassOnly: true })
-//   @IsString({ message: 'El código del rol debe ser una cadena de texto' })
-//   @IsNotEmpty({ message: 'El código del rol es requerido' })
-//   roleCode: string;
-
-//   @IsOptional()
-//   @IsString()
-//   role?: string;
-// }
-
 export class AddUserRoleDto {
   @ApiProperty({
     description: 'Código del rol a agregar al usuario',

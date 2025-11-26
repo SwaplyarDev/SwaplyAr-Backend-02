@@ -26,7 +26,6 @@ import { QualificationModule } from 'src/modules/qualifications/qualifications.m
 import { ConversionsModule } from 'src/modules/conversions/conversions.module';
 import { CommissionsModule } from 'src/modules/conversions/commissions/commissions.module';
 import { DynamicCommissionsModule } from 'src/modules/dynamic-commissions/dynamicCommissions.module';
-import { RolesModule } from 'src/modules/roles/roles.module';
 
 @Module({
   imports: [
@@ -53,7 +52,6 @@ import { RolesModule } from 'src/modules/roles/roles.module';
     ConversionsModule,
     CommissionsModule,
     DynamicCommissionsModule,
-    RolesModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',
       signOptions: { expiresIn: '1d' },

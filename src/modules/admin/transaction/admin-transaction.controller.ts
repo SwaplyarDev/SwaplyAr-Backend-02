@@ -17,7 +17,6 @@ import {
 import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
 import {
   ApiOperation,
-  ApiResponse,
   ApiTags,
   ApiBody,
   ApiParam,
@@ -109,7 +108,7 @@ export class AdminTransactionController {
   @ApiUnauthorizedResponse({ description: '❌ No autorizado. Token no válido o no enviado.' })
   @ApiForbiddenResponse({ description: '❌ Acceso no autorizado, Solo para Administradores' })
   @ApiNotFoundResponse({ description: '❌ No se encuentran Transacciones' })
-  @ApiResponse({ status: 500, description: '❌ Error interno del servidor' })
+  @ApiInternalServerErrorResponse({ description: '❌ Error interno del servidor' })
   @Get('transactions')
   async getAllTransactions(
     @Query('page') page = 1,

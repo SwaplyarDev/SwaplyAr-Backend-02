@@ -3,7 +3,7 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateUserAccountDto extends CreatePaymentMethodDto {
   @IsString()
-  @IsNotEmpty() // Es buena práctica asegurar que no venga vacío
+  @IsNotEmpty()
   accountName: string;
 
   @IsOptional()

@@ -21,7 +21,7 @@ import {
 import { AdminRoleGuard } from '@common/guards/admin-role.guard';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { AdminUserService } from './user-admin.service';
-import { AdminUpdateUserRoleDto, AdminUpdateUserRoleResponseDto } from './dto/update-user-role.dto';
+import { AddUserRoleDto, UpdateUserRoleResponseDto } from '../../roles/dto/update-user-role.dto';
 import { UpdateUserStatusDto, UpdateUserStatusResponseDto } from './dto/update-user-status-dto';
 
 @ApiTags('Usuarios (Admin)')
@@ -42,14 +42,14 @@ export class AdminUserController {
   })
   @ApiOkResponse({
     description: 'Rol de usuario actualizado correctamente',
-    type: AdminUpdateUserRoleResponseDto,
+    type: UpdateUserRoleResponseDto,
   })
   @ApiBadRequestResponse({ description: 'Campo inválido o no se envio' })
   @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
   @ApiForbiddenResponse({ description: 'No autorizado, Solo para Administradores' })
   @ApiNotFoundResponse({ description: 'Usuario no encontrado' })
-  async updateUserRole(@Param('userId') userId: string, @Body() updateRoleDto: AdminUpdateUserRoleDto) {
-    return this.userAdminService.updateUserRole(userId, updateRoleDto.role);
+  async updateUserRole(@Param('userId') userId: string, @Body() updateRoleDto: AddUserRoleDto) {
+    return this.userAdminService.updateUserRole(userId, updateRoleDto.roleCode);
   }
 
   @Patch(':userId/status')

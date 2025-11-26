@@ -23,11 +23,13 @@ import { RefreshToken } from '@users/entities/resfresh-token.entity';
 import { Exclude } from 'class-transformer';
 import { OtpCode } from '@auth/entities/otp-code.entity';
 import { UserRole } from 'src/enum/user-role.enum';
-import { UserAccount } from 'src/modules/userAccounts/entities/user-account.entity';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
 import { Roles } from '../../roles/entities/roles.entity';
 import { customAlphabet } from 'nanoid';
+import { BankAccounts } from 'src/modules/payments/bank-accounts/bank-accounts.entity';
+import { VirtualBankAccounts } from 'src/modules/payments/virtual-bank-accounts/virtual-bank-accounts.entity';
+import { CryptoAccounts } from 'src/modules/payments/crypto-accounts/crypto-accounts.entity';
 
 export const nanoidCustom = customAlphabet(
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
@@ -95,6 +97,18 @@ export class User {
     cascade: true,
   })
   rewardsLedger: UserRewardsLedger;
+
+  @OneToMany(() => BankAccounts, (bankAccount: BankAccounts) => bankAccount.user)
+  bankAccounts: BankAccounts[];
+
+  @OneToMany(
+    () => VirtualBankAccounts,
+    (virtualBankAccount: VirtualBankAccounts) => virtualBankAccount.user,
+  )
+  virtualBankAccounts: VirtualBankAccounts[];
+
+  @OneToMany(() => CryptoAccounts, (cryptoAccount: CryptoAccounts) => cryptoAccount.user)
+  cryptoAccounts: CryptoAccounts[];
 
   // @Column({
   //   type: 'enum',

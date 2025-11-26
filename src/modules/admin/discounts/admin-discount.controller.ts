@@ -7,7 +7,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -22,8 +21,6 @@ import {
 import { AdminDiscountService } from './admin-discount.service';
 import { UserRole } from 'src/enum/user-role.enum';
 import { Roles } from '@common/decorators/roles.decorator';
-import { DiscountCode } from 'src/modules/discounts/entities/discount-code.entity';
-import { CreateDiscountCodeDto } from './dto/create-discount-code.dto';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { FilterUserDiscountsDto } from './dto/filter-user-discounts.dto';
 import { UserDiscountHistoryDto } from 'src/modules/discounts/dto/user-discount-history.dto';

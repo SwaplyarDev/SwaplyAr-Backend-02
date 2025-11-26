@@ -1,4 +1,4 @@
-import { ChildEntity, Column, Index, Unique } from 'typeorm';
+import { ChildEntity, Column, Index } from 'typeorm';
 import { PaymentMethod } from '@financial-accounts/payment-methods/entities/payment-method.entity';
 
 @ChildEntity('pix')

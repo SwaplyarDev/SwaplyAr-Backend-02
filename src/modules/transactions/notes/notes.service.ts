@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Note } from './entities/note.entity';
@@ -75,7 +75,7 @@ export class NotesService {
     validateMaxFiles(files || [], 5, 3);
 
     //  Subir imagen a Cloudinary si existe
-    let attachments: string[] = [];
+    const attachments: string[] = [];
     if (files && files.length > 0) {
       try {
         for (let i = 0; i < files.length; i++) {
@@ -96,7 +96,6 @@ export class NotesService {
       ...createNoteDto,
       transaction,
       attachments,
-      // img_url,
     });
 
     //  Guardar nota

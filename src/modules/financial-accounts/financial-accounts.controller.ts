@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -15,7 +14,6 @@ import { CreateFinancialAccountDto } from './dto/create-financial-accounts.dto';
 import {
   ApiTags,
   ApiOperation,
-  ApiResponse,
   ApiBody,
   ApiBearerAuth,
   ApiForbiddenResponse,
@@ -23,6 +21,8 @@ import {
   ApiBadRequestResponse,
   ApiParam,
   ApiNotFoundResponse,
+  ApiCreatedResponse,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 import {
   FinancialAccountResponseDto,
@@ -44,8 +44,7 @@ export class FinancialAccountController {
   constructor(private readonly financialAccountsService: FinancialAccountsService) {}
 
   @ApiOperation({ summary: 'Crear cuentas financieras (emisor y receptor)' })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'Cuentas creadas correctamente',
     type: FinancialAccountResponseDto,
   })
@@ -219,8 +218,7 @@ export class FinancialAccountController {
   }
 
   @ApiOperation({ summary: 'Obtener todas las cuentas financieras emisoras' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Lista de cuentas emisoras',
     type: [SenderResponseDto],
   })
@@ -236,8 +234,7 @@ export class FinancialAccountController {
   }
 
   @ApiOperation({ summary: 'Obtener todas las cuentas financieras receptoras' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Lista de cuentas receptoras',
     type: [ReceiverResponseDto],
   })
@@ -327,8 +324,7 @@ export class FinancialAccountController {
       },
     },
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Cuenta emisora actualizada correctamente',
     type: ReceiverResponseDto,
   })
@@ -448,8 +444,7 @@ export class FinancialAccountController {
       },
     },
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Cuenta receptora actualizada correctamente',
     type: ReceiverResponseDto,
   })
@@ -487,7 +482,7 @@ export class FinancialAccountController {
     name: 'id',
     description: 'ID de la cuenta financiera a eliminar',
   })
-  @ApiResponse({ status: 200, description: 'Cuenta eliminada correctamente' })
+  @ApiOkResponse({ description: 'Cuenta eliminada correctamente' })
   @ApiNotFoundResponse({ description: 'Cuenta no encontrada' })
   @ApiBadRequestResponse({
     description: 'Formato de ID inválido. Debe ser un UUID válido.',

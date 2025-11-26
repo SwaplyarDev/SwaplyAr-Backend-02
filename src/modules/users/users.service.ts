@@ -12,6 +12,7 @@ import { UserProfile } from '@users/entities/user-profile.entity';
 import { UserSocials } from './entities/user-socials.entity';
 import { UserRole } from 'src/enum/user-role.enum';
 import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.entity';
+import { RolesService } from '../roles/roles.service';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +22,7 @@ export class UsersService {
     private profileRepository: Repository<UserProfile>,
     @InjectRepository(UserSocials)
     private socialsRepository: Repository<UserSocials>,
+    private rolesService: RolesService,
   ) {}
 
   // private generateUserCode(): string {
@@ -70,6 +72,7 @@ export class UsersService {
 
       const user = new User();
       const userProfile = new UserProfile();
+      const userRole = await this.rolesService.findByCode('user');
 
       userProfile.firstName = userDto.firstName;
       userProfile.lastName = userDto.lastName;
@@ -77,7 +80,7 @@ export class UsersService {
 
       user.profile = userProfile;
       user.termsAccepted = userDto.termsAccepted ?? false;
-      user.role = UserRole.User;
+      user.roles = [userRole];
       user.rewardsLedger = new UserRewardsLedger();
 
       return await this.userRepository.save(user);
@@ -94,19 +97,21 @@ export class UsersService {
   async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: { profile: { email } },
-      relations: { profile: true },
+      relations: { profile: true, roles: true },
     });
   }
 
   async findById(id: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: { id },
-      relations: { profile: true, rewardsLedger: true },
+      relations: { profile: true, rewardsLedger: true, roles: true },
     });
   }
 
   async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+    return this.userRepository.find({
+      relations: { profile: true, roles: true }
+    });
   }
 
   async save(user: User): Promise<User> {

@@ -26,8 +26,6 @@ import { QualificationModule } from 'src/modules/qualifications/qualifications.m
 import { ConversionsModule } from 'src/modules/conversions/conversions.module';
 import { CommissionsModule } from 'src/modules/conversions/commissions/commissions.module';
 import { DynamicCommissionsModule } from 'src/modules/dynamic-commissions/dynamicCommissions.module';
-import { PaymentPlatformsModule } from 'src/modules/payments/payment-platforms/payment-platform.module';
-import { PaymentProvidersModule } from 'src/modules/payments/payment-providers/payment-providers.module';
 
 @Module({
   imports: [
@@ -54,8 +52,6 @@ import { PaymentProvidersModule } from 'src/modules/payments/payment-providers/p
     ConversionsModule,
     CommissionsModule,
     DynamicCommissionsModule,
-    PaymentPlatformsModule,
-    PaymentProvidersModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',
       signOptions: { expiresIn: '1d' },

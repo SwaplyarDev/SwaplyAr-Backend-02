@@ -13,7 +13,18 @@ export class AddRoleFeatures1763123456789 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "users" ADD "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`);
         await queryRunner.query(`ALTER TABLE "roles" ADD "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()`);
 
-        // 3. Poblar columnas desnormalizadas para usuarios existentes
+        // 3. Crear tabla user_roles (Many-to-Many)
+        await queryRunner.query(`
+            CREATE TABLE "user_roles" (
+                "user_id" uuid NOT NULL,
+                "role_id" uuid NOT NULL,
+                CONSTRAINT "PK_user_roles" PRIMARY KEY ("user_id", "role_id"),
+                CONSTRAINT "FK_user_roles_user" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE,
+                CONSTRAINT "FK_user_roles_role" FOREIGN KEY ("role_id") REFERENCES "roles"("role_id") ON DELETE CASCADE
+            )
+        `);
+
+        // 4. Poblar columnas desnormalizadas para usuarios existentes
         await queryRunner.query(`
             UPDATE users 
             SET 
@@ -88,6 +99,8 @@ export class AddRoleFeatures1763123456789 implements MigrationInterface {
         // Eliminar función
         await queryRunner.query(`DROP FUNCTION IF EXISTS sync_user_roles()`);
         
+        // Eliminar tabla user_roles
+        await queryRunner.query(`DROP TABLE IF EXISTS "user_roles"`);
         
         // Eliminar columnas
         await queryRunner.query(`ALTER TABLE "roles" DROP COLUMN "updated_at"`);

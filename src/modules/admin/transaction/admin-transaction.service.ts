@@ -7,17 +7,17 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindManyOptions } from 'typeorm';
-import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
-import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
+import { ProofOfPaymentsService } from 'src/modules/payments/proof-of-payments/proof-of-payments.service';
+import { ProofOfPayment } from 'src/modules/payments/proof-of-payments/entities/proof-of-payment.entity';
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
-import { BankService } from '@financial-accounts/payment-methods/bank/bank.service';
+import { BankService } from 'src/deprecated/financial-accounts/payment-methods/bank/bank.service';
 import { User } from '@users/entities/user.entity';
 import { Status } from 'src/enum/status.enum';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { FileUploadDTO } from 'src/modules/file-upload/dto/file-upload.dto';
-import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
+import { UpdateBankDto } from 'src/deprecated/financial-accounts/payment-methods/bank/dto/create-bank.dto';
 import {
   TransactionAdminResponseDto,
   TransactionByIdAdminResponseDto,

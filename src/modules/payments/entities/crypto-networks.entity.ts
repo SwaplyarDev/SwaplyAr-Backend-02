@@ -6,7 +6,7 @@ import {
   OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
-import { CryptoAccounts } from '../crypto-accounts/crypto-accounts.entity';
+import { CryptoAccounts } from '../accounts/crypto-accounts/crypto-accounts.entity';
 
 @Entity('crypto_networks')
 export class CryptoNetworks {

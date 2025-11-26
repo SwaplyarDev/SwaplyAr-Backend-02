@@ -5,12 +5,12 @@ import { TransactionsService } from './transactions.service';
 import { Transaction } from './entities/transaction.entity';
 import { Readable } from 'stream';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
-import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
+import { FinancialAccountsService } from 'src/deprecated/financial-accounts/financial-accounts.service';
 import { AmountsService } from './amounts/amounts.service';
-import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
+import { ProofOfPaymentsService } from 'src/modules/payments/proof-of-payments/proof-of-payments.service';
 import { MailerService } from '@mailer/mailer.service';
 import { JwtService } from '@nestjs/jwt';
-import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
+import { ProofOfPayment } from 'src/modules/payments/proof-of-payments/entities/proof-of-payment.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 describe('TransactionsController (integración real)', () => {

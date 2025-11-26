@@ -1,5 +1,5 @@
 import { CreateAmountDto } from '@transactions/amounts/dto/create-amount.dto';
-import { CreateFinancialAccountDto } from './../../financial-accounts/dto/create-financial-accounts.dto';
+import { CreateFinancialAccountDto } from '../../../deprecated/financial-accounts/dto/create-financial-accounts.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, ValidateNested, IsOptional, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';

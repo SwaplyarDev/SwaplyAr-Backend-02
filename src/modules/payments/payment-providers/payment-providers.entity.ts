@@ -10,9 +10,9 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
-import { BankAccounts } from '../bank-accounts/bank-accounts.entity';
-import { VirtualBankAccounts } from '../virtual-bank-accounts/virtual-bank-accounts.entity';
-import { CryptoAccounts } from '../crypto-accounts/crypto-accounts.entity';
+import { BankAccounts } from '../accounts/bank-accounts/bank-accounts.entity';
+import { VirtualBankAccounts } from '../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
+import { CryptoAccounts } from '../accounts/crypto-accounts/crypto-accounts.entity';
 
 @Entity({ name: 'payment_providers' })
 @Unique(['paymentPlatform', 'code'])

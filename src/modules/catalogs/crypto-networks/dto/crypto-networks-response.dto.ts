@@ -1,5 +1,5 @@
 import { Expose, Type } from 'class-transformer';
-import { CryptoAccounts } from '../../../payments/crypto-accounts/crypto-accounts.entity';
+import { CryptoAccounts } from '../../../payments/accounts/crypto-accounts/crypto-accounts.entity';
 
 export class CryptoNetworkResponseDto {
   @Expose()

@@ -1,4 +1,4 @@
-import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
+import { CreatePaymentMethodDto } from 'src/deprecated/financial-accounts/payment-methods/dto/create-payment-method.dto';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateUserAccountDto extends CreatePaymentMethodDto {

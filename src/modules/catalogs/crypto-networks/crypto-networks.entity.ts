@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
-import { CryptoAccounts } from '../../payments/crypto-accounts/crypto-accounts.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
+import { CryptoAccounts } from '../../payments/accounts/crypto-accounts/crypto-accounts.entity';
 
 @Entity({ name: 'crypto_networks' })
 export class CryptoNetworks {

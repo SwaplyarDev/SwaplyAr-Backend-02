@@ -62,7 +62,7 @@ async function bootstrap() {
   // 5. Configuración de CORS con lista blanca
   const whitelist = [
     'https://www.swaplyar.com',
-    'https://swaplyar-swaplyar.vercel.app',
+    'https://www.admin.swaplyar.com',
     'http://localhost:3000',
     'http://localhost:3001',
   ];

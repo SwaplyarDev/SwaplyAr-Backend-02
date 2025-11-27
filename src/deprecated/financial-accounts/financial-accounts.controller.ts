@@ -33,7 +33,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { UpdateSenderFinancialAccountDto } from '../../modules/payments/sender-financial-accounts/dto/update-sender-financial-account.dto';
-import { UpdateReceiverFinancialAccountDto } from '../../modules/payments/receiver-financial-accounts/dto/update-receiver-financial-account.dto';
+import { UpdateReceiverFinancialAccountDto } from '../../deprecated/financial-accounts/receiver-financial-accounts/dto/update-receiver-financial-account.dto';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)

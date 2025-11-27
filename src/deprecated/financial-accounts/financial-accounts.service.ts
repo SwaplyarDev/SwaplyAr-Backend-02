@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFinancialAccountDto } from './dto/create-financial-accounts.dto';
 import { SenderFinancialAccountsService } from '../../modules/payments/sender-financial-accounts/sender-financial-accounts.service';
-import { ReceiverFinancialAccountsService } from '../../modules/payments/receiver-financial-accounts/receiver-financial-accounts.service';
+import { ReceiverFinancialAccountsService } from './receiver-financial-accounts/receiver-financial-accounts.service';
 import { UpdateSenderFinancialAccountDto } from '../../modules/payments/sender-financial-accounts/dto/update-sender-financial-account.dto';
-import { UpdateReceiverFinancialAccountDto } from '../../modules/payments/receiver-financial-accounts/dto/update-receiver-financial-account.dto';
+import { UpdateReceiverFinancialAccountDto } from './receiver-financial-accounts/dto/update-receiver-financial-account.dto';
 import { CreatePaymentMethodDto } from './payment-methods/dto/create-payment-method.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaymentMethodService } from './payment-methods/payment-method.service';

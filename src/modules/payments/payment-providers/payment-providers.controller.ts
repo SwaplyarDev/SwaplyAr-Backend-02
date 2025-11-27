@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
 import { PaymentProvidersService } from './payment-providers.service';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
 import { UpdatePaymentProvidersDto } from './dto/update-payment-providers.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-
+import { ApiTags, ApiOperation, ApiResponse, ApiBody,ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@common/jwt-auth.guard';
+import { RolesGuard } from '@common/guards/roles.guard';
+import { Roles } from '@common/decorators/roles.decorator';
 @ApiTags('Payment Providers')
 @Controller('payment-providers')
 export class PaymentProvidersController {
@@ -34,6 +36,9 @@ export class PaymentProvidersController {
   // ===============================================
   @ApiOperation({ summary: 'Crear un nuevo proveedor de pago' })
   @ApiResponse({ status: 201, description: 'Provider creado con éxito' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post()
   create(@Body() dto: CreatePaymentProvidersDto) {
     return this.service.create(dto);
@@ -45,6 +50,9 @@ export class PaymentProvidersController {
   @ApiOperation({ summary: 'Actualizar un proveedor de pago' })
   @ApiResponse({ status: 200, description: 'Provider actualizado con éxito' })
   @ApiBody({ type: UpdatePaymentProvidersDto })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdatePaymentProvidersDto) {
     return this.service.update(id, dto);
@@ -55,6 +63,9 @@ export class PaymentProvidersController {
   // ===============================================
   @ApiOperation({ summary: 'Eliminar un proveedor de pago' })
   @ApiResponse({ status: 200, description: 'Provider eliminado' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
@@ -65,6 +76,9 @@ export class PaymentProvidersController {
   // ===============================================
   @ApiOperation({ summary: 'Inactivar un proveedor de pago' })
   @ApiResponse({ status: 200, description: 'Provider inactivado con éxito' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Patch(':id/inactivate')
   inactivate(@Param('id') id: string) {
     return this.service.inactivate(id);

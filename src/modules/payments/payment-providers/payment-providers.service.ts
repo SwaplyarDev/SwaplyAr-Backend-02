@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaymentProviders } from './payment-providers.entity';
@@ -49,7 +49,14 @@ export class PaymentProvidersService {
       paymentPlatform: platform,
     });
 
-    return this.providersRepo.save(provider);
+    try {
+      return await this.providersRepo.save(provider);
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException(`El código '${dto.code}' ya existe`);
+      }
+      throw error;
+    }
   }
 
   async update(id: string, dto: UpdatePaymentProvidersDto): Promise<PaymentProviders> {

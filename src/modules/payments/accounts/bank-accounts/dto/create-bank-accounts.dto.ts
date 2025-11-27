@@ -12,85 +12,87 @@ import {
 import { Type } from 'class-transformer';
 
 export class CreateBankAccountDetailDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'routing_number' })
   @IsString()
   fieldKey: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Número de Ruta' })
   @IsString()
   fieldLabel: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: '021000021' })
   @IsString()
   fieldValue: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: false })
   @IsOptional()
   @IsBoolean()
   isEncrypted?: boolean;
 }
 
 export class CreateBankAccountDto {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: '550e8400-e29b-41d4-a716-446655440000' })
   @IsOptional()
   @IsUUID()
   userId?: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440001' })
   @IsUUID()
   paymentProviderId: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'ARG' })
   @IsString()
   @Length(3, 3)
   countryCode: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Juan Pérez' })
   @IsString()
   @MaxLength(150)
   holderName: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'DNI' })
   @IsOptional()
   @IsString()
   documentType?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: '12345678' })
   @IsOptional()
   @IsString()
   documentValue?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'Banco Santander' })
   @IsOptional()
   @IsString()
   bankName?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: '1234567890123456' })
   @IsOptional()
   @IsString()
   accountNumber?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'ES9121000418450200051332' })
   @IsOptional()
   @IsString()
   iban?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'BSCHESMMXXX' })
   @IsOptional()
   @IsString()
   swift?: string;
+
+  @ApiPropertyOptional({ example: 'ARS' })
   @IsOptional()
   @IsString()
   @Length(2, 3)
   currency?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'individual' })
   @IsOptional()
   @IsString()
   @MaxLength(20)
   ownerType?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: true })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;

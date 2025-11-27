@@ -4,7 +4,7 @@ import { TransactionsController } from './transactions.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { SenderFinancialAccount } from 'src/modules/payments/sender-financial-accounts/entities/sender-financial-account.entity';
-import { ReceiverFinancialAccount } from 'src/modules/payments/receiver-financial-accounts/entities/receiver-financial-account.entity';
+import { ReceiverFinancialAccount } from '../../deprecated/financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
 import { FinancialAccountsModule } from 'src/deprecated/financial-accounts/financial-accounts.module';
 import { AmountsService } from './amounts/amounts.service';
 import { Amount } from './amounts/entities/amount.entity';

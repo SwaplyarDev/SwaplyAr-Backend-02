@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SenderFinancialAccountsModule } from '../../modules/payments/sender-financial-accounts/sender-financial-accounts.module';
-import { ReceiverFinancialAccountsModule } from '../../modules/payments/receiver-financial-accounts/receiver-financial-accounts.module';
+import { ReceiverFinancialAccountsModule } from './receiver-financial-accounts/receiver-financial-accounts.module';
 import { ProofOfPaymentsModule } from '../../modules/payments/proof-of-payments/proof-of-payments.module';
 import { PaymentMethodModule } from './payment-methods/payment-method.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,7 +8,7 @@ import { FinancialAccount } from 'src/deprecated/financial-accounts/entities/fin
 import { FinancialAccountController } from './financial-accounts.controller';
 import { FinancialAccountsService } from './financial-accounts.service';
 import { SenderFinancialAccount } from '../../modules/payments/sender-financial-accounts/entities/sender-financial-account.entity';
-import { ReceiverFinancialAccount } from '../../modules/payments/receiver-financial-accounts/entities/receiver-financial-account.entity';
+import { ReceiverFinancialAccount } from './receiver-financial-accounts/entities/receiver-financial-account.entity';
 
 @Module({
   controllers: [FinancialAccountController],

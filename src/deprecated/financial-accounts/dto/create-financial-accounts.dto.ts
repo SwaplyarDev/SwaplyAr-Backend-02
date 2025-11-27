@@ -1,4 +1,4 @@
-import { CreateReceiverFinancialAccountDto } from '../../../modules/payments/receiver-financial-accounts/dto/create-receiver-financial-account.dto';
+import { CreateReceiverFinancialAccountDto } from '../receiver-financial-accounts/dto/create-receiver-financial-account.dto';
 import { CreateSenderFinancialAccountDto } from '../../../modules/payments/sender-financial-accounts/dto/create-sender-financial-account.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';

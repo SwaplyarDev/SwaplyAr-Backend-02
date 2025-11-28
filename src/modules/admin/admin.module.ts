@@ -32,6 +32,7 @@ import { UserVerificationModule } from '@users/verification/user-verification.mo
 import { UpdateStarsService } from './transaction/updateStars.service';
 import { ConversionsService } from '../conversions/services/conversions.service';
 import { HttpModule } from '@nestjs/axios';
+import { RolesModule } from '../roles/roles.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { HttpModule } from '@nestjs/axios';
       DiscountCode,
       UserRewardsLedger,
       UserVerification,
+      
     ]),
     FileUploadModule,
     ProofOfPaymentsModule,
@@ -57,6 +59,7 @@ import { HttpModule } from '@nestjs/axios';
     DiscountModule,
     UserVerificationModule,
     HttpModule,
+    RolesModule,
   ],
   controllers: [
     AdminProfileController,

@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
 import { UserRole } from 'src/enum/user-role.enum';
 
-export class UpdateUserRoleDto {
+export class AdminUpdateUserRoleDto {
   @ApiProperty({
     description: 'Nuevo rol del usuario',
     enum: UserRole,
@@ -12,7 +12,7 @@ export class UpdateUserRoleDto {
   role: UserRole;
 }
 
-export class UpdateUserRoleResponseDto {
+export class AdminUpdateUserRoleResponseDto {
   @ApiProperty({
     description: 'Id del usuario',
     example: '7c6e9c4a-8f32-4d89-9a20-bf5d8a1c9f45',

@@ -74,6 +74,19 @@ export class BankAccountsService {
     });
   }
 
+  async findByUser(userId: string): Promise<BankAccounts[]> {
+    const accounts = await this.bankAccountsRepository.find({
+      where: { user: { id: userId } },
+      relations: ['details', 'user', 'paymentProvider'],
+    });
+
+    if (!accounts || accounts.length === 0) {
+      throw new NotFoundException(`No bank accounts found for user with ID ${userId}`);
+    }
+
+    return accounts;
+  }
+
   async findOne(id: string): Promise<BankAccounts> {
     const bankAccount = await this.bankAccountsRepository.findOne({
       where: { bankAccountId: id },
@@ -87,6 +100,7 @@ export class BankAccountsService {
     return bankAccount;
   }
 
+  
   async update(id: string, updateBankAccountDto: UpdateBankAccountDto): Promise<BankAccounts> {
     const bankAccount = await this.findOne(id);
 

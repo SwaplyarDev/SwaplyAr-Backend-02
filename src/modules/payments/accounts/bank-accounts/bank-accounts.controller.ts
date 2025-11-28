@@ -12,16 +12,23 @@ import {
 import { BankAccountsService } from './bank-accounts.service';
 import { CreateBankAccountDto } from './dto/create-bank-accounts.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-accounts.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../../common/jwt-auth.guard';
 import { BankAccountResponseDto } from './dto/bank-accounts-response.dto';
+import { RolesGuard } from '../../../../common/guards/roles.guard';
+import { Roles } from '../../../../common/decorators/roles.decorator';
 
 @ApiTags('Bank Accounts')
 @Controller('bank-accounts')
-@UseGuards(JwtAuthGuard)
 export class BankAccountsController {
   constructor(private readonly bankAccountsService: BankAccountsService) {}
 
+  // ==========================================
+  // CREAR UNA CUENTA BANCARIA
+  // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
   @Post()
   @ApiOperation({ summary: 'Create a new bank account' })
   @ApiResponse({
@@ -34,6 +41,12 @@ export class BankAccountsController {
     return this.bankAccountsService.create(createBankAccountDto, req.user.userId);
   }
 
+  // ==========================================
+  // MOSTRAR TODAS LAS CUENTAS BANCARIAS
+  // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get()
   @ApiOperation({ summary: 'Get all bank accounts' })
   @ApiResponse({
@@ -45,6 +58,26 @@ export class BankAccountsController {
     return this.bankAccountsService.findAll();
   }
 
+  // ==========================================
+  // MOSTRAR CUENTAS BANCARIAS DEL USUARIO LOGUEADO
+  // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
+  @Get('my-accounts')
+  @ApiOperation({ summary: 'Get my bank accounts' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return bank accounts belonging to the logged user.',
+    type: [BankAccountResponseDto],
+  })
+  findMine(@Request() req) {
+    return this.bankAccountsService.findByUser(req.user.userId);
+  }
+
+  // ==========================================
+  // MOSTRAR UNA CUENTA BANCARIA POR ID
+  // ==========================================
   @Get(':id')
   @ApiOperation({ summary: 'Get a bank account by id' })
   @ApiResponse({
@@ -56,6 +89,9 @@ export class BankAccountsController {
     return this.bankAccountsService.findOne(id);
   }
 
+  // ==========================================
+  // ACTUALIZAR UNA CUENTA BANCARIA
+  // ==========================================
   @Patch(':id')
   @ApiOperation({ summary: 'Update a bank account' })
   @ApiResponse({
@@ -67,6 +103,12 @@ export class BankAccountsController {
     return this.bankAccountsService.update(id, updateBankAccountDto);
   }
 
+  // ==========================================
+  // ELIMINAR UNA CUENTA BANCARIA
+  // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a bank account' })
   @ApiResponse({ status: 200, description: 'The bank account has been successfully deleted.' })

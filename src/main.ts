@@ -1,3 +1,11 @@
+import * as crypto from 'crypto';
+
+// Polyfill for Node.js versions < 19 where global.crypto is not defined
+if (!global.crypto) {
+  // @ts-ignore
+  global.crypto = crypto;
+}
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@app/app.module';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
@@ -54,7 +62,7 @@ async function bootstrap() {
   // 5. Configuración de CORS con lista blanca
   const whitelist = [
     'https://www.swaplyar.com',
-    'https://swaplyar-swaplyar.vercel.app',
+    'https://www.admin.swaplyar.com',
     'http://localhost:3000',
     'http://localhost:3001',
   ];

@@ -1,50 +1,11 @@
-version: "3.9"
-
 # =============================================================
-# Stack Docker para desarrollo local de SwaplyAr
-# =============================================================
-# Servicios incluidos:
-#  - postgres:       Base de datos principal (Persistente via volumen "postgres_data")
-#  - pgadmin:        Consola web opcional para administrar la DB (http://localhost:${PGADMIN_PORT:-5050})
-#  - postgres_test:  Base de datos aislada para pruebas (solo se levanta con profile "test")
-#
-# Variables de entorno:
-#  Se cargan automáticamente desde el archivo .env (mismo directorio). Ejemplos claves:
-#    POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_PORT
-#    POSTGRES_TEST_DB, POSTGRES_TEST_USER, POSTGRES_TEST_PASSWORD, POSTGRES_TEST_PORT
-#    PGADMIN_DEFAULT_EMAIL, PGADMIN_DEFAULT_PASSWORD, PGADMIN_PORT
-#
-# Perfiles:
-#  - default: postgres, pgadmin
-#  - test:    agrega postgres_test (usa: docker compose --profile test up -d postgres_test)
-#
-# Comandos útiles:
-#  Iniciar servicios principales:       docker compose up -d postgres pgadmin
-#  Iniciar solo postgres:               docker compose up -d postgres
-#  Iniciar DB de test:                  docker compose --profile test up -d postgres_test
-#  Ver logs de postgres:                docker compose logs -f postgres
-#  Reiniciar todo (con datos):          docker compose restart
-#  Borrar contenedores + volúmenes:     docker compose down -v
-#  Limpiar solo DB test:                docker compose rm -sf postgres_test && docker volume rm swaplyar-backend-02_postgres_test_data (nombre puede variar)
-#
-# Conexión desde la app (desarrollo):
-#  DATABASE_URL=postgres://postgres:admin@localhost:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-swaplyar}
-#
-# Conexión desde DBeaver u otro cliente:
-#  Host: localhost | Puerto: ${POSTGRES_PORT:-5432} | DB: swaplyar | User: postgres | Pass: admin
-#
-# pgAdmin (si lo usas):
-#  URL:    http://localhost:${PGADMIN_PORT:-5050}
-#  Login:  ${PGADMIN_DEFAULT_EMAIL:-admin@swaplyar.com} / ${PGADMIN_DEFAULT_PASSWORD:-admin_password}
-#  Para registrar el server en pgAdmin: Host=postgres  (el nombre del servicio internal network)
-#
-# Notas:
-#  - No usar esta configuración directamente en producción (volúmenes locales, sin backups, sin SSL interno).
-#  - Para test automatizados puedes forzar NODE_ENV=test y apuntará a DATABASE_TEST_URL (generada o definida).
-#  - Si ya tienes un Postgres instalado en tu máquina en 5432, cambia POSTGRES_PORT en .env (ej: 5433).
+# Stack Docker para desarrollo local / entorno tipo producción
 # =============================================================
 
 services:
+  # -----------------------------------------------------------
+  # Base de datos principal
+  # -----------------------------------------------------------
   postgres:
     image: postgres:15-alpine
     container_name: swaplyar_postgres
@@ -54,16 +15,23 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
     ports:
-      # Cambia el puerto externo si ya tienes un postgres local en 5432 (ej: "5433:5432")
+      # Cambia POSTGRES_PORT en .env si ya usas 5432 en host
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-swaplyar}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-swaplyar}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # -----------------------------------------------------------
+  # Consola web opcional para la DB
+  # -----------------------------------------------------------
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: swaplyar_pgadmin
@@ -74,17 +42,19 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@swaplyar.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin_password}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     volumes:
-      - pgadmin_data:/var/lib/pgadmin
+      - pgadmin_data:/var/lib/pgadmin"
 
+  # -----------------------------------------------------------
+  # Base de datos de test (solo cuando se use profile `test`)
+  # -----------------------------------------------------------
   postgres_test:
     image: postgres:15-alpine
     container_name: swaplyar_postgres_test
     profiles: ["test"]
-    # Esta DB es efímera para pruebas. Usa variables independientes.
     environment:
       POSTGRES_DB: ${POSTGRES_TEST_DB:-testdb}
       POSTGRES_USER: ${POSTGRES_TEST_USER:-testuser}
@@ -94,11 +64,72 @@ services:
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_TEST_USER:-testuser} -d ${POSTGRES_TEST_DB:-testdb}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_TEST_USER:-testuser} -d ${POSTGRES_TEST_DB:-testdb}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # -----------------------------------------------------------
+  # Aplicación NestJS (conectada DIRECTO a postgres del compose)
+  # -----------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: swaplyar_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT:-3000}
+      DB_SSL: "false"
+      # Conexión interna: host = nombre del servicio `postgres`
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-admin}@postgres:5432/${POSTGRES_DB:-swaplyar}
+
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-tu_clave_secreta}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+
+      # Email (Brevo)
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+
+      # Cloudinary
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_CLOUD_API_KEY: ${CLOUDINARY_CLOUD_API_KEY}
+      CLOUDINARY_CLOUD_API_SECRET: ${CLOUDINARY_CLOUD_API_SECRET}
+
+      # API externa de conversiones
+      CONVERSION_API_URL: ${CONVERSION_API_URL}
+
+      # CORS
+      CORS_ORIGINS: ${CORS_ORIGINS}
+
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    restart: unless-stopped
+
+  # -----------------------------------------------------------
+  # Cloudflare Tunnel
+  # -----------------------------------------------------------
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: swaplyar_tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+
+# =============================================================
+# Volúmenes persistentes
+# =============================================================
 volumes:
   postgres_data:
   pgadmin_data:

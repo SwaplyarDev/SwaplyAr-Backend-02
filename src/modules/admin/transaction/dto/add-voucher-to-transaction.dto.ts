@@ -9,11 +9,4 @@ export class AddVoucherTransactionDto {
   @IsNotEmpty()
   @IsString()
   transactionId: string;
-
-  @ApiProperty({
-    type: 'string',
-    format: 'binary',
-    description: 'Archivo del comprobante (PDF, JPG, etc.)',
-  })
-  comprobante: any;
 }

@@ -16,7 +16,7 @@ export class VirtualBankAccountsService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(PaymentProviders)
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
-  ) {}
+  ) { }
 
   async create(
     createVirtualBankAccountDto: CreateVirtualBankAccountDto,
@@ -56,6 +56,14 @@ export class VirtualBankAccountsService {
   async findAll(): Promise<VirtualBankAccounts[]> {
     return this.virtualBankAccountsRepository.find({
       relations: ['user', 'paymentProvider'],
+    });
+  }
+
+  async findByUserId(userId: string): Promise<VirtualBankAccounts[]> {
+    return this.virtualBankAccountsRepository.find({
+      where: { user: { id: userId } },
+      relations: ['user', 'paymentProvider'],
+      order: { createdAt: 'DESC' },
     });
   }
 

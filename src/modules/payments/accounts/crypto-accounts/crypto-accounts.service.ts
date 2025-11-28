@@ -19,7 +19,7 @@ export class CryptoAccountsService {
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
     @InjectRepository(CryptoNetworks)
     private readonly cryptoNetworksRepository: Repository<CryptoNetworks>,
-  ) {}
+  ) { }
 
   async create(
     createCryptoAccountDto: CreateCryptoAccountDto,
@@ -69,6 +69,14 @@ export class CryptoAccountsService {
   async findAll(): Promise<CryptoAccounts[]> {
     return this.cryptoAccountsRepository.find({
       relations: ['user', 'paymentProvider', 'cryptoNetwork'],
+    });
+  }
+
+  async findByUserId(userId: string): Promise<CryptoAccounts[]> {
+    return this.cryptoAccountsRepository.find({
+      where: { user: { id: userId } },
+      relations: ['user', 'paymentProvider', 'cryptoNetwork'],
+      order: { createdAt: 'DESC' },
     });
   }
 

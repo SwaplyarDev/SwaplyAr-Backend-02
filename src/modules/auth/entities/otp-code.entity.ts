@@ -19,7 +19,7 @@ export class OtpCode {
   @Column({ name: 'code' })
   code: string;
 
-  @Column({ name: 'expires_at', type: 'timestamp with time zone' })
+  @Column({ name: 'expires_at', type: 'timestamp with time zone', nullable: true })
   expiresAt: Date;
 
   @Column({ name: 'used', default: false })

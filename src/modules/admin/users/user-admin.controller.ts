@@ -21,8 +21,12 @@ import {
 import { AdminRoleGuard } from '@common/guards/admin-role.guard';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { AdminUserService } from './user-admin.service';
-import { AddUserRoleDto, UpdateUserRoleResponseDto } from '../../roles/dto/update-user-role.dto';
-import { UpdateUserStatusDto, UpdateUserStatusResponseDto } from './dto/update-user-status-dto';
+import { UpdateUserRoleDto } from './dto/update-user-role.dto';
+import {
+  UpdateUserRoleResponseDto,
+  UpdateUserStatusDto,
+  UpdateUserStatusResponseDto,
+} from './dto/update-user-status-dto';
 
 @ApiTags('Usuarios (Admin)')
 @Controller('admin/user')
@@ -48,8 +52,8 @@ export class AdminUserController {
   @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
   @ApiForbiddenResponse({ description: 'No autorizado, Solo para Administradores' })
   @ApiNotFoundResponse({ description: 'Usuario no encontrado' })
-  async updateUserRole(@Param('userId') userId: string, @Body() updateRoleDto: AddUserRoleDto) {
-    return this.userAdminService.updateUserRole(userId, updateRoleDto.roleCode);
+  async updateUserRole(@Param('userId') userId: string, @Body() updateRoleDto: UpdateUserRoleDto) {
+    return this.userAdminService.updateUserRole(userId, updateRoleDto.role);
   }
 
   @Patch(':userId/status')

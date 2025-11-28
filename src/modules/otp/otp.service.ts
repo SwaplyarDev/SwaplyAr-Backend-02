@@ -137,13 +137,13 @@ export class OtpService {
       where: { code: code.trim(), user: { id: user.id } },
       relations: ['user'],
     });
-    if (!otp || otp.expiryDate < new Date() || otp.isUsed) {
+    if (!otp || otp.expiresAt < new Date() || otp.used) {
       this.logger.log(`OTP inválido o expirado para usuario: ${user.id}`);
       throw new BadRequestException('Invalid or expired code');
     }
 
     this.logger.log(`OTP válido, marcando como usado`);
-    otp.isUsed = true;
+    otp.used = true;
     await this.otpRepo.save(otp);
     this.logger.log(`Validación exitosa para usuario: ${user.id}`);
     return user;
@@ -152,7 +152,7 @@ export class OtpService {
   async validateOtpForTransaction(email: string, code: string): Promise<boolean> {
     // Buscar OTP por email y código
     const otp = await this.otpRepo.findOne({
-      where: { email, code, isUsed: false },
+      where: { email, code, used: false },
     });
 
     // OTP no encontrado o ya usado
@@ -160,11 +160,11 @@ export class OtpService {
       return false;
     }
     // OTP expirado
-    if (otp.expiryDate < new Date()) {
+    if (otp.expiresAt < new Date()) {
       return false;
     }
     // set OTP como usado para evitar reutilización
-    otp.isUsed = true;
+    otp.used = true;
     await this.otpRepo.save(otp);
 
     return true;
@@ -180,7 +180,7 @@ export class OtpService {
     const otp = this.otpRepo.create({
       user,
       code,
-      expiryDate: new Date(Date.now() + 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
     });
     return this.otpRepo.save(otp);
   }
@@ -195,7 +195,7 @@ export class OtpService {
       transactionId,
       email,
       code,
-      expiryDate: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
     });
     return this.otpRepo.save(otp);
   }

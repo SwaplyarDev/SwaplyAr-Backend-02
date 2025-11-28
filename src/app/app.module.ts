@@ -26,6 +26,7 @@ import { QualificationModule } from 'src/modules/qualifications/qualifications.m
 import { ConversionsModule } from 'src/modules/conversions/conversions.module';
 import { CommissionsModule } from 'src/modules/conversions/commissions/commissions.module';
 import { DynamicCommissionsModule } from 'src/modules/dynamic-commissions/dynamicCommissions.module';
+import { WhatsAppModule } from 'src/modules/whatsapp/whatsapp.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { DynamicCommissionsModule } from 'src/modules/dynamic-commissions/dynami
     ConversionsModule,
     CommissionsModule,
     DynamicCommissionsModule,
+    WhatsAppModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',
       signOptions: { expiresIn: '1d' },

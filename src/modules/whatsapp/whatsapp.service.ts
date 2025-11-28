@@ -1,123 +1,87 @@
-import {
-  Injectable,
-  BadRequestException,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import { OtpCode } from '../auth/entities/otp-code.entity';
-import { User } from '@users/entities/user.entity';
-import { generate } from 'otp-generator';
+import { generateOtp } from '../auth/utils/generate-otp';
 
 @Injectable()
 export class WhatsAppService {
-  private readonly logger = new Logger(WhatsAppService.name);
-
   constructor(
-    @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
     @InjectRepository(OtpCode)
-    private readonly otpRepo: Repository<OtpCode>,
+    private otpRepo: Repository<OtpCode>,
     private readonly httpService: HttpService,
   ) {}
 
-  async sendOtpCode(phone: string): Promise<{ success: boolean; message: string }> {
-    this.logger.log(`Iniciando envío de OTP para teléfono: ${phone}`);
+ 
+  async sendOtpCode(phone: string) {
+    const code = generateOtp();
 
-    // Find user by phone
-    const user = await this.userRepo
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.profile', 'profile')
-      .where('profile.phone = :phone', { phone })
-      .getOne();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
 
-    if (!user) {
-      this.logger.log(`Usuario no encontrado para teléfono: ${phone}`);
-      throw new BadRequestException('El teléfono no está asociado a ningún usuario.');
-    }
-
-    // Generate OTP
-    const code = generate(6, {
-      lowerCaseAlphabets: false,
-      upperCaseAlphabets: false,
-      specialChars: false,
-    });
-
-    // Save OTP
-    const otp = this.otpRepo.create({
-      user,
-      phone,
-      code,
-      expiryDate: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
-    });
+    const otp = this.otpRepo.create({ phone, code, expiresAt });
     await this.otpRepo.save(otp);
 
-    // Send via WhatsApp
-    try {
-      await this.sendWhatsAppMessage(phone, `Tu código de verificación es: ${code}`);
-      this.logger.log(`OTP enviado exitosamente a: ${phone}`);
-      return { success: true, message: 'Código enviado' };
-    } catch (error) {
-      this.logger.error(`Error enviando OTP: ${(error as Error).message}`);
-      throw new InternalServerErrorException('Error enviando código');
-    }
+    await this.sendWhatsAppTemplate(phone, code);
+
+    return {
+      success: true,
+      message: 'OTP enviado por WhatsApp',
+    };
   }
 
-  async verifyOtpCode(phone: string, code: string): Promise<{ success: boolean; message: string }> {
-    this.logger.log(`Verificando OTP para teléfono: ${phone}, código: ${code}`);
 
-    const otp = await this.otpRepo.findOne({
-      where: { phone, code, isUsed: false },
-      relations: ['user'],
-    });
-
-    if (!otp) {
-      throw new BadRequestException('Código inválido');
-    }
-
-    if (otp.expiryDate < new Date()) {
-      throw new BadRequestException('Código expirado');
-    }
-
-    // Mark as used
-    otp.isUsed = true;
-    await this.otpRepo.save(otp);
-
-    this.logger.log(`OTP verificado exitosamente para: ${phone}`);
-    return { success: true, message: 'Código verificado' };
-  }
-
-  private async sendWhatsAppMessage(to: string, message: string): Promise<void> {
-    const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
-    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-
-    if (!accessToken || !phoneNumberId) {
-      throw new InternalServerErrorException('WhatsApp configuration missing');
-    }
-
-    const url = `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`;
+  private async sendWhatsAppTemplate(phone: string, code: string) {
+    const url = `https://graph.facebook.com/v20.0/${process.env.WHATSAPP_PHONE_ID}/messages`;
 
     const payload = {
       messaging_product: 'whatsapp',
-      to: to.replace(/\D/g, ''), // Remove non-digits
-      type: 'text',
-      text: { body: message },
-    };
-
-    const headers = {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
+      to: phone,
+      type: 'template',
+      template: {
+        name: 'otp_code',
+        language: { code: 'es' },
+        components: [
+          {
+            type: 'body',
+            parameters: [{ type: 'text', text: code }],
+          },
+        ],
+      },
     };
 
     try {
-      const response = await firstValueFrom(this.httpService.post(url, payload, { headers }));
-      this.logger.log(`WhatsApp API response: ${JSON.stringify(response.data)}`);
-    } catch (error) {
-      this.logger.error(`WhatsApp API error: ${(error as any).response?.data || (error as Error).message}`);
-      throw error;
+      await this.httpService.axiosRef.post(url, payload, {
+        headers: {
+          Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (err) {
+      console.error(err.response?.data || err);
+      throw new BadRequestException(
+        'No se pudo enviar el mensaje de WhatsApp',
+      );
     }
+  }
+
+
+  async verifyOtpCode(phone: string, code: string) {
+    const otp = await this.otpRepo.findOne({
+      where: { phone, code, used: false },
+    });
+
+    if (!otp) throw new BadRequestException('Código incorrecto');
+
+    if (otp.expiresAt.getTime() < Date.now()) {
+      otp.used = true;
+      await this.otpRepo.save(otp);
+      throw new BadRequestException('El código ha expirado');
+    }
+
+    otp.used = true;
+    await this.otpRepo.save(otp);
+
+    return { success: true, message: 'OTP validado correctamente' };
   }
 }

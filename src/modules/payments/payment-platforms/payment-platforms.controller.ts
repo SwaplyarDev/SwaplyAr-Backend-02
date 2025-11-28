@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
 import { PaymentPlatformsService } from './payment-platforms.service';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { CreatePaymentPlatformsDto } from './dto/create-payment-platforms.dto';
 import { UpdatePaymentPlatformsDto } from './dto/update-payment-platforms.dto';
 import { PaymentPlatformResponseDto } from './dto/payment-platforms-response.dto';
+import { JwtAuthGuard } from '../../../common/jwt-auth.guard';
+import { RolesGuard } from '../../../common/guards/roles.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
 
 @ApiTags('Payment Platforms')
 @Controller('payment-platforms')
@@ -48,6 +51,9 @@ export class PaymentPlatformsController {
     type: PaymentPlatformResponseDto,
   })
   @ApiBody({ type: CreatePaymentPlatformsDto })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post()
   create(@Body() data: CreatePaymentPlatformsDto) {
     return this.service.create(data);
@@ -63,6 +69,9 @@ export class PaymentPlatformsController {
     type: PaymentPlatformResponseDto,
   })
   @ApiBody({ type: UpdatePaymentPlatformsDto })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdatePaymentPlatformsDto) {
     return this.service.update(id, dto);
@@ -76,6 +85,9 @@ export class PaymentPlatformsController {
     description: 'Plataforma de pago inactivada correctamente.',
     type: PaymentPlatformResponseDto,
   })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Patch(':id/inactivate')
   inactivate(@Param('id') id: string) {
     return this.service.inactivate(id);
@@ -85,6 +97,9 @@ export class PaymentPlatformsController {
   // ===============================================
   @ApiOperation({ summary: 'Eliminar una plataforma de pago' })
   @ApiResponse({ status: 200, description: 'Plataforma de pago eliminada correctamente.' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(':id')
   delete(@Param('id') id: string) {
     return this.service.delete(id);

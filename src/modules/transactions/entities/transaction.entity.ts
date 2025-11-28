@@ -1,6 +1,6 @@
-import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
-import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
-import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
+import { ProofOfPayment } from 'src/modules/payments/proof-of-payments/entities/proof-of-payment.entity';
+import { ReceiverFinancialAccount } from '../../../deprecated/financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
+import { SenderFinancialAccount } from 'src/modules/payments/sender-financial-accounts/entities/sender-financial-account.entity';
 import { Amount } from '@transactions/amounts/entities/amount.entity';
 
 import {

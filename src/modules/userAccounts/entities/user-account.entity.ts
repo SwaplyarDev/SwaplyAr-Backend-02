@@ -7,7 +7,7 @@ import {
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
+import { FinancialAccount } from 'src/deprecated/financial-accounts/entities/financial-account.entity';
 
 @Entity('user_account')
 export class UserAccount {

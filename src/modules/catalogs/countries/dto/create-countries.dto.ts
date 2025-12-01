@@ -1,16 +1,30 @@
 import { IsString, IsOptional, Length } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCountryDto {
-  @IsString()
+  @ApiProperty({
+    description: 'Código único del país (ISO 3166)',
+    example: 'ARG',
+  })
+  @IsString({ message: 'El nombre debe ser una cadena de texto' })
   @Length(2, 3)
-  code: string; // ISO 3166 (ej: ARG, BRA, CHL)
+  code: string;
 
-  @IsString()
+  @ApiProperty({
+    description: 'Nombre del país',
+    example: 'Argentina',
+  })
+  @IsString({ message: 'El nombre debe ser una cadena de texto' })
   @Length(1, 100)
   name: string; // Nombre del país
 
+
+  @ApiProperty({
+    description: 'Código de la moneda',
+    example: 'ARS',
+  })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'El nombre debe ser una cadena de texto' })
   @Length(2, 3)
   currency_default?: string; // Moneda local (ej: CLP, USD)
 }

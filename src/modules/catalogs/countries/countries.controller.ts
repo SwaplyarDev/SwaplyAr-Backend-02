@@ -1,0 +1,53 @@
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { CountriesService } from './country.service';
+import { CreateCountryDto } from './dto/create-countries.dto';
+import { UpdateCountryDto } from './dto/update-countries.dto';
+import { CountryResponseDto } from './dto/countries-response.dto';
+import { JwtAuthGuard } from '@common/jwt-auth.guard';
+import { RolesGuard } from '@common/guards/roles.guard';
+import { Roles } from '@common/decorators/roles.decorator';
+
+@ApiTags('Countries')
+@Controller('countries')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('user', 'admin')
+export class CountriesController {
+    constructor(private readonly countriesService: CountriesService) { }
+
+    @Get()
+    @ApiOperation({ summary: 'Obtener todos los países' })
+    @ApiOkResponse({ type: [CountryResponseDto] })
+    async findAll() {
+        return this.countriesService.findAll();
+    }
+
+    @Post()
+    @ApiOperation({ summary: 'Crear nuevo país' })
+    @ApiOkResponse({ type: CountryResponseDto })
+    async create(@Body() createDto: CreateCountryDto) {
+        return this.countriesService.create(createDto);
+    }
+    
+    @Get(':id')
+    @ApiOperation({ summary: 'Obtener país por ID' })
+    @ApiOkResponse({ type: CountryResponseDto })
+    async findOne(@Param('id') id: string) {
+        return this.countriesService.findOne(id);
+    }
+
+
+    @Patch(':id')
+    @ApiOperation({ summary: 'Actualizar país' })
+    @ApiOkResponse({ type: CountryResponseDto })
+    async update(@Param('id') id: string, @Body() updateDto: UpdateCountryDto) {
+        return this.countriesService.update(id, updateDto);
+    }
+
+    @Delete(':id')
+    @ApiOperation({ summary: 'Eliminar país' })
+    async remove(@Param('id') id: string) {
+        return this.countriesService.remove(id);
+    }
+}

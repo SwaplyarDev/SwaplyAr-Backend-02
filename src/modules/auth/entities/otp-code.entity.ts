@@ -19,12 +19,15 @@ export class OtpCode {
   @Column({ name: 'code' })
   code: string;
 
-  @Column({ name: 'expiry_date', type: 'timestamp with time zone' })
-  expiryDate: Date;
+  @Column({ name: 'expires_at', type: 'timestamp with time zone', nullable: true })
+  expiresAt: Date;
 
-  @Column({ name: 'is_used', default: false })
-  isUsed: boolean;
+  @Column({ name: 'used', default: false })
+  used: boolean;
 
   @Column({ name: 'email', nullable: true })
   email?: string;
+
+  @Column({ name: 'phone', nullable: true })
+  phone?: string;
 }

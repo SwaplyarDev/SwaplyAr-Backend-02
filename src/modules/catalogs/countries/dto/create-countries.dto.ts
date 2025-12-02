@@ -18,7 +18,6 @@ export class CreateCountryDto {
   @Length(1, 100)
   name: string; // Nombre del país
 
-
   @ApiProperty({
     description: 'Código de la moneda',
     example: 'ARS',

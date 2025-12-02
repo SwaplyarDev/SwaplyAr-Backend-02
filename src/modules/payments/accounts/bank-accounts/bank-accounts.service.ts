@@ -113,7 +113,6 @@ export class BankAccountsService {
     return bankAccount;
   }
 
-  
   async update(id: string, updateBankAccountDto: UpdateBankAccountDto): Promise<BankAccounts> {
     const bankAccount = await this.findOne(id);
 

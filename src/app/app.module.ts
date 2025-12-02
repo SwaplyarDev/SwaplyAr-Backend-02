@@ -62,7 +62,7 @@ import { CountriesModule } from 'src/modules/catalogs/countries/country.modules'
     VirtualBankAccountsModule,
     CryptoAccountsModule,
     CountriesModule,
-    
+
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',
       signOptions: { expiresIn: '1d' },

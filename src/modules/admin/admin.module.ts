@@ -49,7 +49,6 @@ import { RolesModule } from '../roles/roles.module';
       DiscountCode,
       UserRewardsLedger,
       UserVerification,
-      
     ]),
     FileUploadModule,
     ProofOfPaymentsModule,

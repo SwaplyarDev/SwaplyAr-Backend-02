@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCryptoNetworkDto {
   @ApiProperty({
-    description: 'Código de la red (ej: TRC20)', 
+    description: 'Código de la red (ej: TRC20)',
     example: 'TRC20',
   })
   @IsString()

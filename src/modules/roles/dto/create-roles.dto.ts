@@ -32,7 +32,7 @@ export class CreateRoleResponseDto {
   @ApiProperty({
     description: 'ID único del rol creado',
     example: '123e4567-e89b-12d3-a456-426614174000',
-  }) 
+  })
   role_id: string;
 
   @ApiProperty({

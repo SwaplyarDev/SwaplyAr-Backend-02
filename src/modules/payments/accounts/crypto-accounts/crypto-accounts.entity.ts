@@ -26,6 +26,7 @@ export class CryptoAccounts {
 
   @ManyToOne(() => CryptoNetworks, (network) => network.cryptoAccounts, {
     nullable: false,
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'crypto_network_id' })
   cryptoNetwork: CryptoNetworks;

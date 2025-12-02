@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class InitialSchema1764342245102 implements MigrationInterface {
-  name = 'InitialSchema1764342245102';
+export class Migrations1764678956398 implements MigrationInterface {
+  name = 'Migrations1764678956398';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -65,7 +65,7 @@ export class InitialSchema1764342245102 implements MigrationInterface {
       `CREATE TYPE "public"."payment_methods_platform_enum" AS ENUM('bank', 'pix', 'virtual_bank', 'receiver_crypto')`,
     );
     await queryRunner.query(
-      `CREATE TABLE "payment_methods" ("payment_method_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "platform" "public"."payment_methods_platform_enum" NOT NULL, "method" character varying(50) NOT NULL, "type" character varying(50), "pix_id" character varying, "pix_key" character varying, "pix_value" character varying, "cpf" character varying(14), "currency" character varying, "email_account" character varying, "transfer_code" character varying, "network" character varying, "wallet" character varying, "bank_name" character varying, "send_method_key" character varying, "send_method_value" character varying, "document_type" character varying, "document_value" character varying, CONSTRAINT "PK_397415468d59f5743a83c6c7bef" PRIMARY KEY ("payment_method_id"))`,
+      `CREATE TABLE "payment_methods" ("payment_method_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "platform" "public"."payment_methods_platform_enum" NOT NULL, "method" character varying(50) NOT NULL, "type" character varying(50), "currency" character varying, "email_account" character varying, "transfer_code" character varying, "network" character varying, "wallet" character varying, "bank_name" character varying, "send_method_key" character varying, "send_method_value" character varying, "document_type" character varying, "document_value" character varying, "pix_id" character varying, "pix_key" character varying, "pix_value" character varying, "cpf" character varying(14), CONSTRAINT "PK_397415468d59f5743a83c6c7bef" PRIMARY KEY ("payment_method_id"))`,
     );
     await queryRunner.query(
       `CREATE INDEX "idx_payment_methods_method" ON "payment_methods" ("method") `,

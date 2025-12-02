@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { CryptoNetworksService } from './crypto-networks.service';
 import { CreateCryptoNetworkDto } from './dto/create-crypto-networks.dto';
 import { UpdateCryptoNetworkDto } from './dto/update-crypto-networks.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CryptoNetworkResponseDto } from './dto/crypto-networks-response.dto';
 import { JwtAuthGuard } from '../../../common/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
@@ -37,7 +37,6 @@ export class CryptoNetworksController {
   create(@Body() createCryptoNetworkDto: CreateCryptoNetworkDto) {
     return this.cryptoNetworksService.create(createCryptoNetworkDto);
   }
-
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener crypto network por ID' })

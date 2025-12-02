@@ -16,7 +16,7 @@ export class VirtualBankAccountsService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(PaymentProviders)
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
-  ) { }
+  ) {}
 
   async create(
     createVirtualBankAccountDto: CreateVirtualBankAccountDto,

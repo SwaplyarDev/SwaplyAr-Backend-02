@@ -110,7 +110,7 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     return this.userRepository.find({
-      relations: { profile: true, roles: true }
+      relations: { profile: true, roles: true },
     });
   }
 

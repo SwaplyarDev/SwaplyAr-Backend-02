@@ -6,12 +6,13 @@ import { BankAccounts } from './bank-accounts.entity';
 import { BankAccountDetails } from './bank-account-details.entity';
 import { PaymentProviders } from '../../entities/payment-providers.entity';
 import { User } from '../../../users/entities/user.entity';
+import { Countries } from '../../../catalogs/countries/countries.entity';
 import { PaymentProvidersModule } from '../../payment-providers/payment-providers.module';
 import { UsersModule } from '../../../users/users.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([BankAccounts, BankAccountDetails, PaymentProviders, User]),
+    TypeOrmModule.forFeature([BankAccounts, BankAccountDetails, PaymentProviders, User, Countries]),
     PaymentProvidersModule,
     UsersModule,
   ],
@@ -19,4 +20,4 @@ import { UsersModule } from '../../../users/users.module';
   providers: [BankAccountsService],
   exports: [BankAccountsService],
 })
-export class BankAccountsModule {}
+export class BankAccountsModule {} 

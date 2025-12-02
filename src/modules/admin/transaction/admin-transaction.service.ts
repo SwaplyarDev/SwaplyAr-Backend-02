@@ -340,7 +340,7 @@ export class AdminTransactionService {
     message?: string,
     additionalData?: Record<string, any>,
   ) {
-    if (!adminUser.roles?.some(role => ['admin', 'super_admin'].includes(role.code))) {
+    if (!adminUser.roles?.some((role) => ['admin', 'super_admin'].includes(role.code))) {
       throw new UnauthorizedException(
         'Solo los administradores pueden actualizar el estado de las transacciones',
       );

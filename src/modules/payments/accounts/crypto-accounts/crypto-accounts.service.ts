@@ -19,7 +19,7 @@ export class CryptoAccountsService {
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
     @InjectRepository(CryptoNetworks)
     private readonly cryptoNetworksRepository: Repository<CryptoNetworks>,
-  ) { }
+  ) {}
 
   async create(
     createCryptoAccountDto: CreateCryptoAccountDto,

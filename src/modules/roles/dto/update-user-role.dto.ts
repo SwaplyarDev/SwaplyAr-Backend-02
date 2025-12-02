@@ -31,14 +31,14 @@ export class UpdateUserRoleResponseDto {
         role_id: '123e4567-e89b-12d3-a456-426614174000',
         code: 'admin',
         name: 'Administrador',
-        description: 'Admin del sistema'
+        description: 'Admin del sistema',
       },
       {
         role_id: '456e7890-e89b-12d3-a456-426614174001',
         code: 'moderator',
         name: 'Moderador',
-        description: 'Moderador de contenido'
-      }
+        description: 'Moderador de contenido',
+      },
     ],
   })
   roles: {
@@ -47,4 +47,4 @@ export class UpdateUserRoleResponseDto {
     name: string;
     description?: string;
   }[];
-} 
+}

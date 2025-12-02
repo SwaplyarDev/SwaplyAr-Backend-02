@@ -6,6 +6,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   BeforeInsert,
+  ManyToOne,
 } from 'typeorm';
 import { UserProfile } from '@users/entities/user-profile.entity';
 import { UserAlternativeEmail } from '@users/entities/user-alternative-email.entity';
@@ -17,8 +18,7 @@ import { UserVerification } from '@users/entities/user-verification.entity';
 import { RefreshToken } from '@users/entities/resfresh-token.entity';
 import { Exclude } from 'class-transformer';
 import { OtpCode } from '@auth/entities/otp-code.entity';
-import { UserRole } from 'src/enum/user-role.enum';
-import { UserAccount } from 'src/modules/userAccounts/entities/user-account.entity';
+import { Role } from './user-roles.entity';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
 import { customAlphabet } from 'nanoid';
@@ -26,6 +26,9 @@ import { BankAccounts } from 'src/modules/payments/entities/bank-accounts.entity
 import { VirtualBankAccounts } from 'src/modules/payments/entities/payment-virtual-bank-accounts.entity';
 import { CryptoAccounts } from 'src/modules/payments/entities/crypto-accounts.entity';
 import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
+import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
+import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
+import { SenderFinancialAccount } from 'src/modules/sender-accounts/entities/sender-financial-account.entity';
 
 export const nanoidCustom = customAlphabet(
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
@@ -42,6 +45,9 @@ export class User {
     cascade: true,
   })
   profile: UserProfile;
+
+  @Column({ type: 'varchar', length: 255, unique: true })
+  email: string;
 
   @Exclude()
   @OneToMany(() => UserAlternativeEmail, (userEmail) => userEmail.user, {
@@ -108,13 +114,22 @@ export class User {
   })
   a: AdministracionMaster[];
 
-  @Column({
-    type: 'enum',
-    enum: UserRole,
-    default: UserRole.User,
-    name: 'user_role',
+  @ManyToOne(() => Role, (role) => role.users, {
+    onDelete: 'CASCADE',
   })
-  role: UserRole;
+  role: Role[];
+
+  @Exclude()
+  @OneToMany(() => AdministracionStatusLog, (adminStsLog) => adminStsLog.changedByAdmin)
+  adminStatusLog: AdministracionStatusLog[];
+
+  @Exclude()
+  @OneToMany(() => FinancialAccount, (fnclAccount) => fnclAccount.user)
+  financialAccount: FinancialAccount[];
+
+  @Exclude()
+  @OneToMany(() => FinancialAccount, (fnclAccount) => fnclAccount.createdBy)
+  financialAccountsCreated: FinancialAccount[];
 
   @Column({ name: 'terms_accepted', default: false })
   termsAccepted: boolean;
@@ -132,9 +147,6 @@ export class User {
     unique: true,
   })
   memberCode: string;
-
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
-  createdAt: Date;
 
   @Column({
     name: 'validated_at',
@@ -154,4 +166,13 @@ export class User {
 
   @Column({ nullable: true })
   refreshToken?: string;
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
+  createdAt: Date;
+
+  @CreateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
+  updatedAt: Date;
+
+  @OneToMany(() => SenderFinancialAccount, (sender) => sender.user)
+  senderAccounts: SenderFinancialAccount[];
 }

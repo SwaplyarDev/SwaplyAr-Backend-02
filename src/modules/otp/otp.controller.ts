@@ -2,7 +2,7 @@ import { Controller, Post, Body, HttpCode, HttpStatus, BadRequestException } fro
 import { OtpService } from './otp.service';
 import { SendCodeDto } from '@auth/dto/send-code.dto';
 import { ValidateCodeDto } from '@auth/dto/validate-code.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiOkResponse } from '@nestjs/swagger';
 import { AuthService } from '@auth/auth.service';
 
 @ApiTags('OTP')
@@ -14,7 +14,7 @@ export class OtpController {
   ) {}
 
   @ApiOperation({ summary: 'Enviar código OTP al email' })
-  @ApiResponse({ status: 200, description: 'Código enviado correctamente' })
+  @ApiOkResponse({ description: 'Código enviado correctamente' })
   @ApiBody({ type: SendCodeDto })
   @Post('email/send')
   @HttpCode(HttpStatus.OK)
@@ -36,12 +36,12 @@ export class OtpController {
   }
 
   @ApiOperation({ summary: 'Validar código OTP recibido por email' })
-  @ApiResponse({ status: 200, description: 'OTP válido' })
+  @ApiOkResponse({ description: 'OTP válido' })
   @ApiBody({ type: ValidateCodeDto })
   @Post('email/validate')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Validar OTP y generar tokens' })
-  @ApiResponse({ status: 200, description: 'Tokens generados' })
+  @ApiOkResponse({ description: 'Tokens generados' })
   @ApiBody({ type: ValidateCodeDto })
   async validateAndLogin(@Body() dto: ValidateCodeDto) {
     const user = await this.otpService.validateOtpAndGetUser(dto.email, dto.code);

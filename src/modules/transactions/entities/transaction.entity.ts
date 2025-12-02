@@ -1,5 +1,5 @@
 import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
-import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
+import { SenderFinancialAccount } from 'src/modules/sender-accounts/entities/sender-financial-account.entity';
 import { Amount } from '@transactions/amounts/entities/amount.entity';
 
 import {
@@ -74,16 +74,16 @@ export class Transaction {
   })
   @JoinColumn({ name: 'financial_accounts' })
   financialAccounts: FinancialAccount;
-//listo
+
   // Mantener OneToOne pero opcional y sin obligar existencia
   @OneToOne(() => Note, (note) => note.transaction, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'note_id' })
   note?: Note | null;
-//listo
+
   @OneToOne(() => Regret, (regret) => regret.transaction, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'regret_id' })
   regret?: Regret | null;
-//listo
+
   // Cambiar a OneToMany (una transacción puede tener varios comprobantes)
   @OneToMany(() => ProofOfPayment, (proof) => proof.transaction, { cascade: true })
   proofsOfPayment?: ProofOfPayment[];
@@ -99,19 +99,19 @@ export class Transaction {
     { cascade: true },
   )
   transactionUserDiscounts: TransactionUserDiscounts[];
-//listo
-  @OneToMany(() => Qualification, (qualification) => qualification.transaction_id, {
+
+  @OneToMany(() => Qualification, (qualification) => qualification.transaction, {
     cascade: true,
   })
   qualifications: Qualification[];
-//listo
-  @OneToMany(() => AdministracionMaster, (adminMaster) => adminMaster.transactionId, {
+
+  @OneToMany(() => AdministracionMaster, (adminMaster) => adminMaster.transaction, {
     cascade: true,
   })
   administrationMasters: AdministracionMaster[];
-//listo
+
   // Mantener relación con Amount, pero agregar columnas desnormalizadas para consultas rápidas
-  @OneToOne(() => Amount)
+  @ManyToOne(() => Amount, (amt) => amt.transaction)
   @JoinColumn({ name: 'amount_id' })
   amount: Amount;
 

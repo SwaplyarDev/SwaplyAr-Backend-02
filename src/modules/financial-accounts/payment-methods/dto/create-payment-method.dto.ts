@@ -53,3 +53,77 @@ export class CreatePaymentMethodDto {
   })
   type?: VirtualBankType;
 }
+
+export class CreatePaymentMethodBankDataDto {
+  @ApiProperty({ example: 'ARS' })
+  currency: string;
+
+  @ApiProperty({ example: 'Banco Nación' })
+  bankName: string;
+
+  @ApiProperty({ example: 'CBU' })
+  sendMethodKey: string;
+
+  @ApiProperty({ example: '1234567890123456789012' })
+  sendMethodValue: string;
+
+  @ApiProperty({ example: 'DNI' })
+  documentType: string;
+
+  @ApiProperty({ example: '87654321' })
+  documentValue: string;
+}
+
+export class CreatePaymentMethodResponseDto {
+  @ApiProperty({ example: 'uuid' })
+  id: string;
+
+  @ApiProperty({ example: 'bank' })
+  platformId: string;
+
+  @ApiProperty({ example: 'bank' })
+  method: string;
+
+  @ApiProperty({ type: CreatePaymentMethodBankDataDto })
+  bank: CreatePaymentMethodBankDataDto;
+}
+
+export class BankPaymentMethodDataResponseDto {
+  @ApiProperty({ example: 'uuid' })
+  id: string;
+
+  @ApiProperty({ example: 'ARS' })
+  currency: string;
+
+  @ApiProperty({ example: 'Banco Nación' })
+  bankName: string;
+
+  @ApiProperty({ example: 'CBU' })
+  sendMethodKey: string;
+
+  @ApiProperty({ example: '1234567890123456789012' })
+  sendMethodValue: string;
+
+  @ApiProperty({ example: 'DNI' })
+  documentType: string;
+
+  @ApiProperty({ example: '87654321' })
+  documentValue: string;
+}
+
+export class PixPaymentMethodDataResponseDto {
+  @ApiProperty({ example: 'uuid' })
+  id: string;
+
+  @ApiProperty({ example: 'uuid-virtual-bank' })
+  virtualBankId: string;
+
+  @ApiProperty({ example: 'clavePix' })
+  pixKey: string;
+
+  @ApiProperty({ example: 'valorPix' })
+  pixValue: string;
+
+  @ApiProperty({ example: '12345678900' })
+  cpf: string;
+}

@@ -37,9 +37,7 @@ export class AdministracionMaster {
   status: Status;
 
   // Logs de estado asociados
-  @OneToMany(() => AdministracionStatusLog, (log: AdministracionStatusLog) => log.transaction, {
-    cascade: true,
-  })
+  @OneToMany(() => AdministracionStatusLog, (log: AdministracionStatusLog) => log.transaction)
   statusLogs: AdministracionStatusLog[];
 
   @Column({ type: 'timestamp', name: 'begin_transaction', nullable: true })

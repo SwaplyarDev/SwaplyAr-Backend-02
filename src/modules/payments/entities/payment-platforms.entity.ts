@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn } from 'typeorm';
 import { PaymentProviders } from './payment-providers.entity';
 import { FinancialAccount } from '../../financial-accounts/entities/financial-account.entity';
+import { SenderFinancialAccount } from 'src/modules/sender-accounts/entities/sender-financial-account.entity';
 
 @Entity('payment_platforms')
 export class PaymentPlatforms {
@@ -25,6 +26,9 @@ export class PaymentPlatforms {
   @OneToMany(() => PaymentProviders, (payment_provider) => payment_provider.payment_platform)
   providers: PaymentProviders[];
 
-  @OneToMany(() => FinancialAccount, (account) => account.paymentPlatformId)
+  @OneToMany(() => FinancialAccount, (account) => account.paymentPlatform)
   financialAccount: FinancialAccount[];
+
+  @OneToMany(() => SenderFinancialAccount, (senderAccount) => senderAccount.paymentPlatform)
+  senderFinancialAccount: SenderFinancialAccount[];
 }

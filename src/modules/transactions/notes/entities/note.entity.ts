@@ -24,10 +24,10 @@ export class Note {
   @JoinColumn({ name: 'transaction_id' })
   transaction: TransactionEntity;
 
-  @Column('text', { array: true, nullable: true })
+  @Column('text', { array: true, nullable: true, name: 'attachments' })
   attachments: string[];
 
-  @Column()
+  @Column({ type: 'varchar', name: 'section' })
   section: string;
 }
 

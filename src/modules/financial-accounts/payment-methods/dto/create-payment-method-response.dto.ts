@@ -20,7 +20,8 @@ export class PixDataDto {
   sendMethodKey: string;
 
   @ApiProperty({
-    description: 'Valor asociado al método de envío seleccionado, es decir, el número o identificador de la cuenta según el tipo elegido',
+    description:
+      'Valor asociado al método de envío seleccionado, es decir, el número o identificador de la cuenta según el tipo elegido',
     example: '1234567890123456789012',
   })
   sendMethodValue: string;
@@ -58,7 +59,8 @@ export class BankDataDto {
   sendMethodKey: string;
 
   @ApiProperty({
-    description: 'Valor asociado al método de envío seleccionado, es decir, el número o identificador de la cuenta según el tipo elegido',
+    description:
+      'Valor asociado al método de envío seleccionado, es decir, el número o identificador de la cuenta según el tipo elegido',
     example: '1234567890123456789012',
   })
   sendMethodValue: string;
@@ -159,7 +161,8 @@ export class TypeBankDataDto {
   sendMethodKey: string;
 
   @ApiProperty({
-    description: 'Valor asociado al método de envío seleccionado, es decir, el número o identificador de la cuenta según el tipo elegido',
+    description:
+      'Valor asociado al método de envío seleccionado, es decir, el número o identificador de la cuenta según el tipo elegido',
     example: '1234567890123456789012',
   })
   sendMethodValue: string;

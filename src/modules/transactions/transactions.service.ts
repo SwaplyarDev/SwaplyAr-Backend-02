@@ -16,13 +16,11 @@ import { Transaction } from './entities/transaction.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import {
   AccountSenderDto,
-  PaymentMethodGetReceiverDto,
   ReceiverAccountDto,
   SenderAccountDto,
   TransactionGetByIdDto,
   TransactionGetResponseDto,
   TransactionResponseDto,
-  UserDiscountGetDto,
 } from './dto/transaction-response.dto';
 
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';

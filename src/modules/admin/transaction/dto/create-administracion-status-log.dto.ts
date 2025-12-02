@@ -1,57 +1,45 @@
-import { IsNotEmpty, IsUUID, IsEnum, IsOptional, IsString, IsBoolean } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsUUID, IsEnum, IsOptional, IsString, IsObject } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Status } from 'src/enum/status.enum';
 
 export class CreateAdministracionStatusLogDto {
-  @ApiProperty({ description: 'ID de la transaccion', example: '1234567890' })
+  @ApiProperty({
+    description: 'ID del master de administración asociado',
+    example: '29e11aa2-4f5f-45c4-aac9-52da305c5313',
+  })
   @IsUUID()
   @IsNotEmpty()
   transactionId: string;
 
   @ApiProperty({
-    description: 'Estado del administrativo',
-    example: '1234567890',
+    description: 'ID del administrador que realiza el cambio',
+    example: 'ee91de3c-a697-4f93-b32a-c8b4f81bfa30',
+  })
+  @IsUUID()
+  @IsNotEmpty()
+  changedByAdminId: string;
+
+  @ApiProperty({
+    description: 'Nuevo estado del proceso administrativo',
+    example: 'approved',
   })
   @IsEnum(Status)
   @IsNotEmpty()
   status: Status;
 
-  @ApiProperty({
-    description: 'Nota del administrativo',
-    example: '1234567890',
+  @ApiPropertyOptional({
+    description: 'Mensaje descriptivo del cambio de estado',
+    example: 'Pago verificado correctamente',
   })
   @IsOptional()
   @IsString()
-  note?: string;
+  message?: string;
 
-  @ApiProperty({
-    description: 'Causa del administrativo',
-    example: '1234567890',
+  @ApiPropertyOptional({
+    description: 'Datos adicionales del log (JSON)',
+    example: { extraInfo: 'some value' },
   })
   @IsOptional()
-  @IsString()
-  cause?: string;
-
-  @ApiProperty({
-    description: 'Resultado del administrativo',
-    example: '1234567890',
-  })
-  @IsOptional()
-  @IsBoolean()
-  result?: boolean;
-
-  @ApiProperty({ description: 'Transaccion swaplyar', example: '1234567890' })
-  @IsOptional()
-  @IsString()
-  transactionSwaplyar?: string;
-
-  @ApiProperty({ description: 'Transaccion recibida', example: '1234567890' })
-  @IsOptional()
-  @IsString()
-  transactionReceipt?: string;
-
-  @ApiProperty({ description: 'Nota de aprobacion', example: '1234567890' })
-  @IsOptional()
-  @IsString()
-  approvedNote?: string;
+  @IsObject()
+  additionalData?: Record<string, any>;
 }

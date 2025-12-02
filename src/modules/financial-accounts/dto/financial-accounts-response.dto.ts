@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserResponseDto } from '@users/dto/user-response.dto';
 import { Expose, Type } from 'class-transformer';
-import { PaymentPlatformDto } from 'src/modules/payments/dto/payment-platform-response.dto';
+import { PaymentPlatformDto } from 'src/modules/payments/dtos/payment-platform-response.dto';
 
 export class FinancialAccountResponseDto {
   @ApiProperty({ example: '29e11aa2-4f5f-45c4-aac9-52da305c5313' })
-  @Expose()
-  id: string;
+  @Expose({ name: 'financialAccountId' })
+  financialAccountId: string;
 
   @ApiProperty({ type: PaymentPlatformDto })
   @Expose()
@@ -14,8 +14,15 @@ export class FinancialAccountResponseDto {
   paymentPlatform: PaymentPlatformDto;
 
   @ApiProperty({
+    example: 'bank_account',
+    description: 'Tipo de referencia (bank_account, wallet, etc.)',
+  })
+  @Expose()
+  reference_type: string;
+
+  @ApiProperty({
     example: '6b04e1ea-5c9b-4e8e-bc46-a21ff48f1d93',
-    description: 'Referencia a la cuenta real (bank_account_id, etc.)',
+    description: 'ID real de la cuenta en el sistema (bank_account_id, wallet_id)',
   })
   @Expose()
   referenceId: string;

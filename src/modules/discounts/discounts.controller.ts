@@ -1,22 +1,26 @@
 import {
   Controller,
-  Post,
   Get,
   Put,
   Delete,
   Body,
-  Query,
   Param,
   UseGuards,
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
-  Req,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+  ApiBadRequestResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+} from '@nestjs/swagger';
 import { DiscountService } from './discounts.service';
-import { CreateUserDiscountDto } from './dto/create-user-discount.dto';
-import { FilterUserDiscountsDto } from '../admin/discounts/dto/filter-user-discounts.dto';
 import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -25,11 +29,9 @@ import { User } from '@common/user.decorator';
 import { User as UserEntity } from '@users/entities/user.entity';
 import { UserRole } from 'src/enum/user-role.enum';
 import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
-import { DiscountCode } from './entities/discount-code.entity';
-import { CreateDiscountCodeDto } from '../admin/discounts/dto/create-discount-code.dto';
 import { UserDiscount } from './entities/user-discount.entity';
-import { UpdateStarDto } from './dto/update-star.dto';
-import { UserRewardsLedger } from './entities/user-rewards-ledger.entity';
+import { UserDiscountsFromUserDto } from './dto/get-discounts-from-user-response.dto';
+import { StarsFromUserDto } from './dto/get-stars-from-user-response.dto';
 
 interface DataResponse<T> {
   data: T;
@@ -49,32 +51,11 @@ export class DiscountsController {
     description:
       'Este endpoint devuelve únicamente los descuentos activos y no utilizados (isUsed = false) del usuario autenticado. El parámetro filterType fue eliminado.',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Listado de descuentos disponibles del usuario',
-    schema: {
-      example: {
-        data: [
-          {
-            id: '38ed61fd-24c1-40c2-8ccd-c1f4458f3037',
-            discountCode: {
-              id: '1a9dad84-1f94-4355-bd4c-2c8b1ef2bdd1',
-              code: 'WELCOME-TT8U49',
-              value: 3,
-              currencyCode: 'USD',
-              validFrom: '2025-09-17T16:36:50.529Z',
-              createdAt: '2025-09-17T16:36:50.534Z',
-            },
-            isUsed: false,
-            createdAt: '2025-09-17T16:36:50.570Z',
-            usedAt: null,
-            updatedAt: '2025-09-26T16:56:49.573Z',
-          },
-        ],
-      },
-    },
+    type: UserDiscountsFromUserDto,
   })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiUnauthorizedResponse({ description: 'No autenticado' })
   @HttpCode(HttpStatus.OK)
   async getmyAvailableUserDiscounts(
     @User() user: UserEntity,
@@ -86,12 +67,11 @@ export class DiscountsController {
   @Get('user-history')
   @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Obtener historial de cupones usados del usuario autenticado' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Listado del historial de cupones usados',
     type: [UserDiscountHistoryDto],
   })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
+  @ApiUnauthorizedResponse({ description: 'No autenticado' })
   @HttpCode(HttpStatus.OK)
   async getMyDiscountHistory(
     @User() user: UserEntity,
@@ -103,11 +83,11 @@ export class DiscountsController {
   @Put('user-discounts/admin/:id')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Actualizar un descuento de usuario por ID' })
-  @ApiResponse({ status: 200, description: 'Descuento actualizado' })
-  @ApiResponse({ status: 404, description: 'Descuento no encontrado' })
-  @ApiResponse({ status: 400, description: 'Parámetro inválido' })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @ApiOkResponse({ description: 'Descuento actualizado' })
+  @ApiNotFoundResponse({ description: 'Descuento no encontrado' })
+  @ApiBadRequestResponse({ description: 'Parámetro inválido' })
+  @ApiUnauthorizedResponse({ description: 'No autenticado' })
+  @ApiForbiddenResponse({ description: 'No autorizado' })
   @HttpCode(HttpStatus.OK)
   async updateUserDiscount(
     @Param('id', ParseUUIDPipe) id: string,
@@ -121,10 +101,10 @@ export class DiscountsController {
   @Delete('user-discounts/admin/:id')
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Eliminar un descuento de usuario por ID' })
-  @ApiResponse({ status: 200, description: 'Descuento eliminado' })
-  @ApiResponse({ status: 404, description: 'Descuento no encontrado' })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @ApiOkResponse({ description: 'Descuento eliminado' })
+  @ApiNotFoundResponse({ description: 'Descuento no encontrado' })
+  @ApiUnauthorizedResponse({ description: 'No autenticado' })
+  @ApiForbiddenResponse({ description: 'No autorizado' })
   @HttpCode(HttpStatus.OK)
   async deleteUserDiscount(@Param('id', ParseUUIDPipe) id: string): Promise<DataResponse<void>> {
     await this.discountService.deleteUserDiscount(id);
@@ -138,21 +118,10 @@ export class DiscountsController {
   })
   @ApiOkResponse({
     description: 'Datos de recompensa',
-    schema: {
-      example: { data: { quantity: 500, stars: 2 } },
-      properties: {
-        data: {
-          type: 'object',
-          properties: {
-            quantity: { type: 'number' },
-            stars: { type: 'number' },
-          },
-        },
-      },
-    },
+    type: StarsFromUserDto,
   })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @ApiUnauthorizedResponse({ description: 'No autenticado' })
+  @ApiForbiddenResponse({ description: 'No autorizado' })
   @HttpCode(HttpStatus.OK)
   async getStars(
     @User() user: UserEntity,
@@ -168,22 +137,11 @@ export class DiscountsController {
   })
   @ApiOkResponse({
     description: 'Datos de recompensa',
-    schema: {
-      example: { data: { quantity: 500, stars: 2 } },
-      properties: {
-        data: {
-          type: 'object',
-          properties: {
-            quantity: { type: 'number' },
-            stars: { type: 'number' },
-          },
-        },
-      },
-    },
+    type: StarsFromUserDto,
   })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No autorizado' })
+  @ApiNotFoundResponse({ description: 'Usuario no encontrado' })
+  @ApiUnauthorizedResponse({ description: 'No autenticado' })
+  @ApiForbiddenResponse({ description: 'No autorizado' })
   @HttpCode(HttpStatus.OK)
   async getStarsByUserId(
     @Param('userId', ParseUUIDPipe) userId: string,

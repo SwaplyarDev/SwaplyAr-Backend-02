@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Regret } from './entities/regrets.entity';
 import { CreateRegretDto } from './dto/create-regret.dto';
 import { UpdateRegretDto } from './dto/update-regret.dto';
-import { SenderFinancialAccount } from '@financial-accounts/sender-financial-accounts/entities/sender-financial-account.entity';
+import { SenderFinancialAccount } from 'src/modules/sender-accounts/entities/sender-financial-account.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
 
 @Injectable()

@@ -13,6 +13,6 @@ export class Qualification {
   @Column({ type: 'int' })
   stars_amount: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   note: string;
 }

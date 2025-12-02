@@ -1,8 +1,6 @@
-import { IsPhoneNumberValid } from '@common/decorators/phone-number.decorator';
-import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsNotEmpty, IsString, ValidateNested, IsOptional, IsEmail } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsPhoneNumberValid } from '@common/decorators/phone-number.decorator';
 
 export class CreateSenderFinancialAccountDto {
   @ApiProperty({ description: 'Nombre del usuario', example: 'Nahuel' })
@@ -16,28 +14,40 @@ export class CreateSenderFinancialAccountDto {
   lastName: string;
 
   @ApiProperty({
-    description: 'Correo electrónico',
+    description: 'Correo electrónico del usuario dueño de la cuenta',
     example: 'nahuel@example.com',
     required: true,
   })
   @IsEmail()
   @IsNotEmpty()
-  createdBy: string;
+  email: string;
 
   @ApiProperty({
     description: 'Número de teléfono en formato internacional. Ej: +56912345678',
     example: '+573001234567',
-    required: true,
+    required: false,
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsPhoneNumberValid({
     message: 'Número inválido según su código de país. Use formato +<código_pais><numero>.',
   })
-  phoneNumber: string;
+  phoneNumber?: string;
 
-  @ApiProperty()
-  @ValidateNested()
-  @Type(() => CreatePaymentMethodDto)
-  paymentMethod: CreatePaymentMethodDto;
+  @ApiProperty({
+    description: 'ID de la plataforma de pago',
+    example: 'a59e00c2-3f45-4455-b12f-bdc494c239f0',
+  })
+  @IsString()
+  @IsNotEmpty()
+  paymentPlatformId: string;
+
+  @ApiProperty({
+    description: 'Código del país (opcional)',
+    example: 'CO',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  countryCode?: string;
 }

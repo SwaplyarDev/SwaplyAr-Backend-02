@@ -3,49 +3,48 @@ import { ApiProperty } from '@nestjs/swagger';
 import { NoteResponseDto } from '@transactions/notes/dto/note-response.dto';
 import { RegretDto } from '@transactions/regrets/dto/regret-response-dto';
 import { Expose, Transform, Type } from 'class-transformer';
+import { SenderFinancialAccountResponseDto } from 'src/modules/sender-accounts/dto/sender-financial-account-response.dto';
 
 export class ProofOfPaymentResponseDto {
   @Expose()
-  @ApiProperty({ name: 'id', example: '6d238f0a-3eab-4dc2-94cb-c9a833261a55' })
+  @ApiProperty({ example: '6d238f0a-3eab-4dc2-94cb-c9a833261a55' })
   id: string;
 
   @Expose()
   @ApiProperty({
-    name: 'imgUrl',
-    example:
-      'https://res.cloudinary.com/dy1jiclwg/image/upload/v1754923889/proof-of-payments/proofOfPayment_3_mdvm8d.png_1754923888954.png',
+    example: 'https://res.cloudinary.com/...png',
   })
   imgUrl: string;
 
   @Expose()
-  @ApiProperty({ name: 'createAt', example: '2025-08-11T14:51:29.944Z' })
-  createAt: string;
+  @ApiProperty({ example: '2025-08-11T14:51:29.944Z' })
+  createdAt: string;
 }
 
-export class SenderAccountDto {}
-
 export class AmountResponseDto {
-  @ApiProperty({ name: 'id', example: 'ba1196da-7e71-4710-8f44-2df28a31875e' })
+  @Expose()
+  @ApiProperty({ example: 'ba1196da-7e71-4710-8f44-2df28a31875e' })
   id: string;
 
   @Expose()
-  @ApiProperty({ name: 'amountSent', example: 1000 })
-  amountSent: string;
+  @ApiProperty({ example: 1000 })
+  amountSent: number;
 
   @Expose()
-  @ApiProperty({ name: 'currencySent', example: 'ARS' })
+  @ApiProperty({ example: 'ARS' })
   currencySent: string;
 
   @Expose()
-  @ApiProperty({ name: 'amountReceived', example: 900 })
-  amountReceived: string;
+  @ApiProperty({ example: 900 })
+  amountReceived: number;
 
   @Expose()
-  @ApiProperty({ name: 'currencyReceived', example: 'BRL' })
+  @ApiProperty({ example: 'BRL' })
   currencyReceived: string;
 
-  @ApiProperty({ name: 'received', example: false })
-  received: boolean;
+  @Expose()
+  @ApiProperty({ example: false })
+  isReceived: boolean;
 }
 
 export class TransactionResponseDto {
@@ -68,8 +67,8 @@ export class TransactionResponseDto {
   noteVerificationExpiresAt?: Date;
 
   @Expose()
-  @Type(() => SenderAccountDto)
-  senderAccount: SenderAccountDto;
+  @Type(() => SenderFinancialAccountResponseDto)
+  senderAccount: SenderFinancialAccountResponseDto;
 
   @Expose()
   @Type(() => FinancialAccountResponseDto)
@@ -77,15 +76,15 @@ export class TransactionResponseDto {
 
   @Expose()
   @Type(() => NoteResponseDto)
-  note?: NoteResponseDto;
+  note?: NoteResponseDto | null;
 
   @Expose()
   @Type(() => RegretDto)
-  regret?: RegretDto;
+  regret?: RegretDto | null;
 
   @Expose()
   @Type(() => ProofOfPaymentResponseDto)
-  proofsOfPayment: ProofOfPaymentResponseDto[];
+  proofsOfPayment?: ProofOfPaymentResponseDto[];
 
   @Expose()
   @Type(() => AmountResponseDto)
@@ -104,12 +103,9 @@ export class TransactionResponseDto {
   updatedAt: Date;
 
   @Expose()
-  @Transform(({ obj }) =>
-    obj.transactionUserDiscounts?.map((tud) => tud.userDiscount.id) ?? []
-  )
+  @Transform(({ obj }) => obj.transactionUserDiscounts?.map((tud) => tud.userDiscount.id) ?? [])
   userDiscounts: string[];
 }
-
 
 export class UserDiscountGetDto {
   @Expose()
@@ -146,12 +142,12 @@ export class TransactionGetByIdDto {
   finalStatus: string;
 
   @Expose()
-  @Type(() => AccountSenderDto)
-  senderAccount: AccountSenderDto;
+  @Type(() => SenderFinancialAccountResponseDto)
+  senderAccount: SenderFinancialAccountResponseDto;
 
   @Expose()
-  @Type(() => AccountReceiverDto)
-  financialAccounts: AccountReceiverDto;
+  @Type(() => FinancialAccountResponseDto)
+  financialAccounts: FinancialAccountResponseDto;
 
   @Expose()
   @Type(() => ProofOfPaymentResponseDto)
@@ -167,6 +163,9 @@ export class TransactionGetByIdDto {
 
   @Expose()
   isNoteVerified: boolean;
+
+  @Expose()
+  noteVerificationExpiresAt?: Date;
 
   @Expose()
   @ApiProperty({
@@ -202,7 +201,7 @@ export class AmountDto {
   currencyReceived: string;
 
   @ApiProperty({ example: false })
-  isReceived: string;
+  isReceived: boolean; // ANTES string
 
   @ApiProperty({ example: '2025-08-11T14:51:29.944Z' })
   createdAt: Date;
@@ -224,8 +223,8 @@ export class TransactionGetResponseDto {
   @ApiProperty({ example: 'c7a0e81d-2a49-4d09-8120-6f02d63e1f01', nullable: true })
   regretId?: string | null;
 
-  @ApiProperty({ type: SenderAccountDto })
-  senderAccount: SenderAccountDto;
+  @ApiProperty({ type: SenderFinancialAccountResponseDto })
+  senderAccount: SenderFinancialAccountResponseDto;
 
   @ApiProperty({ type: ProofOfPaymentDto, required: false })
   proofsOfPayment?: ProofOfPaymentDto[];

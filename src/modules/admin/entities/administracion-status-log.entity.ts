@@ -15,13 +15,7 @@ export class AdministracionStatusLog {
   @PrimaryGeneratedColumn('uuid', { name: 'log_id' })
   id: string;
 
-  @ManyToOne(() => AdministracionMaster, (master: AdministracionMaster) => master.statusLogs, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'transaction_id' })
-  transaction: AdministracionMaster;
-
-  @Column({ type: 'enum', enum: Status })
+  @Column({ type: 'enum', enum: Status, name: 'status' })
   status: Status;
 
   @CreateDateColumn({
@@ -31,16 +25,25 @@ export class AdministracionStatusLog {
   })
   changedAt: Date;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'message' })
   message: string;
 
-  @ManyToOne(() => User, { eager: false })
+  @ManyToOne(() => User, (usr) => usr.adminStatusLog)
   @JoinColumn({ name: 'changed_by_admin_id' })
   changedByAdmin: User;
 
-  @Column({ name: 'changed_by_admin_id', type: 'uuid' })
-  changedByAdminId: string;
-
   @Column({ type: 'jsonb', nullable: true })
   additionalData: Record<string, any>;
+
+  @ManyToOne(() => AdministracionMaster, (master: AdministracionMaster) => master.statusLogs, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'transaction_id' })
+  transaction: AdministracionMaster;
+
+  @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
+  createdAt: Date;
+
+  @CreateDateColumn({ type: 'timestamp', name: 'updated_at' })
+  updatedAt: Date;
 }

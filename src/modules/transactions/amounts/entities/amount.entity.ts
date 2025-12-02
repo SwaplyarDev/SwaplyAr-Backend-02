@@ -18,7 +18,7 @@ export class Amount {
   @Column({ name: 'currency_received', type: 'varchar', length: 3 })
   currencyReceived: string; // moneda recibida
 
-  @Column({ name: 'is_received' })
+  @Column({ name: 'is_received', default: false })
   isReceived: boolean; // recibido o no
 
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
@@ -27,6 +27,6 @@ export class Amount {
   @CreateDateColumn({ type: 'timestamp', name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToMany(() => Transaction, (trs) => trs.amount, { onDelete: 'SET NULL' })
+  @OneToMany(() => Transaction, (trs) => trs.amount)
   transaction: Transaction[];
 }

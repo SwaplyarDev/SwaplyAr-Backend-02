@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { SenderFinancialAccount } from 'src/modules/sender-accounts/entities/sender-financial-account.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
 
 @Entity('countries')
 export class Countries {
@@ -16,4 +17,7 @@ export class Countries {
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
   created_at: Date; // Fecha de registro
+
+  @OneToMany(() => SenderFinancialAccount, (senderAccount) => senderAccount.country)
+  senderFinancialAccounts: SenderFinancialAccount[];
 }

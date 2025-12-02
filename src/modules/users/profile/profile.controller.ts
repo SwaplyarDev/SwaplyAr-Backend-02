@@ -31,13 +31,14 @@ import {
 import { UpdateEmailDto } from './dto/email.profile.dto';
 import { UpdatePhoneDto } from './dto/phone.profile.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  UpdateUserProfileDto,
-  UploadImageDto,
-  UploadImageResponseDto,
-} from './dto/udpate-profile.dto';
-import { ProfileResponseDto, SocialsDto } from '@users/dto/user-response.dto';
+import { UpdateImageResponseDto, UpdateUserProfileDto } from './dto/udpate-profile.dto';
+import { ProfileResponseDto } from '@users/dto/user-response.dto';
 import { UpdateUserSocialsDto } from './dto/update-user-socials.dto';
+import {
+  UpdateUserProfileResponseDto,
+  UpdateUserSocialsResponseDto,
+  UserProfileResponseDto,
+} from './dto/get-user-profile-response.dto';
 
 @ApiTags('Perfiles')
 @UseGuards(JwtAuthGuard)
@@ -54,7 +55,7 @@ export class ProfileController {
   @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })
   @ApiOkResponse({
     description: 'Perfil del usuario con redes sociales',
-    type: ProfileResponseDto,
+    type: UserProfileResponseDto,
   })
   @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
   async getMyProfile(@Req() req: any) {
@@ -91,7 +92,7 @@ export class ProfileController {
   @ApiBody({ type: UpdateUserProfileDto })
   @ApiOkResponse({
     description: 'Perfil del usuario',
-    type: ProfileResponseDto,
+    type: UpdateUserProfileResponseDto,
   })
   @ApiBadRequestResponse({ description: 'Solicitud inválida o datos incompletos' })
   @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
@@ -138,7 +139,7 @@ export class ProfileController {
   @ApiBody({ type: UpdateUserSocialsDto })
   @ApiOkResponse({
     description: 'Redes sociales actualizadas correctamente',
-    type: SocialsDto,
+    type: UpdateUserSocialsResponseDto,
   })
   @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
   async updateSocials(@Req() req: any, @Body() updateUserSocialsDto: UpdateUserSocialsDto) {
@@ -164,11 +165,11 @@ export class ProfileController {
   })
   @ApiBody({
     description: 'Archivo de imagen a subir',
-    type: UploadImageDto,
+    type: UpdateImageResponseDto,
   })
   @ApiOkResponse({
     description: 'Imagen actualizada correctamente',
-    type: UploadImageResponseDto,
+    type: UpdateImageResponseDto,
   })
   @ApiBadRequestResponse({ description: 'Archivo no enviado o usuario no autenticado' })
   @ApiUnauthorizedResponse({ description: 'Usuario no autenticado' })

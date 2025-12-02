@@ -21,8 +21,12 @@ import {
 import { AdminRoleGuard } from '@common/guards/admin-role.guard';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { AdminUserService } from './user-admin.service';
-import { UpdateUserRoleDto, UpdateUserRoleResponseDto } from './dto/update-user-role.dto';
-import { UpdateUserStatusDto, UpdateUserStatusResponseDto } from './dto/update-user-status-dto';
+import { UpdateUserRoleDto } from './dto/update-user-role.dto';
+import {
+  UpdateUserRoleResponseDto,
+  UpdateUserStatusDto,
+  UpdateUserStatusResponseDto,
+} from './dto/update-user-status-dto';
 
 @ApiTags('Usuarios (Admin)')
 @Controller('admin/user')

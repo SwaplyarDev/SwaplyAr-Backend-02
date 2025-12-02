@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsUUID } from 'class-validator';
+import { IsOptional, IsUUID, IsString, MaxLength } from 'class-validator';
 
 export class CreateFinancialAccountDto {
   @ApiProperty({
@@ -8,6 +8,14 @@ export class CreateFinancialAccountDto {
   })
   @IsUUID()
   paymentPlatformId: string;
+
+  @ApiProperty({
+    example: 'bank_account',
+    description: 'Tipo de referencia (bank_account, pix_account, wallet, etc.)',
+  })
+  @IsString()
+  @MaxLength(30)
+  reference_type: string;
 
   @ApiProperty({
     example: '7f3ff720-a30f-4d59-a1ae-f05fa39f74d3',
@@ -30,5 +38,7 @@ export class CreateFinancialAccountDto {
     description: 'Tipo de dueño',
     default: 'user',
   })
+  @IsString()
+  @MaxLength(20)
   ownerType: string;
 }

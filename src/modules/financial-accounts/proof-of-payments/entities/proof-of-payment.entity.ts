@@ -28,5 +28,5 @@ export class ProofOfPayment {
   transaction: Transaction;
 
   @OneToMany(() => Regret, (reg) => reg.proofsOfPayment, { onDelete: 'CASCADE' })
-  regrets: Transaction[];
+  regrets: Regret[];
 }

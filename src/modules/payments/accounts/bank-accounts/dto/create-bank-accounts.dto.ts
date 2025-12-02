@@ -40,10 +40,9 @@ export class CreateBankAccountDto {
   @IsUUID()
   paymentProviderId: string;
 
-  @ApiProperty({ example: 'ARG' })
-  @IsString()
-  @Length(3, 3)
-  countryCode: string;
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440002', description: 'ID del país' })
+  @IsUUID()
+  countryId: string;
 
   @ApiProperty({ example: 'Juan Pérez' })
   @IsString()
@@ -103,4 +102,4 @@ export class CreateBankAccountDto {
   @ValidateNested({ each: true })
   @Type(() => CreateBankAccountDetailDto)
   details?: CreateBankAccountDetailDto[];
-}
+} 

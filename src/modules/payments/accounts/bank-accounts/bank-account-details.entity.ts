@@ -16,6 +16,7 @@ export class BankAccountDetails {
 
   @ManyToOne(() => BankAccounts, (bankAccount: BankAccounts) => bankAccount.details, {
     nullable: false,
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'bank_account_id' })
   bankAccount: BankAccounts;

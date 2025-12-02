@@ -30,7 +30,7 @@ export class BankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Post()
-  @ApiOperation({ summary: 'Create a new bank account' })
+  @ApiOperation({ summary: 'Crear una nueva bank account' })
   @ApiResponse({
     status: 201,
     description: 'The bank account has been successfully created.',
@@ -48,7 +48,7 @@ export class BankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  @ApiOperation({ summary: 'Get all bank accounts' })
+  @ApiOperation({ summary: 'Obtener todas las bank accounts' })
   @ApiResponse({
     status: 200,
     description: 'Return all bank accounts.',
@@ -65,7 +65,7 @@ export class BankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Get('my-accounts')
-  @ApiOperation({ summary: 'Get my bank accounts' })
+  @ApiOperation({ summary: 'Obtener mis bank accounts' })
   @ApiResponse({
     status: 200,
     description: 'Return bank accounts belonging to the logged user.',
@@ -79,7 +79,7 @@ export class BankAccountsController {
   // MOSTRAR UNA CUENTA BANCARIA POR ID
   // ==========================================
   @Get(':id')
-  @ApiOperation({ summary: 'Get a bank account by id' })
+  @ApiOperation({ summary: 'Obtener una bank account por id' })
   @ApiResponse({
     status: 200,
     description: 'Return the bank account.',
@@ -93,7 +93,7 @@ export class BankAccountsController {
   // ACTUALIZAR UNA CUENTA BANCARIA
   // ==========================================
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a bank account' })
+  @ApiOperation({ summary: 'Actualizar una bank account' })
   @ApiResponse({
     status: 200,
     description: 'The bank account has been successfully updated.',
@@ -110,7 +110,7 @@ export class BankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a bank account' })
+  @ApiOperation({ summary: 'Borrar una bank account' })
   @ApiResponse({ status: 200, description: 'The bank account has been successfully deleted.' })
   remove(@Param('id') id: string) {
     return this.bankAccountsService.remove(id);

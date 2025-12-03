@@ -18,9 +18,6 @@ export class BankAccounts {
   @PrimaryGeneratedColumn('uuid', { name: 'bank_account_id' })
   bankAccountId: string;
 
-  @Column()
-  userId: string;
-
   @ManyToOne(() => User, (user) => user.bankAccounts, { nullable: false })
   @JoinColumn({ name: 'user_id' })
   user: User;

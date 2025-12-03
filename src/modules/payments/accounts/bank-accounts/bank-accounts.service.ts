@@ -113,16 +113,22 @@ export class BankAccountsService {
     return bankAccount;
   }
 
-  async update(id: string, updateBankAccountDto: UpdateBankAccountDto, userId: string, userRole: string): Promise<BankAccounts> {
+  async update(id: string, updateBankAccountDto: UpdateBankAccountDto, userId: string): Promise<BankAccounts> {
     const bankAccount = await this.findOne(id);
+    
+    // Obtener el usuario autenticado para verificar su rol
+    const currentUser = await this.userRepository.findOne({ where: { id: userId } });
+    if (!currentUser) {
+      throw new NotFoundException('Current user not found');
+    }
 
     // Verificar permisos según el rol
-    if (userRole === 'user') {
+    if (currentUser.roleCode === 'user') {
       // Los usuarios solo pueden editar sus propias cuentas
       if (bankAccount.user.id !== userId) {
         throw new ForbiddenException('You can only edit your own bank accounts');
       }
-    } else if (userRole === 'admin') {
+    } else if (currentUser.roleCode === 'admin') {
       // Los admins solo pueden editar cuentas creadas por otros admins
       if (bankAccount.user.roleCode !== 'admin') {
         throw new ForbiddenException('Admins can only edit bank accounts created by other admins');

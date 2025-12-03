@@ -103,7 +103,7 @@ export class BankAccountsController {
     type: BankAccountResponseDto,
   })
   update(@Param('id') id: string, @Body() updateBankAccountDto: UpdateBankAccountDto, @Request() req) {
-    return this.bankAccountsService.update(id, updateBankAccountDto, req.user.userId, req.user.role);
+    return this.bankAccountsService.update(id, updateBankAccountDto, req.user.id);
   }
 
   // ==========================================

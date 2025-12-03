@@ -7,6 +7,7 @@ import { CreateBankAccountDto } from './dto/create-bank-accounts.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
 import { PaymentProviders } from '../../entities/payment-providers.entity';
+import { Countries } from '../../../catalogs/countries/countries.entity';
 
 @Injectable()
 export class BankAccountsService {
@@ -19,17 +20,20 @@ export class BankAccountsService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(PaymentProviders)
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
+    @InjectRepository(Countries)
+    private readonly countriesRepository: Repository<Countries>,
   ) {}
 
   async create(createBankAccountDto: CreateBankAccountDto, userId: string): Promise<BankAccounts> {
     const {
       paymentProviderId,
+      countryId,
       details,
       userId: dtoUserId,
       ...bankAccountData
     } = createBankAccountDto;
 
-    // Verify user exists (either from DTO or from auth context)
+    // Verify user exists (either from DTO or from auth context) 
     const targetUserId = dtoUserId || userId;
     const user = await this.userRepository.findOne({ where: { id: targetUserId } });
     if (!user) {
@@ -44,11 +48,20 @@ export class BankAccountsService {
       throw new NotFoundException(`Payment Provider with ID ${paymentProviderId} not found`);
     }
 
+    // Verify country exists
+    const country = await this.countriesRepository.findOne({
+      where: { country_id: countryId },
+    });
+    if (!country) {
+      throw new NotFoundException(`Country with ID ${countryId} not found`);
+    }
+
     // Create Bank Account
     const bankAccount = this.bankAccountsRepository.create({
       ...bankAccountData,
       user,
       paymentProvider,
+      country,
       createdBy: user,
     });
 

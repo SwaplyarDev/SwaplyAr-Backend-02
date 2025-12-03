@@ -27,7 +27,7 @@ export class VirtualBankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Post()
-  @ApiOperation({ summary: 'Create a new virtual bank account (user,admin)' })
+  @ApiOperation({ summary: 'Crear una virtual bank account' })
   @ApiResponse({
     status: 201,
     description: 'The virtual bank account has been successfully created.',
@@ -42,7 +42,7 @@ export class VirtualBankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user')
   @Get('my-accounts')
-  @ApiOperation({ summary: 'Get my virtual bank accounts (user)' })
+  @ApiOperation({ summary: 'Obtener mis virtual bank accounts' })
   @ApiResponse({
     status: 200,
     description: 'Return user virtual bank accounts.',
@@ -56,7 +56,7 @@ export class VirtualBankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  @ApiOperation({ summary: 'Get all virtual bank accounts (admin)' })
+  @ApiOperation({ summary: 'Obtener todas las virtual bank accounts' })
   @ApiResponse({
     status: 200,
     description: 'Return all virtual bank accounts.',
@@ -67,7 +67,7 @@ export class VirtualBankAccountsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a virtual bank account by id' })
+  @ApiOperation({ summary: 'Obtener una virtual bank account por ID' })
   @ApiResponse({
     status: 200,
     description: 'Return the virtual bank account.',
@@ -78,7 +78,7 @@ export class VirtualBankAccountsController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a virtual bank account' })
+  @ApiOperation({ summary: 'Actualizar una virtual bank account' })
   @ApiResponse({
     status: 200,
     description: 'The virtual bank account has been successfully updated.',
@@ -96,7 +96,7 @@ export class VirtualBankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a virtual bank account (admin)' })
+  @ApiOperation({ summary: 'Borrar una virtual bank account' })
   @ApiResponse({
     status: 200,
     description: 'The virtual bank account has been successfully deleted.',

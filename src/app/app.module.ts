@@ -30,6 +30,7 @@ import { PaymentProvidersModule } from 'src/modules/payments/payment-providers/p
 import { BankAccountsModule } from 'src/modules/payments/accounts/bank-accounts/bank-accounts.module';
 import { VirtualBankAccountsModule } from 'src/modules/payments/accounts/virtual-bank-accounts/virtual-bank-accounts.module';
 import { CryptoAccountsModule } from 'src/modules/payments/accounts/crypto-accounts/crypto-accounts.module';
+import { CountriesModule } from 'src/modules/catalogs/countries/country.modules';
 
 @Module({
   imports: [
@@ -60,6 +61,10 @@ import { CryptoAccountsModule } from 'src/modules/payments/accounts/crypto-accou
     BankAccountsModule,
     VirtualBankAccountsModule,
     CryptoAccountsModule,
+<<<<<<< HEAD
+=======
+    CountriesModule,
+>>>>>>> e21110b6c43cb6009fb51457817983c85db74438
 
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',

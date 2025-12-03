@@ -27,7 +27,7 @@ export class CryptoAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Post()
-  @ApiOperation({ summary: 'Create a new crypto account (user, admin)' })
+  @ApiOperation({ summary: 'Create a new crypto account' })
   @ApiResponse({
     status: 201,
     description: 'The crypto account has been successfully created.',
@@ -40,9 +40,9 @@ export class CryptoAccountsController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
+  @Roles('user', 'admin')
   @Get('my-accounts')
-  @ApiOperation({ summary: 'Get my crypto accounts (user)' })
+  @ApiOperation({ summary: 'Obtener mis crypto accounts' })
   @ApiResponse({
     status: 200,
     description: 'Return user virtual bank accounts.',
@@ -56,7 +56,7 @@ export class CryptoAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  @ApiOperation({ summary: 'Get all crypto accounts (admin)' })
+  @ApiOperation({ summary: 'Obtener todas las crypto accounts' })
   @ApiResponse({
     status: 200,
     description: 'Return all crypto accounts.',
@@ -67,7 +67,7 @@ export class CryptoAccountsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a crypto account by id' })
+  @ApiOperation({ summary: 'Obtener una crypto account por ID' })
   @ApiResponse({
     status: 200,
     description: 'Return the crypto account.',
@@ -78,7 +78,7 @@ export class CryptoAccountsController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a crypto account' })
+  @ApiOperation({ summary: 'Actualizar una crypto account' })
   @ApiResponse({
     status: 200,
     description: 'The crypto account has been successfully updated.',
@@ -92,7 +92,7 @@ export class CryptoAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a crypto account (admin)' })
+  @ApiOperation({ summary: 'Borrar una crypto account (admin)' })
   @ApiResponse({ status: 200, description: 'The crypto account has been successfully deleted.' })
   remove(@Param('id') id: string) {
     return this.cryptoAccountsService.remove(id);

@@ -5,6 +5,7 @@ import { PaymentProviders } from './payment-providers.entity';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
 import { UpdatePaymentProvidersDto } from './dto/update-payment-providers.dto';
 import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
+import { Countries } from 'src/modules/catalogs/countries/countries.entity';
 
 @Injectable()
 export class PaymentProvidersService {
@@ -14,7 +15,10 @@ export class PaymentProvidersService {
 
     @InjectRepository(PaymentPlatforms)
     private readonly platformsRepo: Repository<PaymentPlatforms>,
-  ) {}
+
+    @InjectRepository(Countries)
+    private readonly countriesRepository: Repository<Countries>,
+  ) { }
 
   async findAll(): Promise<PaymentProviders[]> {
     return this.providersRepo.find({
@@ -34,7 +38,7 @@ export class PaymentProvidersService {
   }
 
   async create(dto: CreatePaymentProvidersDto) {
-    const { paymentPlatformId, ...providerData } = dto;
+    const { paymentPlatformId, countryId, ...providerData } = dto;
 
     const platform = await this.platformsRepo.findOneBy({
       paymentPlatformId,
@@ -44,9 +48,18 @@ export class PaymentProvidersService {
       throw new NotFoundException(`Payment Platform with ID ${paymentPlatformId} not found`);
     }
 
+    // Validar país (obligatorio)
+    const country = await this.countriesRepository.findOne({
+      where: { country_id: countryId },
+    });
+    if (!country) {
+      throw new NotFoundException(`Country with ID ${countryId} not found`);
+    }
+
     const provider = this.providersRepo.create({
       ...providerData,
       paymentPlatform: platform,
+      country,
     });
 
     try {
@@ -61,7 +74,7 @@ export class PaymentProvidersService {
 
   async update(id: string, dto: UpdatePaymentProvidersDto): Promise<PaymentProviders> {
     const provider = await this.findOne(id);
-    const { paymentPlatformId, ...updateData } = dto;
+    const { paymentPlatformId, countryId, ...updateData } = dto;
 
     if (paymentPlatformId) {
       const platform = await this.platformsRepo.findOneBy({
@@ -72,6 +85,17 @@ export class PaymentProvidersService {
         throw new NotFoundException(`Payment Platform with ID ${paymentPlatformId} not found`);
       }
       provider.paymentPlatform = platform;
+    }
+
+    // Validar país si se proporciona en la actualización
+    if (countryId) {
+      const country = await this.countriesRepository.findOne({
+        where: { country_id: countryId },
+      });
+      if (!country) {
+        throw new NotFoundException(`Country with ID ${countryId} not found`);
+      }
+      provider.country = country;
     }
 
     Object.assign(provider, updateData);

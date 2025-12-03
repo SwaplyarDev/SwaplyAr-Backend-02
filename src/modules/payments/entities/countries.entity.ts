@@ -1,4 +1,4 @@
-import { SenderFinancialAccount } from 'src/modules/sender-accounts/entities/sender-financial-account.entity';
+import { SenderFinancialAccount } from 'src/modules/payments/sender-accounts/entities/sender-financial-account.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
 
 @Entity('countries')

@@ -1,10 +1,9 @@
 import { Injectable, BadRequestException, Logger, NotFoundException } from '@nestjs/common';
-
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserAccount } from './entities/user-account.entity';
-import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
-import { CreatePaymentMethodDto } from '@financial-accounts/payment-methods/dto/create-payment-method.dto';
+import { FinancialAccountsService } from 'src/deprecated/financial-accounts/financial-accounts.service';
+import { CreatePaymentMethodDto } from 'src/deprecated/financial-accounts/payment-methods/dto/create-payment-method.dto';
 import { CreateUserAccountResponseDto } from './dto/user-account-response.dto';
 
 @Injectable()

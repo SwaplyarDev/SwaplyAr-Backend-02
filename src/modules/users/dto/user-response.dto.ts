@@ -70,8 +70,16 @@ export class UserResponseDto {
   })
   verifications: VerificationIdsDto[];
 
-  @ApiProperty({ example: 'admin' })
-  role: string;
+  @ApiProperty({ 
+    example: [
+      { code: 'admin', name: 'Administrador' },
+      { code: 'moderator', name: 'Moderador' }
+    ] 
+  })
+  roles: {
+    code: string;
+    name: string;
+  }[];
 
   @ApiProperty({ example: true })
   termsAccepted: boolean;

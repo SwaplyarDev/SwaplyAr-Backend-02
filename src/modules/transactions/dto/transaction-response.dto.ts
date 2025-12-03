@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { NoteResponseDto } from '@transactions/notes/dto/note-response.dto';
 import { RegretDto } from '@transactions/regrets/dto/regret-response-dto';
 import { Expose, Transform, Type } from 'class-transformer';
-import { SenderFinancialAccountResponseDto } from 'src/modules/sender-accounts/dto/sender-financial-account-response.dto';
+import { SenderFinancialAccountResponseDto } from 'src/modules/payments/sender-accounts/dto/sender-financial-account-response.dto';
 
 export class ProofOfPaymentResponseDto {
   @Expose()

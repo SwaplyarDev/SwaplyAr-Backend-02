@@ -1,12 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { PaymentProviders } from './payment-providers.entity';
-import { FinancialAccount } from '../../financial-accounts/entities/financial-account.entity';
-import { SenderFinancialAccount } from 'src/modules/sender-accounts/entities/sender-financial-account.entity';
+import { FinancialAccounts } from '../financial-accounts/financial-accounts.entity';
+
 
 @Entity('payment_platforms')
 export class PaymentPlatforms {
-  @PrimaryGeneratedColumn('uuid')
-  payment_platform_id: string;
+  @PrimaryGeneratedColumn('uuid', { name: 'payment_platform_id' })
+  paymentPlatformId: string;
 
   @Column({ type: 'varchar', length: 50, unique: true })
   code: string;
@@ -17,18 +24,18 @@ export class PaymentPlatforms {
   @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @Column({ type: 'boolean', default: true })
-  is_active: boolean;
+  @Column({ type: 'boolean', default: true, name: 'is_active' })
+  isActive: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
-  created_at: Date;
+  @CreateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'created_at' })
+  createdAt: Date;
 
-  @OneToMany(() => PaymentProviders, (payment_provider) => payment_provider.payment_platform)
+  @UpdateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'updated_at' })
+  updatedAt: Date;
+
+  @OneToMany(() => PaymentProviders, (provider) => provider.paymentPlatform)
   providers: PaymentProviders[];
 
-  @OneToMany(() => FinancialAccount, (account) => account.paymentPlatform)
-  financialAccount: FinancialAccount[];
-
-  @OneToMany(() => SenderFinancialAccount, (senderAccount) => senderAccount.paymentPlatform)
-  senderFinancialAccount: SenderFinancialAccount[];
+  @OneToMany(() => FinancialAccounts, (account) => account.paymentPlatform)
+  financialAccounts: FinancialAccounts[];
 }

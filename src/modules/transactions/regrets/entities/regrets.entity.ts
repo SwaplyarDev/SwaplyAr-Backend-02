@@ -8,7 +8,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { Transaction } from '@transactions/entities/transaction.entity';
-import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
+import { ProofOfPayment } from 'src/modules/payments/proof-of-payments/entities/proof-of-payment.entity';
 
 @Entity('regrets')
 export class Regret {

@@ -1,5 +1,4 @@
-import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
-import { SenderFinancialAccount } from 'src/modules/sender-accounts/entities/sender-financial-account.entity';
+import { SenderFinancialAccount } from 'src/modules/payments/sender-accounts/entities/sender-financial-account.entity';
 import { Amount } from '@transactions/amounts/entities/amount.entity';
 
 import {
@@ -25,6 +24,7 @@ import { AdministracionStatusLog } from '@admin/entities/administracion-status-l
 import { TransactionUserDiscounts } from './transaction-user-discounts.entity';
 import { Qualification } from 'src/modules/qualifications/entities/qualification.entity';
 import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
+import { ProofOfPayment } from 'src/modules/payments/proof-of-payments/entities/proof-of-payment.entity';
 
 export const nanoidCustom = customAlphabet(
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',

@@ -22,8 +22,14 @@ COPY package*.json ./
 # Instala solo dependencias de producción
 RUN npm ci --only=production && npm cache clean --force
 
-# Copia el build desde la etapa builder
+# Copia el build desde la etapa builder (incluyendo templates si nest-cli.json los copió)
 COPY --from=builder /app/dist ./dist
+
+# Asegurarse de que los templates estén presentes (respaldo por si nest-cli.json no los copió)
+COPY --from=builder /app/src/modules/mailer/templates ./dist/modules/mailer/templates
+
+# Verificar que los templates existan
+RUN ls -la /app/dist/modules/mailer/templates/email/auth/ || echo "WARNING: Templates not found"
 
 RUN addgroup -g 1001 -S nodejs \
 	&& adduser -S nestjs -u 1001 \

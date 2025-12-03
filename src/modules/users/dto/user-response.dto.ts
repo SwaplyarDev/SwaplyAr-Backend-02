@@ -70,11 +70,11 @@ export class UserResponseDto {
   })
   verifications: VerificationIdsDto[];
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: [
       { code: 'admin', name: 'Administrador' },
-      { code: 'moderator', name: 'Moderador' }
-    ] 
+      { code: 'moderator', name: 'Moderador' },
+    ],
   })
   roles: {
     code: string;

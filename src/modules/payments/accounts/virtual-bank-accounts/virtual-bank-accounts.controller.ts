@@ -21,7 +21,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 @ApiTags('Virtual Bank Accounts')
 @Controller('virtual-bank-accounts')
 export class VirtualBankAccountsController {
-  constructor(private readonly virtualBankAccountsService: VirtualBankAccountsService) { }
+  constructor(private readonly virtualBankAccountsService: VirtualBankAccountsService) {}
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -87,13 +87,14 @@ export class VirtualBankAccountsController {
   update(
     @Param('id') id: string,
     @Body() updateVirtualBankAccountDto: UpdateVirtualBankAccountDto,
+    @Request() req,
   ) {
-    return this.virtualBankAccountsService.update(id, updateVirtualBankAccountDto);
+    return this.virtualBankAccountsService.update(id, updateVirtualBankAccountDto,req.user);
   }
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user','admin')
+  @Roles('user', 'admin')
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a virtual bank account (admin)' })
   @ApiResponse({

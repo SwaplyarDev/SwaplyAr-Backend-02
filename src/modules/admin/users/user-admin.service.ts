@@ -12,7 +12,7 @@ export class AdminUserService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly rolesService: RolesService,
-  ) { }
+  ) {}
 
   async updateUserRole(userId: string, role: string) {
     const user = await this.userRepository.findOne({ where: { id: userId } });

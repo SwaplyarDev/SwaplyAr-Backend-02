@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VirtualBankAccounts } from './virtual-bank-accounts.entity';
@@ -16,7 +16,7 @@ export class VirtualBankAccountsService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(PaymentProviders)
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
-  ) { }
+  ) {}
 
   async create(
     createVirtualBankAccountDto: CreateVirtualBankAccountDto,
@@ -83,12 +83,36 @@ export class VirtualBankAccountsService {
   async update(
     id: string,
     updateVirtualBankAccountDto: UpdateVirtualBankAccountDto,
+    user: { userId: string; role: string },
   ): Promise<VirtualBankAccounts> {
-    const virtualBankAccount = await this.findOne(id);
+    const account = await this.virtualBankAccountsRepository.findOne({
+      where: { virtualBankAccountId: id },
+      relations: ['user', 'createdBy', 'paymentProvider'],
+    });
 
-    Object.assign(virtualBankAccount, updateVirtualBankAccountDto);
+    if (!account) {
+      throw new NotFoundException(`Virtual Bank Account with ID ${id} not found`);
+    }
 
-    return this.virtualBankAccountsRepository.save(virtualBankAccount);
+    // REGLA: USER SOLO PUEDE EDITAR SUS PROPIAS CUENTAS
+    if (user.role === 'user') {
+      if (account.user.id !== user.userId) {
+        throw new ForbiddenException('Users can only edit their own virtual bank accounts');
+      }
+    }
+
+    // REGLA: ADMIN PUEDE EDITAR CUENTAS CREADAS POR OTROS ADMIN
+    if (user.role === 'admin') {
+      if (account.createdBy.roleCode !== 'admin') {
+        throw new ForbiddenException(
+          'Admins can only edit virtual bank accounts created by other admins',
+        );
+      }
+    }
+    // If allowed → apply updates
+    Object.assign(account, updateVirtualBankAccountDto);
+
+    return this.virtualBankAccountsRepository.save(account);
   }
 
   async remove(id: string): Promise<void> {

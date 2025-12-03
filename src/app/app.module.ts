@@ -60,7 +60,7 @@ import { CryptoAccountsModule } from 'src/modules/payments/accounts/crypto-accou
     BankAccountsModule,
     VirtualBankAccountsModule,
     CryptoAccountsModule,
-    
+
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',
       signOptions: { expiresIn: '1d' },

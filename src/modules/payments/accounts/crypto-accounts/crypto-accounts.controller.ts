@@ -12,7 +12,7 @@ import {
 import { CryptoAccountsService } from './crypto-accounts.service';
 import { CreateCryptoAccountDto } from './dto/create-crypto-accounts.dto';
 import { UpdateCryptoAccountDto } from './dto/update-crypto-accounts.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CryptoAccountResponseDto } from './dto/crypto-accounts-response.dto';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -21,7 +21,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 @ApiTags('Crypto Accounts')
 @Controller('crypto-accounts')
 export class CryptoAccountsController {
-  constructor(private readonly cryptoAccountsService: CryptoAccountsService) { }
+  constructor(private readonly cryptoAccountsService: CryptoAccountsService) {}
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -84,16 +84,13 @@ export class CryptoAccountsController {
     description: 'The crypto account has been successfully updated.',
     type: CryptoAccountResponseDto,
   })
-  update(
-    @Param('id') id: string, 
-    @Body() updateCryptoAccountDto: UpdateCryptoAccountDto
-  ) {
+  update(@Param('id') id: string, @Body() updateCryptoAccountDto: UpdateCryptoAccountDto) {
     return this.cryptoAccountsService.update(id, updateCryptoAccountDto);
   }
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user','admin')
+  @Roles('user', 'admin')
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a crypto account (admin)' })
   @ApiResponse({ status: 200, description: 'The crypto account has been successfully deleted.' })

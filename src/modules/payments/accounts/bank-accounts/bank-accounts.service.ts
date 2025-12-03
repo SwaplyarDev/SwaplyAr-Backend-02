@@ -33,7 +33,7 @@ export class BankAccountsService {
       ...bankAccountData
     } = createBankAccountDto;
 
-    // Verify user exists (either from DTO or from auth context) 
+    // Verify user exists (either from DTO or from auth context)
     const targetUserId = dtoUserId || userId;
     const user = await this.userRepository.findOne({ where: { id: targetUserId } });
     if (!user) {

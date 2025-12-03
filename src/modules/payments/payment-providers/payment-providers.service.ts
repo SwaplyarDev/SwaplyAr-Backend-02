@@ -18,7 +18,7 @@ export class PaymentProvidersService {
 
     @InjectRepository(Countries)
     private readonly countriesRepository: Repository<Countries>,
-  ) { }
+  ) {}
 
   async findAll(): Promise<PaymentProviders[]> {
     return this.providersRepo.find({

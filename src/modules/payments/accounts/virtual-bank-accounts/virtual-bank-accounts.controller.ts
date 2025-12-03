@@ -89,7 +89,7 @@ export class VirtualBankAccountsController {
     @Body() updateVirtualBankAccountDto: UpdateVirtualBankAccountDto,
     @Request() req,
   ) {
-    return this.virtualBankAccountsService.update(id, updateVirtualBankAccountDto,req.user);
+    return this.virtualBankAccountsService.update(id, updateVirtualBankAccountDto, req.user);
   }
 
   @ApiBearerAuth()

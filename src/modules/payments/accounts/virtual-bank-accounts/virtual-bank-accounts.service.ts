@@ -83,7 +83,7 @@ export class VirtualBankAccountsService {
   async update(
     id: string,
     updateVirtualBankAccountDto: UpdateVirtualBankAccountDto,
-    user: { userId: string; role: string },
+    user: { userId: string; roleCode: string },
   ): Promise<VirtualBankAccounts> {
     const account = await this.virtualBankAccountsRepository.findOne({
       where: { virtualBankAccountId: id },
@@ -95,14 +95,14 @@ export class VirtualBankAccountsService {
     }
 
     // REGLA: USER SOLO PUEDE EDITAR SUS PROPIAS CUENTAS
-    if (user.role === 'user') {
+    if (user.roleCode === 'user') {
       if (account.user.id !== user.userId) {
         throw new ForbiddenException('Users can only edit their own virtual bank accounts');
       }
     }
 
     // REGLA: ADMIN PUEDE EDITAR CUENTAS CREADAS POR OTROS ADMIN
-    if (user.role === 'admin') {
+    if (user.roleCode === 'admin') {
       if (account.createdBy.roleCode !== 'admin') {
         throw new ForbiddenException(
           'Admins can only edit virtual bank accounts created by other admins',

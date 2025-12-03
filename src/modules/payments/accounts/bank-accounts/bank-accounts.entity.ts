@@ -27,12 +27,12 @@ export class BankAccounts {
   paymentProvider: PaymentProviders;
 
   @OneToMany(() => BankAccountDetails, (detail) => detail.bankAccount, {
-    cascade: true
+    cascade: true,
   })
   details: BankAccountDetails[];
 
   @ManyToOne(() => Countries, { eager: true })
-  @JoinColumn({ name: 'country_id' }) 
+  @JoinColumn({ name: 'country_id' })
   country: Countries;
 
   @Column({ name: 'country_id' })

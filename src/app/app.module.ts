@@ -61,10 +61,7 @@ import { CountriesModule } from 'src/modules/catalogs/countries/country.modules'
     BankAccountsModule,
     VirtualBankAccountsModule,
     CryptoAccountsModule,
-<<<<<<< HEAD
-=======
     CountriesModule,
->>>>>>> e21110b6c43cb6009fb51457817983c85db74438
 
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',

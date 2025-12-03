@@ -102,4 +102,4 @@ export class CreateBankAccountDto {
   @ValidateNested({ each: true })
   @Type(() => CreateBankAccountDetailDto)
   details?: CreateBankAccountDetailDto[];
-} 
+}

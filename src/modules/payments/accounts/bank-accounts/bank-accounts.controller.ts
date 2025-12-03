@@ -92,6 +92,9 @@ export class BankAccountsController {
   // ==========================================
   // ACTUALIZAR UNA CUENTA BANCARIA
   // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una bank account' })
   @ApiResponse({
@@ -99,8 +102,8 @@ export class BankAccountsController {
     description: 'The bank account has been successfully updated.',
     type: BankAccountResponseDto,
   })
-  update(@Param('id') id: string, @Body() updateBankAccountDto: UpdateBankAccountDto) {
-    return this.bankAccountsService.update(id, updateBankAccountDto);
+  update(@Param('id') id: string, @Body() updateBankAccountDto: UpdateBankAccountDto, @Request() req) {
+    return this.bankAccountsService.update(id, updateBankAccountDto, req.user.userId, req.user.role);
   }
 
   // ==========================================

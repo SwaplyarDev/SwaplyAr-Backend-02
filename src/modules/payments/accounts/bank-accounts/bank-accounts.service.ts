@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BankAccounts } from './bank-accounts.entity';
@@ -113,8 +113,21 @@ export class BankAccountsService {
     return bankAccount;
   }
 
-  async update(id: string, updateBankAccountDto: UpdateBankAccountDto): Promise<BankAccounts> {
+  async update(id: string, updateBankAccountDto: UpdateBankAccountDto, userId: string, userRole: string): Promise<BankAccounts> {
     const bankAccount = await this.findOne(id);
+
+    // Verificar permisos según el rol
+    if (userRole === 'user') {
+      // Los usuarios solo pueden editar sus propias cuentas
+      if (bankAccount.user.id !== userId) {
+        throw new ForbiddenException('You can only edit your own bank accounts');
+      }
+    } else if (userRole === 'admin') {
+      // Los admins solo pueden editar cuentas creadas por otros admins
+      if (bankAccount.user.roleCode !== 'admin') {
+        throw new ForbiddenException('Admins can only edit bank accounts created by other admins');
+      }
+    }
 
     Object.assign(bankAccount, updateBankAccountDto);
 

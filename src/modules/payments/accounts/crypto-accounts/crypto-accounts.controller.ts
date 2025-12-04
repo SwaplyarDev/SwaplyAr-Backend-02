@@ -8,12 +8,14 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { CryptoAccountsService } from './crypto-accounts.service';
 import { CreateCryptoAccountDto } from './dto/create-crypto-accounts.dto';
 import { UpdateCryptoAccountDto } from './dto/update-crypto-accounts.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CryptoAccountResponseDto } from './dto/crypto-accounts-response.dto';
+import { CryptoAccountFilterDto } from './dto/crypto-accounts-filter.dto';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -72,8 +74,8 @@ export class CryptoAccountsController {
     description: 'Return all crypto accounts.',
     type: [CryptoAccountResponseDto],
   })
-  findAll() {
-    return this.cryptoAccountsService.findAll();
+  findAll(@Query() filters: CryptoAccountFilterDto) {
+    return this.cryptoAccountsService.findAll(filters);
   }
 
   // ==========================================

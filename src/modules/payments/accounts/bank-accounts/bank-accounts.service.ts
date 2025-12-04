@@ -8,6 +8,7 @@ import { UpdateBankAccountDto } from './dto/update-bank-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
 import { PaymentProviders } from '../../entities/payment-providers.entity';
 import { Countries } from '../../../catalogs/countries/countries.entity';
+import { BankAccountFilterDto } from './dto/bank-accounts-filter.dto';
 
 @Injectable()
 export class BankAccountsService {
@@ -81,10 +82,26 @@ export class BankAccountsService {
     return this.findOne(savedBankAccount.bankAccountId);
   }
 
-  async findAll(): Promise<BankAccounts[]> {
-    return this.bankAccountsRepository.find({
-      relations: ['details', 'user', 'paymentProvider'],
-    });
+  async findAll(filters: BankAccountFilterDto) {
+    const { paymentProviderId, currency } = filters;
+
+    const query = this.bankAccountsRepository
+      .createQueryBuilder('account')
+      .leftJoinAndSelect('account.details', 'details')
+      .leftJoinAndSelect('account.user', 'user')
+      .leftJoinAndSelect('account.paymentProvider', 'provider');
+
+    if (paymentProviderId) {
+      query.andWhere('account.payment_provider_id = :paymentProviderId', {
+        paymentProviderId,
+      });
+    }
+
+    if (currency) {
+      query.andWhere('account.currency = :currency', { currency });
+    }
+
+    return await query.getMany();
   }
 
   async findByUser(userId: string): Promise<BankAccounts[]> {
@@ -92,11 +109,9 @@ export class BankAccountsService {
       where: { user: { id: userId } },
       relations: ['details', 'user', 'paymentProvider'],
     });
-
     if (!accounts || accounts.length === 0) {
       throw new NotFoundException(`No bank accounts found for user with ID ${userId}`);
     }
-
     return accounts;
   }
 

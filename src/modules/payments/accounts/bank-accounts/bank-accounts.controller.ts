@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { BankAccountsService } from './bank-accounts.service';
 import { CreateBankAccountDto } from './dto/create-bank-accounts.dto';
@@ -17,6 +18,7 @@ import { JwtAuthGuard } from '../../../../common/jwt-auth.guard';
 import { BankAccountResponseDto } from './dto/bank-accounts-response.dto';
 import { RolesGuard } from '../../../../common/guards/roles.guard';
 import { Roles } from '../../../../common/decorators/roles.decorator';
+import { BankAccountFilterDto } from './dto/bank-accounts-filter.dto';
 
 @ApiTags('Bank Accounts')
 @Controller('bank-accounts')
@@ -48,14 +50,14 @@ export class BankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  @ApiOperation({ summary: 'Obtener todas las bank accounts' })
+  @ApiOperation({ summary: 'Obtener todas las bank accounts con filtros opcionales' })
   @ApiResponse({
     status: 200,
     description: 'Return all bank accounts.',
     type: [BankAccountResponseDto],
   })
-  findAll() {
-    return this.bankAccountsService.findAll();
+  findAll(@Query() filters: BankAccountFilterDto) {
+    return this.bankAccountsService.findAll(filters);
   }
 
   // ==========================================

@@ -1,13 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum } from 'class-validator';
-import { UserRole } from 'src/enum/user-role.enum';
+import { IsIn } from 'class-validator';
 
 export class UpdateUserRoleDto {
   @ApiProperty({
     description: 'Nuevo rol del usuario',
-    enum: UserRole,
-    example: UserRole.Admin,
+    enum: ['user', 'admin', 'super_admin'],
+    example: 'admin',
   })
-  @IsEnum(UserRole, { message: 'El rol debe ser user, admin o super_admin' })
-  role: UserRole;
+  @IsIn(['user', 'admin', 'super_admin'], { message: 'El rol debe ser user, admin o super_admin' })
+  role: string;
 }

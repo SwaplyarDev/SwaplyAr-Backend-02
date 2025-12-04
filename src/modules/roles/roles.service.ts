@@ -84,6 +84,8 @@ export class RolesService implements OnModuleInit {
     });
 
     await this.userProfileRepository.save(adminProfile);
+    
+    // Sincronizar columnas de roles después de crear el perfil
     await this.syncUserRoleColumns(savedUser.id);
   }
 
@@ -164,8 +166,8 @@ export class RolesService implements OnModuleInit {
     };
   }
 
-  // Método privado para sincronizar columnas desnormalizadas
-  private async syncUserRoleColumns(userId: string) {
+  // Método para sincronizar columnas desnormalizadas
+  async syncUserRoleColumns(userId: string) {
     await this.userRepository.query(
       `
             UPDATE users 

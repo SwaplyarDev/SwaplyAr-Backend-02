@@ -27,7 +27,6 @@ import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { User } from '@common/user.decorator';
 import { User as UserEntity } from '@users/entities/user.entity';
-import { UserRole } from 'src/enum/user-role.enum';
 import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
 import { UserDiscount } from './entities/user-discount.entity';
 import { UserDiscountsFromUserDto } from './dto/get-discounts-from-user-response.dto';
@@ -45,7 +44,7 @@ export class DiscountsController {
   constructor(private readonly discountService: DiscountService) {}
 
   @Get('user-discounts/available/me')
-  @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
+  @Roles('user', 'admin', 'super_admin')
   @ApiOperation({
     summary: 'Obtener descuentos disponibles del usuario autenticado',
     description:
@@ -65,7 +64,7 @@ export class DiscountsController {
   }
 
   @Get('user-history')
-  @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
+  @Roles('user', 'admin', 'super_admin')
   @ApiOperation({ summary: 'Obtener historial de cupones usados del usuario autenticado' })
   @ApiOkResponse({
     description: 'Listado del historial de cupones usados',
@@ -81,7 +80,7 @@ export class DiscountsController {
   }
 
   @Put('user-discounts/admin/:id')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
+  @Roles('admin', 'super_admin')
   @ApiOperation({ summary: 'Actualizar un descuento de usuario por ID' })
   @ApiOkResponse({ description: 'Descuento actualizado' })
   @ApiNotFoundResponse({ description: 'Descuento no encontrado' })
@@ -99,7 +98,7 @@ export class DiscountsController {
   }
 
   @Delete('user-discounts/admin/:id')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
+  @Roles('admin', 'super_admin')
   @ApiOperation({ summary: 'Eliminar un descuento de usuario por ID' })
   @ApiOkResponse({ description: 'Descuento eliminado' })
   @ApiNotFoundResponse({ description: 'Descuento no encontrado' })
@@ -112,7 +111,7 @@ export class DiscountsController {
   }
 
   @Get('stars')
-  @Roles(UserRole.User, UserRole.Admin, UserRole.SuperAdmin)
+  @Roles('user', 'admin', 'super_admin')
   @ApiOperation({
     summary: 'Obtener recompensas del usuario (cantidad y estrellas)',
   })
@@ -131,7 +130,7 @@ export class DiscountsController {
   }
 
   @Get('stars/:userId')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
+  @Roles('admin', 'super_admin')
   @ApiOperation({
     summary: 'Obtener recompensas del usuario (cantidad y estrellas) por ID de usuario',
   })

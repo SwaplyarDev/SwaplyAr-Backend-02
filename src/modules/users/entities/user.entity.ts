@@ -22,7 +22,6 @@ import { UserVerification } from '@users/entities/user-verification.entity';
 import { RefreshToken } from '@users/entities/resfresh-token.entity';
 import { Exclude } from 'class-transformer';
 import { OtpCode } from '@auth/entities/otp-code.entity';
-import { UserRole } from 'src/enum/user-role.enum';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
 import { Roles } from '../../roles/entities/roles.entity';
@@ -109,14 +108,6 @@ export class User {
 
   @OneToMany(() => CryptoAccounts, (cryptoAccount: CryptoAccounts) => cryptoAccount.user)
   cryptoAccounts: CryptoAccounts[];
-
-  // @Column({
-  //   type: 'enum',
-  //   enum: UserRole,
-  //   default: UserRole.User,
-  //   name: 'user_role',
-  // })
-  // role: UserRole;
 
   @Column({ name: 'terms_accepted', default: false })
   termsAccepted: boolean;

@@ -102,8 +102,29 @@ export class BankAccountsController {
     description: 'The bank account has been successfully updated.',
     type: BankAccountResponseDto,
   })
-  update(@Param('id') id: string, @Body() updateBankAccountDto: UpdateBankAccountDto, @Request() req) {
+  update(
+    @Param('id') id: string,
+    @Body() updateBankAccountDto: UpdateBankAccountDto,
+    @Request() req,
+  ) {
     return this.bankAccountsService.update(id, updateBankAccountDto, req.user.id);
+  }
+
+  // ==========================================
+  // INACTIVAR (SOFT-DELETE) UNA CUENTA BANCARIA VIRTUAL
+  // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
+  @Patch(':id/deactivate')
+  @ApiOperation({ summary: 'Inactivar una virtual bank account' })
+  @ApiResponse({
+    status: 200,
+    description: 'The virtual bank account has been successfully deactivated.',
+    type: BankAccountResponseDto,
+  })
+  inactivate(@Param('id') id: string) {
+    return this.bankAccountsService.inactivate(id);
   }
 
   // ==========================================

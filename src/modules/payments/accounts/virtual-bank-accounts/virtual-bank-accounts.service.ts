@@ -80,39 +80,76 @@ export class VirtualBankAccountsService {
     return virtualBankAccount;
   }
 
+  // async update(
+  //   id: string,
+  //   updateVirtualBankAccountDto: UpdateVirtualBankAccountDto,
+  //   user: { userId: string; roleCode: string },
+  // ): Promise<VirtualBankAccounts> {
+  //   const account = await this.virtualBankAccountsRepository.findOne({
+  //     where: { virtualBankAccountId: id },
+  //     relations: ['user', 'createdBy', 'paymentProvider'],
+  //   });
+
+  //   if (!account) {
+  //     throw new NotFoundException(`Virtual Bank Account with ID ${id} not found`);
+  //   }
+
+  //   // REGLA: USER SOLO PUEDE EDITAR SUS PROPIAS CUENTAS
+  //   if (user.roleCode === 'user') {
+  //     if (account.user.id !== user.userId) {
+  //       throw new ForbiddenException('Users can only edit their own virtual bank accounts');
+  //     }
+  //   }
+
+  //   // REGLA: ADMIN PUEDE EDITAR CUENTAS CREADAS POR OTROS ADMIN
+  //   if (user.roleCode === 'admin') {
+  //     if (account.createdBy.roleCode !== 'admin') {
+  //       throw new ForbiddenException(
+  //         'Admins can only edit virtual bank accounts created by other admins',
+  //       );
+  //     }
+  //   }
+  //   // Si esta permitido, aplica los cambios
+  //   Object.assign(account, updateVirtualBankAccountDto);
+
+  //   return this.virtualBankAccountsRepository.save(account);
+  // }
+
   async update(
     id: string,
     updateVirtualBankAccountDto: UpdateVirtualBankAccountDto,
-    user: { userId: string; roleCode: string },
+    userId: string,
   ): Promise<VirtualBankAccounts> {
-    const account = await this.virtualBankAccountsRepository.findOne({
-      where: { virtualBankAccountId: id },
-      relations: ['user', 'createdBy', 'paymentProvider'],
-    });
+    const virtualBankAccount = await this.findOne(id);
 
-    if (!account) {
-      throw new NotFoundException(`Virtual Bank Account with ID ${id} not found`);
+    // Obtener el usuario autenticado para verificar su rol
+    const currentUser = await this.userRepository.findOne({ where: { id: userId } });
+    if (!currentUser) {
+      throw new NotFoundException('Current user not found');
     }
 
-    // REGLA: USER SOLO PUEDE EDITAR SUS PROPIAS CUENTAS
-    if (user.roleCode === 'user') {
-      if (account.user.id !== user.userId) {
-        throw new ForbiddenException('Users can only edit their own virtual bank accounts');
+    // Verificar permisos según el rol
+    if (currentUser.roleCode === 'user') {
+      // Los usuarios solo pueden editar sus propias cuentas
+      if (virtualBankAccount.user.id !== userId) {
+        throw new ForbiddenException('You can only edit your own bank accounts');
+      }
+    } else if (currentUser.roleCode === 'admin') {
+      // Los admins solo pueden editar cuentas creadas por otros admins
+      if (virtualBankAccount.user.roleCode !== 'admin') {
+        throw new ForbiddenException('Admins can only edit bank accounts created by other admins');
       }
     }
 
-    // REGLA: ADMIN PUEDE EDITAR CUENTAS CREADAS POR OTROS ADMIN
-    if (user.roleCode === 'admin') {
-      if (account.createdBy.roleCode !== 'admin') {
-        throw new ForbiddenException(
-          'Admins can only edit virtual bank accounts created by other admins',
-        );
-      }
-    }
-    // If allowed → apply updates
-    Object.assign(account, updateVirtualBankAccountDto);
+    Object.assign(virtualBankAccount, updateVirtualBankAccountDto);
 
-    return this.virtualBankAccountsRepository.save(account);
+    return this.virtualBankAccountsRepository.save(virtualBankAccount);
+  }
+
+  async inactivate(id: string): Promise<VirtualBankAccounts> {
+    const virtualBankAccount = await this.findOne(id);
+    virtualBankAccount.isActive = false;
+    return this.virtualBankAccountsRepository.save(virtualBankAccount);
   }
 
   async remove(id: string): Promise<void> {

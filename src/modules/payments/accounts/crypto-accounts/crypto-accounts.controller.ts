@@ -23,6 +23,9 @@ import { Roles } from '@common/decorators/roles.decorator';
 export class CryptoAccountsController {
   constructor(private readonly cryptoAccountsService: CryptoAccountsService) {}
 
+  // ==========================================
+  // CREAR UNA CUENTA CRYPTO
+  // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
@@ -38,6 +41,10 @@ export class CryptoAccountsController {
     return this.cryptoAccountsService.create(createCryptoAccountDto, req.user.userId);
   }
 
+  // ==========================================
+  // MOSTRAR CUENTAS CRYPTO DEL USUARIO LOGUEADO
+  // ==========================================
+
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
@@ -52,6 +59,9 @@ export class CryptoAccountsController {
     return this.cryptoAccountsService.findByUserId(req.user.userId);
   }
 
+  // ==========================================
+  // MOSTRAR TODAS LAS CUENTAS BANCARIAS CRYPTO
+  // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
@@ -66,6 +76,9 @@ export class CryptoAccountsController {
     return this.cryptoAccountsService.findAll();
   }
 
+  // ==========================================
+  // MOSTRAR UNA CUENTA BANCARIA CRYPTO POR ID
+  // ==========================================
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una crypto account por ID' })
   @ApiResponse({
@@ -77,6 +90,9 @@ export class CryptoAccountsController {
     return this.cryptoAccountsService.findOne(id);
   }
 
+  // ==========================================
+  // ACTUALIZAR UNA CUENTA CRYPTO
+  // ==========================================
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una crypto account' })
   @ApiResponse({
@@ -88,6 +104,26 @@ export class CryptoAccountsController {
     return this.cryptoAccountsService.update(id, updateCryptoAccountDto);
   }
 
+  // ==========================================
+  // INACTIVAR (SOFT-DELETE) UNA CUENTA CRYPTO
+  // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
+  @Patch(':id/deactivate')
+  @ApiOperation({ summary: 'Inactivar una crypto bank account' })
+  @ApiResponse({
+    status: 200,
+    description: 'The virtual bank account has been successfully deactivated.',
+    type: CryptoAccountResponseDto,
+  })
+  inactivate(@Param('id') id: string) {
+    return this.cryptoAccountsService.inactivate(id);
+  }
+
+  // ==========================================
+  // ELIMINAR UNA CUENTA CRYPTO
+  // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')

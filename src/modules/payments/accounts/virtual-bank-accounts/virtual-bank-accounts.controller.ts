@@ -23,6 +23,9 @@ import { Roles } from '@common/decorators/roles.decorator';
 export class VirtualBankAccountsController {
   constructor(private readonly virtualBankAccountsService: VirtualBankAccountsService) {}
 
+  // ==========================================
+  // CREAR UNA CUENTA BANCARIA VIRTUAL
+  // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
@@ -38,9 +41,12 @@ export class VirtualBankAccountsController {
     return this.virtualBankAccountsService.create(createVirtualBankAccountDto, req.user.userId);
   }
 
+  // ==========================================
+  // MOSTRAR CUENTAS BANCARIAS VIRTUALES DEL USUARIO LOGUEADO
+  // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user')
+  @Roles('user', 'admin')
   @Get('my-accounts')
   @ApiOperation({ summary: 'Obtener mis virtual bank accounts' })
   @ApiResponse({
@@ -52,6 +58,9 @@ export class VirtualBankAccountsController {
     return this.virtualBankAccountsService.findByUserId(req.user.userId);
   }
 
+  // ==========================================
+  // MOSTRAR TODAS LAS CUENTAS BANCARIAS VIRTUALES
+  // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
@@ -66,6 +75,9 @@ export class VirtualBankAccountsController {
     return this.virtualBankAccountsService.findAll();
   }
 
+  // ==========================================
+  // MOSTRAR UNA CUENTA BANCARIA VIRTUAL POR ID
+  // ==========================================
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una virtual bank account por ID' })
   @ApiResponse({
@@ -77,6 +89,12 @@ export class VirtualBankAccountsController {
     return this.virtualBankAccountsService.findOne(id);
   }
 
+  // ==========================================
+  // ACTUALIZAR UNA CUENTA BANCARIA VIRTUAL
+  // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una virtual bank account' })
   @ApiResponse({
@@ -92,6 +110,26 @@ export class VirtualBankAccountsController {
     return this.virtualBankAccountsService.update(id, updateVirtualBankAccountDto, req.user);
   }
 
+  // ==========================================
+  // INACTIVAR (SOFT-DELETE) UNA CUENTA BANCARIA VIRTUAL
+  // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
+  @Patch(':id/deactivate')
+  @ApiOperation({ summary: 'Inactivar una virtual bank account' })
+  @ApiResponse({
+    status: 200,
+    description: 'The virtual bank account has been successfully deactivated.',
+    type: VirtualBankAccountResponseDto,
+  })
+  inactivate(@Param('id') id: string) {
+    return this.virtualBankAccountsService.inactivate(id);
+  }
+
+  // ==========================================
+  // ELIMINAR UNA CUENTA BANCARIA VIRTUAL
+  // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')

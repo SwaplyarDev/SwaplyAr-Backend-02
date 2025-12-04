@@ -103,6 +103,11 @@ export class CryptoAccountsService {
 
     return this.cryptoAccountsRepository.save(cryptoAccount);
   }
+  async inactivate(id: string): Promise<CryptoAccounts> {
+    const cryptoAccount = await this.findOne(id);
+    cryptoAccount.isActive = false;
+    return this.cryptoAccountsRepository.save(cryptoAccount);
+  }
 
   async remove(id: string): Promise<void> {
     const cryptoAccount = await this.findOne(id);

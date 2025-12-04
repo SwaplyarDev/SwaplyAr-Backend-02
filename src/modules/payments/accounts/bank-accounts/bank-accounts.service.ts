@@ -113,9 +113,13 @@ export class BankAccountsService {
     return bankAccount;
   }
 
-  async update(id: string, updateBankAccountDto: UpdateBankAccountDto, userId: string): Promise<BankAccounts> {
+  async update(
+    id: string,
+    updateBankAccountDto: UpdateBankAccountDto,
+    userId: string,
+  ): Promise<BankAccounts> {
     const bankAccount = await this.findOne(id);
-    
+
     // Obtener el usuario autenticado para verificar su rol
     const currentUser = await this.userRepository.findOne({ where: { id: userId } });
     if (!currentUser) {
@@ -137,6 +141,12 @@ export class BankAccountsService {
 
     Object.assign(bankAccount, updateBankAccountDto);
 
+    return this.bankAccountsRepository.save(bankAccount);
+  }
+
+  async inactivate(id: string): Promise<BankAccounts> {
+    const bankAccount = await this.findOne(id);
+    bankAccount.isActive = false;
     return this.bankAccountsRepository.save(bankAccount);
   }
 

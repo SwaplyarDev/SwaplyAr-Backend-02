@@ -112,11 +112,7 @@ export class DiscountService {
   /**
    * Obtiene un descuento de usuario por ID, verifica propiedad y devuelve toda la información relevante.
    */
-  async getUserDiscountById(
-    id: string,
-    userId: string,
-    userRole?: string,
-  ): Promise<UserDiscount> {
+  async getUserDiscountById(id: string, userId: string, userRole?: string): Promise<UserDiscount> {
     const ud = await this.userDiscountRepo.findOne({
       where: { id },
       relations: ['user', 'discountCode', 'transactions'],

@@ -83,7 +83,7 @@ export class BankAccountsService {
   }
 
   async findAll(filters: BankAccountFilterDto) {
-    const { paymentProviderId, currency } = filters;
+    const { paymentProviderCode, currency } = filters;
 
     const query = this.bankAccountsRepository
       .createQueryBuilder('account')
@@ -91,9 +91,9 @@ export class BankAccountsService {
       .leftJoinAndSelect('account.user', 'user')
       .leftJoinAndSelect('account.paymentProvider', 'provider');
 
-    if (paymentProviderId) {
+    if (paymentProviderCode) {
       query.andWhere('account.payment_provider_id = :paymentProviderId', {
-        paymentProviderId,
+        paymentProviderCode,
       });
     }
 

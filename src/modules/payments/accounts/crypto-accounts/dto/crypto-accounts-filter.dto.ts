@@ -1,12 +1,12 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsUUID } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CryptoAccountFilterDto {
   @ApiPropertyOptional({
-    example: '550e8400-e29b-41d4-a716-446655440001',
-    description: 'Filtrar por ID de proveedor de pago',
+    example: 'MERCADOPAGO',
+    description: 'Código del proveedor de pago (PaymentProviders.code)',
   })
   @IsOptional()
-  @IsUUID()
-  paymentProviderId?: string;
+  @IsString()
+  paymentProviderCode?: string;
 }

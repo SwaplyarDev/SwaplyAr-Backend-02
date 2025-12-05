@@ -68,16 +68,16 @@ export class CryptoAccountsService {
   }
 
   async findAll(filters: CryptoAccountFilterDto) {
-    const { paymentProviderId } = filters;
+    const { paymentProviderCode } = filters;
 
     const query = this.cryptoAccountsRepository
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.user', 'user')
       .leftJoinAndSelect('account.paymentProvider', 'provider');
 
-    if (paymentProviderId) {
+    if (paymentProviderCode) {
       query.andWhere('account.payment_provider_id = :paymentProviderId', {
-        paymentProviderId,
+        paymentProviderCode,
       });
     }
     return await query.getMany();

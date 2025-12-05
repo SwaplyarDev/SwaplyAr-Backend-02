@@ -55,16 +55,16 @@ export class VirtualBankAccountsService {
   }
 
   async findAll(filters: VirtualBankAccountFilterDto) {
-    const { paymentProviderId, currency } = filters;
+    const { paymentProviderCode, currency } = filters;
 
     const query = this.virtualBankAccountsRepository
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.user', 'user')
       .leftJoinAndSelect('account.paymentProvider', 'provider');
 
-    if (paymentProviderId) {
+    if (paymentProviderCode) {
       query.andWhere('account.payment_provider_id = :paymentProviderId', {
-        paymentProviderId,
+        paymentProviderCode,
       });
     }
     if (currency) {

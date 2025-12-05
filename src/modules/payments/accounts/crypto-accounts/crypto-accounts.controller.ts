@@ -8,12 +8,14 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { CryptoAccountsService } from './crypto-accounts.service';
 import { CreateCryptoAccountDto } from './dto/create-crypto-accounts.dto';
 import { UpdateCryptoAccountDto } from './dto/update-crypto-accounts.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CryptoAccountResponseDto } from './dto/crypto-accounts-response.dto';
+import { CryptoAccountFilterDto } from './dto/crypto-accounts-filter.dto';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -23,6 +25,9 @@ import { Roles } from '@common/decorators/roles.decorator';
 export class CryptoAccountsController {
   constructor(private readonly cryptoAccountsService: CryptoAccountsService) {}
 
+  // ==========================================
+  // CREAR UNA CUENTA CRYPTO
+  // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
@@ -38,6 +43,10 @@ export class CryptoAccountsController {
     return this.cryptoAccountsService.create(createCryptoAccountDto, req.user.userId);
   }
 
+  // ==========================================
+  // MOSTRAR CUENTAS CRYPTO DEL USUARIO LOGUEADO
+  // ==========================================
+
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
@@ -52,6 +61,9 @@ export class CryptoAccountsController {
     return this.cryptoAccountsService.findByUserId(req.user.userId);
   }
 
+  // ==========================================
+  // MOSTRAR TODAS LAS CUENTAS BANCARIAS CRYPTO
+  // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
@@ -62,10 +74,13 @@ export class CryptoAccountsController {
     description: 'Return all crypto accounts.',
     type: [CryptoAccountResponseDto],
   })
-  findAll() {
-    return this.cryptoAccountsService.findAll();
+  findAll(@Query() filters: CryptoAccountFilterDto) {
+    return this.cryptoAccountsService.findAll(filters);
   }
 
+  // ==========================================
+  // MOSTRAR UNA CUENTA BANCARIA CRYPTO POR ID
+  // ==========================================
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una crypto account por ID' })
   @ApiResponse({
@@ -77,6 +92,9 @@ export class CryptoAccountsController {
     return this.cryptoAccountsService.findOne(id);
   }
 
+  // ==========================================
+  // ACTUALIZAR UNA CUENTA CRYPTO
+  // ==========================================
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una crypto account' })
   @ApiResponse({
@@ -88,6 +106,26 @@ export class CryptoAccountsController {
     return this.cryptoAccountsService.update(id, updateCryptoAccountDto);
   }
 
+  // ==========================================
+  // INACTIVAR (SOFT-DELETE) UNA CUENTA CRYPTO
+  // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
+  @Patch(':id/deactivate')
+  @ApiOperation({ summary: 'Inactivar una crypto bank account' })
+  @ApiResponse({
+    status: 200,
+    description: 'The virtual bank account has been successfully deactivated.',
+    type: CryptoAccountResponseDto,
+  })
+  inactivate(@Param('id') id: string) {
+    return this.cryptoAccountsService.inactivate(id);
+  }
+
+  // ==========================================
+  // ELIMINAR UNA CUENTA CRYPTO
+  // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BankAccounts } from './bank-accounts.entity';
@@ -8,6 +8,7 @@ import { UpdateBankAccountDto } from './dto/update-bank-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
 import { PaymentProviders } from '../../entities/payment-providers.entity';
 import { Countries } from '../../../catalogs/countries/countries.entity';
+import { BankAccountFilterDto } from './dto/bank-accounts-filter.dto';
 
 @Injectable()
 export class BankAccountsService {
@@ -33,7 +34,7 @@ export class BankAccountsService {
       ...bankAccountData
     } = createBankAccountDto;
 
-    // Verify user exists (either from DTO or from auth context) 
+    // Verify user exists (either from DTO or from auth context)
     const targetUserId = dtoUserId || userId;
     const user = await this.userRepository.findOne({ where: { id: targetUserId } });
     if (!user) {
@@ -81,10 +82,26 @@ export class BankAccountsService {
     return this.findOne(savedBankAccount.bankAccountId);
   }
 
-  async findAll(): Promise<BankAccounts[]> {
-    return this.bankAccountsRepository.find({
-      relations: ['details', 'user', 'paymentProvider'],
-    });
+  async findAll(filters: BankAccountFilterDto) {
+    const { paymentProviderId, currency } = filters;
+
+    const query = this.bankAccountsRepository
+      .createQueryBuilder('account')
+      .leftJoinAndSelect('account.details', 'details')
+      .leftJoinAndSelect('account.user', 'user')
+      .leftJoinAndSelect('account.paymentProvider', 'provider');
+
+    if (paymentProviderId) {
+      query.andWhere('account.payment_provider_id = :paymentProviderId', {
+        paymentProviderId,
+      });
+    }
+
+    if (currency) {
+      query.andWhere('account.currency = :currency', { currency });
+    }
+
+    return await query.getMany();
   }
 
   async findByUser(userId: string): Promise<BankAccounts[]> {
@@ -92,11 +109,9 @@ export class BankAccountsService {
       where: { user: { id: userId } },
       relations: ['details', 'user', 'paymentProvider'],
     });
-
     if (!accounts || accounts.length === 0) {
       throw new NotFoundException(`No bank accounts found for user with ID ${userId}`);
     }
-
     return accounts;
   }
 
@@ -113,11 +128,40 @@ export class BankAccountsService {
     return bankAccount;
   }
 
-  async update(id: string, updateBankAccountDto: UpdateBankAccountDto): Promise<BankAccounts> {
+  async update(
+    id: string,
+    updateBankAccountDto: UpdateBankAccountDto,
+    userId: string,
+  ): Promise<BankAccounts> {
     const bankAccount = await this.findOne(id);
+
+    // Obtener el usuario autenticado para verificar su rol
+    const currentUser = await this.userRepository.findOne({ where: { id: userId } });
+    if (!currentUser) {
+      throw new NotFoundException('Current user not found');
+    }
+
+    // Verificar permisos según el rol
+    if (currentUser.roleCode === 'user') {
+      // Los usuarios solo pueden editar sus propias cuentas
+      if (bankAccount.user.id !== userId) {
+        throw new ForbiddenException('You can only edit your own bank accounts');
+      }
+    } else if (currentUser.roleCode === 'admin') {
+      // Los admins solo pueden editar cuentas creadas por otros admins
+      if (bankAccount.user.roleCode !== 'admin') {
+        throw new ForbiddenException('Admins can only edit bank accounts created by other admins');
+      }
+    }
 
     Object.assign(bankAccount, updateBankAccountDto);
 
+    return this.bankAccountsRepository.save(bankAccount);
+  }
+
+  async inactivate(id: string): Promise<BankAccounts> {
+    const bankAccount = await this.findOne(id);
+    bankAccount.isActive = false;
     return this.bankAccountsRepository.save(bankAccount);
   }
 

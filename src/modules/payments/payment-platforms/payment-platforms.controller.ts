@@ -88,7 +88,7 @@ export class PaymentPlatformsController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  @Patch(':id/inactivate')
+  @Patch(':id/deactivate')
   inactivate(@Param('id') id: string) {
     return this.service.inactivate(id);
   }

@@ -20,4 +20,4 @@ import { UsersModule } from '../../../users/users.module';
   providers: [BankAccountsService],
   exports: [BankAccountsService],
 })
-export class BankAccountsModule {} 
+export class BankAccountsModule {}

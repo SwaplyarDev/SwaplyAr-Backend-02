@@ -7,6 +7,7 @@ import { UpdateCryptoAccountDto } from './dto/update-crypto-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
 import { PaymentProviders } from '../../entities/payment-providers.entity';
 import { CryptoNetworks } from '../../../catalogs/crypto-networks/crypto-networks.entity';
+import { CryptoAccountFilterDto } from './dto/crypto-accounts-filter.dto';
 
 @Injectable()
 export class CryptoAccountsService {
@@ -66,10 +67,20 @@ export class CryptoAccountsService {
     return this.cryptoAccountsRepository.save(cryptoAccount);
   }
 
-  async findAll(): Promise<CryptoAccounts[]> {
-    return this.cryptoAccountsRepository.find({
-      relations: ['user', 'paymentProvider', 'cryptoNetwork'],
-    });
+  async findAll(filters: CryptoAccountFilterDto) {
+    const { paymentProviderId } = filters;
+
+    const query = this.cryptoAccountsRepository
+      .createQueryBuilder('account')
+      .leftJoinAndSelect('account.user', 'user')
+      .leftJoinAndSelect('account.paymentProvider', 'provider');
+
+    if (paymentProviderId) {
+      query.andWhere('account.payment_provider_id = :paymentProviderId', {
+        paymentProviderId,
+      });
+    }
+    return await query.getMany();
   }
 
   async findByUserId(userId: string): Promise<CryptoAccounts[]> {
@@ -101,6 +112,11 @@ export class CryptoAccountsService {
 
     Object.assign(cryptoAccount, updateCryptoAccountDto);
 
+    return this.cryptoAccountsRepository.save(cryptoAccount);
+  }
+  async inactivate(id: string): Promise<CryptoAccounts> {
+    const cryptoAccount = await this.findOne(id);
+    cryptoAccount.isActive = false;
     return this.cryptoAccountsRepository.save(cryptoAccount);
   }
 

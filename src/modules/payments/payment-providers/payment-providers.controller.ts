@@ -74,12 +74,12 @@ export class PaymentProvidersController {
   // ===============================================
   // INACTIVAR (SOFT-DELETE) UN PROVEEDOR DE PAGO
   // ===============================================
-  @ApiOperation({ summary: 'Inactivar un proveedor de pago' })
+  @ApiOperation({ summary: 'Inactivar un proveedor de pago y sus cuentas relacionadas' })
   @ApiResponse({ status: 200, description: 'Provider inactivado con éxito' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  @Patch(':id/inactivate')
+  @Patch(':id/deactivate')
   inactivate(@Param('id') id: string) {
     return this.service.inactivate(id);
   }

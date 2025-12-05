@@ -92,7 +92,7 @@ export class BankAccountsService {
       .leftJoinAndSelect('account.paymentProvider', 'provider');
 
     if (paymentProviderCode) {
-      query.andWhere('account.payment_provider_id = :paymentProviderId', {
+      query.andWhere('provider.code = :paymentProviderCode', {
         paymentProviderCode,
       });
     }

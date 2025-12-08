@@ -64,7 +64,7 @@ export class CountriesController {
   }
 
   @Put(':id/currencies')
-  @ApiOperation({ summary: 'Assign currencies to country' })
+  @ApiOperation({ summary: 'Asignar monedas al país' })
   assignCurrencies(
     @Param('id') id: string,
     @Body('currencyIds') currencyIds: string[],

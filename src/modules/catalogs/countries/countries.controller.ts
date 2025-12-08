@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CountriesService } from './country.service';
 import { CreateCountryDto } from './dto/create-countries.dto';
 import { UpdateCountryDto } from './dto/update-countries.dto';
 import { CountryResponseDto } from './dto/countries-response.dto';
+import { Countries } from './countries.entity';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -60,5 +61,14 @@ export class CountriesController {
   @ApiOperation({ summary: 'Eliminar país' })
   async remove(@Param('id') id: string) {
     return this.countriesService.remove(id);
+  }
+
+  @Put(':id/currencies')
+  @ApiOperation({ summary: 'Assign currencies to country' })
+  assignCurrencies(
+    @Param('id') id: string,
+    @Body('currencyIds') currencyIds: string[],
+  ): Promise<Countries> {
+    return this.countriesService.assignCurrencies(id, currencyIds);
   }
 }

@@ -122,22 +122,42 @@ export class VirtualBankAccountsService {
   ): Promise<VirtualBankAccounts> {
     const virtualBankAccount = await this.findOne(id);
 
-    // Obtener el usuario autenticado para verificar su rol
-    const currentUser = await this.userRepository.findOne({ where: { id: userId } });
+    // Obtener el usuario autenticado con sus roles
+    const currentUser = await this.userRepository.findOne({ 
+      where: { id: userId },
+      relations: ['roles'] 
+    });
     if (!currentUser) {
       throw new NotFoundException('Current user not found');
     }
 
-    // Verificar permisos según el rol
-    if (currentUser.roleCode === 'user') {
+    // Obtener el propietario de la cuenta con sus roles
+    const accountOwner = await this.userRepository.findOne({
+      where: { id: virtualBankAccount.user.id },
+      relations: ['roles']
+    });
+    if (!accountOwner) {
+      throw new NotFoundException('Account owner not found');
+    }
+
+    // Verificar si el usuario tiene un rol específico
+    const hasRole = (user: any, roleCode: string) => {
+      return user.roles?.some((role: any) => role.code === roleCode) || false;
+    };
+
+    const isCurrentUserAdmin = hasRole(currentUser, 'admin');
+    const isAccountOwnerAdmin = hasRole(accountOwner, 'admin');
+    
+    // Verificar permisos según rol
+    if (isCurrentUserAdmin) {
+      // Los admins solo pueden editar cuentas creadas por otros admins
+      if (!isAccountOwnerAdmin) {
+        throw new ForbiddenException('Admins can only edit bank accounts created by other admins');
+      }
+    } else {
       // Los usuarios solo pueden editar sus propias cuentas
       if (virtualBankAccount.user.id !== userId) {
         throw new ForbiddenException('You can only edit your own bank accounts');
-      }
-    } else if (currentUser.roleCode === 'admin') {
-      // Los admins solo pueden editar cuentas creadas por otros admins
-      if (virtualBankAccount.user.roleCode !== 'admin') {
-        throw new ForbiddenException('Admins can only edit bank accounts created by other admins');
       }
     }
 

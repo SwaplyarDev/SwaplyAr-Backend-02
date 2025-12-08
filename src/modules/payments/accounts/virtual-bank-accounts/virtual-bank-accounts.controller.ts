@@ -55,12 +55,12 @@ export class VirtualBankAccountsController {
     type: [VirtualBankAccountResponseDto],
   })
   findMyAccounts(@Request() req) {
-    return this.virtualBankAccountsService.findByUserId(req.user.userId);
+    return this.virtualBankAccountsService.findByUserId(req.user.id);
   }
 
   // ==========================================
   // MOSTRAR TODAS LAS CUENTAS BANCARIAS VIRTUALES
-  // ==========================================
+  // ========================================== 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
@@ -107,7 +107,7 @@ export class VirtualBankAccountsController {
     @Body() updateVirtualBankAccountDto: UpdateVirtualBankAccountDto,
     @Request() req,
   ) {
-    return this.virtualBankAccountsService.update(id, updateVirtualBankAccountDto, req.user);
+    return this.virtualBankAccountsService.update(id, updateVirtualBankAccountDto, req.user.id);
   }
 
   // ==========================================

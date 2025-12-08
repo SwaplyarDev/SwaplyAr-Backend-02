@@ -10,14 +10,16 @@ import { VirtualBankAccounts } from '../accounts/virtual-bank-accounts/virtual-b
 import { CryptoAccounts } from '../accounts/crypto-accounts/crypto-accounts.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([
-    PaymentProviders, 
-    PaymentPlatforms, 
-    Countries, 
-    BankAccounts, 
-    VirtualBankAccounts, 
-    CryptoAccounts
-  ])],
+  imports: [
+    TypeOrmModule.forFeature([
+      PaymentProviders,
+      PaymentPlatforms,
+      Countries,
+      BankAccounts,
+      VirtualBankAccounts,
+      CryptoAccounts,
+    ]),
+  ],
   controllers: [PaymentProvidersController],
   providers: [PaymentProvidersService],
   exports: [PaymentProvidersService],

@@ -8,6 +8,7 @@ import { UpdateBankAccountDto } from './dto/update-bank-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
 import { PaymentProviders } from '../../entities/payment-providers.entity';
 import { Countries } from '../../../catalogs/countries/countries.entity';
+import { BankAccountFilterDto } from './dto/bank-accounts-filter.dto';
 
 @Injectable()
 export class BankAccountsService {
@@ -33,6 +34,7 @@ export class BankAccountsService {
       ...bankAccountData
     } = createBankAccountDto;
 
+    // Verify user exists (either from DTO or from auth context)
     // Verify user exists (either from DTO or from auth context)
     const targetUserId = dtoUserId || userId;
     const user = await this.userRepository.findOne({ where: { id: targetUserId } });
@@ -81,10 +83,26 @@ export class BankAccountsService {
     return this.findOne(savedBankAccount.bankAccountId);
   }
 
-  async findAll(): Promise<BankAccounts[]> {
-    return this.bankAccountsRepository.find({
-      relations: ['details', 'user', 'paymentProvider'],
-    });
+  async findAll(filters: BankAccountFilterDto) {
+    const { paymentProviderCode, currency } = filters;
+
+    const query = this.bankAccountsRepository
+      .createQueryBuilder('account')
+      .leftJoinAndSelect('account.details', 'details')
+      .leftJoinAndSelect('account.user', 'user')
+      .leftJoinAndSelect('account.paymentProvider', 'provider');
+
+    if (paymentProviderCode) {
+      query.andWhere('provider.code = :paymentProviderCode', {
+        paymentProviderCode,
+      });
+    }
+
+    if (currency) {
+      query.andWhere('account.currency = :currency', { currency });
+    }
+
+    return await query.getMany();
   }
 
   async findByUser(userId: string): Promise<BankAccounts[]> {
@@ -92,11 +110,9 @@ export class BankAccountsService {
       where: { user: { id: userId } },
       relations: ['details', 'user', 'paymentProvider'],
     });
-
     if (!accounts || accounts.length === 0) {
       throw new NotFoundException(`No bank accounts found for user with ID ${userId}`);
     }
-
     return accounts;
   }
 
@@ -164,6 +180,7 @@ export class BankAccountsService {
     return this.bankAccountsRepository.save(bankAccount);
   }
 
+  
   async inactivate(id: string): Promise<BankAccounts> {
     const bankAccount = await this.findOne(id);
     bankAccount.isActive = false;

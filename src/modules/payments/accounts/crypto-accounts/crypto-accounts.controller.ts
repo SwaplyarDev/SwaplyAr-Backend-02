@@ -8,12 +8,14 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { CryptoAccountsService } from './crypto-accounts.service';
 import { CreateCryptoAccountDto } from './dto/create-crypto-accounts.dto';
 import { UpdateCryptoAccountDto } from './dto/update-crypto-accounts.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CryptoAccountResponseDto } from './dto/crypto-accounts-response.dto';
+import { CryptoAccountFilterDto } from './dto/crypto-accounts-filter.dto';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -30,7 +32,7 @@ export class CryptoAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Post()
-  @ApiOperation({ summary: 'Create a new crypto account' })
+  @ApiOperation({ summary: 'Crear una nueva crypto account' })
   @ApiResponse({
     status: 201,
     description: 'The crypto account has been successfully created.',
@@ -66,14 +68,14 @@ export class CryptoAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  @ApiOperation({ summary: 'Obtener todas las crypto accounts' })
+  @ApiOperation({ summary: 'Obtener todas las crypto accounts con filtros opcionales' })
   @ApiResponse({
     status: 200,
     description: 'Return all crypto accounts.',
     type: [CryptoAccountResponseDto],
   })
-  findAll() {
-    return this.cryptoAccountsService.findAll();
+  findAll(@Query() filters: CryptoAccountFilterDto) {
+    return this.cryptoAccountsService.findAll(filters);
   }
 
   // ==========================================

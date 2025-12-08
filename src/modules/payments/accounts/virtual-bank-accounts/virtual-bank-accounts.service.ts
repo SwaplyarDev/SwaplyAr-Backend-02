@@ -6,6 +6,7 @@ import { CreateVirtualBankAccountDto } from './dto/create-virtual-bank-accounts.
 import { UpdateVirtualBankAccountDto } from './dto/update-virtual-bank-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
 import { PaymentProviders } from '../../entities/payment-providers.entity';
+import { VirtualBankAccountFilterDto } from './dto/virtual-bank-accounts-filter.dto';
 
 @Injectable()
 export class VirtualBankAccountsService {
@@ -53,10 +54,23 @@ export class VirtualBankAccountsService {
     return this.virtualBankAccountsRepository.save(virtualBankAccount);
   }
 
-  async findAll(): Promise<VirtualBankAccounts[]> {
-    return this.virtualBankAccountsRepository.find({
-      relations: ['user', 'paymentProvider'],
-    });
+  async findAll(filters: VirtualBankAccountFilterDto) {
+    const { paymentProviderCode, currency } = filters;
+
+    const query = this.virtualBankAccountsRepository
+      .createQueryBuilder('account')
+      .leftJoinAndSelect('account.user', 'user')
+      .leftJoinAndSelect('account.paymentProvider', 'provider');
+
+    if (paymentProviderCode) {
+      query.andWhere('provider.code = :paymentProviderCode', {
+        paymentProviderCode,
+      });
+    }
+    if (currency) {
+      query.andWhere('account.currency = :currency', { currency });
+    }
+    return await query.getMany();
   }
 
   async findByUserId(userId: string): Promise<VirtualBankAccounts[]> {

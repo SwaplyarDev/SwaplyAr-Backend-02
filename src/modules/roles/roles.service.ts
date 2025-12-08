@@ -84,7 +84,7 @@ export class RolesService implements OnModuleInit {
     });
 
     await this.userProfileRepository.save(adminProfile);
-    
+
     // Sincronizar columnas de roles después de crear el perfil
     await this.syncUserRoleColumns(savedUser.id);
   }

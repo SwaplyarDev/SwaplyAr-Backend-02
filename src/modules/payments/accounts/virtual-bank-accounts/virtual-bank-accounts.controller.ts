@@ -8,12 +8,14 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { VirtualBankAccountsService } from './virtual-bank-accounts.service';
 import { CreateVirtualBankAccountDto } from './dto/create-virtual-bank-accounts.dto';
 import { UpdateVirtualBankAccountDto } from './dto/update-virtual-bank-accounts.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { VirtualBankAccountResponseDto } from './dto/virtual-bank-accounts-response.dto';
+import { VirtualBankAccountFilterDto } from './dto/virtual-bank-accounts-filter.dto';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -65,14 +67,14 @@ export class VirtualBankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  @ApiOperation({ summary: 'Obtener todas las virtual bank accounts' })
+  @ApiOperation({ summary: 'Obtener todas las virtual bank accounts con filtros opcionales' })
   @ApiResponse({
     status: 200,
     description: 'Return all virtual bank accounts.',
     type: [VirtualBankAccountResponseDto],
   })
-  findAll() {
-    return this.virtualBankAccountsService.findAll();
+  findAll(@Query() filters: VirtualBankAccountFilterDto) {
+    return this.virtualBankAccountsService.findAll(filters);
   }
 
   // ==========================================

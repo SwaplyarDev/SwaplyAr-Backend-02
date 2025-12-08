@@ -32,7 +32,7 @@ export class CryptoAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Post()
-  @ApiOperation({ summary: 'Create a new crypto account' })
+  @ApiOperation({ summary: 'Crear una nueva crypto account' })
   @ApiResponse({
     status: 201,
     description: 'The crypto account has been successfully created.',
@@ -68,7 +68,7 @@ export class CryptoAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  @ApiOperation({ summary: 'Obtener todas las crypto accounts' })
+  @ApiOperation({ summary: 'Obtener todas las crypto accounts con filtros opcionales' })
   @ApiResponse({
     status: 200,
     description: 'Return all crypto accounts.',

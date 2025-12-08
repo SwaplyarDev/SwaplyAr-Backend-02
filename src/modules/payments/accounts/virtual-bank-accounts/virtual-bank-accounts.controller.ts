@@ -67,7 +67,7 @@ export class VirtualBankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  @ApiOperation({ summary: 'Obtener todas las virtual bank accounts' })
+  @ApiOperation({ summary: 'Obtener todas las virtual bank accounts con filtros opcionales' })
   @ApiResponse({
     status: 200,
     description: 'Return all virtual bank accounts.',

@@ -10,12 +10,12 @@ import { Roles } from '@common/decorators/roles.decorator';
 
 @ApiTags('Countries')
 @Controller('countries')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('user', 'admin')
 export class CountriesController {
   constructor(private readonly countriesService: CountriesService) {}
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
   @Get()
   @ApiOperation({ summary: 'Obtener todos los países' })
   @ApiOkResponse({ type: [CountryResponseDto] })
@@ -23,6 +23,9 @@ export class CountriesController {
     return this.countriesService.findAll();
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post()
   @ApiOperation({ summary: 'Crear nuevo país' })
   @ApiOkResponse({ type: CountryResponseDto })
@@ -30,6 +33,9 @@ export class CountriesController {
     return this.countriesService.create(createDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener país por ID' })
   @ApiOkResponse({ type: CountryResponseDto })
@@ -37,6 +43,9 @@ export class CountriesController {
     return this.countriesService.findOne(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar país' })
   @ApiOkResponse({ type: CountryResponseDto })
@@ -44,6 +53,9 @@ export class CountriesController {
     return this.countriesService.update(id, updateDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar país' })
   async remove(@Param('id') id: string) {

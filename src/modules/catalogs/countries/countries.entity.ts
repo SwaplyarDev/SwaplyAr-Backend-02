@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany } from 'typeorm';
+import { Currency } from '../currencies/currencies.entity';
 
 @Entity('countries')
 export class Countries {
@@ -6,14 +7,17 @@ export class Countries {
   country_id: string;
 
   @Column({ type: 'char', length: 3, unique: true })
-  code: string; // ISO 3166 (ej: ARG, BRA, CHL, VEN)
+  code: string; // ISO 3166 (ARG, BRA, CHL…)
 
   @Column({ type: 'varchar', length: 100 })
-  name: string; // Nombre del país
+  name: string;
 
   @Column({ type: 'varchar', length: 3, nullable: true })
-  currency_default: string; // Moneda local (ARS, BRL, CLP, VES, etc.)
+  currency_default: string;
 
-  @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
-  created_at: Date; // Fecha de registro
+  @ManyToMany(() => Currency, (currency) => currency.countries)
+  currencies: Currency[];
+
+  @CreateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'created_at' })
+  created_at: Date;
 }

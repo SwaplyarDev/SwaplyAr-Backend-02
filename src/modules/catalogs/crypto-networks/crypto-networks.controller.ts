@@ -10,14 +10,14 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 
 @ApiTags('Crypto Networks')
 @Controller('crypto-networks')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin')
 export class CryptoNetworksController {
   constructor(private readonly cryptoNetworksService: CryptoNetworksService) {}
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'user')
   @Get()
-  @ApiOperation({ summary: 'Obetener toda las crypto networks' })
+  @ApiOperation({ summary: 'Obtener toda las crypto networks' })
   @ApiResponse({
     status: 200,
     description: 'Return all crypto networks.',
@@ -27,6 +27,9 @@ export class CryptoNetworksController {
     return this.cryptoNetworksService.findAll();
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post()
   @ApiOperation({ summary: 'Crear una nueva crypto network' })
   @ApiResponse({
@@ -38,6 +41,9 @@ export class CryptoNetworksController {
     return this.cryptoNetworksService.create(createCryptoNetworkDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'user')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener crypto network por ID' })
   @ApiResponse({
@@ -49,6 +55,9 @@ export class CryptoNetworksController {
     return this.cryptoNetworksService.findOne(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar crypto network' })
   @ApiResponse({
@@ -60,6 +69,9 @@ export class CryptoNetworksController {
     return this.cryptoNetworksService.update(id, updateCryptoNetworkDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar crypto network' })
   @ApiResponse({ status: 200, description: 'The crypto network has been successfully deleted.' })

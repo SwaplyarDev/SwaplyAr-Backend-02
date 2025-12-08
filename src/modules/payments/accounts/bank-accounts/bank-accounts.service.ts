@@ -35,6 +35,7 @@ export class BankAccountsService {
     } = createBankAccountDto;
 
     // Verify user exists (either from DTO or from auth context)
+    // Verify user exists (either from DTO or from auth context)
     const targetUserId = dtoUserId || userId;
     const user = await this.userRepository.findOne({ where: { id: targetUserId } });
     if (!user) {
@@ -135,6 +136,7 @@ export class BankAccountsService {
   ): Promise<BankAccounts> {
     const bankAccount = await this.findOne(id);
 
+    
     // Obtener el usuario autenticado para verificar su rol
     const currentUser = await this.userRepository.findOne({ where: { id: userId } });
     if (!currentUser) {
@@ -159,6 +161,7 @@ export class BankAccountsService {
     return this.bankAccountsRepository.save(bankAccount);
   }
 
+  
   async inactivate(id: string): Promise<BankAccounts> {
     const bankAccount = await this.findOne(id);
     bankAccount.isActive = false;

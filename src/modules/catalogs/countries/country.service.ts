@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Countries } from './countries.entity';
 import { Currency } from '../currencies/currencies.entity';
 import { CreateCountryDto } from './dto/create-countries.dto';
@@ -21,7 +21,7 @@ export class CountriesService {
 
   async findOne(id: string): Promise<Countries> {
     const country = await this.countriesRepository.findOne({
-      where: { country_id: id },
+      where: { id },
       relations: ['currencies'],
     });
     if (!country) {
@@ -31,6 +31,10 @@ export class CountriesService {
   }
 
   async create(createDto: CreateCountryDto): Promise<Countries> {
+    const currency = await this.currencyRepo.findOne({ where: { currencyId: createDto.currencyId } });
+    if (!currency) {
+      throw new NotFoundException('Moneda no encontrada');
+    }
     const country = this.countriesRepository.create(createDto);
     return this.countriesRepository.save(country);
   }
@@ -49,7 +53,7 @@ export class CountriesService {
   async assignCurrencies(countryId: string, currencyIds: string[]): Promise<Countries> {
     const country = await this.findOne(countryId);
 
-    const currencies = await this.currencyRepo.findByIds(currencyIds);
+    const currencies = await this.currencyRepo.findBy({ currencyId: In(currencyIds) });
     if (!currencies.length) {
       throw new NotFoundException('No valid currencies found');
     }

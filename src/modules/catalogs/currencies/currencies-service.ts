@@ -53,9 +53,9 @@ export class CurrenciesService {
     return this.currencyRepo.save(currency);
   }
 
-  async toggle(id: string, isActive: boolean): Promise<Currency> {
+  async inactivate(id: string): Promise<Currency> {
     const currency = await this.findOne(id);
-    currency.isActive = isActive;
+    currency.isActive = false;
     return this.currencyRepo.save(currency);
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CryptoAccounts } from './crypto-accounts.entity';
@@ -20,7 +20,7 @@ export class CryptoAccountsService {
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
     @InjectRepository(CryptoNetworks)
     private readonly cryptoNetworksRepository: Repository<CryptoNetworks>,
-  ) {}
+  ) { }
 
   async create(
     createCryptoAccountDto: CreateCryptoAccountDto,
@@ -68,16 +68,16 @@ export class CryptoAccountsService {
   }
 
   async findAll(filters: CryptoAccountFilterDto) {
-    const { paymentProviderId } = filters;
+    const { paymentProviderCode } = filters;
 
     const query = this.cryptoAccountsRepository
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.user', 'user')
       .leftJoinAndSelect('account.paymentProvider', 'provider');
 
-    if (paymentProviderId) {
-      query.andWhere('account.payment_provider_id = :paymentProviderId', {
-        paymentProviderId,
+    if (paymentProviderCode) {
+      query.andWhere('provider.code = :paymentProviderCode', {
+        paymentProviderCode,
       });
     }
     return await query.getMany();
@@ -107,8 +107,48 @@ export class CryptoAccountsService {
   async update(
     id: string,
     updateCryptoAccountDto: UpdateCryptoAccountDto,
+    userId: string,
   ): Promise<CryptoAccounts> {
     const cryptoAccount = await this.findOne(id);
+
+    // Obtener el usuario autenticado con sus roles
+    const currentUser = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles']
+    });
+    if (!currentUser) {
+      throw new NotFoundException('Current user not found');
+    }
+
+    // Obtener el propietario de la cuenta con sus roles
+    const accountOwner = await this.userRepository.findOne({
+      where: { id: cryptoAccount.user.id },
+      relations: ['roles']
+    });
+    if (!accountOwner) {
+      throw new NotFoundException('Account owner not found');
+    }
+
+    // Verificar si el usuario tiene un rol específico
+    const hasRole = (user: any, roleCode: string) => {
+      return user.roles?.some((role: any) => role.code === roleCode) || false;
+    };
+
+    const isCurrentUserAdmin = hasRole(currentUser, 'admin');
+    const isAccountOwnerAdmin = hasRole(accountOwner, 'admin');
+
+    // Verificar permisos según el rol
+    if (isCurrentUserAdmin) {
+      // Los admins solo pueden editar cuentas creadas por otros admins
+      if (!isAccountOwnerAdmin) {
+        throw new ForbiddenException('Admins can only edit crypto accounts created by other admins');
+      }
+    } else {
+      // Los usuarios solo pueden editar sus propias cuentas
+      if (cryptoAccount.user.id !== userId) {
+        throw new ForbiddenException('You can only edit your own crypto accounts');
+      }
+    }
 
     Object.assign(cryptoAccount, updateCryptoAccountDto);
 

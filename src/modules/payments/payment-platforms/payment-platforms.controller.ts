@@ -43,7 +43,7 @@ export class PaymentPlatformsController {
 
   // ===============================================
   // CREAR UNA PLATAFORMA DE PAGO
-  // ===============================================
+  // =============================================== 
   @ApiOperation({ summary: 'Crear una plataforma de pago' })
   @ApiResponse({
     status: 201,

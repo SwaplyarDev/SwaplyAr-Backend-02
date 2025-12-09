@@ -62,10 +62,10 @@ export class UsersService {
       user.rewardsLedger = new UserRewardsLedger();
 
       const savedUser = await this.userRepository.save(user);
-      
+
       // Sincronizar columnas desnormalizadas de roles
       await this.rolesService.syncUserRoleColumns(savedUser.id);
-      
+
       return savedUser;
     } catch (error) {
       if (error instanceof BadRequestException || error instanceof ConflictException) {

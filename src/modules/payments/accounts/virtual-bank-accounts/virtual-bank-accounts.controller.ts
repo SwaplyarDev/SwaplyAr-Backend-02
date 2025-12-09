@@ -15,7 +15,7 @@ import { CreateVirtualBankAccountDto } from './dto/create-virtual-bank-accounts.
 import { UpdateVirtualBankAccountDto } from './dto/update-virtual-bank-accounts.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { VirtualBankAccountResponseDto } from './dto/virtual-bank-accounts-response.dto';
-import { VirtualBankAccountFilterDto } from './dto/virtual-bank-accounts-filter.dto'; 
+import { VirtualBankAccountFilterDto } from './dto/virtual-bank-accounts-filter.dto';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -57,17 +57,17 @@ export class VirtualBankAccountsController {
     type: [VirtualBankAccountResponseDto],
   })
   findMyAccounts(@Request() req) {
-    return this.virtualBankAccountsService.findByUserId(req.user.userId);
+    return this.virtualBankAccountsService.findByUserId(req.user.id);
   }
 
   // ==========================================
   // MOSTRAR TODAS LAS CUENTAS BANCARIAS VIRTUALES
-  // ==========================================
+  // ========================================== 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  @ApiOperation({ summary: 'Obtener todas las virtual bank accounts' })
+  @ApiOperation({ summary: 'Obtener todas las virtual bank accounts con filtros opcionales' })
   @ApiResponse({
     status: 200,
     description: 'Return all virtual bank accounts.',
@@ -109,7 +109,7 @@ export class VirtualBankAccountsController {
     @Body() updateVirtualBankAccountDto: UpdateVirtualBankAccountDto,
     @Request() req,
   ) {
-    return this.virtualBankAccountsService.update(id, updateVirtualBankAccountDto, req.user);
+    return this.virtualBankAccountsService.update(id, updateVirtualBankAccountDto, req.user.id);
   }
 
   // ==========================================

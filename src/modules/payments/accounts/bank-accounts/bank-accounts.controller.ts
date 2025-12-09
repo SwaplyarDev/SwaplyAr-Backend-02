@@ -74,7 +74,7 @@ export class BankAccountsController {
     type: [BankAccountResponseDto],
   })
   findMine(@Request() req) {
-    return this.bankAccountsService.findByUser(req.user.userId);
+    return this.bankAccountsService.findByUser(req.user.id);
   }
 
   // ==========================================
@@ -113,7 +113,7 @@ export class BankAccountsController {
   }
 
   // ==========================================
-  // INACTIVAR (SOFT-DELETE) UNA CUENTA BANCARIA VIRTUAL
+  // INACTIVAR (SOFT-DELETE) UNA CUENTA BANCARIA
   // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -137,7 +137,10 @@ export class BankAccountsController {
   @Roles('user', 'admin')
   @Delete(':id')
   @ApiOperation({ summary: 'Borrar una bank account' })
-  @ApiResponse({ status: 200, description: 'The bank account has been successfully deleted.' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'The bank account has been successfully deleted.' 
+  })
   remove(@Param('id') id: string) {
     return this.bankAccountsService.remove(id);
   }

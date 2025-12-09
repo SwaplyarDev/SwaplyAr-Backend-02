@@ -33,7 +33,7 @@ export class PaymentProvidersController {
 
   // ===============================================
   // CREAR UN PROVEEDOR DE PAGO
-  // ===============================================
+  // =============================================== 
   @ApiOperation({ summary: 'Crear un nuevo proveedor de pago' })
   @ApiResponse({ status: 201, description: 'Provider creado con éxito' })
   @ApiBearerAuth()

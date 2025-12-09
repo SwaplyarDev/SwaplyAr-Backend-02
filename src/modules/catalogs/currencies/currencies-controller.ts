@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Patch, Param, Body, Put } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { CurrenciesService } from './currencies-service';
 import { Currency } from './currencies.entity';
 import { CreateCurrencyDto } from './dto/create-currencies.dto';
@@ -13,6 +13,7 @@ export class CurrenciesController {
 
   @Get()
   @ApiOperation({ summary: 'Obtener todas las monedas' })
+  @ApiResponse({ status: 200, description: 'Lista de monedas', type: [Currency] })
   findAll(): Promise<Currency[]> {
     return this.currenciesService.findAll();
   }

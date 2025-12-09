@@ -37,7 +37,7 @@ export class Currency {
     },
     inverseJoinColumn: {
       name: 'country_id',
-      referencedColumnName: 'country_id',
+      referencedColumnName: 'id',
     },
   })
   countries: Countries[];

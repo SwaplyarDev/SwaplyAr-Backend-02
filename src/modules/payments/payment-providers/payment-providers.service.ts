@@ -62,7 +62,7 @@ export class PaymentProvidersService {
 
     // Validar país (obligatorio)
     const country = await this.countriesRepository.findOne({
-      where: { country_id: countryId },
+      where: { id: countryId },
     });
     if (!country) {
       throw new NotFoundException(`Country with ID ${countryId} not found`);
@@ -102,7 +102,7 @@ export class PaymentProvidersService {
     // Validar país si se proporciona en la actualización
     if (countryId) {
       const country = await this.countriesRepository.findOne({
-        where: { country_id: countryId },
+        where: { id: countryId },
       });
       if (!country) {
         throw new NotFoundException(`Country with ID ${countryId} not found`);

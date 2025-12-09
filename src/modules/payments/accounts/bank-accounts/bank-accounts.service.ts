@@ -52,7 +52,7 @@ export class BankAccountsService {
 
     // Verify country exists
     const country = await this.countriesRepository.findOne({
-      where: { country_id: countryId },
+      where: { id: countryId },
     });
     if (!country) {
       throw new NotFoundException(`Country with ID ${countryId} not found`);

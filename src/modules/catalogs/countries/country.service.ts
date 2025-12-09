@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Countries } from './countries.entity';
@@ -30,8 +30,23 @@ export class CountriesService {
     return country;
   }
 
-  async create(createDto: CreateCountryDto): Promise<Countries> {
-    const country = this.countriesRepository.create(createDto);
+  async create(dto: CreateCountryDto): Promise<Countries> {
+    const { currencyIds, ...countryData } = dto;
+
+    const currencies = await this.currencyRepo.findBy({
+      currencyId: In(currencyIds),
+    });
+
+    if (currencies.length !== currencyIds.length) {
+      throw new BadRequestException('One or more currencies not found');
+    }
+
+    const country = this.countriesRepository.create({
+      ...countryData,
+      currencies,
+      currency_default: countryData.currency_default ?? currencies[0].code,
+    });
+
     return this.countriesRepository.save(country);
   }
 

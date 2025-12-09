@@ -15,12 +15,16 @@ export class WhatsAppService {
 
  
   async sendOtpCode(phone: string) {
+    console.log('Enviando OTP a teléfono:', phone);
     const code = generateOtp();
+    console.log('Código generado:', code);
 
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
 
     const otp = this.otpRepo.create({ phone, code, expiresAt });
+    console.log('OTP creado:', otp);
     await this.otpRepo.save(otp);
+    console.log('OTP guardado en DB');
 
     await this.sendWhatsAppTemplate(phone, code);
 
@@ -32,33 +36,46 @@ export class WhatsAppService {
 
 
   private async sendWhatsAppTemplate(phone: string, code: string) {
-    const url = `https://graph.facebook.com/v20.0/${process.env.WHATSAPP_PHONE_ID}/messages`;
+    // Para usar modo simulación, cambia esta variable a true
+    // Cambiar a false cuando el template 'otp_code' esté aprobado
+    const useSimulation = true;
+    
+    if (useSimulation) {
+      console.log('🔧 MODO SIMULACIÓN - WhatsApp');
+      console.log(`📱 Teléfono: ${phone}`);
+      console.log(`🔢 Código OTP: ${code}`);
+      console.log('✅ WhatsApp simulado enviado exitosamente');
+      return;
+    }
 
+    const url = `https://graph.facebook.com/v20.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+
+    // Remove + from phone number for WhatsApp API
+    const cleanPhone = phone.replace(/^\+/, '');
+    console.log('Teléfono limpio para WhatsApp:', cleanPhone);
+
+    // Para números de prueba, usar mensaje libre
     const payload = {
       messaging_product: 'whatsapp',
-      to: phone,
-      type: 'template',
-      template: {
-        name: 'otp_code',
-        language: { code: 'es' },
-        components: [
-          {
-            type: 'body',
-            parameters: [{ type: 'text', text: code }],
-          },
-        ],
-      },
+      to: cleanPhone,
+      type: 'text',
+      text: {
+        body: `Tu código de verificación para SwaplyAR es: ${code}\n\nEste código expira en 5 minutos.`
+      }
     };
 
+    console.log('Enviando payload a WhatsApp:', JSON.stringify(payload, null, 2));
+
     try {
-      await this.httpService.axiosRef.post(url, payload, {
+      const response = await this.httpService.axiosRef.post(url, payload, {
         headers: {
           Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
           'Content-Type': 'application/json',
         },
       });
-    } catch (err) {
-      console.error(err.response?.data || err);
+      console.log('Respuesta de WhatsApp:', response.data);
+    } catch (err: any) {
+      console.error('Error en WhatsApp API:', err.response?.data || err.message);
       throw new BadRequestException(
         'No se pudo enviar el mensaje de WhatsApp',
       );

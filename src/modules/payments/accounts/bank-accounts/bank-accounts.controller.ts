@@ -137,9 +137,9 @@ export class BankAccountsController {
   @Roles('user', 'admin')
   @Delete(':id')
   @ApiOperation({ summary: 'Borrar una bank account' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'The bank account has been successfully deleted.' 
+  @ApiResponse({
+    status: 200,
+    description: 'The bank account has been successfully deleted.',
   })
   remove(@Param('id') id: string) {
     return this.bankAccountsService.remove(id);

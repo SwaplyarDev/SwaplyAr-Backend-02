@@ -1,7 +1,19 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Delete,
+  UseGuards,
+  Req,
+  Query,
+} from '@nestjs/common';
 import { PaymentProvidersService } from './payment-providers.service';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
 import { UpdatePaymentProvidersDto } from './dto/update-payment-providers.dto';
+import { MyAvailableProvidersFilterDto } from './dto/payment-providers-filter.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -33,7 +45,7 @@ export class PaymentProvidersController {
 
   // ===============================================
   // CREAR UN PROVEEDOR DE PAGO
-  // =============================================== 
+  // ===============================================
   @ApiOperation({ summary: 'Crear un nuevo proveedor de pago' })
   @ApiResponse({ status: 201, description: 'Provider creado con éxito' })
   @ApiBearerAuth()
@@ -82,5 +94,27 @@ export class PaymentProvidersController {
   @Patch(':id/deactivate')
   inactivate(@Param('id') id: string) {
     return this.service.inactivate(id);
+  }
+
+  // ===============================================
+  // MOSTRAR PROVEEDORES DE PAGO DISPONBLES PARA UN USUARIO
+  // ===============================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'user')
+  @Get('my-available')
+  @ApiOperation({
+    summary:
+      'Obtiene los providers disponibles para el usuario según las cuentas asociadas a su perfil',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de providers disponibles para el usuario',
+  })
+  findMyAvailableProviders(
+    @Req() req,
+    @Query() filters: MyAvailableProvidersFilterDto,
+  ) {
+    return this.service.findAvailableForUser(req.user.id, filters);
   }
 }

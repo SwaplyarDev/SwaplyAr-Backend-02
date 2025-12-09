@@ -137,9 +137,9 @@ export class BankAccountsService {
     const bankAccount = await this.findOne(id);
 
     // Obtener el usuario autenticado con sus roles
-    const currentUser = await this.userRepository.findOne({ 
+    const currentUser = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['roles']
+      relations: ['roles'],
     });
     if (!currentUser) {
       throw new NotFoundException('Current user not found');
@@ -148,7 +148,7 @@ export class BankAccountsService {
     // Obtener el propietario de la cuenta con sus roles
     const accountOwner = await this.userRepository.findOne({
       where: { id: bankAccount.user.id },
-      relations: ['roles']
+      relations: ['roles'],
     });
     if (!accountOwner) {
       throw new NotFoundException('Account owner not found');
@@ -180,7 +180,6 @@ export class BankAccountsService {
     return this.bankAccountsRepository.save(bankAccount);
   }
 
-  
   async inactivate(id: string): Promise<BankAccounts> {
     const bankAccount = await this.findOne(id);
     bankAccount.isActive = false;

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { PaymentProviders } from './payment-providers.entity';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
 import { UpdatePaymentProvidersDto } from './dto/update-payment-providers.dto';
+import { MyAvailableProvidersFilterDto } from './dto/payment-providers-filter.dto';
 import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
 import { Countries } from 'src/modules/catalogs/countries/countries.entity';
 import { BankAccounts } from '../accounts/bank-accounts/bank-accounts.entity';
@@ -157,5 +158,36 @@ export class PaymentProvidersService {
   async remove(id: string): Promise<void> {
     const provider = await this.findOne(id);
     await this.providersRepo.remove(provider);
+  }
+
+  async findAvailableForUser(
+    userId: string,
+    filters: MyAvailableProvidersFilterDto,
+  ): Promise<PaymentProviders[]> {
+    const { platform, currency } = filters;
+
+    const qb = this.providersRepo
+      .createQueryBuilder('provider')
+      .innerJoin(
+        'provider.bankAccounts',
+        'bankAccount',
+        'bankAccount.user_id = :userId',
+        { userId },
+      )
+      .leftJoinAndSelect('provider.paymentPlatform', 'platform')
+      .where('provider.is_active = true')
+      .andWhere('bankAccount.isActive = true');
+
+    // ✅ Filtro por PLATFORM CODE
+    if (platform) {
+      qb.andWhere('platform.code = :platform', { platform });
+    }
+
+    // ✅ Filtro por CURRENCY (desde accounts)
+    if (currency) {
+      qb.andWhere('bankAccount.currency = :currency', { currency });
+    }
+
+    return qb.distinct(true).getMany();
   }
 }

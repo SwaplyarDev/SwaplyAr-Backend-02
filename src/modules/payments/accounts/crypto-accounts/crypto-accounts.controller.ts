@@ -23,7 +23,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 @ApiTags('Crypto Accounts')
 @Controller('crypto-accounts')
 export class CryptoAccountsController {
-  constructor(private readonly cryptoAccountsService: CryptoAccountsService) { }
+  constructor(private readonly cryptoAccountsService: CryptoAccountsService) {}
 
   // ==========================================
   // CREAR UNA CUENTA CRYPTO
@@ -138,9 +138,9 @@ export class CryptoAccountsController {
   @Roles('user', 'admin')
   @Delete(':id')
   @ApiOperation({ summary: 'Borrar una crypto account (admin)' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'The crypto account has been successfully deleted.'
+  @ApiResponse({
+    status: 200,
+    description: 'The crypto account has been successfully deleted.',
   })
   remove(@Param('id') id: string) {
     return this.cryptoAccountsService.remove(id);

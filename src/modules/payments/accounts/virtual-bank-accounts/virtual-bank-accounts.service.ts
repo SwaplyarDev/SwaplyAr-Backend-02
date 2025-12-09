@@ -137,9 +137,9 @@ export class VirtualBankAccountsService {
     const virtualBankAccount = await this.findOne(id);
 
     // Obtener el usuario autenticado con sus roles
-    const currentUser = await this.userRepository.findOne({ 
+    const currentUser = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['roles'] 
+      relations: ['roles'],
     });
     if (!currentUser) {
       throw new NotFoundException('Current user not found');
@@ -148,7 +148,7 @@ export class VirtualBankAccountsService {
     // Obtener el propietario de la cuenta con sus roles
     const accountOwner = await this.userRepository.findOne({
       where: { id: virtualBankAccount.user.id },
-      relations: ['roles']
+      relations: ['roles'],
     });
     if (!accountOwner) {
       throw new NotFoundException('Account owner not found');
@@ -161,7 +161,7 @@ export class VirtualBankAccountsService {
 
     const isCurrentUserAdmin = hasRole(currentUser, 'admin');
     const isAccountOwnerAdmin = hasRole(accountOwner, 'admin');
-    
+
     // Verificar permisos según rol
     if (isCurrentUserAdmin) {
       // Los admins solo pueden editar cuentas creadas por otros admins

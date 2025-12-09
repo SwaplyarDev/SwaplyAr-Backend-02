@@ -20,7 +20,7 @@ export class CryptoAccountsService {
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
     @InjectRepository(CryptoNetworks)
     private readonly cryptoNetworksRepository: Repository<CryptoNetworks>,
-  ) { }
+  ) {}
 
   async create(
     createCryptoAccountDto: CreateCryptoAccountDto,
@@ -114,7 +114,7 @@ export class CryptoAccountsService {
     // Obtener el usuario autenticado con sus roles
     const currentUser = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['roles']
+      relations: ['roles'],
     });
     if (!currentUser) {
       throw new NotFoundException('Current user not found');
@@ -123,7 +123,7 @@ export class CryptoAccountsService {
     // Obtener el propietario de la cuenta con sus roles
     const accountOwner = await this.userRepository.findOne({
       where: { id: cryptoAccount.user.id },
-      relations: ['roles']
+      relations: ['roles'],
     });
     if (!accountOwner) {
       throw new NotFoundException('Account owner not found');
@@ -141,7 +141,9 @@ export class CryptoAccountsService {
     if (isCurrentUserAdmin) {
       // Los admins solo pueden editar cuentas creadas por otros admins
       if (!isAccountOwnerAdmin) {
-        throw new ForbiddenException('Admins can only edit crypto accounts created by other admins');
+        throw new ForbiddenException(
+          'Admins can only edit crypto accounts created by other admins',
+        );
       }
     } else {
       // Los usuarios solo pueden editar sus propias cuentas

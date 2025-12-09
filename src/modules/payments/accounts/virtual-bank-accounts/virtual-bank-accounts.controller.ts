@@ -62,7 +62,7 @@ export class VirtualBankAccountsController {
 
   // ==========================================
   // MOSTRAR TODAS LAS CUENTAS BANCARIAS VIRTUALES
-  // ========================================== 
+  // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')

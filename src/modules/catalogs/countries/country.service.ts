@@ -31,7 +31,9 @@ export class CountriesService {
   }
 
   async create(createDto: CreateCountryDto): Promise<Countries> {
-    const currency = await this.currencyRepo.findOne({ where: { currencyId: createDto.currencyId } });
+    const currency = await this.currencyRepo.findOne({
+      where: { currencyId: createDto.currencyId },
+    });
     if (!currency) {
       throw new NotFoundException('Moneda no encontrada');
     }

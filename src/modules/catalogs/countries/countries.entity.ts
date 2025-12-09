@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToMany,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Currency } from '../currencies/currencies.entity';
 
 @Entity('countries')

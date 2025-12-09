@@ -5,6 +5,7 @@ import { Currency } from './currencies.entity';
 import { CreateCurrencyDto } from './dto/create-currencies.dto';
 import { UpdateCurrencyDto } from './dto/update-currencies.dto';
 import { CurrencyResponseDto } from './dto/currencies-response.dto';
+import { AssignCountriesDto } from './dto/assign-currencies.dto';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -72,8 +73,8 @@ export class CurrenciesController {
   @ApiOkResponse({ type: [CurrencyResponseDto] })
   async assignCountries(
     @Param('id') id: string,
-    @Body('countryIds') countryIds: string[],
+    @Body() body: AssignCountriesDto,
   ): Promise<Currency> {
-    return this.currenciesService.assignCountries(id, countryIds);
+    return this.currenciesService.assignCountries(id, body.countryIds);
   }
 }

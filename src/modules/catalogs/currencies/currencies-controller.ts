@@ -57,11 +57,11 @@ export class CurrenciesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  @Patch(':id/active')
-  @ApiOperation({ summary: 'activar/desactivar moneda' })
+  @Patch(':id/deactive')
+  @ApiOperation({ summary: 'inactivar moneda' })
   @ApiOkResponse({ type: [CurrencyResponseDto] })
-  async toggle(@Param('id') id: string, @Body('isActive') isActive: boolean): Promise<Currency> {
-    return this.currenciesService.toggle(id, isActive);
+  async inactivate(@Param('id') id: string){
+    return this.currenciesService.inactivate(id);
   }
 
   @ApiBearerAuth()

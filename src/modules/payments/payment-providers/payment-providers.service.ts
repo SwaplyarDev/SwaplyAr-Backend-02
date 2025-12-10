@@ -9,10 +9,13 @@ import { Countries } from 'src/modules/catalogs/countries/countries.entity';
 import { BankAccounts } from '../accounts/bank-accounts/bank-accounts.entity';
 import { VirtualBankAccounts } from '../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
 import { CryptoAccounts } from '../accounts/crypto-accounts/crypto-accounts.entity';
+import { ProviderAccountsProcessor } from './services/provider-accounts.processor';
 
 @Injectable()
 export class PaymentProvidersService {
   constructor(
+    private readonly accountsProcessor: ProviderAccountsProcessor,
+
     @InjectRepository(PaymentProviders)
     private readonly providersRepo: Repository<PaymentProviders>,
 
@@ -31,6 +34,56 @@ export class PaymentProvidersService {
     @InjectRepository(CryptoAccounts)
     private readonly cryptoRepo: Repository<CryptoAccounts>,
   ) {}
+
+  async getMyAvailableProviders(
+    userId: string,
+    filters?: {
+      platformCode?: string;
+      fiatCurrencyCode?: string;
+      cryptoNetworkCode?: string;
+    },
+  ) {
+    const providersMap = new Map<string, any>();
+
+    // BANK ACCOUNTS
+    const bankAccounts = await this.bankRepo
+      .createQueryBuilder('account')
+      .innerJoinAndSelect('account.paymentProvider', 'provider')
+      .innerJoinAndSelect('provider.paymentPlatform', 'platform')
+      .leftJoinAndSelect('provider.country', 'country')
+      .where('account.user_id = :userId', { userId })
+      .andWhere('account.is_active = true')
+      .getMany();
+
+    this.accountsProcessor.process(bankAccounts, providersMap, filters);
+
+    // VIRTUAL BANK ACCOUNTS
+    const virtualAccounts = await this.virtualRepo
+      .createQueryBuilder('account')
+      .innerJoinAndSelect('account.paymentProvider', 'provider')
+      .innerJoinAndSelect('provider.paymentPlatform', 'platform')
+      .leftJoinAndSelect('provider.country', 'country')
+      .where('account.user_id = :userId', { userId })
+      .andWhere('account.is_active = true')
+      .getMany();
+
+    this.accountsProcessor.process(virtualAccounts, providersMap, filters);
+
+    // CRYPTO ACCOUNTS
+    const cryptoAccounts = await this.cryptoRepo
+      .createQueryBuilder('account')
+      .innerJoinAndSelect('account.paymentProvider', 'provider')
+      .innerJoinAndSelect('provider.paymentPlatform', 'platform')
+      .leftJoinAndSelect('provider.country', 'country')
+      .innerJoinAndSelect('account.cryptoNetwork', 'cryptoNetwork')
+      .where('account.user_id = :userId', { userId })
+      .andWhere('account.is_active = true')
+      .getMany();
+
+    this.accountsProcessor.process(cryptoAccounts, providersMap, filters);
+
+    return Array.from(providersMap.values());
+  }
 
   async findAll(): Promise<PaymentProviders[]> {
     return this.providersRepo.find({

@@ -1,0 +1,29 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, Length } from 'class-validator';
+
+export class MyAvailableProvidersFilterDto {
+  @ApiPropertyOptional({
+    example: 'virtual-bank',
+    description: 'Código de la plataforma de pago (payment_platforms.code)',
+  })
+  @IsOptional()
+  @IsString()
+  platformCode?: string;
+
+  @ApiPropertyOptional({
+    example: 'USD',
+    description: 'Código de moneda (solo bank / virtual-bank)',
+  })
+  @IsOptional()
+  @IsString()
+  @Length(2, 3)
+  fiatCurrencyCode?: string;
+
+  @ApiPropertyOptional({
+    example: 'BTC',
+    description: 'Código de crypto network (solo crypto accounts)',
+  })
+  @IsOptional()
+  @IsString()
+  cryptoNetworkCode?: string;
+}

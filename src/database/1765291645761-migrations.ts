@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Migrations1764678956398 implements MigrationInterface {
-  name = 'Migrations1764678956398';
+export class Migrations1765291645761 implements MigrationInterface {
+  name = 'Migrations1765291645761';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -65,7 +65,7 @@ export class Migrations1764678956398 implements MigrationInterface {
       `CREATE TYPE "public"."payment_methods_platform_enum" AS ENUM('bank', 'pix', 'virtual_bank', 'receiver_crypto')`,
     );
     await queryRunner.query(
-      `CREATE TABLE "payment_methods" ("payment_method_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "platform" "public"."payment_methods_platform_enum" NOT NULL, "method" character varying(50) NOT NULL, "type" character varying(50), "currency" character varying, "email_account" character varying, "transfer_code" character varying, "network" character varying, "wallet" character varying, "bank_name" character varying, "send_method_key" character varying, "send_method_value" character varying, "document_type" character varying, "document_value" character varying, "pix_id" character varying, "pix_key" character varying, "pix_value" character varying, "cpf" character varying(14), CONSTRAINT "PK_397415468d59f5743a83c6c7bef" PRIMARY KEY ("payment_method_id"))`,
+      `CREATE TABLE "payment_methods" ("payment_method_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "platform" "public"."payment_methods_platform_enum" NOT NULL, "method" character varying(50) NOT NULL, "type" character varying(50), "currency" character varying, "network" character varying, "wallet" character varying, "pix_id" character varying, "pix_key" character varying, "pix_value" character varying, "cpf" character varying(14), "email_account" character varying, "transfer_code" character varying, "bank_name" character varying, "send_method_key" character varying, "send_method_value" character varying, "document_type" character varying, "document_value" character varying, CONSTRAINT "PK_397415468d59f5743a83c6c7bef" PRIMARY KEY ("payment_method_id"))`,
     );
     await queryRunner.query(
       `CREATE INDEX "idx_payment_methods_method" ON "payment_methods" ("method") `,
@@ -152,13 +152,16 @@ export class Migrations1764678956398 implements MigrationInterface {
       `CREATE TABLE "crypto_accounts" ("crypto_account_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "wallet_address" character varying NOT NULL, "tag_or_memo" character varying, "owner_type" character varying(20) NOT NULL DEFAULT 'user', "is_active" boolean NOT NULL DEFAULT true, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "user_id" uuid NOT NULL, "payment_provider_id" uuid NOT NULL, "crypto_network_id" uuid NOT NULL, "created_by" uuid NOT NULL, CONSTRAINT "PK_2d6f6d5c6f7414fcf07d02dc896" PRIMARY KEY ("crypto_account_id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "payment_providers" ("payment_provider_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(100) NOT NULL, "code" character varying(50) NOT NULL, "country_code" character varying(3), "logo_url" character varying, "operation_type" character varying(10) NOT NULL DEFAULT 'both', "is_active" boolean NOT NULL DEFAULT true, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "payment_platform_id" uuid NOT NULL, CONSTRAINT "UQ_3b92bdeea5c610e84052154ef25" UNIQUE ("code"), CONSTRAINT "UQ_768a29dc3f86bee01e0cfc12b3e" UNIQUE ("payment_platform_id", "code"), CONSTRAINT "PK_ae5be9356ec8fd4afaa584f10f0" PRIMARY KEY ("payment_provider_id"))`,
+      `CREATE TABLE "countries" ("country_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "code" character(3) NOT NULL, "name" character varying(100) NOT NULL, "currency_default" character varying(3), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_b47cbb5311bad9c9ae17b8c1eda" UNIQUE ("code"), CONSTRAINT "PK_9886b09af4b4724d595b2e3923c" PRIMARY KEY ("country_id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "payment_providers" ("payment_provider_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(100) NOT NULL, "code" character varying(50) NOT NULL, "country_id" uuid, "logo_url" character varying, "operation_type" character varying(10) NOT NULL DEFAULT 'both', "is_active" boolean NOT NULL DEFAULT true, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "payment_platform_id" uuid NOT NULL, CONSTRAINT "UQ_3b92bdeea5c610e84052154ef25" UNIQUE ("code"), CONSTRAINT "UQ_768a29dc3f86bee01e0cfc12b3e" UNIQUE ("payment_platform_id", "code"), CONSTRAINT "PK_ae5be9356ec8fd4afaa584f10f0" PRIMARY KEY ("payment_provider_id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "bank_account_details" ("bank_account_detail_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "field_key" character varying(50) NOT NULL, "field_label" character varying(100) NOT NULL, "field_value" character varying NOT NULL, "is_encrypted" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "bank_account_id" uuid NOT NULL, CONSTRAINT "PK_e32bb3fa4b2c57977bf8aada6e8" PRIMARY KEY ("bank_account_detail_id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "bank_accounts" ("bank_account_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "country_code" character varying(3) NOT NULL, "holder_name" character varying NOT NULL, "document_type" character varying, "document_value" character varying, "bank_name" character varying, "account_number" character varying, "iban" character varying, "swift" character varying, "currency" character varying(3), "owner_type" character varying(20) NOT NULL DEFAULT 'user', "is_active" boolean NOT NULL DEFAULT true, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "user_id" uuid NOT NULL, "payment_provider_id" uuid NOT NULL, "created_by" uuid NOT NULL, CONSTRAINT "PK_ba3381b91f6f67fed016e798296" PRIMARY KEY ("bank_account_id"))`,
+      `CREATE TABLE "bank_accounts" ("bank_account_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "country_id" uuid NOT NULL, "holder_name" character varying NOT NULL, "document_type" character varying, "document_value" character varying, "bank_name" character varying, "account_number" character varying, "iban" character varying, "swift" character varying, "currency" character varying(3), "owner_type" character varying(20) NOT NULL DEFAULT 'user', "is_active" boolean NOT NULL DEFAULT true, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "user_id" uuid NOT NULL, "payment_provider_id" uuid NOT NULL, "created_by" uuid NOT NULL, CONSTRAINT "PK_ba3381b91f6f67fed016e798296" PRIMARY KEY ("bank_account_id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "users" ("user_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "terms_accepted" boolean NOT NULL DEFAULT false, "member_code" character varying(8) NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "validated_at" TIMESTAMP WITH TIME ZONE, "is_active" boolean NOT NULL DEFAULT true, "is_validated" boolean NOT NULL DEFAULT false, "user_validated" boolean NOT NULL DEFAULT false, "refreshToken" character varying, "role_code" character varying, "role_name" character varying, "role_description" character varying, CONSTRAINT "UQ_54edc787000bbce448a70bc3e83" UNIQUE ("member_code"), CONSTRAINT "PK_96aac72f1574b88752e9fb00089" PRIMARY KEY ("user_id"))`,
@@ -170,13 +173,10 @@ export class Migrations1764678956398 implements MigrationInterface {
       `CREATE TABLE "abandoned_transactions" ("abandoned_transaction_id" character varying(10) NOT NULL, "first_name" character varying NOT NULL, "last_name" character varying NOT NULL, "email" character varying NOT NULL, "phone_number" character varying NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_596b224b2cdf41add5186844cdf" PRIMARY KEY ("abandoned_transaction_id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "questions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "title" character varying NOT NULL, "description" character varying NOT NULL, CONSTRAINT "PK_08a6d4b0f49ff300bf3a0ca60ac" PRIMARY KEY ("id"))`,
-    );
-    await queryRunner.query(
       `CREATE TABLE "qualifications" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "transaction_id" character varying NOT NULL, "stars_amount" integer NOT NULL, "note" character varying, CONSTRAINT "PK_9ed4d526ac3b76ba3f1c1080433" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "countries" ("country_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "code" character(3) NOT NULL, "name" character varying(100) NOT NULL, "currency_default" character varying(3), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_b47cbb5311bad9c9ae17b8c1eda" UNIQUE ("code"), CONSTRAINT "PK_9886b09af4b4724d595b2e3923c" PRIMARY KEY ("country_id"))`,
+      `CREATE TABLE "questions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "title" character varying NOT NULL, "description" character varying NOT NULL, CONSTRAINT "PK_08a6d4b0f49ff300bf3a0ca60ac" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "bank_account_field_templates" ("template_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "country_code" character varying(3) NOT NULL, "field_key" character varying(50) NOT NULL, "field_label" character varying(100) NOT NULL, "is_required" boolean NOT NULL DEFAULT false, "field_type" character varying(30) NOT NULL DEFAULT 'text', "validation_pattern" character varying, "order_index" integer NOT NULL DEFAULT '0', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_e63d8e207b61e25423a420a1b87" PRIMARY KEY ("template_id"))`,
@@ -188,16 +188,16 @@ export class Migrations1764678956398 implements MigrationInterface {
       `CREATE TABLE "contacts" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "lastname" character varying NOT NULL, "email" character varying NOT NULL, "message" character varying NOT NULL, "user_id" character varying, CONSTRAINT "PK_b99cd40cfd66a99f1571f4f72e6" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."administracion_master_status_enum" AS ENUM('pending', 'review_payment', 'approved', 'rejected', 'refund_in_transit', 'in_transit', 'discrepancy', 'cancelled', 'modified', 'refunded', 'completed')`,
-    );
-    await queryRunner.query(
-      `CREATE TABLE "administracion_master" ("transaction_id" character varying(10) NOT NULL, "admin_user_id" uuid NOT NULL, "status" "public"."administracion_master_status_enum" NOT NULL DEFAULT 'pending', "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "begin_transaction" TIMESTAMP, "end_transaction" TIMESTAMP, "transfer_received" text, CONSTRAINT "PK_07c46f45239be5da141ac02a58f" PRIMARY KEY ("transaction_id"))`,
-    );
-    await queryRunner.query(
       `CREATE TYPE "public"."administracion_status_log_status_enum" AS ENUM('pending', 'review_payment', 'approved', 'rejected', 'refund_in_transit', 'in_transit', 'discrepancy', 'cancelled', 'modified', 'refunded', 'completed')`,
     );
     await queryRunner.query(
       `CREATE TABLE "administracion_status_log" ("log_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "status" "public"."administracion_status_log_status_enum" NOT NULL, "changed_at" TIMESTAMP NOT NULL DEFAULT now(), "message" text, "changed_by_admin_id" uuid NOT NULL, "additionalData" jsonb, "transaction_id" character varying(10), CONSTRAINT "PK_93c3d98ede4fd3ac21a4f9d021f" PRIMARY KEY ("log_id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."administracion_master_status_enum" AS ENUM('pending', 'review_payment', 'approved', 'rejected', 'refund_in_transit', 'in_transit', 'discrepancy', 'cancelled', 'modified', 'refunded', 'completed')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "administracion_master" ("transaction_id" character varying(10) NOT NULL, "admin_user_id" uuid NOT NULL, "status" "public"."administracion_master_status_enum" NOT NULL DEFAULT 'pending', "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "begin_transaction" TIMESTAMP, "end_transaction" TIMESTAMP, "transfer_received" text, CONSTRAINT "PK_07c46f45239be5da141ac02a58f" PRIMARY KEY ("transaction_id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "financial_account" ("financial_account_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "payment_platform_id" uuid NOT NULL, "reference_id" uuid NOT NULL, "user_id" uuid NOT NULL, "owner_type" character varying(20) NOT NULL, "created_by" uuid NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_407127784a7bb7be0c3187a2c0e" PRIMARY KEY ("financial_account_id"))`,
@@ -233,6 +233,7 @@ export class Migrations1764678956398 implements MigrationInterface {
       `ALTER TABLE "financial_accounts" DROP CONSTRAINT "REL_ef910094abc02f4861e35c4011"`,
     );
     await queryRunner.query(`ALTER TABLE "financial_accounts" DROP COLUMN "payment_method_id"`);
+    await queryRunner.query(`ALTER TABLE "payment_providers" DROP COLUMN "country_id"`);
     await queryRunner.query(
       `ALTER TABLE "financial_accounts" ADD "first_name" character varying NOT NULL`,
     );
@@ -264,6 +265,10 @@ export class Migrations1764678956398 implements MigrationInterface {
     );
     await queryRunner.query(
       `ALTER TABLE "financial_accounts" ADD "payment_platform_id" uuid NOT NULL`,
+    );
+    await queryRunner.query(`ALTER TABLE "payment_providers" ADD "country_id" uuid`);
+    await queryRunner.query(
+      `ALTER TABLE "payment_providers" ADD "country_code" character varying(3)`,
     );
     await queryRunner.query(`DROP INDEX "public"."idx_sender_fin_accounts_created_by"`);
     await queryRunner.query(`ALTER TABLE "financial_accounts" DROP COLUMN "created_by"`);
@@ -383,7 +388,7 @@ export class Migrations1764678956398 implements MigrationInterface {
       `ALTER TABLE "crypto_accounts" ADD CONSTRAINT "FK_6c55b1d89977743be0b281409b9" FOREIGN KEY ("payment_provider_id") REFERENCES "payment_providers"("payment_provider_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "crypto_accounts" ADD CONSTRAINT "FK_980fb2c8f5d6f8b080bb51deedc" FOREIGN KEY ("crypto_network_id") REFERENCES "crypto_networks"("crypto_network_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "crypto_accounts" ADD CONSTRAINT "FK_980fb2c8f5d6f8b080bb51deedc" FOREIGN KEY ("crypto_network_id") REFERENCES "crypto_networks"("crypto_network_id") ON DELETE RESTRICT ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "crypto_accounts" ADD CONSTRAINT "FK_3df0b2731d4f8415d69671950c2" FOREIGN KEY ("created_by") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -392,7 +397,10 @@ export class Migrations1764678956398 implements MigrationInterface {
       `ALTER TABLE "payment_providers" ADD CONSTRAINT "FK_0a3700d79cc8bfe4d852d99ee20" FOREIGN KEY ("payment_platform_id") REFERENCES "payment_platforms"("payment_platform_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "bank_account_details" ADD CONSTRAINT "FK_e7c294492dbdf3638ac1d92411a" FOREIGN KEY ("bank_account_id") REFERENCES "bank_accounts"("bank_account_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "payment_providers" ADD CONSTRAINT "FK_af7bad91e39bfff30db918c1c57" FOREIGN KEY ("country_id") REFERENCES "countries"("country_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "bank_account_details" ADD CONSTRAINT "FK_e7c294492dbdf3638ac1d92411a" FOREIGN KEY ("bank_account_id") REFERENCES "bank_accounts"("bank_account_id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "bank_accounts" ADD CONSTRAINT "FK_29146c4a8026c77c712e01d922b" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -401,22 +409,25 @@ export class Migrations1764678956398 implements MigrationInterface {
       `ALTER TABLE "bank_accounts" ADD CONSTRAINT "FK_d918bf221dc38f45d788b1a779d" FOREIGN KEY ("payment_provider_id") REFERENCES "payment_providers"("payment_provider_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
+      `ALTER TABLE "bank_accounts" ADD CONSTRAINT "FK_f75f4cb4cf1f147636d9338a9c0" FOREIGN KEY ("country_id") REFERENCES "countries"("country_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
       `ALTER TABLE "bank_accounts" ADD CONSTRAINT "FK_7046dc30802b1ed936f5d1c8f3b" FOREIGN KEY ("created_by") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "user_account" ADD CONSTRAINT "FK_c6412112ab4eb46363a87b2767c" FOREIGN KEY ("financial_account_id") REFERENCES "financial_accounts"("financial_account_id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "administracion_master" ADD CONSTRAINT "FK_07c46f45239be5da141ac02a58f" FOREIGN KEY ("transaction_id") REFERENCES "transactions"("transaction_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "administracion_master" ADD CONSTRAINT "FK_4e5dbc8b447674f7ecc2dd35155" FOREIGN KEY ("admin_user_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
       `ALTER TABLE "administracion_status_log" ADD CONSTRAINT "FK_d76daa9604bb63d1cd3d76ea2c0" FOREIGN KEY ("transaction_id") REFERENCES "administracion_master"("transaction_id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "administracion_status_log" ADD CONSTRAINT "FK_d925420f2e01382ff12b1623c23" FOREIGN KEY ("changed_by_admin_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "administracion_master" ADD CONSTRAINT "FK_07c46f45239be5da141ac02a58f" FOREIGN KEY ("transaction_id") REFERENCES "transactions"("transaction_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "administracion_master" ADD CONSTRAINT "FK_4e5dbc8b447674f7ecc2dd35155" FOREIGN KEY ("admin_user_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "transaction_user_discounts" ADD CONSTRAINT "FK_d526dd3f45bb11e3982dcadb45c" FOREIGN KEY ("transaction_id") REFERENCES "transactions"("transaction_id") ON DELETE CASCADE ON UPDATE CASCADE`,
@@ -446,22 +457,25 @@ export class Migrations1764678956398 implements MigrationInterface {
       `ALTER TABLE "transaction_user_discounts" DROP CONSTRAINT "FK_d526dd3f45bb11e3982dcadb45c"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "administracion_status_log" DROP CONSTRAINT "FK_d925420f2e01382ff12b1623c23"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "administracion_status_log" DROP CONSTRAINT "FK_d76daa9604bb63d1cd3d76ea2c0"`,
-    );
-    await queryRunner.query(
       `ALTER TABLE "administracion_master" DROP CONSTRAINT "FK_4e5dbc8b447674f7ecc2dd35155"`,
     );
     await queryRunner.query(
       `ALTER TABLE "administracion_master" DROP CONSTRAINT "FK_07c46f45239be5da141ac02a58f"`,
     );
     await queryRunner.query(
+      `ALTER TABLE "administracion_status_log" DROP CONSTRAINT "FK_d925420f2e01382ff12b1623c23"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "administracion_status_log" DROP CONSTRAINT "FK_d76daa9604bb63d1cd3d76ea2c0"`,
+    );
+    await queryRunner.query(
       `ALTER TABLE "user_account" DROP CONSTRAINT "FK_c6412112ab4eb46363a87b2767c"`,
     );
     await queryRunner.query(
       `ALTER TABLE "bank_accounts" DROP CONSTRAINT "FK_7046dc30802b1ed936f5d1c8f3b"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "bank_accounts" DROP CONSTRAINT "FK_f75f4cb4cf1f147636d9338a9c0"`,
     );
     await queryRunner.query(
       `ALTER TABLE "bank_accounts" DROP CONSTRAINT "FK_d918bf221dc38f45d788b1a779d"`,
@@ -471,6 +485,9 @@ export class Migrations1764678956398 implements MigrationInterface {
     );
     await queryRunner.query(
       `ALTER TABLE "bank_account_details" DROP CONSTRAINT "FK_e7c294492dbdf3638ac1d92411a"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "payment_providers" DROP CONSTRAINT "FK_af7bad91e39bfff30db918c1c57"`,
     );
     await queryRunner.query(
       `ALTER TABLE "payment_providers" DROP CONSTRAINT "FK_0a3700d79cc8bfe4d852d99ee20"`,
@@ -586,6 +603,8 @@ export class Migrations1764678956398 implements MigrationInterface {
     await queryRunner.query(
       `CREATE INDEX "idx_sender_fin_accounts_created_by" ON "financial_accounts" ("created_by") `,
     );
+    await queryRunner.query(`ALTER TABLE "payment_providers" DROP COLUMN "country_code"`);
+    await queryRunner.query(`ALTER TABLE "payment_providers" DROP COLUMN "country_id"`);
     await queryRunner.query(`ALTER TABLE "financial_accounts" DROP COLUMN "payment_platform_id"`);
     await queryRunner.query(`ALTER TABLE "financial_accounts" DROP COLUMN "updated_at"`);
     await queryRunner.query(`ALTER TABLE "financial_accounts" DROP COLUMN "created_at"`);
@@ -600,6 +619,7 @@ export class Migrations1764678956398 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "financial_accounts" DROP COLUMN "phone_number"`);
     await queryRunner.query(`ALTER TABLE "financial_accounts" DROP COLUMN "last_name"`);
     await queryRunner.query(`ALTER TABLE "financial_accounts" DROP COLUMN "first_name"`);
+    await queryRunner.query(`ALTER TABLE "payment_providers" ADD "country_id" uuid`);
     await queryRunner.query(
       `ALTER TABLE "financial_accounts" ADD "payment_method_id" uuid NOT NULL`,
     );
@@ -640,22 +660,22 @@ export class Migrations1764678956398 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX "public"."IDX_d526dd3f45bb11e3982dcadb45"`);
     await queryRunner.query(`DROP TABLE "transaction_user_discounts"`);
     await queryRunner.query(`DROP TABLE "financial_account"`);
-    await queryRunner.query(`DROP TABLE "administracion_status_log"`);
-    await queryRunner.query(`DROP TYPE "public"."administracion_status_log_status_enum"`);
     await queryRunner.query(`DROP TABLE "administracion_master"`);
     await queryRunner.query(`DROP TYPE "public"."administracion_master_status_enum"`);
+    await queryRunner.query(`DROP TABLE "administracion_status_log"`);
+    await queryRunner.query(`DROP TYPE "public"."administracion_status_log_status_enum"`);
     await queryRunner.query(`DROP TABLE "contacts"`);
     await queryRunner.query(`DROP TABLE "dynamic_commissions"`);
     await queryRunner.query(`DROP TABLE "bank_account_field_templates"`);
-    await queryRunner.query(`DROP TABLE "countries"`);
-    await queryRunner.query(`DROP TABLE "qualifications"`);
     await queryRunner.query(`DROP TABLE "questions"`);
+    await queryRunner.query(`DROP TABLE "qualifications"`);
     await queryRunner.query(`DROP TABLE "abandoned_transactions"`);
     await queryRunner.query(`DROP TABLE "user_account"`);
     await queryRunner.query(`DROP TABLE "users"`);
     await queryRunner.query(`DROP TABLE "bank_accounts"`);
     await queryRunner.query(`DROP TABLE "bank_account_details"`);
     await queryRunner.query(`DROP TABLE "payment_providers"`);
+    await queryRunner.query(`DROP TABLE "countries"`);
     await queryRunner.query(`DROP TABLE "crypto_accounts"`);
     await queryRunner.query(`DROP TABLE "crypto_networks"`);
     await queryRunner.query(`DROP TABLE "virtual_bank_accounts"`);

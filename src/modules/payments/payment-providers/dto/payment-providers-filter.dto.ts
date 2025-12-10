@@ -8,14 +8,22 @@ export class MyAvailableProvidersFilterDto {
   })
   @IsOptional()
   @IsString()
-  platform?: string;
+  platformCode?: string;
 
   @ApiPropertyOptional({
     example: 'USD',
-    description: 'Código de moneda ISO 4217',
+    description: 'Código de moneda (solo bank / virtual-bank)',
   })
   @IsOptional()
   @IsString()
   @Length(2, 3)
-  currency?: string;
+  fiatCurrencyCode?: string;
+
+  @ApiPropertyOptional({
+    example: 'BTC',
+    description: 'Código de crypto network (solo crypto accounts)',
+  })
+  @IsOptional()
+  @IsString()
+  cryptoNetworkCode?: string;
 }

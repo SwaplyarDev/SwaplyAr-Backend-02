@@ -23,6 +23,25 @@ import { Roles } from '@common/decorators/roles.decorator';
 export class PaymentProvidersController {
   constructor(private readonly service: PaymentProvidersService) {}
   // ===============================================
+  // MOSTRAR PROVEEDORES DE PAGO DISPONBLES PARA UN USUARIO
+  // ===============================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'user')
+  @Get('my-available')
+  @ApiOperation({
+    summary:
+      'Obtiene los providers disponibles para el usuario según las cuentas asociadas a su perfil',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de providers disponibles para el usuario',
+  })
+  findMyAvailableProviders(@Req() req, @Query() filters: MyAvailableProvidersFilterDto) {
+    return this.service.getMyAvailableProviders(req.user.id, filters);
+  }
+
+  // ===============================================
   // MOSTRAR TODAS LOS PROVEEDORES DE PAGO
   // ===============================================
   @ApiOperation({ summary: 'Obtener todos los proveedores de pago' })
@@ -94,27 +113,5 @@ export class PaymentProvidersController {
   @Patch(':id/deactivate')
   inactivate(@Param('id') id: string) {
     return this.service.inactivate(id);
-  }
-
-  // ===============================================
-  // MOSTRAR PROVEEDORES DE PAGO DISPONBLES PARA UN USUARIO
-  // ===============================================
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'user')
-  @Get('my-available')
-  @ApiOperation({
-    summary:
-      'Obtiene los providers disponibles para el usuario según las cuentas asociadas a su perfil',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de providers disponibles para el usuario',
-  })
-  findMyAvailableProviders(
-    @Req() req,
-    @Query() filters: MyAvailableProvidersFilterDto,
-  ) {
-    return this.service.findAvailableForUser(req.user.id, filters);
   }
 }

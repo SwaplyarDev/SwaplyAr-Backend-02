@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Put } from '@nestjs/common';
 import { PaymentProvidersService } from './payment-providers.service';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
 import { UpdatePaymentProvidersDto } from './dto/update-payment-providers.dto';
+import { AssignProviderCurrenciesDto } from './dto/assign-provider-currencies.dto';
+import { PaymentProviders } from './payment-providers.entity';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -9,7 +11,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 @ApiTags('Payment Providers')
 @Controller('payment-providers')
 export class PaymentProvidersController {
-  constructor(private readonly service: PaymentProvidersService) {}
+  constructor(private readonly service: PaymentProvidersService) { }
   // ===============================================
   // MOSTRAR TODAS LOS PROVEEDORES DE PAGO
   // ===============================================
@@ -82,5 +84,20 @@ export class PaymentProvidersController {
   @Patch(':id/deactivate')
   inactivate(@Param('id') id: string) {
     return this.service.inactivate(id);
+  }
+
+  // ===============================================
+  // ASIGNAR MONEDAS AL PROVEEDOR DE PAGO
+  // ===============================================
+  @Put(':id/currencies')
+  @ApiOperation({ summary: 'Asignar monedas al provider' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  assignCurrencies(
+    @Param('id') id: string,
+    @Body() body: AssignProviderCurrenciesDto,
+  ): Promise<PaymentProviders> {
+    return this.service.assignCurrencies(id, body.currencyIds);
   }
 }

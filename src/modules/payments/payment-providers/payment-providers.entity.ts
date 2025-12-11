@@ -8,12 +8,15 @@ import {
   UpdateDateColumn,
   Unique,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
 import { BankAccounts } from '../accounts/bank-accounts/bank-accounts.entity';
 import { VirtualBankAccounts } from '../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
 import { CryptoAccounts } from '../accounts/crypto-accounts/crypto-accounts.entity';
 import { Countries } from 'src/modules/catalogs/countries/countries.entity';
+import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
 @Entity({ name: 'payment_providers' })
 @Unique(['paymentPlatform', 'code'])
@@ -64,4 +67,18 @@ export class PaymentProviders {
 
   @OneToMany(() => CryptoAccounts, (cryptoAccount: CryptoAccounts) => cryptoAccount.paymentProvider)
   cryptoAccounts: CryptoAccounts[];
+
+  @ManyToMany(() => Currency, (currency) => currency.providers)
+  @JoinTable({
+    name: 'provider_currencies',
+    joinColumn: {
+      name: 'provider_id',
+      referencedColumnName: 'paymentProviderId',
+    },
+    inverseJoinColumn: {
+      name: 'currency_id',
+      referencedColumnName: 'currencyId',
+    },
+  })
+  supportedCurrencies: Currency[];
 }

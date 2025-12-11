@@ -12,6 +12,7 @@ import { PaymentProviders } from '../../payment-providers/payment-providers.enti
 import { User } from '../../../users/entities/user.entity';
 import { BankAccountDetails } from './bank-account-details.entity';
 import { Countries } from '../../../catalogs/countries/countries.entity';
+import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
 @Entity({ name: 'bank_accounts' })
 export class BankAccounts {
@@ -59,8 +60,12 @@ export class BankAccounts {
   @Column({ type: 'varchar', nullable: true })
   swift: string;
 
-  @Column({ type: 'varchar', length: 3, nullable: true })
-  currency: string;
+  @ManyToOne(() => Currency, { nullable: true })
+  @JoinColumn({ name: 'currency_id' })
+  currency: Currency;
+
+  @Column({ type: 'uuid', nullable: true, name: 'currency_id' })
+  currencyId: string;
 
   @Column({ type: 'varchar', length: 20, default: 'user', name: 'owner_type' })
   ownerType: string;

@@ -7,6 +7,7 @@ import { UpdateVirtualBankAccountDto } from './dto/update-virtual-bank-accounts.
 import { User } from '../../../users/entities/user.entity';
 import { PaymentProviders } from '../../entities/payment-providers.entity';
 import { VirtualBankAccountFilterDto } from './dto/virtual-bank-accounts-filter.dto';
+import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
 @Injectable()
 export class VirtualBankAccountsService {
@@ -17,7 +18,9 @@ export class VirtualBankAccountsService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(PaymentProviders)
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
-  ) {}
+    @InjectRepository(Currency)
+    private readonly currencyRepository: Repository<Currency>,
+  ) { }
 
   async create(
     createVirtualBankAccountDto: CreateVirtualBankAccountDto,
@@ -44,6 +47,15 @@ export class VirtualBankAccountsService {
       throw new NotFoundException(`Payment Provider with ID ${paymentProviderId} not found`);
     }
 
+    if (createVirtualBankAccountDto.currencyId) {
+      const currency = await this.currencyRepository.findOne({
+        where: { currencyId: createVirtualBankAccountDto.currencyId }
+      });
+      if (!currency) {
+        throw new NotFoundException(`Currency with ID ${createVirtualBankAccountDto.currencyId} not found`);
+      }
+    }
+
     const virtualBankAccount = this.virtualBankAccountsRepository.create({
       ...virtualAccountData,
       user,
@@ -67,8 +79,10 @@ export class VirtualBankAccountsService {
         paymentProviderCode,
       });
     }
+
     if (currency) {
-      query.andWhere('account.currency = :currency', { currency });
+      query.leftJoinAndSelect('account.currency', 'currency')
+        .andWhere('currency.code = :currency', { currency });
     }
     return await query.getMany();
   }
@@ -76,7 +90,7 @@ export class VirtualBankAccountsService {
   async findByUserId(userId: string): Promise<VirtualBankAccounts[]> {
     return this.virtualBankAccountsRepository.find({
       where: { user: { id: userId } },
-      relations: ['user', 'paymentProvider'],
+      relations: ['user', 'paymentProvider', 'currency'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -84,7 +98,7 @@ export class VirtualBankAccountsService {
   async findOne(id: string): Promise<VirtualBankAccounts> {
     const virtualBankAccount = await this.virtualBankAccountsRepository.findOne({
       where: { virtualBankAccountId: id },
-      relations: ['user', 'paymentProvider'],
+      relations: ['user', 'paymentProvider', 'currency'],
     });
 
     if (!virtualBankAccount) {
@@ -152,6 +166,15 @@ export class VirtualBankAccountsService {
       // Los admins solo pueden editar cuentas creadas por otros admins
       if (virtualBankAccount.user.roleCode !== 'admin') {
         throw new ForbiddenException('Admins can only edit bank accounts created by other admins');
+      }
+    }
+
+    if (updateVirtualBankAccountDto.currencyId) {
+      const currency = await this.currencyRepository.findOne({
+        where: { currencyId: updateVirtualBankAccountDto.currencyId }
+      });
+      if (!currency) {
+        throw new NotFoundException(`Currency with ID ${updateVirtualBankAccountDto.currencyId} not found`);
       }
     }
 

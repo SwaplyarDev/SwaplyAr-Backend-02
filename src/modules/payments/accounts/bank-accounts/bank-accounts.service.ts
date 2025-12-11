@@ -9,6 +9,7 @@ import { User } from '../../../users/entities/user.entity';
 import { PaymentProviders } from '../../entities/payment-providers.entity';
 import { Countries } from '../../../catalogs/countries/countries.entity';
 import { BankAccountFilterDto } from './dto/bank-accounts-filter.dto';
+import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
 @Injectable()
 export class BankAccountsService {
@@ -22,8 +23,10 @@ export class BankAccountsService {
     @InjectRepository(PaymentProviders)
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
     @InjectRepository(Countries)
-    private readonly countriesRepository: Repository<Countries>,
-  ) {}
+    private readonly countriesRepository: Repository<Countries>, 
+    @InjectRepository(Currency)
+    private readonly currencyRepository: Repository<Currency>,
+  ) { }
 
   async create(createBankAccountDto: CreateBankAccountDto, userId: string): Promise<BankAccounts> {
     const {
@@ -56,6 +59,15 @@ export class BankAccountsService {
     });
     if (!country) {
       throw new NotFoundException(`Country with ID ${countryId} not found`);
+    }
+
+    if (createBankAccountDto.currencyId) {
+      const currency = await this.currencyRepository.findOne({
+        where: { currencyId: createBankAccountDto.currencyId }
+      });
+      if (!currency) {
+        throw new NotFoundException(`Currency with ID ${createBankAccountDto.currencyId} not found`);
+      }
     }
 
     // Create Bank Account
@@ -99,7 +111,8 @@ export class BankAccountsService {
     }
 
     if (currency) {
-      query.andWhere('account.currency = :currency', { currency });
+      query.leftJoinAndSelect('account.currency', 'currency')
+        .andWhere('currency.code = :currency', { currency });
     }
 
     return await query.getMany();
@@ -108,7 +121,7 @@ export class BankAccountsService {
   async findByUser(userId: string): Promise<BankAccounts[]> {
     const accounts = await this.bankAccountsRepository.find({
       where: { user: { id: userId } },
-      relations: ['details', 'user', 'paymentProvider'],
+      relations: ['details', 'user', 'paymentProvider', 'currency'],
     });
     if (!accounts || accounts.length === 0) {
       throw new NotFoundException(`No bank accounts found for user with ID ${userId}`);
@@ -119,7 +132,7 @@ export class BankAccountsService {
   async findOne(id: string): Promise<BankAccounts> {
     const bankAccount = await this.bankAccountsRepository.findOne({
       where: { bankAccountId: id },
-      relations: ['details', 'user', 'paymentProvider'],
+      relations: ['details', 'user', 'paymentProvider', 'currency'],
     });
 
     if (!bankAccount) {
@@ -152,6 +165,15 @@ export class BankAccountsService {
       // Los admins solo pueden editar cuentas creadas por otros admins
       if (bankAccount.user.roleCode !== 'admin') {
         throw new ForbiddenException('Admins can only edit bank accounts created by other admins');
+      }
+    }
+
+    if (updateBankAccountDto.currencyId) {
+      const currency = await this.currencyRepository.findOne({
+        where: { currencyId: updateBankAccountDto.currencyId }
+      });
+      if (!currency) {
+        throw new NotFoundException(`Currency with ID ${updateBankAccountDto.currencyId} not found`);
       }
     }
 

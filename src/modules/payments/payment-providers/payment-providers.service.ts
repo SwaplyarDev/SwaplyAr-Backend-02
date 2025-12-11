@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { PaymentProviders } from './payment-providers.entity';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
 import { UpdatePaymentProvidersDto } from './dto/update-payment-providers.dto';
 import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
 import { Countries } from 'src/modules/catalogs/countries/countries.entity';
+import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 import { BankAccounts } from '../accounts/bank-accounts/bank-accounts.entity';
 import { VirtualBankAccounts } from '../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
 import { CryptoAccounts } from '../accounts/crypto-accounts/crypto-accounts.entity';
@@ -21,6 +22,9 @@ export class PaymentProvidersService {
 
     @InjectRepository(Countries)
     private readonly countriesRepository: Repository<Countries>,
+
+    @InjectRepository(Currency)
+    private readonly currencyRepo: Repository<Currency>,
 
     @InjectRepository(BankAccounts)
     private readonly bankRepo: Repository<BankAccounts>,
@@ -149,7 +153,7 @@ export class PaymentProvidersService {
       await this.cryptoRepo.save(provider.cryptoAccounts);
     }
 
-    // Finalmente, inactivar el provider
+    // Inactivar el provider
     provider.isActive = false;
     return this.providersRepo.save(provider);
   }
@@ -157,5 +161,20 @@ export class PaymentProvidersService {
   async remove(id: string): Promise<void> {
     const provider = await this.findOne(id);
     await this.providersRepo.remove(provider);
+  }
+
+  async assignCurrencies(providerId: string, currencyIds: string[]): Promise<PaymentProviders> {
+    const provider = await this.findOne(providerId);
+    
+    const currencies = await this.currencyRepo.findBy({ 
+      currencyId: In(currencyIds) 
+    });
+    
+    if (!currencies.length) {
+      throw new NotFoundException('No valid currencies found');
+    }
+    
+    provider.supportedCurrencies = currencies;
+    return this.providersRepo.save(provider);
   }
 }

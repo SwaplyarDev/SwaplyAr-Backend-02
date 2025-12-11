@@ -79,11 +79,13 @@ export class CreateBankAccountDto {
   @IsString()
   swift?: string;
 
-  @ApiPropertyOptional({ example: 'ARS' })
+  @ApiProperty({ 
+    description: 'ID de la moneda', 
+    example: 'uuid-de-moneda' 
+  })
   @IsOptional()
-  @IsString()
-  @Length(2, 3)
-  currency?: string;
+  @IsUUID('4')
+  currencyId?: string;
 
   @ApiPropertyOptional({ example: 'individual' })
   @IsOptional()

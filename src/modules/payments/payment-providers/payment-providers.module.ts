@@ -8,7 +8,6 @@ import { Countries } from '../../catalogs/countries/countries.entity';
 import { BankAccounts } from '../accounts/bank-accounts/bank-accounts.entity';
 import { VirtualBankAccounts } from '../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
 import { CryptoAccounts } from '../accounts/crypto-accounts/crypto-accounts.entity';
-import { ProviderAccountsProcessor } from './services/provider-accounts.processor';
 
 @Module({
   imports: [
@@ -22,7 +21,7 @@ import { ProviderAccountsProcessor } from './services/provider-accounts.processo
     ]),
   ],
   controllers: [PaymentProvidersController],
-  providers: [PaymentProvidersService, ProviderAccountsProcessor],
+  providers: [PaymentProvidersService],
   exports: [PaymentProvidersService],
 })
 export class PaymentProvidersModule {}

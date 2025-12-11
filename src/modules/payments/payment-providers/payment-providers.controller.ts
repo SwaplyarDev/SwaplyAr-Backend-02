@@ -13,7 +13,7 @@ import {
 import { PaymentProvidersService } from './payment-providers.service';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
 import { UpdatePaymentProvidersDto } from './dto/update-payment-providers.dto';
-import { MyAvailableProvidersFilterDto } from './dto/payment-providers-filter.dto';
+import { PaymentProvidersFilterDto } from './dto/payment-providers-filter.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -23,32 +23,13 @@ import { Roles } from '@common/decorators/roles.decorator';
 export class PaymentProvidersController {
   constructor(private readonly service: PaymentProvidersService) {}
   // ===============================================
-  // MOSTRAR PROVEEDORES DE PAGO DISPONBLES PARA UN USUARIO
-  // ===============================================
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'user')
-  @Get('my-available')
-  @ApiOperation({
-    summary:
-      'Obtiene los providers disponibles para el usuario según las cuentas asociadas a su perfil',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de providers disponibles para el usuario',
-  })
-  findMyAvailableProviders(@Req() req, @Query() filters: MyAvailableProvidersFilterDto) {
-    return this.service.getMyAvailableProviders(req.user.id, filters);
-  }
-
-  // ===============================================
   // MOSTRAR TODAS LOS PROVEEDORES DE PAGO
   // ===============================================
-  @ApiOperation({ summary: 'Obtener todos los proveedores de pago' })
+  @ApiOperation({ summary: 'Obtener todos los proveedores de pago con filtros opcionales' })
   @ApiResponse({ status: 200, description: 'Lista de providers obtenida con éxito' })
   @Get()
-  findAll() {
-    return this.service.findAll();
+  findAll(@Query() filters: PaymentProvidersFilterDto) {
+    return this.service.findAll(filters);
   }
 
   // ===============================================

@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Query } from '@nestjs/common';
 import { PaymentPlatformsService } from './payment-platforms.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { CreatePaymentPlatformsDto } from './dto/create-payment-platforms.dto';
 import { UpdatePaymentPlatformsDto } from './dto/update-payment-platforms.dto';
 import { PaymentPlatformResponseDto } from './dto/payment-platforms-response.dto';
+import { PaymentPlatformFilterDto } from './dto/payment-platform-filter.dto';
 import { JwtAuthGuard } from '../../../common/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -16,15 +17,15 @@ export class PaymentPlatformsController {
   // ===============================================
   // MOSTRAR TODAS LAS PLATAFORMAS DE PAGO
   // ===============================================
-  @ApiOperation({ summary: 'Obtener todas las plataformas de pago registradas' })
+  @ApiOperation({ summary: 'Obtener todas las plataformas de pago registradas (con filtros opcionales)' })
   @ApiResponse({
     status: 200,
     description: 'Lista de plataformas de pago obtenida correctamente.',
     type: [PaymentPlatformResponseDto],
   })
   @Get()
-  findAll() {
-    return this.service.findAll();
+  findAll(@Query() filters: PaymentPlatformFilterDto) {
+    return this.service.findAll(filters);
   }
 
   // ===============================================

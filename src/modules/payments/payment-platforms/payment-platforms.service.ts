@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaymentPlatforms } from './payment-platforms.entity';
 import { CreatePaymentPlatformsDto } from './dto/create-payment-platforms.dto';
+import { PaymentPlatformFilterDto } from './dto/payment-platform-filter.dto';
 
 @Injectable()
 export class PaymentPlatformsService {
@@ -11,10 +12,19 @@ export class PaymentPlatformsService {
     private readonly repo: Repository<PaymentPlatforms>,
   ) {}
 
-  async findAll(): Promise<PaymentPlatforms[]> {
-    return this.repo.find({
-      relations: ['providers', 'financialAccounts'],
-    });
+  async findAll(filters: PaymentPlatformFilterDto) {
+    const query = this.repo.createQueryBuilder('platform').leftJoinAndSelect('platform.providers', 'providers');
+
+    if (filters.code) {
+      query.andWhere('platform.code = :code', { code: filters.code });
+    }
+
+    if (filters.isActive !== undefined) {
+      query.andWhere('platform.isActive = :isActive', { isActive: filters.isActive });
+    }
+    query.orderBy('platform.createdAt', 'DESC');
+
+    return query.getMany();
   }
 
   async findOne(id: string): Promise<PaymentPlatforms> {

@@ -28,9 +28,6 @@ export class BankAccountsController {
   // ==========================================
   // CREAR UNA CUENTA BANCARIA
   // ==========================================
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user', 'admin')
   @Post()
   @ApiOperation({ summary: 'Crear una nueva bank account' })
   @ApiResponse({

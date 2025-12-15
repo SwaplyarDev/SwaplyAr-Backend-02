@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CryptoAccounts } from './crypto-accounts.entity';
@@ -111,6 +111,7 @@ export class CryptoAccountsService {
 
   async findAll(filters: CryptoAccountFilterDto) {
     const { paymentProviderCode } = filters;
+    const { paymentProviderCode } = filters;
 
     const query = this.cryptoAccountsRepository
       .createQueryBuilder('account')
@@ -149,8 +150,50 @@ export class CryptoAccountsService {
   async update(
     id: string,
     updateCryptoAccountDto: UpdateCryptoAccountDto,
+    userId: string,
   ): Promise<CryptoAccounts> {
     const cryptoAccount = await this.findOne(id);
+
+    // Obtener el usuario autenticado con sus roles
+    const currentUser = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
+    });
+    if (!currentUser) {
+      throw new NotFoundException('Current user not found');
+    }
+
+    // Obtener el propietario de la cuenta con sus roles
+    const accountOwner = await this.userRepository.findOne({
+      where: { id: cryptoAccount.user.id },
+      relations: ['roles'],
+    });
+    if (!accountOwner) {
+      throw new NotFoundException('Account owner not found');
+    }
+
+    // Verificar si el usuario tiene un rol específico
+    const hasRole = (user: any, roleCode: string) => {
+      return user.roles?.some((role: any) => role.code === roleCode) || false;
+    };
+
+    const isCurrentUserAdmin = hasRole(currentUser, 'admin');
+    const isAccountOwnerAdmin = hasRole(accountOwner, 'admin');
+
+    // Verificar permisos según el rol
+    if (isCurrentUserAdmin) {
+      // Los admins solo pueden editar cuentas creadas por otros admins
+      if (!isAccountOwnerAdmin) {
+        throw new ForbiddenException(
+          'Admins can only edit crypto accounts created by other admins',
+        );
+      }
+    } else {
+      // Los usuarios solo pueden editar sus propias cuentas
+      if (cryptoAccount.user.id !== userId) {
+        throw new ForbiddenException('You can only edit your own crypto accounts');
+      }
+    }
 
     if (updateCryptoAccountDto.currencyId) {
       const currency = await this.currencyRepository.findOne({

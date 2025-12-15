@@ -1,9 +1,21 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Delete,
+  UseGuards, Put,
+  Query,
+  Request,
+} from '@nestjs/common';
 import { PaymentProvidersService } from './payment-providers.service';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
 import { UpdatePaymentProvidersDto } from './dto/update-payment-providers.dto';
 import { AssignProviderCurrenciesDto } from './dto/assign-provider-currencies.dto';
 import { PaymentProviders } from './payment-providers.entity';
+import { PaymentProvidersFilterDto } from './dto/payment-providers-filter.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -13,13 +25,29 @@ import { Roles } from '@common/decorators/roles.decorator';
 export class PaymentProvidersController {
   constructor(private readonly service: PaymentProvidersService) { }
   // ===============================================
-  // MOSTRAR TODAS LOS PROVEEDORES DE PAGO
+  // MOSTRAR TODOS LOS PROVEEDORES DE PAGO (RETURN DIFERENCIADO PARA ADMIN Y USER)
   // ===============================================
-  @ApiOperation({ summary: 'Obtener todos los proveedores de pago' })
+  @ApiOperation({
+    summary:
+      'Obtener todos los proveedores de pago con filtros opcionales (diferenciado para ADMIN y USER)'
+  })
   @ApiResponse({ status: 200, description: 'Lista de providers obtenida con éxito' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
-  findAll() {
-    return this.service.findAll();
+  findAll(@Query() filters: PaymentProvidersFilterDto,
+    @Request() req,
+  ) {
+    // Verificar si es admin chequeando req.user.roles array
+    const isAdmin = 
+      req.user.role === 'admin' || 
+      (Array.isArray(req.user.roles) && req.user.roles.some(r => r.code === 'admin'));
+    
+    // Si no es admin Y no especificó un filtro isActive explícitamente, forzar a true
+    if (!isAdmin && filters.isActive === undefined) {
+      filters.isActive = true;
+    }
+    return this.service.findAll(filters);
   }
 
   // ===============================================

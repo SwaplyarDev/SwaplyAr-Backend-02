@@ -36,11 +36,81 @@ export class PaymentProvidersService {
     private readonly cryptoRepo: Repository<CryptoAccounts>,
   ) {}
 
-  async findAll(): Promise<PaymentProviders[]> {
+  async findAll(filters?: {
+    platformCode?: string;
+    providerCode?: string;
+    fiatCurrencyCode?: string;
+    countryCode?: string;
+    cryptoNetworkCode?: string;
+    isActive?: boolean;
+  }): Promise<PaymentProviders[]> {
+
+    // Si no hay filtros, usa el approach simple
+  if (!filters || Object.keys(filters).length === 0) {
     return this.providersRepo.find({
       relations: ['paymentPlatform', 'supportedCurrencies', 'country'],
       order: { createdAt: 'DESC' },
     });
+  }
+
+  // Si hay filtros, usa QueryBuilder
+    const qb = this.providersRepo
+      .createQueryBuilder('provider')
+      .leftJoinAndSelect('provider.paymentPlatform', 'platform')
+      .leftJoinAndSelect('provider.country', 'country')
+      .leftJoinAndSelect('provider.bankAccounts', 'bank')
+      .leftJoinAndSelect('provider.virtualBankAccounts', 'virtual')
+      .leftJoinAndSelect('provider.cryptoAccounts', 'crypto')
+      .leftJoinAndSelect('crypto.cryptoNetwork', 'cryptoNetwork')
+      .orderBy('provider.createdAt', 'DESC');
+
+    // FILTRA POR CÓDIGO DE PLATAFORMA
+    if (filters?.platformCode) {
+      qb.andWhere('platform.code = :platformCode', {
+        platformCode: filters.platformCode,
+      });
+    }
+
+    // FILTRA POR CÓDIGO DE PROVEEDOR
+    if (filters?.providerCode) {
+      qb.andWhere('provider.code = :providerCode', {
+        providerCode: filters.providerCode,
+      });
+    }
+
+    // FILTRA POR MONEDA (bank + virtual)
+    if (filters?.fiatCurrencyCode) {
+      qb.andWhere(`(bank.currency = :fiatCurrencyCode OR virtual.currency = :fiatCurrencyCode)`, {
+        fiatCurrencyCode: filters.fiatCurrencyCode,
+      });
+    }
+
+    // FILTRA POR CRYPTO NETWORK (sólo crypto)
+    if (filters?.cryptoNetworkCode) {
+      qb.andWhere('cryptoNetwork.code = :cryptoNetworkCode', {
+        cryptoNetworkCode: filters.cryptoNetworkCode,
+      });
+    }
+
+    // FILTRA POR COUNTRY CODE
+    if (filters?.countryCode) {
+      qb.andWhere('country.code = :countryCode', {
+        countryCode: filters.countryCode,
+      });
+    }
+
+    // FILTRA POR ATRIBUTO isActive
+    if (filters?.isActive === true) {
+      qb.andWhere('provider.isActive = :isActive', {
+        isActive: true,
+      });
+    } else if (filters?.isActive === false) {
+      qb.andWhere('provider.isActive = :isActive', {
+        isActive: false,
+      });
+    }
+
+    return qb.getMany();
   }
 
   async findOne(id: string): Promise<PaymentProviders> {

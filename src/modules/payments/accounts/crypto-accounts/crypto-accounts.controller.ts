@@ -58,7 +58,7 @@ export class CryptoAccountsController {
     type: [CryptoAccountResponseDto],
   })
   findMyAccounts(@Request() req) {
-    return this.cryptoAccountsService.findByUserId(req.user.userId);
+    return this.cryptoAccountsService.findByUserId(req.user.id);
   }
 
   // ==========================================
@@ -95,6 +95,9 @@ export class CryptoAccountsController {
   // ==========================================
   // ACTUALIZAR UNA CUENTA CRYPTO
   // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una crypto account' })
   @ApiResponse({
@@ -102,8 +105,12 @@ export class CryptoAccountsController {
     description: 'The crypto account has been successfully updated.',
     type: CryptoAccountResponseDto,
   })
-  update(@Param('id') id: string, @Body() updateCryptoAccountDto: UpdateCryptoAccountDto) {
-    return this.cryptoAccountsService.update(id, updateCryptoAccountDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateCryptoAccountDto: UpdateCryptoAccountDto,
+    @Request() req,
+  ) {
+    return this.cryptoAccountsService.update(id, updateCryptoAccountDto, req.user.id);
   }
 
   // ==========================================
@@ -131,7 +138,10 @@ export class CryptoAccountsController {
   @Roles('user', 'admin')
   @Delete(':id')
   @ApiOperation({ summary: 'Borrar una crypto account (admin)' })
-  @ApiResponse({ status: 200, description: 'The crypto account has been successfully deleted.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The crypto account has been successfully deleted.',
+  })
   remove(@Param('id') id: string) {
     return this.cryptoAccountsService.remove(id);
   }

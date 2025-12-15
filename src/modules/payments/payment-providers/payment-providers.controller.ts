@@ -7,8 +7,8 @@ import {
   Patch,
   Delete,
   UseGuards,
-  Req,
   Query,
+  Request,
 } from '@nestjs/common';
 import { PaymentProvidersService } from './payment-providers.service';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
@@ -23,12 +23,28 @@ import { Roles } from '@common/decorators/roles.decorator';
 export class PaymentProvidersController {
   constructor(private readonly service: PaymentProvidersService) {}
   // ===============================================
-  // MOSTRAR TODAS LOS PROVEEDORES DE PAGO
+  // MOSTRAR TODOS LOS PROVEEDORES DE PAGO (RETURN DIFERENCIADO PARA ADMIN Y USER)
   // ===============================================
-  @ApiOperation({ summary: 'Obtener todos los proveedores de pago con filtros opcionales' })
+  @ApiOperation({
+    summary:
+      'Obtener todos los proveedores de pago con filtros opcionales (diferenciado para ADMIN y USER)'
+  })
   @ApiResponse({ status: 200, description: 'Lista de providers obtenida con éxito' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
-  findAll(@Query() filters: PaymentProvidersFilterDto) {
+  findAll(@Query() filters: PaymentProvidersFilterDto,
+    @Request() req,
+  ) {
+    // Verificar si es admin chequeando req.user.roles array
+    const isAdmin = 
+      req.user.role === 'admin' || 
+      (Array.isArray(req.user.roles) && req.user.roles.some(r => r.code === 'admin'));
+    
+    // Si no es admin Y no especificó un filtro isActive explícitamente, forzar a true
+    if (!isAdmin && filters.isActive === undefined) {
+      filters.isActive = true;
+    }
     return this.service.findAll(filters);
   }
 

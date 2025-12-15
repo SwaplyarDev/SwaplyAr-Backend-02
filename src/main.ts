@@ -34,7 +34,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: {
-        enableImplicitConversion: true,
+        enableImplicitConversion: false,
       },
       exceptionFactory: (errors) => {
         if (errors instanceof BadRequestException) return errors;

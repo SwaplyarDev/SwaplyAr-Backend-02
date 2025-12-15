@@ -1,27 +1,30 @@
-import { IsString, IsOptional, Length, IsUUID } from 'class-validator';
+import { IsString, Length, IsArray, IsUUID, ArrayMinSize } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCountryDto {
   @ApiProperty({
     description: 'Código único del país (ISO 3166)',
-    example: 'ARG',
+    example: 'BRA',
   })
-  @IsString({ message: 'El nombre debe ser una cadena de texto' })
+  @IsString({ message: 'El código debe ser una cadena de texto' })
   @Length(2, 3)
   code: string;
 
   @ApiProperty({
     description: 'Nombre del país',
-    example: 'Argentina',
+    example: 'Brasil',
   })
   @IsString({ message: 'El nombre debe ser una cadena de texto' })
   @Length(1, 100)
-  name: string; // Nombre del país
+  name: string;
 
   @ApiProperty({
-    description: 'ID de la moneda por defecto',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'IDs de las monedas soportadas (al menos una requerida)',
+    example: ['550e8400-e29b-41d4-a716-446655440001'],
+    type: [String],
   })
-  @IsUUID('4', { message: 'El ID de la moneda debe ser un UUID válido' })
-  currencyId: string;
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Debe proporcionar al menos una moneda' })
+  @IsUUID('4', { each: true })
+  currencyIds: string[];
 }

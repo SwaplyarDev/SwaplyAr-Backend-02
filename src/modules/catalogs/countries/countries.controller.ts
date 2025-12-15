@@ -4,6 +4,7 @@ import { CountriesService } from './country.service';
 import { CreateCountryDto } from './dto/create-countries.dto';
 import { UpdateCountryDto } from './dto/update-countries.dto';
 import { CountryResponseDto } from './dto/countries-response.dto';
+import { AssignCurrenciesDto } from './dto/assign-currencies.dto';
 import { Countries } from './countries.entity';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -63,12 +64,19 @@ export class CountriesController {
     return this.countriesService.remove(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Put(':id/currencies')
-  @ApiOperation({ summary: 'Asignar monedas al país' })
+  @ApiOperation({ 
+    summary: 'Asignar monedas al país',
+    description: 'Para obtener los IDs de monedas disponibles, usar GET /currencies'
+  })
+  @ApiOkResponse({ type: CountryResponseDto })
   assignCurrencies(
     @Param('id') id: string,
-    @Body('currencyIds') currencyIds: string[],
+    @Body() assignDto: AssignCurrenciesDto,
   ): Promise<Countries> {
-    return this.countriesService.assignCurrencies(id, currencyIds);
+    return this.countriesService.assignCurrencies(id, assignDto.currencyIds);
   }
 }

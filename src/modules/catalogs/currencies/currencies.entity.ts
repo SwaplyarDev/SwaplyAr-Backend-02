@@ -13,6 +13,7 @@ import { Countries } from '../countries/countries.entity';
 import { PaymentProviders } from 'src/modules/payments/payment-providers/payment-providers.entity';
 import { BankAccounts } from 'src/modules/payments/accounts/bank-accounts/bank-accounts.entity';
 import { VirtualBankAccounts } from 'src/modules/payments/accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
+import { CryptoAccounts } from 'src/modules/payments/accounts/crypto-accounts/crypto-accounts.entity';
 
 @Entity({ name: 'currencies' })
 @Unique(['code'])
@@ -60,4 +61,7 @@ export class Currency {
 
   @OneToMany(() => VirtualBankAccounts, (account) => account.currency)
   virtualBankAccounts: VirtualBankAccounts[];
+
+  @OneToMany(() => CryptoAccounts, (account) => account.currency)
+  cryptoAccounts: CryptoAccounts[];
 }

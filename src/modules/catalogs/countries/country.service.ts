@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, DataSource } from 'typeorm';
 import { Countries } from './countries.entity';
 import { Currency } from '../currencies/currencies.entity';
 import { CreateCountryDto } from './dto/create-countries.dto';
@@ -13,10 +13,13 @@ export class CountriesService {
     private countriesRepository: Repository<Countries>,
     @InjectRepository(Currency)
     private readonly currencyRepo: Repository<Currency>,
+    private dataSource: DataSource,
   ) {}
 
   async findAll(): Promise<Countries[]> {
-    return this.countriesRepository.find();
+    return this.countriesRepository.find({
+      relations: ['currencies'],
+    });
   }
 
   async findOne(id: string): Promise<Countries> {
@@ -31,14 +34,51 @@ export class CountriesService {
   }
 
   async create(createDto: CreateCountryDto): Promise<Countries> {
-    const currency = await this.currencyRepo.findOne({
-      where: { currencyId: createDto.currencyId },
+    const { currencyIds, ...countryData } = createDto;
+
+    // Check if country with this code already exists
+    const existingCountry = await this.countriesRepository.findOne({
+      where: { code: countryData.code }
     });
-    if (!currency) {
-      throw new NotFoundException('Moneda no encontrada');
+    
+    if (existingCountry) {
+      throw new BadRequestException(`Country with code '${countryData.code}' already exists`);
     }
-    const country = this.countriesRepository.create(createDto);
-    return this.countriesRepository.save(country);
+
+    return await this.dataSource.transaction(async manager => {
+      // Validate currencies exist
+      const currencies = await manager.findBy(Currency, { 
+        currencyId: In(currencyIds) 
+      });
+      
+      if (currencies.length !== currencyIds.length) {
+        throw new NotFoundException('One or more currencies not found');
+      }
+
+      // Create country
+      const country = manager.create(Countries, countryData);
+      const savedCountry = await manager.save(country);
+      
+      // Insert into junction table manually
+      for (const currencyId of currencyIds) {
+        await manager.query(
+          `INSERT INTO countries_currencies (country_id, currency_id) VALUES ($1, $2)`,
+          [savedCountry.id, currencyId]
+        );
+      }
+      
+      // Return country with currencies loaded
+      const result = await manager.findOne(Countries, {
+        where: { id: savedCountry.id },
+        relations: ['currencies']
+      });
+      
+      if (!result) {
+        throw new Error('Failed to retrieve created country');
+      }
+      
+      return result;
+    });
   }
 
   async update(id: string, updateDto: UpdateCountryDto): Promise<Countries> {
@@ -53,14 +93,42 @@ export class CountriesService {
   }
 
   async assignCurrencies(countryId: string, currencyIds: string[]): Promise<Countries> {
-    const country = await this.findOne(countryId);
+    return await this.dataSource.transaction(async manager => {
+      const country = await manager.findOne(Countries, { where: { id: countryId } });
+      if (!country) {
+        throw new NotFoundException('País no encontrado');
+      }
 
-    const currencies = await this.currencyRepo.findBy({ currencyId: In(currencyIds) });
-    if (!currencies.length) {
-      throw new NotFoundException('No valid currencies found');
-    }
+      const currencies = await manager.findBy(Currency, { currencyId: In(currencyIds) });
+      if (currencies.length !== currencyIds.length) {
+        throw new NotFoundException('One or more currencies not found');
+      }
 
-    country.currencies = currencies;
-    return this.countriesRepository.save(country);
+      // Clear existing relationships
+      await manager.query(
+        `DELETE FROM countries_currencies WHERE country_id = $1`,
+        [countryId]
+      );
+
+      // Insert new relationships
+      for (const currencyId of currencyIds) {
+        await manager.query(
+          `INSERT INTO countries_currencies (country_id, currency_id) VALUES ($1, $2)`,
+          [countryId, currencyId]
+        );
+      }
+
+      // Return country with currencies loaded
+      const result = await manager.findOne(Countries, {
+        where: { id: countryId },
+        relations: ['currencies']
+      });
+      
+      if (!result) {
+        throw new Error('Failed to retrieve updated country');
+      }
+      
+      return result;
+    });
   }
 }

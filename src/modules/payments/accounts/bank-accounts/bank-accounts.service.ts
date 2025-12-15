@@ -6,7 +6,7 @@ import { BankAccountDetails } from './bank-account-details.entity';
 import { CreateBankAccountDto } from './dto/create-bank-accounts.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
-import { PaymentProviders } from '../../entities/payment-providers.entity';
+import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
 import { Countries } from '../../../catalogs/countries/countries.entity';
 import { BankAccountFilterDto } from './dto/bank-accounts-filter.dto';
 import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
@@ -45,28 +45,61 @@ export class BankAccountsService {
       throw new NotFoundException(`User with ID ${targetUserId} not found`);
     }
 
-    // Verify payment provider exists
+    // Verify payment provider exists with supported currencies
     const paymentProvider = await this.paymentProvidersRepository.findOne({
       where: { paymentProviderId },
+      relations: ['supportedCurrencies'],
     });
     if (!paymentProvider) {
       throw new NotFoundException(`Payment Provider with ID ${paymentProviderId} not found`);
     }
 
-    // Verify country exists
+    // Verify country exists with supported currencies
     const country = await this.countriesRepository.findOne({
       where: { id: countryId },
+      relations: ['currencies'],
     });
     if (!country) {
       throw new NotFoundException(`Country with ID ${countryId} not found`);
     }
 
+    // Validate currency if provided
+    let currency: Currency | undefined;
     if (createBankAccountDto.currencyId) {
-      const currency = await this.currencyRepository.findOne({
+      const foundCurrency = await this.currencyRepository.findOne({
         where: { currencyId: createBankAccountDto.currencyId }
       });
-      if (!currency) {
+      if (!foundCurrency) {
         throw new NotFoundException(`Currency with ID ${createBankAccountDto.currencyId} not found`);
+      }
+      currency = foundCurrency;
+
+      // Validate that payment provider supports this currency
+      const providerSupportsCurrency = paymentProvider.supportedCurrencies?.some(
+        supportedCurrency => supportedCurrency.currencyId === createBankAccountDto.currencyId
+      );
+      
+      if (!providerSupportsCurrency) {
+        throw new NotFoundException(
+          `Payment Provider '${paymentProvider.name}' does not support currency '${currency.code}'`
+        );
+      }
+
+      // Validate that country supports this currency
+      if (!country.currencies || country.currencies.length === 0) {
+        throw new NotFoundException(
+          `Country '${country.name}' has no supported currencies configured`
+        );
+      }
+
+      const countrySupportsCurrency = country.currencies.some(
+        supportedCurrency => supportedCurrency.currencyId === createBankAccountDto.currencyId
+      );
+      
+      if (!countrySupportsCurrency) {
+        throw new NotFoundException(
+          `Country '${country.name}' does not support currency '${currency.code}'`
+        );
       }
     }
 
@@ -76,6 +109,7 @@ export class BankAccountsService {
       user,
       paymentProvider,
       country,
+      ...(currency && { currency }),
       createdBy: user,
     });
 
@@ -174,6 +208,44 @@ export class BankAccountsService {
       });
       if (!currency) {
         throw new NotFoundException(`Currency with ID ${updateBankAccountDto.currencyId} not found`);
+      }
+
+      // Validate that payment provider supports this currency
+      const providerWithCurrencies = await this.paymentProvidersRepository.findOne({
+        where: { paymentProviderId: bankAccount.paymentProvider.paymentProviderId },
+        relations: ['supportedCurrencies'],
+      });
+
+      const providerSupportsCurrency = providerWithCurrencies?.supportedCurrencies?.some(
+        supportedCurrency => supportedCurrency.currencyId === updateBankAccountDto.currencyId
+      );
+      
+      if (!providerSupportsCurrency) {
+        throw new NotFoundException(
+          `Payment Provider '${bankAccount.paymentProvider.name}' does not support currency '${currency.code}'`
+        );
+      }
+
+      // Validate that country supports this currency
+      const countryWithCurrencies = await this.countriesRepository.findOne({
+        where: { id: bankAccount.country.id },
+        relations: ['currencies'],
+      });
+
+      if (!countryWithCurrencies?.currencies || countryWithCurrencies.currencies.length === 0) {
+        throw new NotFoundException(
+          `Country '${bankAccount.country.name}' has no supported currencies configured`
+        );
+      }
+
+      const countrySupportsCurrency = countryWithCurrencies.currencies.some(
+        supportedCurrency => supportedCurrency.currencyId === updateBankAccountDto.currencyId
+      );
+      
+      if (!countrySupportsCurrency) {
+        throw new NotFoundException(
+          `Country '${bankAccount.country.name}' does not support currency '${currency.code}'`
+        );
       }
     }
 

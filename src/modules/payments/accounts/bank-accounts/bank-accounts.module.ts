@@ -4,7 +4,7 @@ import { BankAccountsService } from './bank-accounts.service';
 import { BankAccountsController } from './bank-accounts.controller';
 import { BankAccounts } from './bank-accounts.entity';
 import { BankAccountDetails } from './bank-account-details.entity';
-import { PaymentProviders } from '../../entities/payment-providers.entity';
+import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
 import { User } from '../../../users/entities/user.entity';
 import { Countries } from '../../../catalogs/countries/countries.entity';
 import { PaymentProvidersModule } from '../../payment-providers/payment-providers.module';

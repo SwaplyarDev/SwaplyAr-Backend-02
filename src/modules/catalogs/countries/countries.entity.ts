@@ -4,8 +4,7 @@ import {
   Column,
   CreateDateColumn,
   ManyToMany,
-  ManyToOne,
-  JoinColumn,
+  JoinTable,
 } from 'typeorm';
 import { Currency } from '../currencies/currencies.entity';
 
@@ -20,14 +19,18 @@ export class Countries {
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ type: 'uuid', nullable: false, name: 'currency_id' })
-  currencyId: string;
-
-  @ManyToOne(() => Currency, { nullable: false })
-  @JoinColumn({ name: 'currency_id' })
-  defaultCurrency: Currency;
-
   @ManyToMany(() => Currency, (currency) => currency.countries)
+  @JoinTable({
+    name: 'countries_currencies',
+    joinColumn: {
+      name: 'country_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'currency_id',
+      referencedColumnName: 'currencyId',
+    },
+  })
   currencies: Currency[];
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'created_at' })

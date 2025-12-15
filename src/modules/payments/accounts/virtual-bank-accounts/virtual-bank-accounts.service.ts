@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VirtualBankAccounts } from './virtual-bank-accounts.entity';
 import { CreateVirtualBankAccountDto } from './dto/create-virtual-bank-accounts.dto';
 import { UpdateVirtualBankAccountDto } from './dto/update-virtual-bank-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
-import { PaymentProviders } from '../../entities/payment-providers.entity';
+import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
 import { VirtualBankAccountFilterDto } from './dto/virtual-bank-accounts-filter.dto';
 import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
@@ -41,18 +41,47 @@ export class VirtualBankAccountsService {
 
     // Verify payment provider exists
     const paymentProvider = await this.paymentProvidersRepository.findOne({
-      where: { paymentProviderId },
+      where: { paymentProviderId }
     });
     if (!paymentProvider) {
       throw new NotFoundException(`Payment Provider with ID ${paymentProviderId} not found`);
     }
 
+    // Validate currency if provided
+    let currency: Currency | undefined;
     if (createVirtualBankAccountDto.currencyId) {
-      const currency = await this.currencyRepository.findOne({
+      const foundCurrency = await this.currencyRepository.findOne({
         where: { currencyId: createVirtualBankAccountDto.currencyId }
       });
-      if (!currency) {
+      if (!foundCurrency) {
         throw new NotFoundException(`Currency with ID ${createVirtualBankAccountDto.currencyId} not found`);
+      }
+      currency = foundCurrency;
+
+      // Check if payment provider supports this currency using direct SQL query
+      const supportedCurrency = await this.paymentProvidersRepository.query(
+        `SELECT c.code, c.name FROM provider_currencies pc 
+         JOIN currencies c ON pc.currency_id = c.currency_id 
+         WHERE pc.provider_id = $1 AND pc.currency_id = $2`,
+        [paymentProviderId, createVirtualBankAccountDto.currencyId]
+      );
+      
+      if (!supportedCurrency || supportedCurrency.length === 0) {
+        // Get all supported currencies for error message
+        const allSupported = await this.paymentProvidersRepository.query(
+          `SELECT c.code FROM provider_currencies pc 
+           JOIN currencies c ON pc.currency_id = c.currency_id 
+           WHERE pc.provider_id = $1`,
+          [paymentProviderId]
+        );
+        
+        const supportedCodes = allSupported.length > 0 
+          ? allSupported.map((c: any) => c.code).join(', ')
+          : 'none';
+          
+        throw new BadRequestException(
+          `Payment Provider '${paymentProvider.name}' does not support currency '${currency.code}'. Supported currencies: ${supportedCodes}`
+        );
       }
     }
 
@@ -60,6 +89,7 @@ export class VirtualBankAccountsService {
       ...virtualAccountData,
       user,
       paymentProvider,
+      ...(currency && { currency }),
       createdBy: user,
     });
 
@@ -175,6 +205,32 @@ export class VirtualBankAccountsService {
       });
       if (!currency) {
         throw new NotFoundException(`Currency with ID ${updateVirtualBankAccountDto.currencyId} not found`);
+      }
+
+      // Check if payment provider supports this currency using direct SQL query
+      const supportedCurrency = await this.paymentProvidersRepository.query(
+        `SELECT c.code, c.name FROM provider_currencies pc 
+         JOIN currencies c ON pc.currency_id = c.currency_id 
+         WHERE pc.provider_id = $1 AND pc.currency_id = $2`,
+        [virtualBankAccount.paymentProvider.paymentProviderId, updateVirtualBankAccountDto.currencyId]
+      );
+      
+      if (!supportedCurrency || supportedCurrency.length === 0) {
+        // Get all supported currencies for error message
+        const allSupported = await this.paymentProvidersRepository.query(
+          `SELECT c.code FROM provider_currencies pc 
+           JOIN currencies c ON pc.currency_id = c.currency_id 
+           WHERE pc.provider_id = $1`,
+          [virtualBankAccount.paymentProvider.paymentProviderId]
+        );
+        
+        const supportedCodes = allSupported.length > 0 
+          ? allSupported.map((c: any) => c.code).join(', ')
+          : 'none';
+          
+        throw new BadRequestException(
+          `Payment Provider '${virtualBankAccount.paymentProvider.name}' does not support currency '${currency.code}'. Supported currencies: ${supportedCodes}`
+        );
       }
     }
 

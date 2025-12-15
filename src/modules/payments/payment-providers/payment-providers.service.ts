@@ -34,7 +34,7 @@ export class PaymentProvidersService {
 
     @InjectRepository(CryptoAccounts)
     private readonly cryptoRepo: Repository<CryptoAccounts>,
-  ) {}
+  ) { }
 
   async findAll(filters?: {
     platformCode?: string;
@@ -46,14 +46,14 @@ export class PaymentProvidersService {
   }): Promise<PaymentProviders[]> {
 
     // Si no hay filtros, usa el approach simple
-  if (!filters || Object.keys(filters).length === 0) {
-    return this.providersRepo.find({
-      relations: ['paymentPlatform', 'supportedCurrencies', 'country'],
-      order: { createdAt: 'DESC' },
-    });
-  }
+    if (!filters || Object.keys(filters).length === 0) {
+      return this.providersRepo.find({
+        relations: ['paymentPlatform', 'supportedCurrencies', 'country'],
+        order: { createdAt: 'DESC' },
+      });
+    }
 
-  // Si hay filtros, usa QueryBuilder
+    // Si hay filtros, usa QueryBuilder
     const qb = this.providersRepo
       .createQueryBuilder('provider')
       .leftJoinAndSelect('provider.paymentPlatform', 'platform')
@@ -145,10 +145,10 @@ export class PaymentProvidersService {
     // Validar monedas si se proporcionan
     let currencies: Currency[] = [];
     if (currencyIds?.length) {
-      currencies = await this.currencyRepo.findBy({ 
-        currencyId: In(currencyIds) 
+      currencies = await this.currencyRepo.findBy({
+        currencyId: In(currencyIds)
       });
-      
+
       if (currencies.length !== currencyIds.length) {
         throw new NotFoundException('One or more currencies not found');
       }
@@ -248,27 +248,27 @@ export class PaymentProvidersService {
 
   async assignCurrencies(providerId: string, currencyIds: string[]): Promise<PaymentProviders> {
     const provider = await this.findOne(providerId);
-    
-    const newCurrencies = await this.currencyRepo.findBy({ 
-      currencyId: In(currencyIds) 
+
+    const newCurrencies = await this.currencyRepo.findBy({
+      currencyId: In(currencyIds)
     });
-    
+
     if (!newCurrencies.length) {
       throw new NotFoundException('No valid currencies found');
     }
-    
+
     // Get existing currency IDs to avoid duplicates
     const existingIds = provider.supportedCurrencies?.map(c => c.currencyId) || [];
-    
+
     // Filter out currencies that are already assigned
-    const currenciesToAdd = newCurrencies.filter(currency => 
+    const currenciesToAdd = newCurrencies.filter(currency =>
       !existingIds.includes(currency.currencyId)
     );
-    
+
     if (currenciesToAdd.length === 0) {
       throw new ConflictException('All specified currencies are already assigned to this provider');
     }
-    
+
     // Add new currencies to existing ones
     provider.supportedCurrencies = [...(provider.supportedCurrencies || []), ...currenciesToAdd];
     return this.providersRepo.save(provider);
@@ -276,15 +276,15 @@ export class PaymentProvidersService {
 
   async replaceCurrencies(providerId: string, currencyIds: string[]): Promise<PaymentProviders> {
     const provider = await this.findOne(providerId);
-    
-    const currencies = await this.currencyRepo.findBy({ 
-      currencyId: In(currencyIds) 
+
+    const currencies = await this.currencyRepo.findBy({
+      currencyId: In(currencyIds)
     });
-    
+
     if (!currencies.length) {
       throw new NotFoundException('No valid currencies found');
     }
-    
+
     // Replace all currencies
     provider.supportedCurrencies = currencies;
     return this.providersRepo.save(provider);
@@ -292,16 +292,16 @@ export class PaymentProvidersService {
 
   async removeCurrencies(providerId: string, currencyIds: string[]): Promise<PaymentProviders> {
     const provider = await this.findOne(providerId);
-    
+
     if (!provider.supportedCurrencies?.length) {
       throw new NotFoundException('Provider has no currencies to remove');
     }
-    
+
     // Filter out the currencies to remove
-    provider.supportedCurrencies = provider.supportedCurrencies.filter(currency => 
+    provider.supportedCurrencies = provider.supportedCurrencies.filter(currency =>
       !currencyIds.includes(currency.currencyId)
     );
-    
+
     return this.providersRepo.save(provider);
   }
 }

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TransactionsService } from './transactions.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
-import { FinancialAccountsService } from 'src/deprecated/financial-accounts/financial-accounts.service';
+import { FinancialAccountsService } from '../payments/financial-accounts/financial-accounts.service';
 import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from 'src/modules/payments/proof-of-payments/proof-of-payments.service';
 import { MailerService } from '@mailer/mailer.service';

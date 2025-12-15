@@ -1,6 +1,7 @@
 import { IsPhoneNumberValid } from '@common/decorators/phone-number.decorator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { CreatePaymentProvidersDto } from '../../payment-providers/dto/create-payment-providers.dto';
 
 export class CreateSenderFinancialAccountDto {
   @ApiProperty({ description: 'Nombre del usuario', example: 'Nahuel' })
@@ -35,12 +36,9 @@ export class CreateSenderFinancialAccountDto {
   phoneNumber?: string;
 
   @ApiProperty({
-    description: 'ID de la plataforma de pago',
-    example: 'a59e00c2-3f45-4455-b12f-bdc494c239f0',
+    type: CreatePaymentProvidersDto,
   })
-  @IsString()
-  @IsNotEmpty()
-  paymentPlatformId: string;
+  paymentProvider: CreatePaymentProvidersDto;
 
   @ApiProperty({
     description: 'Código del país (opcional)',

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FinancialAccountsService } from './financial-accounts.service';
 import { FinancialAccountsController } from './financial-accounts.controller';
-import { FinancialAccounts } from './financial-accounts.entity';
+import { FinancialAccounts } from './entities/financial-accounts.entity';
 import { PaymentPlatforms } from '../entities/payment-platforms.entity';
 import { User } from '../../users/entities/user.entity';
 import { UsersModule } from '../../users/users.module';

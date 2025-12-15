@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PaymentPlatforms } from './payment-platforms.entity';
+import { PaymentPlatforms } from './entities/payment-platforms.entity';
 import { CreatePaymentPlatformsDto } from './dto/create-payment-platforms.dto';
 
 @Injectable()

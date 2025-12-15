@@ -12,24 +12,24 @@ export class RegretDto {
   @ApiProperty({ example: 'Pérez' })
   lastName: string;
 
-  @Expose({ name: 'phone_number' })
-  @ApiProperty({ example: '+12456789' })
-  phoneNumber: string;
-
   @Expose()
   @ApiProperty({ example: 'perez@gmail.com' })
   email: string;
+
+  @Expose({ name: 'phone_number' })
+  @ApiProperty({ example: '+12456789' })
+  phoneNumber: string;
 
   @Expose()
   @ApiProperty({ example: 'Descripción de prueba' })
   description: string;
 
   @Expose()
-  @ApiProperty({ type: TransactionResponseDto })
+  @ApiProperty({ type: () => TransactionResponseDto })
   transaction: TransactionResponseDto;
 
   @Expose({ name: 'proofsOfPayment' })
-  @ApiProperty({ type: ProofOfPaymentResponseDto, required: false })
+  @ApiProperty({ type: () => ProofOfPaymentResponseDto, required: false })
   proofOfPayment?: ProofOfPaymentResponseDto;
 
   @Expose()

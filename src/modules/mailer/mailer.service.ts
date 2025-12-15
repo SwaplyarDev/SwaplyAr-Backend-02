@@ -177,23 +177,29 @@ export class MailerService {
    * =========================== */
   private resolveTemplatePath(subdirs: string[]): string | null {
     const parts = ['modules', 'mailer', 'templates', 'email', ...subdirs];
-    
+
     // Ruta de desarrollo
     const devPath = join(process.cwd(), 'src', ...parts);
-    
+
     // Rutas de producción (probar múltiples ubicaciones)
     const distPath1 = join(__dirname, '..', '..', '..', ...parts);
     const distPath2 = join(process.cwd(), 'dist', ...parts);
     const distPath3 = join('/app', 'dist', ...parts);
-    
+
     this.logger.debug(`Buscando template en:`);
     this.logger.debug(`  devPath: ${devPath} - ${existsSync(devPath) ? 'EXISTS' : 'NOT FOUND'}`);
-    this.logger.debug(`  distPath1 (__dirname): ${distPath1} - ${existsSync(distPath1) ? 'EXISTS' : 'NOT FOUND'}`);
-    this.logger.debug(`  distPath2 (cwd/dist): ${distPath2} - ${existsSync(distPath2) ? 'EXISTS' : 'NOT FOUND'}`);
-    this.logger.debug(`  distPath3 (/app/dist): ${distPath3} - ${existsSync(distPath3) ? 'EXISTS' : 'NOT FOUND'}`);
+    this.logger.debug(
+      `  distPath1 (__dirname): ${distPath1} - ${existsSync(distPath1) ? 'EXISTS' : 'NOT FOUND'}`,
+    );
+    this.logger.debug(
+      `  distPath2 (cwd/dist): ${distPath2} - ${existsSync(distPath2) ? 'EXISTS' : 'NOT FOUND'}`,
+    );
+    this.logger.debug(
+      `  distPath3 (/app/dist): ${distPath3} - ${existsSync(distPath3) ? 'EXISTS' : 'NOT FOUND'}`,
+    );
     this.logger.debug(`  __dirname actual: ${__dirname}`);
     this.logger.debug(`  process.cwd(): ${process.cwd()}`);
-    
+
     if (existsSync(devPath)) {
       this.logger.debug(`✅ Usando devPath: ${devPath}`);
       return devPath;
@@ -210,7 +216,7 @@ export class MailerService {
       this.logger.debug(`✅ Usando distPath3: ${distPath3}`);
       return distPath3;
     }
-    
+
     this.logger.error(`❌ No se encontró el template en ninguna ubicación`);
     return null;
   }
@@ -226,7 +232,7 @@ export class MailerService {
   }
 
   private extractValidEmail(transaction: any): string | null {
-    const candidates = [transaction?.senderAccount?.createdBy];
+    const candidates = [transaction?.senderAccount?.user.email];
     const isEmail = (s?: string) => typeof s === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
     return candidates.find(isEmail) ?? null;
   }
@@ -254,7 +260,6 @@ export class MailerService {
 
   private buildTemplateData(transaction: any): Record<string, any> {
     const sender = transaction.senderAccount ?? {};
-    const receiver = transaction.receiverAccount ?? {};
     const amount = transaction.amount ?? {};
 
     const templateData = {
@@ -262,36 +267,17 @@ export class MailerService {
       TRANSACTION_ID: transaction.id,
       NAME: sender.firstName ?? '',
       LAST_NAME: sender.lastName ?? '',
-      PHONE_NUMBER: sender.phoneNumber ?? receiver.phoneNumber ?? '',
-      EMAIL: sender.createdBy ?? '',
+      PHONE_NUMBER: sender.phoneNumber ?? '',
+      EMAIL: sender.user.email ?? '',
       AMOUNT_SENT: amount.amountSent ?? 0,
       SENT_CURRENCY: amount.currencySent ?? '',
-      PAYMENT_METHOD: sender.paymentMethod?.method ?? 'No especificado',
-      PAYMENT_METHOD_IMG: this.getPaymentMethodImg(
-        sender.paymentMethod?.method ?? '',
-        amount.currencySent ?? '',
-      ),
+      PAYMENT_PROVIDER: sender.paymentProvider?.method ?? 'No especificado',
       AMOUNT_RECEIVED: amount.amountReceived ?? 0,
       RECEIVED_CURRENCY: amount.currencyReceived ?? '',
-      RECEIVED_NAME: `${receiver.firstName ?? ''} ${receiver.lastName ?? ''}`.trim(),
-      RECEIVED_METHOD: receiver.paymentMethod?.method ?? 'No especificado',
-      RECEIVED_METHOD_IMG: this.getPaymentMethodImg(
-        receiver.paymentMethod?.method ?? '',
-        amount.currencyReceived ?? '',
-      ),
       BASE_URL: this.configService.get('frontendBaseUrl') ?? 'https://swaplyar.com',
       DATE_HOUR: new Date().toLocaleString('es-AR'),
       MODIFICATION_DATE: new Date().toLocaleDateString('es-AR'),
     };
-
-    if (
-      receiver.paymentMethod?.method === 'pix' ||
-      templateData.RECEIVED_METHOD_IMG ===
-        'https://res.cloudinary.com/dwrhturiy/image/upload/v1752677907/layer1_dw5lwr.png'
-    ) {
-      templateData['PIX_KEY'] = receiver.paymentMethod?.pixKey ?? '';
-      templateData['CPF'] = receiver.paymentMethod?.cpf ?? '';
-    }
 
     return templateData;
   }

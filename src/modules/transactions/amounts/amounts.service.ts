@@ -18,7 +18,7 @@ export class AmountsService {
   }
 
   findAll() {
-    return `This action returns all amounts`;
+    return this.amountsRepository.find();
   }
 
   findOne(id: string) {

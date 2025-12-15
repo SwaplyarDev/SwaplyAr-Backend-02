@@ -7,7 +7,7 @@ import {
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { FinancialAccount } from 'src/deprecated/financial-accounts/entities/financial-account.entity';
+import { FinancialAccounts } from 'src/modules/payments/financial-accounts/entities/financial-accounts.entity';
 
 @Entity('user_account')
 export class UserAccount {
@@ -31,7 +31,7 @@ export class UserAccount {
   userId: string;
 
   // 🔗 Relación 1:1 con FinancialAccount
-  @OneToOne(() => FinancialAccount, { cascade: true, onDelete: 'CASCADE' })
+  @OneToOne(() => FinancialAccounts, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'financial_account_id' })
-  financialAccount: FinancialAccount;
+  financialAccount: FinancialAccounts;
 }

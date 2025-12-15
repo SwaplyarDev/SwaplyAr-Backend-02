@@ -8,8 +8,8 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm';
-import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
-import { User } from '../../users/entities/user.entity';
+import { PaymentPlatforms } from '../../payment-platforms/entities/payment-platforms.entity';
+import { User } from '@users/entities/user.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
 
 @Entity({ name: 'financial_accounts' })

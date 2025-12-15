@@ -8,67 +8,69 @@ import { UserProfile } from '../users/entities/user-profile.entity';
 
 @Injectable()
 export class RolesService implements OnModuleInit {
-    constructor(
-        @InjectRepository(Roles)
-        private roleRepository: Repository<Roles>,
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
-        @InjectRepository(UserProfile)
-        private userProfileRepository: Repository<UserProfile>
-    ) { }
+  constructor(
+    @InjectRepository(Roles)
+    private roleRepository: Repository<Roles>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    @InjectRepository(UserProfile)
+    private userProfileRepository: Repository<UserProfile>,
+  ) {}
 
-    async onModuleInit() {
-        await this.seedRoles();
-        await this.createDefaultAdmin();
+  async onModuleInit() {
+    await this.seedRoles();
+    await this.createDefaultAdmin();
+  }
+
+  async createRole(createRoleDto: CreateRoleDto): Promise<Roles> {
+    const exists = await this.roleRepository.findOne({ where: { code: createRoleDto.code } });
+    if (exists) {
+      throw new ConflictException(`El rol con código '${createRoleDto.code}' ya existe`);
     }
+    const role = this.roleRepository.create(createRoleDto);
+    return await this.roleRepository.save(role);
+  }
 
-    async createRole(createRoleDto: CreateRoleDto): Promise<Roles> {
-        const exists = await this.roleRepository.findOne({ where: { code: createRoleDto.code } });
-        if (exists) {
-            throw new ConflictException(`El rol con código '${createRoleDto.code}' ya existe`);
-        }
-        const role = this.roleRepository.create(createRoleDto);
-        return await this.roleRepository.save(role);
+  async seedRoles(): Promise<Roles[]> {
+    const defaultRoles = [
+      { code: 'user', name: 'Usuario', description: 'Usuario estándar' },
+      { code: 'admin', name: 'Administrador', description: 'Admin del sistema' },
+      {
+        code: 'super_admin',
+        name: 'Administrador Superior',
+        description: 'Administrador de contenido y usuarios',
+      },
+    ];
+
+    const roles: Roles[] = [];
+    for (const roleData of defaultRoles) {
+      const exists = await this.roleRepository.findOne({ where: { code: roleData.code } });
+      if (!exists) {
+        const role = await this.createRole(roleData);
+        roles.push(role);
+      }
     }
+    return roles;
+  }
 
-    async seedRoles(): Promise<Roles[]> {
-        const defaultRoles = [
-            { code: 'user', name: 'Usuario', description: 'Usuario estándar' },
-            { code: 'admin', name: 'Administrador', description: 'Admin del sistema' },
-            { code: 'super_admin', name: 'Administrador Superior', description: 'Administrador de contenido y usuarios' }
-        ];
+  async createDefaultAdmin(): Promise<void> {
+    const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || 'admin@swaplyar.com';
+    const firstName = process.env.DEFAULT_ADMIN_FIRST_NAME || 'Admin';
+    const lastName = process.env.DEFAULT_ADMIN_LAST_NAME || 'System';
+    const memberCode = process.env.DEFAULT_ADMIN_MEMBER_CODE || 'ADMIN001';
+    const existingProfile = await this.userProfileRepository.findOne({ 
+      where: { email: adminEmail } 
+    });
 
-        const roles: Roles[] = [];
-        for (const roleData of defaultRoles) {
-            const exists = await this.roleRepository.findOne({ where: { code: roleData.code } });
-            if (!exists) {
-                const role = await this.createRole(roleData);
-                roles.push(role);
-            }
-        }
-        return roles;
-    }
+    if (existingProfile) return;
+    const adminRole = await this.findByCode('admin');
 
-    async createDefaultAdmin(): Promise<void> {
-        const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || 'admin@swaplyar.com';
-        const firstName = process.env.DEFAULT_ADMIN_FIRST_NAME || 'Admin';
-        const lastName = process.env.DEFAULT_ADMIN_LAST_NAME || 'System';
-        const memberCode = process.env.DEFAULT_ADMIN_MEMBER_CODE || 'ADMIN001';
-        
-        const existingProfile = await this.userProfileRepository.findOne({ 
-            where: { email: adminEmail } 
-        });
-        
-        if (existingProfile) return;
-        
-        const adminRole = await this.findByCode('admin');
-        
-        const adminUser = this.userRepository.create({
-            termsAccepted: true,
-            memberCode,
-            isActive: true,
-            roles: [adminRole]
-        });
+    const adminUser = this.userRepository.create({
+      termsAccepted: true,
+      memberCode,
+      isActive: true,
+      roles: [adminRole],
+    });
         
         const savedUser = await this.userRepository.save(adminUser);
         
@@ -169,7 +171,8 @@ export class RolesService implements OnModuleInit {
                 role_name = COALESCE((SELECT string_agg(r.name, ', ' ORDER BY r.code) FROM user_roles ur JOIN roles r ON ur.role_id = r.role_id WHERE ur.user_id = $1), ''),
                 role_description = COALESCE((SELECT string_agg(r.description, ', ' ORDER BY r.code) FROM user_roles ur JOIN roles r ON ur.role_id = r.role_id WHERE ur.user_id = $1), '')
             WHERE user_id = $1
-        `, [userId]);
+        `,
+      [userId],);
     }
     
     // Método para obtener todos los roles disponibles

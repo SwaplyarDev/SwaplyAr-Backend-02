@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, UpdateDateColumn } from 'typeorm';
 import { UserDiscount } from './user-discount.entity';
 
 @Entity('discount_codes')
@@ -27,8 +27,11 @@ export class DiscountCode {
   @Column({ type: 'timestamp with time zone', name: 'valid_from' })
   validFrom: Date;
 
-  @CreateDateColumn({ type: 'timestamp with time zone', name: 'created_at' })
+  @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
+  updatedAt: Date;
 
   @OneToMany(() => UserDiscount, (userDiscount) => userDiscount.discountCode)
   userDiscounts: UserDiscount[];

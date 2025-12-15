@@ -43,5 +43,5 @@ export class UserDiscount {
     () => TransactionUserDiscounts,
     (transactionUserDiscounts) => transactionUserDiscounts.userDiscount,
   )
-  transactionUserDiscounts: TransactionUserDiscounts;
+  transactionUserDiscounts: TransactionUserDiscounts[];
 }

@@ -5,7 +5,7 @@ import { VirtualBankAccounts } from './virtual-bank-accounts.entity';
 import { CreateVirtualBankAccountDto } from './dto/create-virtual-bank-accounts.dto';
 import { UpdateVirtualBankAccountDto } from './dto/update-virtual-bank-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
-import { PaymentProviders } from '../../entities/payment-providers.entity';
+import { PaymentProviders } from '../../payment-providers/entities/payment-providers.entity';
 
 @Injectable()
 export class VirtualBankAccountsService {

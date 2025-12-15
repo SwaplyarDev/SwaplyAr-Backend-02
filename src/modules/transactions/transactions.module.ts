@@ -4,8 +4,7 @@ import { TransactionsController } from './transactions.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { SenderFinancialAccount } from 'src/modules/payments/sender-accounts/entities/sender-financial-account.entity';
-import { ReceiverFinancialAccount } from '@financial-accounts/receiver-financial-accounts/entities/receiver-financial-account.entity';
-import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
+import { FinancialAccountsModule } from '../payments/financial-accounts/financial-accounts.module';
 import { AmountsService } from './amounts/amounts.service';
 import { Amount } from './amounts/entities/amount.entity';
 import { ProofOfPaymentsService } from 'src/modules/payments/proof-of-payments/proof-of-payments.service';
@@ -16,24 +15,27 @@ import { AdministracionStatusLog } from '@admin/entities/administracion-status-l
 import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '@mailer/mailer.module';
 import { UserDiscount } from '../discounts/entities/user-discount.entity';
+import { TransactionUserDiscounts } from './entities/transaction-user-discounts.entity';
+import { SenderFinancialAccountsModule } from '../payments/sender-accounts/sender-financial-accounts.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Transaction,
       SenderFinancialAccount,
-      ReceiverFinancialAccount,
       Amount,
       UserDiscount,
       ProofOfPayment,
       AdministracionStatusLog,
+      TransactionUserDiscounts,
     ]),
+    SenderFinancialAccountsModule,
     FinancialAccountsModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'secretKey', // tu configuración real
-      signOptions: { expiresIn: '60s' }, // o la configuración que uses
+      secret: process.env.JWT_SECRET || 'secretKey',
+      signOptions: { expiresIn: '60s' },
     }),
-    MailerModule, // Importa el módulo del servicio de correo
+    MailerModule,
   ],
   controllers: [TransactionsController],
   providers: [
@@ -49,6 +51,7 @@ import { UserDiscount } from '../discounts/entities/user-discount.entity';
     ProofOfPaymentsService,
     FileUploadService,
     CloudinaryService,
+    TypeOrmModule, 
   ],
 })
 export class TransactionsModule {}

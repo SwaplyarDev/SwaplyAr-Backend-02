@@ -12,12 +12,11 @@ import { ProofOfPayment } from 'src/modules/payments/proof-of-payments/entities/
 import { StatusHistoryResponse } from 'src/common/interfaces/status-history.interface';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
-import { BankService } from 'src/deprecated/financial-accounts/payment-methods/bank/bank.service';
+import { BankAccountsService } from 'src/modules/payments/accounts/bank-accounts/bank-accounts.service';
 import { User } from '@users/entities/user.entity';
 import { Status } from 'src/enum/status.enum';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { FileUploadDTO } from 'src/modules/file-upload/dto/file-upload.dto';
-import { UpdateBankDto } from 'src/deprecated/financial-accounts/payment-methods/bank/dto/create-bank.dto';
 import {
   TransactionAdminResponseDto,
   TransactionByIdAdminResponseDto,
@@ -37,7 +36,7 @@ export class AdminTransactionService {
     @InjectRepository(AdministracionMaster)
     private readonly adminMasterRepository: Repository<AdministracionMaster>,
     private readonly proofOfPaymentService: ProofOfPaymentsService,
-    private readonly bankService: BankService,
+    private readonly bankService: BankAccountsService,
     private readonly updateStars: UpdateStarsService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -73,14 +72,14 @@ export class AdminTransactionService {
     method?: string;
     search?: string;
   }): Promise<{ meta: any; data: TransactionAdminResponseDto[] }> {
-    const { page, perPage, country, status, method, search } = filters;
+    const { page, perPage, country, status, search } = filters;
 
     const query = this.transactionsRepository
       .createQueryBuilder('tx')
       .leftJoinAndSelect('tx.senderAccount', 'senderAccount')
-      .leftJoinAndSelect('senderAccount.paymentMethod', 'senderPaymentMethod')
-      .leftJoinAndSelect('tx.receiverAccount', 'receiverAccount')
-      .leftJoinAndSelect('receiverAccount.paymentMethod', 'receiverPaymentMethod')
+      .leftJoinAndSelect('senderAccount.paymentProvider', 'senderPaymentProvider')
+      .leftJoinAndSelect('tx.financialAccounts', 'financialAccounts')
+      .leftJoinAndSelect('financialAccounts.paymentPlatform', 'financialPaymentPlatform')
       .leftJoinAndSelect('tx.amount', 'amount')
       .leftJoinAndSelect('tx.proofsOfPayment', 'proofsOfPayment')
       .leftJoinAndSelect('tx.note', 'note')
@@ -94,12 +93,6 @@ export class AdminTransactionService {
       query.andWhere('LOWER(tx.countryTransaction) = LOWER(:country)', { country });
     }
     if (status) query.andWhere('tx.finalStatus = :status', { status });
-    if (method) {
-      query.andWhere(
-        '(senderPaymentMethod.method = :method OR receiverPaymentMethod.method = :method)',
-        { method },
-      );
-    }
 
     // 🔍 Búsqueda por nombre o apellido del senderAccount
     if (search) {
@@ -124,31 +117,73 @@ export class AdminTransactionService {
       message: tx.message,
       createdAt: tx.createdAt.toISOString(),
       finalStatus: tx.finalStatus,
-      regret: tx.regret && { regretId: tx.regret.id },
-      senderAccount: {
-        id: tx.senderAccount.id,
-        firstName: tx.senderAccount.firstName,
-        lastName: tx.senderAccount.lastName,
-        createdBy: tx.senderAccount.createdBy,
-        phoneNumber: tx.senderAccount.phoneNumber,
-        paymentMethod: {
-          id: tx.senderAccount.paymentMethod.id,
-          platformId: tx.senderAccount.paymentMethod.platformId,
-          method: tx.senderAccount.paymentMethod.method,
-        },
-      },
-      receiverAccount: {
-        id: tx.receiverAccount.id,
-        paymentMethod: tx.receiverAccount.paymentMethod,
-      },
-      note: tx.note ? { note_id: tx.note.note_id } : undefined,
-      proofsOfPayment:
-        tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment : [],
-      amount: tx.amount,
       isNoteVerified: tx.isNoteVerified,
       noteVerificationExpiresAt: tx.noteVerificationExpiresAt
         ? tx.noteVerificationExpiresAt.toISOString()
         : '',
+      senderAccount: {
+        senderAccountId: tx.senderAccount.senderAccountId,
+        firstName: tx.senderAccount.firstName,
+        lastName: tx.senderAccount.lastName,
+        phoneNumber: tx.senderAccount.phoneNumber,
+        user: tx.senderAccount.user,
+        createdAt: tx.senderAccount.createdAt,
+        updatedAt: tx.senderAccount.updatedAt,
+        country: tx.senderAccount.country
+          ? {
+              countryCode: tx.senderAccount.country.code,
+              name: tx.senderAccount.country.name,
+              currency: tx.senderAccount.country.currency_default,
+              locale: null,
+              phonePrefix: null,
+              isActive: true,
+              createdAt: tx.senderAccount.country.created_at,
+              updatedAt: tx.senderAccount.country.created_at,
+            }
+          : null,
+
+        paymentProvider: {
+          id: tx.senderAccount.paymentProvider.paymentProviderId,
+          operationType: tx.senderAccount.paymentProvider.operationType,
+          name: tx.senderAccount.paymentProvider.name,
+          countryCode: tx.senderAccount.paymentProvider.countryCode,
+          logoUrl: tx.senderAccount.paymentProvider.logoUrl,
+          isActive: tx.senderAccount.paymentProvider.isActive,
+          code: tx.senderAccount.paymentProvider.code,
+          createdAt: tx.senderAccount.paymentProvider.createdAt,
+          updatedAt: tx.senderAccount.paymentProvider.updatedAt,
+          paymentPlatform: {
+            id: tx.senderAccount.paymentProvider.paymentPlatform.paymentPlatformId,
+            code: tx.senderAccount.paymentProvider.paymentPlatform.code,
+            title: tx.senderAccount.paymentProvider.paymentPlatform.title,
+            description: tx.senderAccount.paymentProvider.paymentPlatform.description ?? null,
+            isActive: tx.senderAccount.paymentProvider.paymentPlatform.isActive,
+            createdAt: tx.senderAccount.paymentProvider.paymentPlatform.createdAt,
+            updatedAt: tx.senderAccount.paymentProvider.paymentPlatform.updatedAt,
+          },
+        },
+      },
+      financialAccounts: tx.financialAccounts,
+      note: tx.note ? { note_id: tx.note.note_id } : undefined,
+      regret: tx.regret && { regretId: tx.regret.id },
+      amountValue: tx.amountValue,
+      amount: tx.amount,
+      amountCurrency: tx.amountCurrency,
+      proofsOfPayment:
+        tx.proofsOfPayment && tx.proofsOfPayment.length > 0 ? tx.proofsOfPayment : [],
+      administrationStatusLog:
+        tx.administrationStatusLog && tx.administrationStatusLog.length > 0
+          ? tx.administrationStatusLog
+          : [],
+      transactionUserDiscounts:
+        tx.transactionUserDiscounts && tx.transactionUserDiscounts.length > 0
+          ? tx.transactionUserDiscounts
+          : [],
+      qualifications: tx.qualifications && tx.qualifications.length > 0 ? tx.qualifications : [],
+      administrationMasters:
+        tx.administrationMasters && tx.administrationMasters.length > 0
+          ? tx.administrationMasters
+          : [],
     }));
 
     return {
@@ -171,9 +206,8 @@ export class AdminTransactionService {
       where: { id },
       relations: [
         'senderAccount',
-        'senderAccount.paymentMethod',
-        'receiverAccount',
-        'receiverAccount.paymentMethod',
+        'senderAccount.paymentProvider',
+        'financialAccounts',
         'amount',
         'proofsOfPayment',
         'note',
@@ -214,7 +248,6 @@ export class AdminTransactionService {
   formatTransaction(transaction: Transaction): TransactionByIdAdminResponseDto {
     // ⬅️ Corregido el tipo de entrada
     const sender = transaction.senderAccount;
-    const receiver = transaction.receiverAccount;
 
     // Manejo de la nota para evitar errores de 'undefined' y convertir la fecha
     const formattedNote = transaction.note
@@ -237,17 +270,13 @@ export class AdminTransactionService {
       finalStatus: transaction.finalStatus,
       regret: transaction.regret,
       senderAccount: this.removeNulls({
-        id: sender.id,
+        id: sender.senderAccountId,
         firstName: sender.firstName,
         lastName: sender.lastName,
-        createdBy: sender.createdBy,
+        user: sender.user,
         phoneNumber: sender.phoneNumber,
-        paymentMethod: sender.paymentMethod,
+        paymentProvider: sender.paymentProvider,
       }),
-      receiverAccount: {
-        id: receiver.id,
-        paymentMethod: receiver.paymentMethod, // Igual que arriba
-      },
       note: formattedNote, // Usamos el objeto de nota formateado
       proofsOfPayment:
         transaction.proofsOfPayment && transaction.proofsOfPayment.length > 0
@@ -261,12 +290,11 @@ export class AdminTransactionService {
 
   async getTransactionsByCreatedBy(email: string): Promise<Transaction[]> {
     const transactions = await this.transactionsRepository.find({
-      where: { senderAccount: { createdBy: email } },
+      where: { senderAccount: { user: { email: email } } },
       relations: [
         'senderAccount',
-        'senderAccount.paymentMethod',
-        'receiverAccount',
-        'receiverAccount.paymentMethod',
+        'senderAccount.paymentProvider',
+        'financialAccounts',
         'amount',
         'proofsOfPayment',
         'note',
@@ -287,7 +315,7 @@ export class AdminTransactionService {
   async getStatusHistory(id: string): Promise<StatusHistoryResponse[]> {
     try {
       const statusHistory = await this.statusLogRepository.find({
-        where: { transaction: { transactionId: id } },
+        where: { transaction: { administacionMastersId: id } },
         relations: ['changedByAdmin', 'changedByAdmin.profile'],
         select: {
           id: true,
@@ -313,6 +341,7 @@ export class AdminTransactionService {
       // Transformar la respuesta para tener el formato deseado
       const formattedHistory: StatusHistoryResponse[] = statusHistory.map((log) => ({
         ...log,
+        changedByAdminId: log.changedByAdmin.id,
         changedByAdmin: {
           id: log.changedByAdmin.id,
           name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`,
@@ -340,7 +369,7 @@ export class AdminTransactionService {
     message?: string,
     additionalData?: Record<string, any>,
   ) {
-    if (!adminUser.roles?.some(role => ['admin', 'super_admin'].includes(role.code))) {
+    if (!adminUser.roles?.some((role) => ['admin', 'super_admin'].includes(role.code))) {
       throw new UnauthorizedException(
         'Solo los administradores pueden actualizar el estado de las transacciones',
       );
@@ -365,19 +394,21 @@ export class AdminTransactionService {
       );
     }
 
-    let adminMaster = await this.adminMasterRepository.findOne({ where: { transactionId } });
+    let adminMaster = await this.adminMasterRepository.findOne({
+      where: { transaction: { id: transactionId } },
+    });
 
     if (!adminMaster) {
       adminMaster = this.adminMasterRepository.create({
-        transactionId,
+        transaction: { id: transactionId },
         status,
-        adminUserId: adminUser.id,
+        adminUser: { id: adminUser.id },
       });
       await this.adminMasterRepository.save(adminMaster);
     } else {
       await this.adminMasterRepository.update(
-        { transactionId },
-        { status, adminUserId: adminUser.id },
+        { transaction: { id: transactionId } },
+        { status, adminUser: { id: adminUser.id } },
       );
     }
 
@@ -385,7 +416,7 @@ export class AdminTransactionService {
       transaction: adminMaster,
       status,
       message,
-      changedByAdminId: adminUser.id,
+      changedByAdmin: adminUser,
       additionalData,
     });
 
@@ -422,7 +453,7 @@ export class AdminTransactionService {
       } = await this.updateStars.updateStars(transaction.id);
 
       this.logger.log(
-        `Recompensas actualizadas para usuario ${transaction.senderAccount?.createdBy}: +${ledger.quantity}. Ciclo completado: ${cycleCompleted}`,
+        `Recompensas actualizadas para usuario ${transaction.senderAccount?.user.email}: +${ledger.quantity}. Ciclo completado: ${cycleCompleted}`,
       );
 
       if (starMessage) {
@@ -539,50 +570,12 @@ export class AdminTransactionService {
     return { message: 'Transacción administrativa actualizada' };
   }
 
-  async updateReceiver(id: string, payload: any) {
-    const transaction = await this.transactionsRepository.findOne({
-      where: { id },
-      relations: ['receiverAccount', 'receiverAccount.paymentMethod'],
-    });
-    if (!transaction) {
-      throw new Error('Transacción no encontrada.');
-    }
-    const receiver = transaction.receiverAccount;
-    if (!receiver) {
-      throw new Error('No se encontró receiver asociado a la transacción.');
-    }
-    // Obtener el banco asociado al receiver
-    const paymentMethod = receiver.paymentMethod as { id: string; method?: string } | undefined;
-    if (!paymentMethod || paymentMethod.method !== 'bank') {
-      throw new Error('No se encontró banco asociado al receiver.');
-    }
-    const bankId: string = paymentMethod.id;
-    // Actualizar el banco usando BankService
-    const { bankName, currency, sendMethodKey, sendMethodValue, documentType, documentValue } =
-      (payload as Partial<UpdateBankDto>) || {};
-    const updateBankDto: UpdateBankDto = {
-      ...(bankName ? { bankName } : {}),
-      ...(currency ? { currency } : {}),
-      ...(sendMethodKey ? { sendMethodKey } : {}),
-      ...(sendMethodValue ? { sendMethodValue } : {}),
-      ...(documentType ? { documentType } : {}),
-      ...(documentValue ? { documentValue } : {}),
-    } as UpdateBankDto;
-    await this.bankService.update(bankId, updateBankDto);
-    // Devolver la transacción actualizada
-    const updated = await this.transactionsRepository.findOne({
-      where: { id },
-      relations: ['receiverAccount', 'receiverAccount.paymentMethod'],
-    });
-    return updated;
-  }
-
   async updateTransaction(id: string, payload: unknown) {
     const transaction = await this.transactionsRepository.findOne({
       where: { id },
       relations: {
         senderAccount: true,
-        receiverAccount: true,
+        financialAccounts: true,
         amount: true,
         proofsOfPayment: true,
       },
@@ -601,8 +594,11 @@ export class AdminTransactionService {
     }
 
     const fs = p.finalStatus;
-    if (typeof fs === 'string' && Object.values(Status).includes(fs as Status)) {
-      if (fs === Status.Completed) {
+
+    if (Object.values(Status).includes(fs as Status)) {
+      const fsEnum = fs as Status;
+
+      if (fsEnum === Status.Completed) {
         throw new BadRequestException(
           'No se puede marcar la transacción como completed desde este endpoint.',
         );
@@ -632,7 +628,7 @@ export class AdminTransactionService {
       where: { id },
       relations: {
         senderAccount: true,
-        receiverAccount: true,
+        financialAccounts: true,
         amount: true,
         proofsOfPayment: true,
       },
@@ -755,6 +751,7 @@ export class AdminTransactionService {
       // Transformar la respuesta para tener el formato deseado
       const formattedHistory: StatusHistoryResponse[] = statusHistory.map((log) => ({
         ...log,
+        changedByAdminId: log.changedByAdmin.id,
         changedByAdmin: {
           id: log.changedByAdmin.id,
           name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`,

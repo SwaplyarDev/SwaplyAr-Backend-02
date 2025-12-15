@@ -58,7 +58,28 @@ export class InitialSchema1764342245102 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "payment_providers" ("payment_provider_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(100) NOT NULL, "code" character varying(50) NOT NULL, "country_code" character varying(3), "logo_url" character varying, "operation_type" character varying(10) NOT NULL DEFAULT 'both', "is_active" boolean NOT NULL DEFAULT true, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "payment_platform_id" uuid NOT NULL, CONSTRAINT "UQ_3b92bdeea5c610e84052154ef25" UNIQUE ("code"), CONSTRAINT "UQ_768a29dc3f86bee01e0cfc12b3e" UNIQUE ("payment_platform_id", "code"), CONSTRAINT "PK_ae5be9356ec8fd4afaa584f10f0" PRIMARY KEY ("payment_provider_id"))`);
         await queryRunner.query(`CREATE TABLE "bank_account_details" ("bank_account_detail_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "field_key" character varying(50) NOT NULL, "field_label" character varying(100) NOT NULL, "field_value" character varying NOT NULL, "is_encrypted" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "bank_account_id" uuid NOT NULL, CONSTRAINT "PK_e32bb3fa4b2c57977bf8aada6e8" PRIMARY KEY ("bank_account_detail_id"))`);
         await queryRunner.query(`CREATE TABLE "bank_accounts" ("bank_account_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "country_code" character varying(3) NOT NULL, "holder_name" character varying NOT NULL, "document_type" character varying, "document_value" character varying, "bank_name" character varying, "account_number" character varying, "iban" character varying, "swift" character varying, "currency" character varying(3), "owner_type" character varying(20) NOT NULL DEFAULT 'user', "is_active" boolean NOT NULL DEFAULT true, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "user_id" uuid NOT NULL, "payment_provider_id" uuid NOT NULL, "created_by" uuid NOT NULL, CONSTRAINT "PK_ba3381b91f6f67fed016e798296" PRIMARY KEY ("bank_account_id"))`);
-        await queryRunner.query(`CREATE TABLE "users" ("user_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "terms_accepted" boolean NOT NULL DEFAULT false, "member_code" character varying(8) NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "validated_at" TIMESTAMP WITH TIME ZONE, "is_active" boolean NOT NULL DEFAULT true, "is_validated" boolean NOT NULL DEFAULT false, "user_validated" boolean NOT NULL DEFAULT false, "refreshToken" character varying, "role_code" character varying, "role_name" character varying, "role_description" character varying, CONSTRAINT "UQ_54edc787000bbce448a70bc3e83" UNIQUE ("member_code"), CONSTRAINT "PK_96aac72f1574b88752e9fb00089" PRIMARY KEY ("user_id"))`);
+        await queryRunner.query(`
+  CREATE TABLE "users" (
+    "user_id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+    "email" character varying(255) NOT NULL,
+    "terms_accepted" boolean NOT NULL DEFAULT false,
+    "member_code" character varying(8) NOT NULL,
+    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    "validated_at" TIMESTAMP WITH TIME ZONE,
+    "is_active" boolean NOT NULL DEFAULT true,
+    "is_validated" boolean NOT NULL DEFAULT false,
+    "user_validated" boolean NOT NULL DEFAULT false,
+    "refreshToken" character varying,
+    "role_code" character varying,
+    "role_name" character varying,
+    "role_description" character varying,
+    CONSTRAINT "UQ_user_email" UNIQUE ("email"),
+    CONSTRAINT "UQ_54edc787000bbce448a70bc3e83" UNIQUE ("member_code"),
+    CONSTRAINT "PK_96aac72f1574b88752e9fb00089" PRIMARY KEY ("user_id")
+  )
+`);
+
         await queryRunner.query(`CREATE TABLE "user_account" ("account_id" uuid NOT NULL DEFAULT uuid_generate_v4(), "account_name" character varying, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "status" boolean NOT NULL DEFAULT true, "user_id" character varying NOT NULL, "financial_account_id" uuid, CONSTRAINT "REL_c6412112ab4eb46363a87b2767" UNIQUE ("financial_account_id"), CONSTRAINT "PK_7db53a014418432811b1eb1aa97" PRIMARY KEY ("account_id"))`);
         await queryRunner.query(`CREATE TABLE "abandoned_transactions" ("abandoned_transaction_id" character varying(10) NOT NULL, "first_name" character varying NOT NULL, "last_name" character varying NOT NULL, "email" character varying NOT NULL, "phone_number" character varying NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_596b224b2cdf41add5186844cdf" PRIMARY KEY ("abandoned_transaction_id"))`);
         await queryRunner.query(`CREATE TABLE "questions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "title" character varying NOT NULL, "description" character varying NOT NULL, CONSTRAINT "PK_08a6d4b0f49ff300bf3a0ca60ac" PRIMARY KEY ("id"))`);

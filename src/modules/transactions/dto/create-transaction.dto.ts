@@ -2,6 +2,8 @@ import { CreateAmountDto } from '@transactions/amounts/dto/create-amount.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, ValidateNested, IsOptional, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
+import { CreateSenderFinancialAccountDto } from 'src/modules/payments/sender-accounts/dto/create-sender-financial-account.dto';
+import { CreateFinancialAccountDto } from 'src/modules/payments/financial-accounts/dto/create-financial-accounts.dto';
 
 export class CreateTransactionDto {
   @ApiProperty({
@@ -23,23 +25,11 @@ export class CreateTransactionDto {
   @IsOptional()
   message?: string;
 
-  @ApiProperty({
-    name: 'senderAccountId',
-    description: 'ID de la cuenta financiera emisora',
-    example: 'c0f7a63e-4e49-4e91-b889-4e7e7f81a3f3',
-  })
-  @IsUUID()
-  @IsNotEmpty()
-  senderAccountId: string;
+  @ApiProperty({ type: CreateSenderFinancialAccountDto })
+  senderAccount: CreateSenderFinancialAccountDto;
 
-  @ApiProperty({
-    name: 'financialAccountId',
-    description: 'ID de la cuenta financiera receptora',
-    example: 'bb2e82a3-12de-4ff1-8a0d-90c0fcd403a4',
-  })
-  @IsUUID()
-  @IsNotEmpty()
-  financialAccountId: string;
+  @ApiProperty({ type: CreateFinancialAccountDto })
+  financialAccounts: CreateFinancialAccountDto;
 
   @ApiProperty({
     name: 'amount',

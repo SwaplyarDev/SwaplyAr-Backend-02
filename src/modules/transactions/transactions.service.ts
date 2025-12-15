@@ -15,26 +15,27 @@ import { plainToInstance } from 'class-transformer';
 import { Transaction } from './entities/transaction.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import {
-  AccountSenderDto,
-  ReceiverAccountDto,
-  SenderAccountDto,
   TransactionGetByIdDto,
   TransactionGetResponseDto,
   TransactionResponseDto,
 } from './dto/transaction-response.dto';
-
 import { FileUploadDTO } from '../file-upload/dto/file-upload.dto';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { UserStatusHistoryResponse } from '@common/interfaces/status-history.interface';
 import { Status } from 'src/enum/status.enum';
 
-import { FinancialAccountsService } from 'src/deprecated/financial-accounts/financial-accounts.service';
+import { FinancialAccountsService } from '../payments/financial-accounts/financial-accounts.service';
 import { AmountsService } from './amounts/amounts.service';
 import { ProofOfPaymentsService } from 'src/modules/payments/proof-of-payments/proof-of-payments.service';
 import { MailerService } from '@mailer/mailer.service';
 import { ProofOfPayment } from 'src/modules/payments/proof-of-payments/entities/proof-of-payment.entity';
 import { UserDiscount } from '../discounts/entities/user-discount.entity';
 import { validateMaxFiles } from 'src/common/utils/file-validation.util';
+import { SenderFinancialAccountResponseDto } from '../payments/sender-accounts/dto/sender-financial-account-response.dto';
+import { FinancialAccountResponseDto } from '../payments/financial-accounts/dto/financial-accounts-response.dto';
+import { FinancialAccounts } from '../payments/financial-accounts/entities/financial-accounts.entity';
+import { SenderFinancialAccountsService } from '../payments/sender-accounts/sender-financial-accounts.service';
+import { TransactionUserDiscounts } from './entities/transaction-user-discounts.entity';
 
 // -----------------------------
 // Helper: Mapeo de métodos de pago
@@ -106,7 +107,11 @@ export class TransactionsService {
     @InjectRepository(ProofOfPayment)
     private readonly proofOfPaymentRepository: Repository<ProofOfPayment>,
 
+    @InjectRepository(TransactionUserDiscounts)
+    private readonly transactionUserDiscountsRepository: Repository<TransactionUserDiscounts>,
+
     private readonly financialAccountService: FinancialAccountsService,
+    private readonly senderFinancialAccountService: SenderFinancialAccountsService,
     private readonly amountService: AmountsService,
     private readonly proofOfPaymentService: ProofOfPaymentsService,
     private readonly mailerService: MailerService,
@@ -194,9 +199,19 @@ export class TransactionsService {
       validateMaxFiles(files, 5, 3); // máx 5 archivos y 3MB de tamaño cada uno
       const createdAt = new Date();
 
-      const financialAccounts = await this.safeExecute(
-        () => this.financialAccountService.create(createTransactionDto.financialAccounts),
+      const financialAccounts = await this.safeExecute<FinancialAccounts>(
+        () =>
+          this.financialAccountService.create(
+            createTransactionDto.financialAccounts,
+            createTransactionDto.financialAccounts.userId,
+          ),
         'Error al crear cuentas financieras',
+        BadRequestException,
+      );
+
+      const senderAccount = await this.safeExecute(
+        () => this.senderFinancialAccountService.create(createTransactionDto.senderAccount),
+        'Error al crear cuenta de remitente',
         BadRequestException,
       );
 
@@ -245,17 +260,27 @@ export class TransactionsService {
         proofsOfPayment.push(proof);
       }
 
+      const transactionUserDiscounts: TransactionUserDiscounts[] = [];
+
+      for (const ud of userDiscounts) {
+        transactionUserDiscounts.push(
+          this.transactionUserDiscountsRepository.create({
+            userDiscount: ud,
+          }),
+        );
+      }
+
       // 1) Guardar transacción (sin intentar setear OneToMany)
       const txEntity = this.transactionsRepository.create({
         countryTransaction: createTransactionDto.countryTransaction,
         message: createTransactionDto.message,
         createdAt,
-        senderAccount: financialAccounts.sender,
-        receiverAccount: financialAccounts.receiver,
+        financialAccounts: financialAccounts,
+        senderAccount: senderAccount,
         amount,
         amountValue: String(amount.amountSent),
         amountCurrency: amount.currencySent,
-        userDiscounts,
+        transactionUserDiscounts,
       });
 
       // 2) Guardar transacción principal
@@ -281,13 +306,10 @@ export class TransactionsService {
             where: { id: savedTransaction.id },
             relations: [
               'senderAccount',
-              'senderAccount.paymentMethod',
-              'receiverAccount',
-              'receiverAccount.paymentMethod',
+              'senderAccount.paymentProvider',
               'amount',
               'proofsOfPayment',
-              'userDiscounts',
-              'userDiscounts.discountCode',
+              'transactionUserDiscounts',
             ],
           }),
         'Error al recuperar la transacción completa',
@@ -298,17 +320,18 @@ export class TransactionsService {
         throw new NotFoundException('La transacción no se encontró después de ser creada.');
       }
 
-      console.log('fullTransaction.userDiscounts:', fullTransaction.userDiscounts);
+      console.log('fullTransaction.userDiscounts:', fullTransaction.transactionUserDiscounts);
 
-      const userDiscountIds = fullTransaction.userDiscounts?.map((ud) => ud.id) ?? [];
+      const userDiscountIds =
+        fullTransaction.transactionUserDiscounts?.map((ud) => ud.userDiscount.id) ?? [];
 
-      if (fullTransaction.senderAccount?.createdBy) {
-        fullTransaction.senderAccount.createdBy = String(
-          fullTransaction.senderAccount.createdBy,
+      if (fullTransaction.senderAccount?.user.email) {
+        fullTransaction.senderAccount.user.email = String(
+          fullTransaction.senderAccount.user.email,
         ).trim();
       }
 
-      const senderEmail = fullTransaction.senderAccount?.createdBy;
+      const senderEmail = fullTransaction.senderAccount?.user.email;
       if (senderEmail) {
         await this.mailerService.sendReviewPaymentEmail(senderEmail, fullTransaction);
       }
@@ -319,14 +342,15 @@ export class TransactionsService {
         {
           ...fullTransaction,
           financialAccounts: {
-            senderAccount: plainToInstance(SenderAccountDto, fullTransaction.senderAccount, {
-              excludeExtraneousValues: true,
-            }),
-            receiverAccount: plainToInstance(ReceiverAccountDto, fullTransaction.receiverAccount, {
-              excludeExtraneousValues: true,
-            }),
+            senderAccount: plainToInstance(
+              SenderFinancialAccountResponseDto,
+              fullTransaction.senderAccount,
+              {
+                excludeExtraneousValues: true,
+              },
+            ),
           },
-          userDiscounts: fullTransaction.userDiscounts,
+          userDiscounts: fullTransaction.transactionUserDiscounts,
         },
         { excludeExtraneousValues: true },
       );
@@ -369,7 +393,6 @@ export class TransactionsService {
     return await this.transactionsRepository.find({
       relations: {
         senderAccount: true,
-        receiverAccount: true,
         amount: true,
         proofsOfPayment: true,
       },
@@ -396,13 +419,12 @@ export class TransactionsService {
 
     const [transactions, totalItems] = await this.transactionsRepository.findAndCount({
       relations: {
-        senderAccount: { paymentMethod: true },
-        receiverAccount: { paymentMethod: true },
+        senderAccount: { paymentProvider: true },
         proofsOfPayment: true,
         amount: true, // Nota: se puede eliminar más adelante y usar amountValue/amountCurrency
         regret: true,
       },
-      where: { senderAccount: { createdBy } },
+      where: { senderAccount: { user: { email: createdBy } } },
       skip,
       take,
       order: { createdAt: 'DESC' },
@@ -417,27 +439,22 @@ export class TransactionsService {
         finalStatus: tx.finalStatus,
         regretId: tx.regret ? tx.regret.id : null,
         senderAccount: {
-          id: tx.senderAccount.id,
+          id: tx.senderAccount.senderAccountId,
           firstName: tx.senderAccount.firstName,
           lastName: tx.senderAccount.lastName,
-          createdBy: tx.senderAccount.createdBy,
+          createdBy: tx.senderAccount.user.email,
           phoneNumber: tx.senderAccount.phoneNumber,
-          paymentMethod: {
-            id: tx.senderAccount.paymentMethod.id,
-            platformId: tx.senderAccount.paymentMethod.platformId,
-            method: tx.senderAccount.paymentMethod.method,
+          paymentProvider: {
+            id: tx.senderAccount.paymentProvider.paymentProviderId,
+            platformId: tx.senderAccount.paymentProvider.paymentPlatform.paymentPlatformId,
           },
-        },
-        receiverAccount: {
-          id: tx.receiverAccount.id,
-          paymentMethod: mapReceiverPaymentMethod(tx.receiverAccount.paymentMethod),
         },
         proofsOfPayment:
           tx.proofsOfPayment && tx.proofsOfPayment.length > 0
             ? tx.proofsOfPayment.map((proof) => ({
                 id: proof.id,
                 imgUrl: proof.imgUrl,
-                createdAt: proof.createAt?.toISOString?.() ?? proof.createAt,
+                createdAt: proof.createdAt?.toISOString?.() ?? proof.createdAt,
               }))
             : [],
 
@@ -468,44 +485,53 @@ export class TransactionsService {
       where: { id: transactionId },
       relations: {
         regret: true,
-        senderAccount: { paymentMethod: true },
-        receiverAccount: { paymentMethod: true },
+        senderAccount: { paymentProvider: true, user: true },
         amount: true,
         proofsOfPayment: true,
-        userDiscounts: { discountCode: true },
+        transactionUserDiscounts: {
+          userDiscount: { discountCode: true },
+        },
       },
     });
 
     if (!transaction)
       throw new NotFoundException(`No se encontró transacción con id '${transactionId}'`);
-    if (transaction.senderAccount?.createdBy !== userEmail)
+    if (transaction.senderAccount?.user.email !== userEmail)
       throw new ForbiddenException('Acceso no autorizado');
 
-    const financialAccounts = {
-      senderAccount: plainToInstance(AccountSenderDto, transaction.senderAccount, {
+    const financialAccounts = plainToInstance(
+      FinancialAccountResponseDto,
+      transaction.financialAccounts,
+      {
         excludeExtraneousValues: true,
-      }),
-      receiverAccount: plainToInstance(ReceiverAccountDto, transaction.receiverAccount, {
+      },
+    );
+
+    const senderAccount = plainToInstance(
+      SenderFinancialAccountResponseDto,
+      transaction.senderAccount,
+      {
         excludeExtraneousValues: true,
-      }),
-    };
+      },
+    );
 
     const dto = plainToInstance(
       TransactionGetByIdDto,
       {
         ...transaction,
         financialAccounts,
+        senderAccount,
       },
       { excludeExtraneousValues: true },
     );
 
-    const discounts = transaction.userDiscounts ?? [];
+    const discounts = transaction.transactionUserDiscounts ?? [];
 
     dto.userDiscounts = discounts.map((ud) => ({
-      id: ud.id,
-      code: ud.discountCode?.code,
-      value: ud.discountCode?.value,
-      usedAt: ud.usedAt,
+      id: ud.userDiscount?.id,
+      value: ud.userDiscount?.discountCode?.value ?? null,
+      code: ud.userDiscount?.discountCode?.code ?? null,
+      usedAt: ud.userDiscount?.usedAt ?? null,
     }));
 
     return dto;

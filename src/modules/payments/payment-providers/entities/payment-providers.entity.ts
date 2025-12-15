@@ -5,16 +5,17 @@ import {
   ManyToOne,
   OneToMany,
   CreateDateColumn,
-  Unique,
   UpdateDateColumn,
+  Unique,
   JoinColumn,
 } from 'typeorm';
-import { PaymentPlatforms } from './payment-platforms.entity';
-import { BankAccounts } from '../accounts/bank-accounts/bank-accounts.entity';
-import { VirtualBankAccounts } from '../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
-import { CryptoAccounts } from '../accounts/crypto-accounts/crypto-accounts.entity';
+import { PaymentPlatforms } from '../../entities/payment-platforms.entity';
+import { BankAccounts } from '../../accounts/bank-accounts/bank-accounts.entity';
+import { VirtualBankAccounts } from '../../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
+import { CryptoAccounts } from '../../accounts/crypto-accounts/crypto-accounts.entity';
+import { SenderFinancialAccount } from '../../sender-accounts/entities/sender-financial-account.entity';
 
-@Entity('payment_providers')
+@Entity({ name: 'payment_providers' })
 @Unique(['paymentPlatform', 'code'])
 export class PaymentProviders {
   @PrimaryGeneratedColumn('uuid', { name: 'payment_provider_id' })
@@ -48,12 +49,18 @@ export class PaymentProviders {
   @UpdateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToMany(() => BankAccounts, (bankAccount) => bankAccount.paymentProvider)
+  @OneToMany(() => BankAccounts, (bankAccount: BankAccounts) => bankAccount.paymentProvider)
   bankAccounts: BankAccounts[];
 
-  @OneToMany(() => VirtualBankAccounts, (virtualAccount) => virtualAccount.paymentProvider)
+  @OneToMany(
+    () => VirtualBankAccounts,
+    (virtualAccount: VirtualBankAccounts) => virtualAccount.paymentProvider,
+  )
   virtualBankAccounts: VirtualBankAccounts[];
 
-  @OneToMany(() => CryptoAccounts, (cryptoAccount) => cryptoAccount.paymentProvider)
+  @OneToMany(() => CryptoAccounts, (cryptoAccount: CryptoAccounts) => cryptoAccount.paymentProvider)
   cryptoAccounts: CryptoAccounts[];
+
+  @OneToMany(() => SenderFinancialAccount, (sdrAccount) => sdrAccount.paymentProvider)
+  senderAccounts: SenderFinancialAccount;
 }

@@ -1,7 +1,7 @@
 import { Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { PaymentPlatformDto } from 'src/modules/payments/dtos/payment-platform-response.dto';
 import { UserResponseDto } from '@users/dto/user-response.dto';
+import { PaymentProviderDto } from '../../payment-providers/dto/payment-providers-response.dto';
 
 export class CountryDto {
   @ApiProperty({ example: 'AR' })
@@ -42,10 +42,10 @@ export class SenderFinancialAccountResponseDto {
   @Expose()
   senderAccountId: string;
 
-  @ApiProperty({ type: PaymentPlatformDto })
+  @ApiProperty({ type: PaymentProviderDto })
   @Expose()
-  @Type(() => PaymentPlatformDto)
-  paymentPlatform: PaymentPlatformDto;
+  @Type(() => PaymentProviderDto)
+  paymentProvider: PaymentProviderDto;
 
   @ApiProperty()
   @Expose()

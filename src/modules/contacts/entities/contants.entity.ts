@@ -1,22 +1,30 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { User } from '@users/entities/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity('contacts')
 export class Contact {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn('uuid', { name: 'contacts_id' })
   id: string;
 
   @Column()
   name: string;
 
-  @Column()
+  @Column({ type: 'varchar', name: 'last_name' })
   lastname: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   email: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   message: string;
 
-  @Column({ nullable: true })
-  user_id?: string;
+  @ManyToOne(() => User, (usr) => usr.contacts)
+  @JoinColumn({ name: 'user_id' })
+  user?: string;
+
+  @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
+  updatedAt: Date;
 }

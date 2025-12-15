@@ -10,7 +10,6 @@ import { Repository } from 'typeorm';
 import { RegisterUserDto } from '@users/dto/register-user.dto';
 import { UserProfile } from '@users/entities/user-profile.entity';
 import { UserSocials } from './entities/user-socials.entity';
-import { UserRole } from 'src/enum/user-role.enum';
 import { UserRewardsLedger } from '../discounts/entities/user-rewards-ledger.entity';
 import { RolesService } from '../roles/roles.service';
 

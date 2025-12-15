@@ -6,8 +6,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { PaymentProviders } from '../payment-providers/payment-providers.entity';
-import { FinancialAccounts } from '../financial-accounts/financial-accounts.entity';
+import { PaymentProviders } from '../../payment-providers/entities/payment-providers.entity';
+import { FinancialAccounts } from '../../financial-accounts/entities/financial-accounts.entity';
+import { DynamicCommission } from 'src/modules/dynamic-commissions/entities/dynamicCommissions.entity';
 
 @Entity({ name: 'payment_platforms' })
 export class PaymentPlatforms {
@@ -40,4 +41,10 @@ export class PaymentPlatforms {
 
   @OneToMany(() => FinancialAccounts, (account: FinancialAccounts) => account.paymentPlatform)
   financialAccounts: FinancialAccounts[];
+
+  @OneToMany(() => DynamicCommission, (dnmComission) => dnmComission.fromPlatform)
+  fromComission: DynamicCommission;
+
+  @OneToMany(() => DynamicCommission, (dnmComission) => dnmComission.toPlatform)
+  toComission: DynamicCommission;
 }

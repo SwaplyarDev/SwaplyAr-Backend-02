@@ -10,10 +10,9 @@ export class CreateFinancialAccountDto {
   @IsUUID()
   referenceId: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
   @IsUUID()
-  userId?: string;
+  userId: string;
 
   @ApiPropertyOptional()
   @IsOptional()

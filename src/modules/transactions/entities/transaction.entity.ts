@@ -18,13 +18,13 @@ import { customAlphabet } from 'nanoid';
 import { Note } from '@transactions/notes/entities/note.entity';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';
 import { Status } from 'src/enum/status.enum';
-import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
 import { IsOptional } from 'class-validator';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
 import { TransactionUserDiscounts } from './transaction-user-discounts.entity';
 import { Qualification } from 'src/modules/qualifications/entities/qualification.entity';
 import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
 import { ProofOfPayment } from 'src/modules/payments/proof-of-payments/entities/proof-of-payment.entity';
+import { FinancialAccounts } from 'src/modules/payments/financial-accounts/entities/financial-accounts.entity';
 
 export const nanoidCustom = customAlphabet(
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
@@ -69,11 +69,11 @@ export class Transaction {
   @JoinColumn({ name: 'sender_account' })
   senderAccount: SenderFinancialAccount;
 
-  @ManyToOne(() => FinancialAccount, (financial) => financial.transactions, {
+  @ManyToOne(() => FinancialAccounts, (financial) => financial.transactions, {
     onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'financial_accounts' })
-  financialAccounts: FinancialAccount;
+  financialAccounts: FinancialAccounts;
 
   // Mantener OneToOne pero opcional y sin obligar existencia
   @OneToOne(() => Note, (note) => note.transaction, { onDelete: 'SET NULL' })

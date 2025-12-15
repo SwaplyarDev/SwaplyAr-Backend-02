@@ -49,7 +49,6 @@ import { UserStatusHistoryResponseDto } from './dto/user-status-history.dto';
 import { JwtService } from '@nestjs/jwt';
 import { validateOrReject } from 'class-validator';
 import { IsPhoneNumberValid } from '@common/decorators/phone-number.decorator';
-import { VirtualBankType } from 'src/enum/virtual-bank.enum';
 
 interface CreateTransactionBody {
   createTransactionDto: string;
@@ -173,31 +172,17 @@ export class TransactionsController {
     // Convierte JSON → DTO
     const createTransactionDto = plainToInstance(CreateTransactionDto, parsedDto);
 
-    const senderPaymentMethod = createTransactionDto.financialAccounts.senderAccount.paymentMethod;
-    const receiverPaymentMethod =
-      createTransactionDto.financialAccounts.receiverAccount.paymentMethod;
-
-    // Función auxiliar para validar type
-    const validateVirtualBankType = (pm: typeof senderPaymentMethod) => {
-      if (pm.method === 'virtual-bank') {
-        if (!pm.type) {
-          throw new BadRequestException('El campo "type" es obligatorio para virtual-bank');
-        }
-        // Asegurarse de que el type sea válido según tu enum
-        if (!Object.values(VirtualBankType).includes(pm.type)) {
-          throw new BadRequestException('El campo "type" no es válido para virtual-bank');
-        }
-      }
-    };
-
-    validateVirtualBankType(senderPaymentMethod);
-    validateVirtualBankType(receiverPaymentMethod);
-
-    const senderDto = createTransactionDto.financialAccounts.senderAccount;
+    const senderDto = createTransactionDto.senderAccount;
 
     try {
-      const phoneValidator = new PhoneNumberValidator(senderDto.phoneNumber);
-      await validateOrReject(phoneValidator);
+      if (senderDto.phoneNumber === null) {
+        throw new BadRequestException('phoneNumber es obligatorio');
+      }
+
+      if (senderDto.phoneNumber) {
+        const phoneValidator = new PhoneNumberValidator(senderDto.phoneNumber);
+        await validateOrReject(phoneValidator);
+      }
     } catch (errors: unknown) {
       // Extraer solo mensajes de error de forma segura
       const msgs: string[] = Array.isArray(errors)

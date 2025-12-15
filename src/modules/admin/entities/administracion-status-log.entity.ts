@@ -9,6 +9,7 @@ import {
 import { Status } from '../../../enum/status.enum';
 import { AdministracionMaster } from './administracion-master.entity';
 import { User } from '@users/entities/user.entity';
+import { ApiHideProperty } from '@nestjs/swagger';
 
 @Entity('administracion_status_log')
 export class AdministracionStatusLog {
@@ -39,6 +40,7 @@ export class AdministracionStatusLog {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'transaction_id' })
+  @ApiHideProperty()
   transaction: AdministracionMaster;
 
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })

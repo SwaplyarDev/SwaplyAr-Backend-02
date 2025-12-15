@@ -1,3 +1,4 @@
+import { ApiHideProperty } from '@nestjs/swagger';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 
@@ -8,6 +9,7 @@ export class Qualification {
 
   @ManyToOne(() => Transaction, (trs) => trs.qualifications, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'transaction_id' })
+  @ApiHideProperty()
   transaction: Transaction;
 
   @Column({ type: 'int' })

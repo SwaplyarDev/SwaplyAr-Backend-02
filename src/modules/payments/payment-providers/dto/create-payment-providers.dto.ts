@@ -10,6 +10,7 @@ import {
   IsUppercase,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { CreatePaymentPlatformsDto } from '../../payment-platforms/dto/create-payment-platforms.dto';
 
 export class CreatePaymentProvidersDto {
   @ApiProperty({ description: 'Nombre del proveedor', example: 'PayPal' })
@@ -57,10 +58,7 @@ export class CreatePaymentProvidersDto {
   @IsBoolean()
   isActive?: boolean;
 
-  @ApiProperty({
-    description: 'ID de la plataforma de pago asociada (UUID)',
-    example: 'e4d6db73-2064-4b53-ad4f-bd6c5d7170ca',
-  })
+  @ApiProperty({ description: 'ID de la plataforma asociada' })
   @IsUUID()
   paymentPlatformId: string;
 }

@@ -13,7 +13,7 @@ export class NoteResponseDto {
   createdAt: Date;
 
   @Expose()
-  @ApiProperty({ type: TransactionResponseDto })
+  @ApiProperty({ type: () => TransactionResponseDto })
   transaction: TransactionResponseDto;
 
   @Expose()

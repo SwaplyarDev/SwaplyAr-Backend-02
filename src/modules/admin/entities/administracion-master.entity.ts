@@ -12,6 +12,7 @@ import { Status } from '../../../enum/status.enum';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { AdministracionStatusLog } from './administracion-status-log.entity';
 import { User } from '@users/entities/user.entity';
+import { ApiHideProperty } from '@nestjs/swagger';
 
 @Entity('administracion_masters')
 export class AdministracionMaster {
@@ -21,6 +22,7 @@ export class AdministracionMaster {
   // Relación con la transacción original
   @ManyToOne(() => Transaction, (trs) => trs.administrationMasters)
   @JoinColumn({ name: 'transaction_id', referencedColumnName: 'id' })
+  @ApiHideProperty()
   transaction: Transaction;
 
   // Relación con el usuario administrador

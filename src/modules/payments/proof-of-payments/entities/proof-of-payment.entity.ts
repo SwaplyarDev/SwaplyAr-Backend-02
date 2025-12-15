@@ -1,3 +1,4 @@
+import { ApiHideProperty } from '@nestjs/swagger';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { Regret } from '@transactions/regrets/entities/regrets.entity';
 import {
@@ -25,8 +26,10 @@ export class ProofOfPayment {
 
   @ManyToOne(() => Transaction, (trans) => trans.proofsOfPayment, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'transaction_id' })
+  @ApiHideProperty()
   transaction: Transaction;
 
   @OneToMany(() => Regret, (reg) => reg.proofsOfPayment, { onDelete: 'CASCADE' })
   regrets: Regret[];
+  proof: Transaction[];
 }

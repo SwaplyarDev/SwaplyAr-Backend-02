@@ -5,7 +5,7 @@ import { CryptoAccounts } from './crypto-accounts.entity';
 import { CreateCryptoAccountDto } from './dto/create-crypto-accounts.dto';
 import { UpdateCryptoAccountDto } from './dto/update-crypto-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
-import { PaymentProviders } from '../../entities/payment-providers.entity';
+import { PaymentProviders } from '../../payment-providers/entities/payment-providers.entity';
 import { CryptoNetworks } from '../../../catalogs/crypto-networks/crypto-networks.entity';
 
 @Injectable()

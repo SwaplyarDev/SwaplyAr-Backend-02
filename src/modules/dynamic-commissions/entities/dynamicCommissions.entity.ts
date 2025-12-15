@@ -1,3 +1,4 @@
+import { PaymentPlatforms } from "src/modules/payments/payment-platforms/entities/payment-platforms.entity";
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -5,18 +6,22 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Unique,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 
 @Entity('dynamic_commissions')
 @Unique(['fromPlatform', 'toPlatform'])
 export class DynamicCommission {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn('uuid', { name: 'dynamic_commissions_id' })
   id: string;
 
-  @Column({ name: 'from_platform', type: 'varchar', length: 20 })
+  @ManyToOne(() => PaymentPlatforms, (pmntPlatform) => pmntPlatform.fromComission)
+  @JoinColumn({ name: 'from_platform_id' })
   fromPlatform: string;
 
-  @Column({ name: 'to_platform', type: 'varchar', length: 20 })
+  @ManyToOne(() => PaymentPlatforms, (pmntPlatform) => pmntPlatform.toComission)
+  @JoinColumn({ name: 'to_platform_id' })
   toPlatform: string;
 
   @Column({ name: 'commission_rate', type: 'float' })

@@ -16,7 +16,7 @@ export class PaymentPlatformDto {
 
   @ApiProperty({ example: 'Cuenta bancaria tradicional en moneda local.' })
   @Expose()
-  description: string;
+  description: string | null;
 
   @ApiProperty({ example: true })
   @Expose()

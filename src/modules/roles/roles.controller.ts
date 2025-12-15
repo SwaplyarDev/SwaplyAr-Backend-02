@@ -1,14 +1,13 @@
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  UseGuards, 
-  Patch, 
-  Param, 
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Param,
   Get,
   UseInterceptors,
   ClassSerializerInterceptor,
-  BadRequestException
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -62,10 +61,7 @@ export class RolesController {
   @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })
   @ApiForbiddenResponse({ description: 'No autorizado, Solo para Administradores' })
   @ApiNotFoundResponse({ description: 'Usuario o rol no encontrado' })
-  async addUserRole(
-    @Param('userId') userId: string,
-    @Body() addRoleDto: AddUserRoleDto
-  ) {
+  async addUserRole(@Param('userId') userId: string, @Body() addRoleDto: AddUserRoleDto) {
     const roleCode = addRoleDto.roleCode || addRoleDto.role;
     if (!roleCode) {
       throw new BadRequestException('roleCode o role es requerido');

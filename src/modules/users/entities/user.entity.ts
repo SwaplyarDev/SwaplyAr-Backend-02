@@ -6,8 +6,9 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   BeforeInsert,
-  ManyToOne,
   UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { UserProfile } from '@users/entities/user-profile.entity';
 import { UserAlternativeEmail } from '@users/entities/user-alternative-email.entity';
@@ -19,18 +20,17 @@ import { UserVerification } from '@users/entities/user-verification.entity';
 import { RefreshToken } from '@users/entities/resfresh-token.entity';
 import { Exclude } from 'class-transformer';
 import { OtpCode } from '@auth/entities/otp-code.entity';
-import { Role } from './user-roles.entity';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
-import { Roles } from '../../roles/entities/roles.entity';
 import { customAlphabet } from 'nanoid';
-import { BankAccounts } from 'src/modules/payments/entities/bank-accounts.entity';
-import { VirtualBankAccounts } from 'src/modules/payments/entities/payment-virtual-bank-accounts.entity';
-import { CryptoAccounts } from 'src/modules/payments/entities/crypto-accounts.entity';
+import { BankAccounts } from 'src/modules/payments/accounts/bank-accounts/bank-accounts.entity';
+import { VirtualBankAccounts } from 'src/modules/payments/accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
+import { CryptoAccounts } from 'src/modules/payments/accounts/crypto-accounts/crypto-accounts.entity';
 import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
 import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
-import { FinancialAccount } from '@financial-accounts/entities/financial-account.entity';
+import { FinancialAccounts } from 'src/modules/payments/financial-accounts/entities/financial-accounts.entity';
 import { SenderFinancialAccount } from 'src/modules/payments/sender-accounts/entities/sender-financial-account.entity';
+import { Roles } from 'src/modules/roles/entities/roles.entity';
 
 export const nanoidCustom = customAlphabet(
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
@@ -119,22 +119,29 @@ export class User {
   })
   a: AdministracionMaster[];
 
-  @ManyToOne(() => Role, (role) => role.users, {
+  @ManyToMany(() => Roles, (role) => role.users, {
     onDelete: 'CASCADE',
   })
-  role: Role[];
+  @JoinTable({
+    name: 'user_roles',
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'role_id',
+      referencedColumnName: 'role_id',
+    },
+  })
+  roles: Roles[];
 
   @Exclude()
   @OneToMany(() => AdministracionStatusLog, (adminStsLog) => adminStsLog.changedByAdmin)
   adminStatusLog: AdministracionStatusLog[];
 
   @Exclude()
-  @OneToMany(() => FinancialAccount, (fnclAccount) => fnclAccount.user)
-  financialAccount: FinancialAccount[];
-
-  @Exclude()
-  @OneToMany(() => FinancialAccount, (fnclAccount) => fnclAccount.createdBy)
-  financialAccountsCreated: FinancialAccount[];
+  @OneToMany(() => FinancialAccounts, (fnclAccount) => fnclAccount.createdBy)
+  financialAccount: FinancialAccounts[];
 
   @Column({ name: 'terms_accepted', default: false })
   termsAccepted: boolean;

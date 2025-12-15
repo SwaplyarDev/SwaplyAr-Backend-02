@@ -10,9 +10,9 @@ import {
 } from 'typeorm';
 import { Expose } from 'class-transformer';
 import { IsOptional } from 'class-validator';
-import { PaymentPlatforms } from 'src/modules/payments/entities/payment-platforms.entity';
 import { Countries } from 'src/modules/payments/entities/countries.entity';
 import { User } from '@users/entities/user.entity';
+import { PaymentProviders } from '../../payment-providers/entities/payment-providers.entity';
 
 @Entity('sender_accounts')
 export class SenderFinancialAccount {
@@ -20,9 +20,9 @@ export class SenderFinancialAccount {
   @PrimaryGeneratedColumn('uuid', { name: 'sender_account_id' })
   senderAccountId: string;
 
-  @ManyToOne(() => PaymentPlatforms, (pmntPlatform) => pmntPlatform.senderFinancialAccount)
-  @JoinColumn({ name: 'payment_platform_id' })
-  paymentPlatform: PaymentPlatforms;
+  @ManyToOne(() => PaymentProviders, (pmntProvider) => pmntProvider.senderAccounts)
+  @JoinColumn({ name: 'payment_provider_id' })
+  paymentProvider: PaymentProviders;
 
   @Index('idx_sender_fin_accounts_first_name')
   @Column({ name: 'first_name', type: 'varchar', length: 100 })

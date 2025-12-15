@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { FinancialAccounts } from './financial-accounts.entity';
+import { FinancialAccounts } from './entities/financial-accounts.entity';
 import { CreateFinancialAccountDto } from './dto/create-financial-accounts.dto';
 import { UpdateFinancialAccountDto } from './dto/update-financial-accounts.dto';
 import { User } from '../../users/entities/user.entity';

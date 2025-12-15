@@ -13,6 +13,7 @@ import {
 } from '../admin/discounts/dto/filter-user-discounts.dto';
 import { UpdateUserDiscountDto } from './dto/update-user-discount.dto';
 import { UserDiscountHistoryDto } from './dto/user-discount-history.dto';
+import { TransactionUserDiscounts } from '@transactions/entities/transaction-user-discounts.entity';
 
 export class DiscountService {
   constructor(
@@ -26,6 +27,8 @@ export class DiscountService {
     private readonly transactionRepo: Repository<Transaction>,
     @InjectRepository(UserRewardsLedger)
     private readonly rewardsLedgerRepo: Repository<UserRewardsLedger>,
+    @InjectRepository(TransactionUserDiscounts)
+    private readonly transactionUserDiscountsRepo: Repository<TransactionUserDiscounts>,
   ) {}
 
   /**
@@ -142,8 +145,15 @@ export class DiscountService {
     id: string,
     dto: UpdateUserDiscountDto,
     userId: string,
-  ): Promise<UserDiscount> {
-    const ud = await this.getUserDiscountById(id, userId);
+  ): Promise<UserDiscount | null> {
+    const ud = await this.userDiscountRepo.findOne({
+      where: { id, user: { id: userId } },
+      relations: ['transactionUserDiscounts', 'transactionUserDiscounts.transaction'],
+    });
+
+    if (!ud) {
+      throw new NotFoundException('Descuento de usuario no encontrado');
+    }
 
     if (!ud.isUsed) {
       ud.isUsed = true;
@@ -158,32 +168,41 @@ export class DiscountService {
           throw new NotFoundException('Transacción no encontrada');
         }
 
-        const alreadyLinked = ud.transactions?.some((t) => t.id === transaction.id);
+        const alreadyLinked = ud.transactionUserDiscounts?.some(
+          (tud) => tud.transaction.id === transaction.id,
+        );
+
         if (!alreadyLinked) {
-          ud.transactions = [...(ud.transactions || []), transaction];
+          const newLink = this.transactionUserDiscountsRepo.create({
+            userDiscount: ud,
+            transaction,
+          });
+
+          await this.transactionUserDiscountsRepo.save(newLink);
         }
       }
     } else {
       ud.isUsed = false;
       ud.usedAt = null;
 
-      if (dto.transactionId && ud.transactions?.length) {
-        ud.transactions = ud.transactions.filter((t) => t.id !== dto.transactionId);
+      if (dto.transactionId) {
+        await this.transactionUserDiscountsRepo.delete({
+          userDiscount: { id: ud.id },
+          transaction: { id: dto.transactionId },
+        });
       }
+
+      await this.userDiscountRepo.save(ud);
     }
-
-    await this.userDiscountRepo.save(ud);
-
-    const updatedUd = await this.userDiscountRepo.findOne({
+    return await this.userDiscountRepo.findOne({
       where: { id: ud.id },
-      relations: ['user', 'discountCode', 'transactions'],
+      relations: [
+        'user',
+        'discountCode',
+        'transactionUserDiscounts',
+        'transactionUserDiscounts.transaction',
+      ],
     });
-
-    if (!updatedUd) {
-      throw new NotFoundException('Descuento de usuario no encontrado tras actualizar');
-    }
-
-    return updatedUd;
   }
 
   async getUserDiscountHistory(userId: string): Promise<UserDiscountHistoryDto[]> {

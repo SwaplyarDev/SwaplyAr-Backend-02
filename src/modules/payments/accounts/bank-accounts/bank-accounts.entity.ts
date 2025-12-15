@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
   JoinColumn,
 } from 'typeorm';
-import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
+import { PaymentProviders } from '../../payment-providers/entities/payment-providers.entity';
 import { User } from '../../../users/entities/user.entity';
 import { BankAccountDetails } from './bank-account-details.entity';
 

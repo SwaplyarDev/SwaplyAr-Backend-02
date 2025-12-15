@@ -1,4 +1,4 @@
-import { FinancialAccountResponseDto } from '@financial-accounts/dto/financial-accounts-response.dto';
+import { FinancialAccountResponseDto } from 'src/modules/payments/financial-accounts/dto/financial-accounts-response.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { NoteResponseDto } from '@transactions/notes/dto/note-response.dto';
 import { RegretDto } from '@transactions/regrets/dto/regret-response-dto';
@@ -226,7 +226,7 @@ export class TransactionGetResponseDto {
   @ApiProperty({ type: SenderFinancialAccountResponseDto })
   senderAccount: SenderFinancialAccountResponseDto;
 
-  @ApiProperty({ type: ProofOfPaymentDto, required: false })
+  @ApiProperty({ type: () => ProofOfPaymentDto, required: false })
   proofsOfPayment?: ProofOfPaymentDto[];
 
   @ApiProperty({ type: AmountDto })

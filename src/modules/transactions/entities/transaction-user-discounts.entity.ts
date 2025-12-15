@@ -1,6 +1,7 @@
 import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Transaction } from './transaction.entity';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
+import { ApiHideProperty } from '@nestjs/swagger';
 
 @Entity('transaction_user_discounts')
 export class TransactionUserDiscounts {
@@ -13,6 +14,7 @@ export class TransactionUserDiscounts {
   @ManyToOne(() => Transaction, (transaction) => transaction.transactionUserDiscounts, {
     onDelete: 'CASCADE',
   })
+  @ApiHideProperty()
   transaction: Transaction;
 
   @ManyToOne(() => UserDiscount, (userDiscount) => userDiscount.transactionUserDiscounts)

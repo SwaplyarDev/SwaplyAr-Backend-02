@@ -14,7 +14,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { UpdateBankDto } from 'src/deprecated/financial-accounts/payment-methods/bank/dto/create-bank.dto';
 import {
   ApiOperation,
   ApiTags,
@@ -203,7 +202,7 @@ export class AdminTransactionController {
 
     const transaction = await this.adminService.getTransactionById(id);
 
-    if (transaction && transaction.senderAccount.createdBy) {
+    if (transaction && transaction.senderAccount) {
       await this.mailerService.sendStatusEmail(transaction, status);
     }
 
@@ -317,41 +316,6 @@ export class AdminTransactionController {
     return {
       success: true,
       message: `Estado actualizado a ${status} correctamente`,
-      data: result,
-    };
-  }
-
-  @ApiOperation({ summary: 'Actualizar datos del receptor de una transacción' })
-  @ApiOkResponse({
-    description: 'Transacción actualizada correctamente',
-    type: UpdateTransactionRecipientDto,
-  })
-  @ApiBadRequestResponse({ description: 'Transaction ID is required' })
-  @ApiParam({
-    name: 'id',
-    description: 'ID de la transacción',
-    example: 'uuid',
-  })
-  @ApiBody({
-    description: 'Datos para actualizar el receptor',
-    type: UpdateBankDto,
-  })
-  @Put('transactions/:id/receiver')
-  async updateReceiver(
-    @Param('id') id: string,
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-    body: UpdateBankDto,
-  ) {
-    if (!id) {
-      return {
-        success: false,
-        message: 'Transaction ID is required',
-      };
-    }
-    const result = await this.adminService.updateReceiver(id, body);
-    return {
-      success: true,
-      message: 'Transacción actualizada correctamente',
       data: result,
     };
   }

@@ -6,8 +6,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { PaymentProviders } from './payment-providers.entity';
-import { FinancialAccounts } from '../financial-accounts/financial-accounts.entity';
+import { PaymentProviders } from '../payment-providers/entities/payment-providers.entity';
+import { FinancialAccounts } from '../financial-accounts/entities/financial-accounts.entity';
 
 
 @Entity('payment_platforms')

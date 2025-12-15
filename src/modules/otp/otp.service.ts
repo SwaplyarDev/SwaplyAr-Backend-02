@@ -91,11 +91,11 @@ export class OtpService {
     if (!transaction) {
       throw new BadRequestException('Transacción no encontrada');
     }
-    if (!transaction.senderAccount?.createdBy) {
+    if (!transaction.senderAccount?.user.email) {
       throw new BadRequestException('Transacción sin email');
     }
 
-    const email = transaction.senderAccount.createdBy;
+    const email = transaction.senderAccount.user.email;
 
     const otp = await this.createOtpForTransaction(transactionId, email);
 

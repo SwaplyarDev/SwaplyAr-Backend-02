@@ -14,7 +14,7 @@ export class QualificationService {
   // Crea una nueva calificación si no existe una para la misma transacción
   async create(dto: CreateQualificationDto): Promise<Qualification> {
     const exists = await this.qualificationRepo.findOne({
-      where: { transaction_id: dto.transaction_id },
+      where: { transaction: { id: dto.transaction_id } },
     });
 
     if (exists) {
@@ -33,7 +33,7 @@ export class QualificationService {
   // Busca una calificación por ID de transacción
   async findByTransactionId(id: string): Promise<Qualification> {
     const qualification = await this.qualificationRepo.findOne({
-      where: { transaction_id: id },
+      where: { transaction: { id } },
     });
 
     if (!qualification) {

@@ -13,15 +13,21 @@ export class PaymentPlatformsService {
   ) {}
 
   async findAll(filters: PaymentPlatformFilterDto) {
-    const query = this.repo.createQueryBuilder('platform').leftJoinAndSelect('platform.providers', 'providers');
+    const query = this.repo
+      .createQueryBuilder('platform')
+      .leftJoinAndSelect('platform.providers', 'providers');
 
     if (filters.code) {
       query.andWhere('platform.code = :code', { code: filters.code });
     }
 
-    if (filters.isActive !== undefined) {
-      query.andWhere('platform.isActive = :isActive', { isActive: filters.isActive });
+    // Filtrar por isActive solo si está definido explícitamente
+    if (filters.isActive === true) {
+      query.andWhere('platform.isActive = :isActive', { isActive: true });
+    } else if (filters.isActive === false) {
+      query.andWhere('platform.isActive = :isActive', { isActive: false });
     }
+
     query.orderBy('platform.createdAt', 'DESC');
 
     return query.getMany();

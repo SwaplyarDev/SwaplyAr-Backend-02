@@ -34,9 +34,11 @@ export class PaymentProvidersService {
 
   async findAll(filters?: {
     platformCode?: string;
-    fiatCurrencyCode?: string;
-    cryptoNetworkCode?: string;
     providerCode?: string;
+    fiatCurrencyCode?: string;
+    countryCode?: string;
+    cryptoNetworkCode?: string;
+    isActive?: boolean;
   }) {
     const qb = this.providersRepo
       .createQueryBuilder('provider')
@@ -73,6 +75,24 @@ export class PaymentProvidersService {
     if (filters?.cryptoNetworkCode) {
       qb.andWhere('cryptoNetwork.code = :cryptoNetworkCode', {
         cryptoNetworkCode: filters.cryptoNetworkCode,
+      });
+    }
+
+    // FILTRA POR COUNTRY CODE
+    if (filters?.countryCode) {
+      qb.andWhere('country.code = :countryCode', {
+        countryCode: filters.countryCode,
+      });
+    }
+
+    // FILTRA POR ATRIBUTO isActive
+    if (filters?.isActive === true) {
+      qb.andWhere('provider.isActive = :isActive', {
+        isActive: true,
+      });
+    } else if (filters?.isActive === false) {
+      qb.andWhere('provider.isActive = :isActive', {
+        isActive: false,
       });
     }
 

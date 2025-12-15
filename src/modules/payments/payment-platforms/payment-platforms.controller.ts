@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Delete,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { PaymentPlatformsService } from './payment-platforms.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { CreatePaymentPlatformsDto } from './dto/create-payment-platforms.dto';
@@ -17,7 +27,9 @@ export class PaymentPlatformsController {
   // ===============================================
   // MOSTRAR TODAS LAS PLATAFORMAS DE PAGO
   // ===============================================
-  @ApiOperation({ summary: 'Obtener todas las plataformas de pago registradas (con filtros opcionales)' })
+  @ApiOperation({
+    summary: 'Obtener todas las plataformas de pago registradas (con filtros opcionales)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de plataformas de pago obtenida correctamente.',

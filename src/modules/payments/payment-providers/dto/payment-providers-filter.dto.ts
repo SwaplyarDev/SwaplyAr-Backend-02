@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, Length } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class PaymentProvidersFilterDto {
   @ApiPropertyOptional({
@@ -28,10 +29,31 @@ export class PaymentProvidersFilterDto {
   fiatCurrencyCode?: string;
 
   @ApiPropertyOptional({
+    example: 'CHL',
+    description: 'Código de país ISO 3166 (ej: ARG, BRA, CHL)',
+  })
+  @IsOptional()
+  @IsString()
+  countryCode?: string;
+
+  @ApiPropertyOptional({
     example: 'BTC',
     description: 'Código de crypto network (solo crypto accounts)',
   })
   @IsOptional()
   @IsString()
   cryptoNetworkCode?: string;
+
+  @ApiPropertyOptional({
+    example: 'true',
+    description: 'Filtra si el proveedor de pago esta activo o no',
+    type: 'boolean',
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === true || value === 'true') return true;
+    if (value === false || value === 'false') return false;
+    return undefined;
+  })
+  isActive?: boolean;
 }

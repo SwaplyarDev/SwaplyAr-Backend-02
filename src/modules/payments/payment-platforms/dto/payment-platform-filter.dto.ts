@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class PaymentPlatformFilterDto {
   @ApiPropertyOptional({
@@ -7,14 +8,17 @@ export class PaymentPlatformFilterDto {
     example: 'virtual-bank',
   })
   @IsOptional()
-  @IsString()
   code?: string;
 
   @ApiPropertyOptional({
     description: 'Filtrar por si la plataforma está activa o no',
-    example: true,
+    type: 'boolean',
   })
   @IsOptional()
-  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === true || value === 'true') return true;
+    if (value === false || value === 'false') return false;
+    return undefined;
+  })
   isActive?: boolean;
 }

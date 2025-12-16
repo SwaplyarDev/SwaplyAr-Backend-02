@@ -28,6 +28,9 @@ export class BankAccountsController {
   // ==========================================
   // CREAR UNA CUENTA BANCARIA
   // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
   @Post()
   @ApiOperation({ summary: 'Crear una nueva bank account' })
   @ApiResponse({
@@ -37,7 +40,7 @@ export class BankAccountsController {
   })
   create(@Body() createBankAccountDto: CreateBankAccountDto, @Request() req) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-    return this.bankAccountsService.create(createBankAccountDto, req.user.userId);
+    return this.bankAccountsService.create(createBankAccountDto, req.user.id);
   }
 
   // ==========================================

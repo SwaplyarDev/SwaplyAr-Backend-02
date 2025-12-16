@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { PaymentProviders } from './payment-providers.entity';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
 import { UpdatePaymentProvidersDto } from './dto/update-payment-providers.dto';
 import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
 import { Countries } from 'src/modules/catalogs/countries/countries.entity';
+import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 import { BankAccounts } from '../accounts/bank-accounts/bank-accounts.entity';
 import { VirtualBankAccounts } from '../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
 import { CryptoAccounts } from '../accounts/crypto-accounts/crypto-accounts.entity';
@@ -22,6 +23,9 @@ export class PaymentProvidersService {
     @InjectRepository(Countries)
     private readonly countriesRepository: Repository<Countries>,
 
+    @InjectRepository(Currency)
+    private readonly currencyRepo: Repository<Currency>,
+
     @InjectRepository(BankAccounts)
     private readonly bankRepo: Repository<BankAccounts>,
 
@@ -30,7 +34,7 @@ export class PaymentProvidersService {
 
     @InjectRepository(CryptoAccounts)
     private readonly cryptoRepo: Repository<CryptoAccounts>,
-  ) {}
+  ) { }
 
   async findAll(filters?: {
     platformCode?: string;
@@ -39,7 +43,17 @@ export class PaymentProvidersService {
     countryCode?: string;
     cryptoNetworkCode?: string;
     isActive?: boolean;
-  }) {
+  }): Promise<PaymentProviders[]> {
+
+    // Si no hay filtros, usa el approach simple
+    if (!filters || Object.keys(filters).length === 0) {
+      return this.providersRepo.find({
+        relations: ['paymentPlatform', 'supportedCurrencies', 'country'],
+        order: { createdAt: 'DESC' },
+      });
+    }
+
+    // Si hay filtros, usa QueryBuilder
     const qb = this.providersRepo
       .createQueryBuilder('provider')
       .leftJoinAndSelect('provider.paymentPlatform', 'platform')
@@ -102,7 +116,7 @@ export class PaymentProvidersService {
   async findOne(id: string): Promise<PaymentProviders> {
     const provider = await this.providersRepo.findOne({
       where: { paymentProviderId: id },
-      relations: ['paymentPlatform'],
+      relations: ['paymentPlatform', 'supportedCurrencies', 'country'],
     });
 
     if (!provider) throw new NotFoundException('Payment provider not found');
@@ -110,7 +124,7 @@ export class PaymentProvidersService {
   }
 
   async create(dto: CreatePaymentProvidersDto) {
-    const { paymentPlatformId, countryId, ...providerData } = dto;
+    const { paymentPlatformId, countryId, currencyIds, ...providerData } = dto;
 
     const platform = await this.platformsRepo.findOneBy({
       paymentPlatformId,
@@ -122,16 +136,30 @@ export class PaymentProvidersService {
 
     // Validar país (obligatorio)
     const country = await this.countriesRepository.findOne({
-      where: { country_id: countryId },
+      where: { id: countryId },
     });
     if (!country) {
       throw new NotFoundException(`Country with ID ${countryId} not found`);
+    }
+
+    // Validar monedas si se proporcionan
+    let currencies: Currency[] = [];
+    if (currencyIds?.length) {
+      currencies = await this.currencyRepo.findBy({
+        currencyId: In(currencyIds)
+      });
+
+      if (currencies.length !== currencyIds.length) {
+        throw new NotFoundException('One or more currencies not found');
+      }
     }
 
     const provider = this.providersRepo.create({
       ...providerData,
       paymentPlatform: platform,
       country,
+      countryId: country.id,
+      supportedCurrencies: currencies,
     });
 
     try {
@@ -162,12 +190,13 @@ export class PaymentProvidersService {
     // Validar país si se proporciona en la actualización
     if (countryId) {
       const country = await this.countriesRepository.findOne({
-        where: { country_id: countryId },
+        where: { id: countryId },
       });
       if (!country) {
         throw new NotFoundException(`Country with ID ${countryId} not found`);
       }
       provider.country = country;
+      provider.countryId = country.id;
     }
 
     Object.assign(provider, updateData);
@@ -209,7 +238,7 @@ export class PaymentProvidersService {
       await this.cryptoRepo.save(provider.cryptoAccounts);
     }
 
-    // Finalmente, inactivar el provider
+    // Inactivar el provider
     provider.isActive = false;
     return this.providersRepo.save(provider);
   }
@@ -217,5 +246,64 @@ export class PaymentProvidersService {
   async remove(id: string): Promise<void> {
     const provider = await this.findOne(id);
     await this.providersRepo.remove(provider);
+  }
+
+  async assignCurrencies(providerId: string, currencyIds: string[]): Promise<PaymentProviders> {
+    const provider = await this.findOne(providerId);
+
+    const newCurrencies = await this.currencyRepo.findBy({
+      currencyId: In(currencyIds)
+    });
+
+    if (!newCurrencies.length) {
+      throw new NotFoundException('No valid currencies found');
+    }
+
+    // Get existing currency IDs to avoid duplicates
+    const existingIds = provider.supportedCurrencies?.map(c => c.currencyId) || [];
+
+    // Filter out currencies that are already assigned
+    const currenciesToAdd = newCurrencies.filter(currency =>
+      !existingIds.includes(currency.currencyId)
+    );
+
+    if (currenciesToAdd.length === 0) {
+      throw new ConflictException('All specified currencies are already assigned to this provider');
+    }
+
+    // Add new currencies to existing ones
+    provider.supportedCurrencies = [...(provider.supportedCurrencies || []), ...currenciesToAdd];
+    return this.providersRepo.save(provider);
+  }
+
+  async replaceCurrencies(providerId: string, currencyIds: string[]): Promise<PaymentProviders> {
+    const provider = await this.findOne(providerId);
+
+    const currencies = await this.currencyRepo.findBy({
+      currencyId: In(currencyIds)
+    });
+
+    if (!currencies.length) {
+      throw new NotFoundException('No valid currencies found');
+    }
+
+    // Replace all currencies
+    provider.supportedCurrencies = currencies;
+    return this.providersRepo.save(provider);
+  }
+
+  async removeCurrencies(providerId: string, currencyIds: string[]): Promise<PaymentProviders> {
+    const provider = await this.findOne(providerId);
+
+    if (!provider.supportedCurrencies?.length) {
+      throw new NotFoundException('Provider has no currencies to remove');
+    }
+
+    // Filter out the currencies to remove
+    provider.supportedCurrencies = provider.supportedCurrencies.filter(currency =>
+      !currencyIds.includes(currency.currencyId)
+    );
+
+    return this.providersRepo.save(provider);
   }
 }

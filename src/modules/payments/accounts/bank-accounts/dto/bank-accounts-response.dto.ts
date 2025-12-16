@@ -19,6 +19,24 @@ export class BankAccountDetailResponseDto {
   isEncrypted: boolean;
 }
 
+export class CurrencyResponseDto {
+  @ApiProperty()
+  @Expose()
+  currencyId: string;
+
+  @ApiProperty()
+  @Expose()
+  code: string;
+
+  @ApiProperty()
+  @Expose()
+  name: string;
+
+  @ApiProperty()
+  @Expose()
+  symbol: string;
+}
+
 export class BankAccountResponseDto {
   @ApiProperty()
   @Expose()
@@ -64,9 +82,10 @@ export class BankAccountResponseDto {
   @Expose()
   swift?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: () => CurrencyResponseDto })
   @Expose()
-  currency?: string;
+  @Type(() => CurrencyResponseDto)
+  currency?: CurrencyResponseDto;
 
   @ApiProperty()
   @Expose()

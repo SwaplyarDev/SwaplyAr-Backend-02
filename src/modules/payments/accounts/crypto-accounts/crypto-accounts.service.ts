@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CryptoAccounts } from './crypto-accounts.entity';
@@ -8,6 +8,7 @@ import { User } from '../../../users/entities/user.entity';
 import { PaymentProviders } from '../../entities/payment-providers.entity';
 import { CryptoNetworks } from '../../../catalogs/crypto-networks/crypto-networks.entity';
 import { CryptoAccountFilterDto } from './dto/crypto-accounts-filter.dto';
+import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
 @Injectable()
 export class CryptoAccountsService {
@@ -20,6 +21,8 @@ export class CryptoAccountsService {
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
     @InjectRepository(CryptoNetworks)
     private readonly cryptoNetworksRepository: Repository<CryptoNetworks>,
+    @InjectRepository(Currency)
+    private readonly currencyRepository: Repository<Currency>,
   ) {}
 
   async create(
@@ -56,11 +59,50 @@ export class CryptoAccountsService {
       throw new NotFoundException(`Crypto Network with ID ${cryptoNetworkId} not found`);
     }
 
+    // Validate currency if provided
+    let currency: Currency | undefined;
+    if (createCryptoAccountDto.currencyId) {
+      const foundCurrency = await this.currencyRepository.findOne({
+        where: { currencyId: createCryptoAccountDto.currencyId }
+      });
+      if (!foundCurrency) {
+        throw new NotFoundException(`Currency with ID ${createCryptoAccountDto.currencyId} not found`);
+      }
+      currency = foundCurrency;
+
+      // Check if payment provider supports this currency using direct SQL query
+      const supportedCurrency = await this.paymentProvidersRepository.query(
+        `SELECT c.code, c.name FROM provider_currencies pc 
+         JOIN currencies c ON pc.currency_id = c.currency_id 
+         WHERE pc.provider_id = $1 AND pc.currency_id = $2`,
+        [paymentProviderId, createCryptoAccountDto.currencyId]
+      );
+      
+      if (!supportedCurrency || supportedCurrency.length === 0) {
+        // Get all supported currencies for error message
+        const allSupported = await this.paymentProvidersRepository.query(
+          `SELECT c.code FROM provider_currencies pc 
+           JOIN currencies c ON pc.currency_id = c.currency_id 
+           WHERE pc.provider_id = $1`,
+          [paymentProviderId]
+        );
+        
+        const supportedCodes = allSupported.length > 0 
+          ? allSupported.map((c: any) => c.code).join(', ')
+          : 'none';
+          
+        throw new BadRequestException(
+          `Payment Provider '${paymentProvider.name}' does not support currency '${currency.code}'. Supported currencies: ${supportedCodes}`
+        );
+      }
+    }
+
     const cryptoAccount = this.cryptoAccountsRepository.create({
       ...cryptoAccountData,
       user,
       paymentProvider,
       cryptoNetwork,
+      ...(currency && { currency }),
       createdBy: user,
     });
 
@@ -73,7 +115,8 @@ export class CryptoAccountsService {
     const query = this.cryptoAccountsRepository
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.user', 'user')
-      .leftJoinAndSelect('account.paymentProvider', 'provider');
+      .leftJoinAndSelect('account.paymentProvider', 'provider')
+      .leftJoinAndSelect('account.currency', 'currency');
 
     if (paymentProviderCode) {
       query.andWhere('provider.code = :paymentProviderCode', {
@@ -86,7 +129,7 @@ export class CryptoAccountsService {
   async findByUserId(userId: string): Promise<CryptoAccounts[]> {
     return this.cryptoAccountsRepository.find({
       where: { user: { id: userId } },
-      relations: ['user', 'paymentProvider', 'cryptoNetwork'],
+      relations: ['user', 'paymentProvider', 'cryptoNetwork', 'currency'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -94,7 +137,7 @@ export class CryptoAccountsService {
   async findOne(id: string): Promise<CryptoAccounts> {
     const cryptoAccount = await this.cryptoAccountsRepository.findOne({
       where: { cryptoAccountId: id },
-      relations: ['user', 'paymentProvider', 'cryptoNetwork'],
+      relations: ['user', 'paymentProvider', 'cryptoNetwork', 'currency'],
     });
 
     if (!cryptoAccount) {
@@ -149,6 +192,41 @@ export class CryptoAccountsService {
       // Los usuarios solo pueden editar sus propias cuentas
       if (cryptoAccount.user.id !== userId) {
         throw new ForbiddenException('You can only edit your own crypto accounts');
+      }
+    }
+
+    if (updateCryptoAccountDto.currencyId) {
+      const currency = await this.currencyRepository.findOne({
+        where: { currencyId: updateCryptoAccountDto.currencyId }
+      });
+      if (!currency) {
+        throw new NotFoundException(`Currency with ID ${updateCryptoAccountDto.currencyId} not found`);
+      }
+
+      // Check if payment provider supports this currency using direct SQL query
+      const supportedCurrency = await this.paymentProvidersRepository.query(
+        `SELECT c.code, c.name FROM provider_currencies pc 
+         JOIN currencies c ON pc.currency_id = c.currency_id 
+         WHERE pc.provider_id = $1 AND pc.currency_id = $2`,
+        [cryptoAccount.paymentProvider.paymentProviderId, updateCryptoAccountDto.currencyId]
+      );
+      
+      if (!supportedCurrency || supportedCurrency.length === 0) {
+        // Get all supported currencies for error message
+        const allSupported = await this.paymentProvidersRepository.query(
+          `SELECT c.code FROM provider_currencies pc 
+           JOIN currencies c ON pc.currency_id = c.currency_id 
+           WHERE pc.provider_id = $1`,
+          [cryptoAccount.paymentProvider.paymentProviderId]
+        );
+        
+        const supportedCodes = allSupported.length > 0 
+          ? allSupported.map((c: any) => c.code).join(', ')
+          : 'none';
+          
+        throw new BadRequestException(
+          `Payment Provider '${cryptoAccount.paymentProvider.name}' does not support currency '${currency.code}'. Supported currencies: ${supportedCodes}`
+        );
       }
     }
 

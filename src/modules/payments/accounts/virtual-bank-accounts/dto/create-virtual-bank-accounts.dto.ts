@@ -32,14 +32,13 @@ export class CreateVirtualBankAccountDto {
   @IsString()
   accountAlias?: string;
 
-  @ApiPropertyOptional({
-    description: 'Moneda de la cuenta (ISO 4217)',
-    example: 'USD',
+  @ApiProperty({ 
+    description: 'ID de la moneda', 
+    example: 'uuid-de-moneda' 
   })
   @IsOptional()
-  @IsString()
-  @Length(3, 3)
-  currency?: string;
+  @IsUUID('4')
+  currencyId?: string;
 
   @ApiPropertyOptional({
     description: 'Tipo de dueño de la cuenta',

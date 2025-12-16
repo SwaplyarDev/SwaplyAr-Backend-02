@@ -10,6 +10,7 @@ import {
 import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
 import { CryptoNetworks } from '../../../catalogs/crypto-networks/crypto-networks.entity';
 import { User } from '../../../users/entities/user.entity';
+import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
 @Entity({ name: 'crypto_accounts' })
 export class CryptoAccounts {
@@ -39,6 +40,10 @@ export class CryptoAccounts {
 
   @Column({ type: 'varchar', length: 20, default: 'user', name: 'owner_type' })
   ownerType: string;
+
+  @ManyToOne(() => Currency, (currency) => currency.cryptoAccounts, { nullable: true })
+  @JoinColumn({ name: 'currency_id' })
+  currency: Currency;
 
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'created_by' })

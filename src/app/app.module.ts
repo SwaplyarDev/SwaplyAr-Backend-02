@@ -31,6 +31,7 @@ import { BankAccountsModule } from 'src/modules/payments/accounts/bank-accounts/
 import { VirtualBankAccountsModule } from 'src/modules/payments/accounts/virtual-bank-accounts/virtual-bank-accounts.module';
 import { CryptoAccountsModule } from 'src/modules/payments/accounts/crypto-accounts/crypto-accounts.module';
 import { CountriesModule } from 'src/modules/catalogs/countries/country.modules';
+import { CurrenciesModule } from 'src/modules/catalogs/currencies/currencies-module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { CountriesModule } from 'src/modules/catalogs/countries/country.modules'
     VirtualBankAccountsModule,
     CryptoAccountsModule,
     CountriesModule,
+    CurrenciesModule,
 
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',

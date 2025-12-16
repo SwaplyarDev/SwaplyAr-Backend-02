@@ -34,7 +34,7 @@ export class PaymentProviders {
   @Column({ type: 'varchar', length: 50, unique: true })
   code: string;
 
-  @ManyToOne(() => Countries, { eager: true })
+  @ManyToOne(() => Countries, { nullable: true, eager: true })
   @JoinColumn({ name: 'country_id' })
   country: Countries;
 

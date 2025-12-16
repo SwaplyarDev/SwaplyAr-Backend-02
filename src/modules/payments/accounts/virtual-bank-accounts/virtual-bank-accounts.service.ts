@@ -102,7 +102,8 @@ export class VirtualBankAccountsService {
     const query = this.virtualBankAccountsRepository
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.user', 'user')
-      .leftJoinAndSelect('account.paymentProvider', 'provider');
+      .leftJoinAndSelect('account.paymentProvider', 'provider')
+      .leftJoinAndSelect('account.currency', 'currency');
 
     if (paymentProviderCode) {
       query.andWhere('provider.code = :paymentProviderCode', {
@@ -111,8 +112,7 @@ export class VirtualBankAccountsService {
     }
 
     if (currency) {
-      query.leftJoinAndSelect('account.currency', 'currency')
-        .andWhere('currency.code = :currency', { currency });
+      query.andWhere('currency.code = :currency', { currency });
     }
     return await query.getMany();
   }

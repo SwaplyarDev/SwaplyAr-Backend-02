@@ -94,24 +94,33 @@ export class CountriesService {
 
   async assignCurrencies(countryId: string, currencyIds: string[]): Promise<Countries> {
     return await this.dataSource.transaction(async manager => {
-      const country = await manager.findOne(Countries, { where: { id: countryId } });
+      const country = await manager.findOne(Countries, { 
+        where: { id: countryId },
+        relations: ['currencies']
+      });
       if (!country) {
         throw new NotFoundException('País no encontrado');
       }
 
-      const currencies = await manager.findBy(Currency, { currencyId: In(currencyIds) });
-      if (currencies.length !== currencyIds.length) {
+      const newCurrencies = await manager.findBy(Currency, { currencyId: In(currencyIds) });
+      if (newCurrencies.length !== currencyIds.length) {
         throw new NotFoundException('One or more currencies not found');
       }
 
-      // Clear existing relationships
-      await manager.query(
-        `DELETE FROM countries_currencies WHERE country_id = $1`,
-        [countryId]
+      // Get existing currency IDs to avoid duplicates
+      const existingIds = country.currencies?.map(c => c.currencyId) || [];
+      
+      // Filter out currencies that are already assigned
+      const currenciesToAdd = currencyIds.filter(currencyId => 
+        !existingIds.includes(currencyId)
       );
+      
+      if (currenciesToAdd.length === 0) {
+        throw new BadRequestException('All specified currencies are already assigned to this country');
+      }
 
-      // Insert new relationships
-      for (const currencyId of currencyIds) {
+      // Insert only new relationships
+      for (const currencyId of currenciesToAdd) {
         await manager.query(
           `INSERT INTO countries_currencies (country_id, currency_id) VALUES ($1, $2)`,
           [countryId, currencyId]

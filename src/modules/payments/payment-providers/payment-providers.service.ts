@@ -158,6 +158,7 @@ export class PaymentProvidersService {
       ...providerData,
       paymentPlatform: platform,
       country,
+      countryId: country.id,
       supportedCurrencies: currencies,
     });
 
@@ -195,6 +196,7 @@ export class PaymentProvidersService {
         throw new NotFoundException(`Country with ID ${countryId} not found`);
       }
       provider.country = country;
+      provider.countryId = country.id;
     }
 
     Object.assign(provider, updateData);

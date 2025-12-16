@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { VirtualBankAccountsService } from './virtual-bank-accounts.service';
 import { CreateVirtualBankAccountDto } from './dto/create-virtual-bank-accounts.dto';
@@ -39,8 +40,10 @@ export class VirtualBankAccountsController {
     type: VirtualBankAccountResponseDto,
   })
   create(@Body() createVirtualBankAccountDto: CreateVirtualBankAccountDto, @Request() req) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-    return this.virtualBankAccountsService.create(createVirtualBankAccountDto, req.user.userId);
+    // Verifica que el usuario esté autenticado
+    const userId = req.user?.id;
+    if (!userId) throw new UnauthorizedException();
+    return this.virtualBankAccountsService.create(createVirtualBankAccountDto, userId);
   }
 
   // ==========================================

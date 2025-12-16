@@ -29,7 +29,7 @@ export class CurrenciesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Get(':id')
-  @ApiOperation({ summary: 'Obtener monerda por id' })
+  @ApiOperation({ summary: 'Obtener moneda por id' })
   @ApiOkResponse({ type: [CurrencyResponseDto] })
   async findOne(@Param('id') id: string): Promise<Currency> {
     return this.currenciesService.findOne(id);

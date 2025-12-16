@@ -136,7 +136,8 @@ export class BankAccountsService {
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.details', 'details')
       .leftJoinAndSelect('account.user', 'user')
-      .leftJoinAndSelect('account.paymentProvider', 'provider');
+      .leftJoinAndSelect('account.paymentProvider', 'provider')
+      .leftJoinAndSelect('account.currency', 'currency');
 
     if (paymentProviderCode) {
       query.andWhere('provider.code = :paymentProviderCode', {
@@ -145,8 +146,7 @@ export class BankAccountsService {
     }
 
     if (currency) {
-      query.leftJoinAndSelect('account.currency', 'currency')
-        .andWhere('currency.code = :currency', { currency });
+      query.andWhere('currency.code = :currency', { currency });
     }
 
     return await query.getMany();

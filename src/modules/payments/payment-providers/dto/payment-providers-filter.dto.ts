@@ -21,12 +21,12 @@ export class PaymentProvidersFilterDto {
 
   @ApiPropertyOptional({
     example: 'USD',
-    description: 'Código de moneda (solo bank/virtual-bank accounts)',
+    description: 'Código de moneda asociada al proveedor (provider_currencies)',
   })
   @IsOptional()
   @IsString()
   @Length(2, 3)
-  fiatCurrencyCode?: string;
+  currencyCode?: string;
 
   @ApiPropertyOptional({
     example: 'CHL',
@@ -35,14 +35,6 @@ export class PaymentProvidersFilterDto {
   @IsOptional()
   @IsString()
   countryCode?: string;
-
-  @ApiPropertyOptional({
-    example: 'BTC',
-    description: 'Código de crypto network (solo crypto accounts)',
-  })
-  @IsOptional()
-  @IsString()
-  cryptoNetworkCode?: string;
 
   @ApiPropertyOptional({
     example: 'true',

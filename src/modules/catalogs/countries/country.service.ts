@@ -83,13 +83,13 @@ export class CountriesService {
 
   async update(id: string, updateDto: UpdateCountryDto): Promise<Countries> {
     await this.findOne(id);
-    await this.countriesRepository.update(id, updateDto);
+    await this.countriesRepository.update({ id }, updateDto);
     return this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {
     await this.findOne(id);
-    await this.countriesRepository.delete(id);
+    await this.countriesRepository.delete({ id });
   }
 
   async assignCurrencies(countryId: string, currencyIds: string[]): Promise<Countries> {

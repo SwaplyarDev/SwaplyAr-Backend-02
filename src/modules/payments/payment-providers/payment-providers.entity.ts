@@ -34,12 +34,9 @@ export class PaymentProviders {
   @Column({ type: 'varchar', length: 50, unique: true })
   code: string;
 
-  @ManyToOne(() => Countries, { nullable: true, eager: true })
+  @ManyToOne(() => Countries, { nullable: true })
   @JoinColumn({ name: 'country_id' })
   country: Countries;
-
-  @Column({ name: 'country_id', nullable: true })
-  countryId: string;
 
   @Column({ type: 'varchar', nullable: true, name: 'logo_url' })
   logoUrl: string;

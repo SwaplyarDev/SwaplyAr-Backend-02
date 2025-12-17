@@ -129,8 +129,8 @@ export class CryptoAccountsController {
     description: 'The virtual bank account has been successfully deactivated.',
     type: CryptoAccountResponseDto,
   })
-  inactivate(@Param('id') id: string) {
-    return this.cryptoAccountsService.inactivate(id);
+  inactivate(@Param('id') id: string, @Request() req) {
+    return this.cryptoAccountsService.inactivate(id, req.user.id);
   }
 
   // ==========================================
@@ -145,7 +145,7 @@ export class CryptoAccountsController {
     status: 200,
     description: 'The crypto account has been successfully deleted.',
   })
-  remove(@Param('id') id: string) {
-    return this.cryptoAccountsService.remove(id);
+  remove(@Param('id') id: string, @Request() req) {
+    return this.cryptoAccountsService.remove(id, req.user.id);
   }
 }

@@ -31,17 +31,12 @@ export class VirtualBankAccountsService {
     createVirtualBankAccountDto: CreateVirtualBankAccountDto,
     userId: string,
   ): Promise<VirtualBankAccounts> {
-    const {
-      paymentProviderId,
-      userId: dtoUserId,
-      ...virtualAccountData
-    } = createVirtualBankAccountDto;
+    const { paymentProviderId, ...virtualAccountData } = createVirtualBankAccountDto;
 
-    // Verify user exists
-    const targetUserId = dtoUserId || userId;
-    const user = await this.userRepository.findOne({ where: { id: targetUserId } });
+    // Verify user exists - always use authenticated user's ID
+    const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException(`User with ID ${targetUserId} not found`);
+      throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
     }
 
     // Verify payment provider exists
@@ -49,7 +44,12 @@ export class VirtualBankAccountsService {
       where: { paymentProviderId },
     });
     if (!paymentProvider) {
-      throw new NotFoundException(`Payment Provider with ID ${paymentProviderId} not found`);
+      throw new NotFoundException(`Proveedor de pago con ID ${paymentProviderId} no encontrado`);
+    }
+
+    // Validate provider is active
+    if (!paymentProvider.isActive) {
+      throw new ForbiddenException(`El proveedor de pago "${paymentProvider.name}" no está activo`);
     }
 
     // Validate currency if provided
@@ -234,14 +234,94 @@ export class VirtualBankAccountsService {
     return this.virtualBankAccountsRepository.save(virtualBankAccount);
   }
 
-  async inactivate(id: string): Promise<VirtualBankAccounts> {
+  async inactivate(id: string, userId: string): Promise<VirtualBankAccounts> {
     const virtualBankAccount = await this.findOne(id);
+
+    // Get authenticated user with roles
+    const currentUser = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
+    });
+    if (!currentUser) {
+      throw new NotFoundException('Usuario actual no encontrado');
+    }
+
+    // Get account owner with roles
+    const accountOwner = await this.userRepository.findOne({
+      where: { id: virtualBankAccount.user.id },
+      relations: ['roles'],
+    });
+    if (!accountOwner) {
+      throw new NotFoundException('Propietario de la cuenta no encontrado');
+    }
+
+    // Check if user has specific role
+    const hasRole = (user: any, roleCode: string) => {
+      return user.roles?.some((role: any) => role.code === roleCode) || false;
+    };
+
+    const isCurrentUserAdmin = hasRole(currentUser, 'admin');
+    const isAccountOwnerAdmin = hasRole(accountOwner, 'admin');
+
+    // Verify permissions by role
+    if (isCurrentUserAdmin) {
+      // Admins can only inactivate accounts owned by other admins
+      if (!isAccountOwnerAdmin) {
+        throw new ForbiddenException('Los administradores solo pueden desactivar cuentas creadas por otros administradores');
+      }
+    } else {
+      // Users can only inactivate their own accounts
+      if (virtualBankAccount.user.id !== userId) {
+        throw new ForbiddenException('Solo puedes desactivar tus propias cuentas');
+      }
+    }
+
     virtualBankAccount.isActive = false;
     return this.virtualBankAccountsRepository.save(virtualBankAccount);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, userId: string): Promise<void> {
     const virtualBankAccount = await this.findOne(id);
+
+    // Get authenticated user with roles
+    const currentUser = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
+    });
+    if (!currentUser) {
+      throw new NotFoundException('Usuario actual no encontrado');
+    }
+
+    // Get account owner with roles
+    const accountOwner = await this.userRepository.findOne({
+      where: { id: virtualBankAccount.user.id },
+      relations: ['roles'],
+    });
+    if (!accountOwner) {
+      throw new NotFoundException('Propietario de la cuenta no encontrado');
+    }
+
+    // Check if user has specific role
+    const hasRole = (user: any, roleCode: string) => {
+      return user.roles?.some((role: any) => role.code === roleCode) || false;
+    };
+
+    const isCurrentUserAdmin = hasRole(currentUser, 'admin');
+    const isAccountOwnerAdmin = hasRole(accountOwner, 'admin');
+
+    // Verify permissions by role
+    if (isCurrentUserAdmin) {
+      // Admins can only delete accounts owned by other admins
+      if (!isAccountOwnerAdmin) {
+        throw new ForbiddenException('Los administradores solo pueden eliminar cuentas creadas por otros administradores');
+      }
+    } else {
+      // Users can only delete their own accounts
+      if (virtualBankAccount.user.id !== userId) {
+        throw new ForbiddenException('Solo puedes eliminar tus propias cuentas');
+      }
+    }
+
     await this.virtualBankAccountsRepository.remove(virtualBankAccount);
   }
 }

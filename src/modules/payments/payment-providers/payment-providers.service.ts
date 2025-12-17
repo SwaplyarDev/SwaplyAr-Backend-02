@@ -39,9 +39,8 @@ export class PaymentProvidersService {
   async findAll(filters?: {
     platformCode?: string;
     providerCode?: string;
-    fiatCurrencyCode?: string;
+    currencyCode?: string;
     countryCode?: string;
-    cryptoNetworkCode?: string;
     isActive?: boolean;
   }): Promise<PaymentProviders[]> {
     // Si no hay filtros, usa el approach simple
@@ -56,11 +55,7 @@ export class PaymentProvidersService {
     const qb = this.providersRepo
       .createQueryBuilder('provider')
       .leftJoinAndSelect('provider.paymentPlatform', 'platform')
-      .leftJoinAndSelect('provider.country', 'country')
-      .leftJoinAndSelect('provider.bankAccounts', 'bank')
-      .leftJoinAndSelect('provider.virtualBankAccounts', 'virtual')
-      .leftJoinAndSelect('provider.cryptoAccounts', 'crypto')
-      .leftJoinAndSelect('crypto.cryptoNetwork', 'cryptoNetwork')
+      .leftJoinAndSelect('provider.supportedCurrencies', 'currency')
       .orderBy('provider.createdAt', 'DESC');
 
     // FILTRA POR CÓDIGO DE PLATAFORMA
@@ -77,25 +72,24 @@ export class PaymentProvidersService {
       });
     }
 
-    // FILTRA POR MONEDA (bank + virtual)
-    if (filters?.fiatCurrencyCode) {
-      qb.andWhere(`(bank.currency = :fiatCurrencyCode OR virtual.currency = :fiatCurrencyCode)`, {
-        fiatCurrencyCode: filters.fiatCurrencyCode,
+    // FILTRA POR MONEDA (currencies asociadas al provider)
+    if (filters?.currencyCode) {
+      qb.andWhere('currency.code = :currencyCode', {
+        currencyCode: filters.currencyCode,
       });
     }
 
-    // FILTRA POR CRYPTO NETWORK (sólo crypto)
-    if (filters?.cryptoNetworkCode) {
-      qb.andWhere('cryptoNetwork.code = :cryptoNetworkCode', {
-        cryptoNetworkCode: filters.cryptoNetworkCode,
-      });
-    }
-
-    // FILTRA POR COUNTRY CODE
+    // FILTRA POR COUNTRY CODE (usar innerJoin solo si hay filtro explícito)
     if (filters?.countryCode) {
-      qb.andWhere('country.code = :countryCode', {
-        countryCode: filters.countryCode,
-      });
+      qb.innerJoinAndSelect('provider.country', 'country').andWhere(
+        'country.code = :countryCode',
+        {
+          countryCode: filters.countryCode,
+        },
+      );
+    } else {
+      // Si no hay filtro de país, hacer left join para incluir país si existe
+      qb.leftJoinAndSelect('provider.country', 'country');
     }
 
     // FILTRA POR ATRIBUTO isActive
@@ -157,7 +151,6 @@ export class PaymentProvidersService {
       ...providerData,
       paymentPlatform: platform,
       country,
-      countryId: country.id,
       supportedCurrencies: currencies,
     });
 
@@ -195,7 +188,6 @@ export class PaymentProvidersService {
         throw new NotFoundException(`Country with ID ${countryId} not found`);
       }
       provider.country = country;
-      provider.countryId = country.id;
     }
 
     Object.assign(provider, updateData);

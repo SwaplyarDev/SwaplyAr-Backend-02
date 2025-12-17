@@ -128,8 +128,8 @@ export class VirtualBankAccountsController {
     description: 'The virtual bank account has been successfully deactivated.',
     type: VirtualBankAccountResponseDto,
   })
-  inactivate(@Param('id') id: string) {
-    return this.virtualBankAccountsService.inactivate(id);
+  inactivate(@Param('id') id: string, @Request() req) {
+    return this.virtualBankAccountsService.inactivate(id, req.user.id);
   }
 
   // ==========================================
@@ -144,7 +144,7 @@ export class VirtualBankAccountsController {
     status: 200,
     description: 'The virtual bank account has been successfully deleted.',
   })
-  remove(@Param('id') id: string) {
-    return this.virtualBankAccountsService.remove(id);
+  remove(@Param('id') id: string, @Request() req) {
+    return this.virtualBankAccountsService.remove(id, req.user.id);
   }
 }

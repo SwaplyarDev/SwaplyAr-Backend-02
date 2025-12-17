@@ -13,7 +13,14 @@ import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([BankAccounts, BankAccountDetails, PaymentProviders, User, Countries, Currency]),
+    TypeOrmModule.forFeature([
+      BankAccounts,
+      BankAccountDetails,
+      PaymentProviders,
+      User,
+      Countries,
+      Currency,
+    ]),
     PaymentProvidersModule,
     UsersModule,
   ],

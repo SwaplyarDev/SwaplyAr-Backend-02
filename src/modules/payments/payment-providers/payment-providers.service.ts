@@ -34,7 +34,7 @@ export class PaymentProvidersService {
 
     @InjectRepository(CryptoAccounts)
     private readonly cryptoRepo: Repository<CryptoAccounts>,
-  ) { }
+  ) {}
 
   async findAll(filters?: {
     platformCode?: string;
@@ -43,11 +43,7 @@ export class PaymentProvidersService {
     countryCode?: string;
     cryptoNetworkCode?: string;
     isActive?: boolean;
-<<<<<<< HEAD
-  }) {
-=======
   }): Promise<PaymentProviders[]> {
-
     // Si no hay filtros, usa el approach simple
     if (!filters || Object.keys(filters).length === 0) {
       return this.providersRepo.find({
@@ -57,7 +53,6 @@ export class PaymentProvidersService {
     }
 
     // Si hay filtros, usa QueryBuilder
->>>>>>> breaking/refactor-transacciones-wallet-db
     const qb = this.providersRepo
       .createQueryBuilder('provider')
       .leftJoinAndSelect('provider.paymentPlatform', 'platform')
@@ -150,7 +145,7 @@ export class PaymentProvidersService {
     let currencies: Currency[] = [];
     if (currencyIds?.length) {
       currencies = await this.currencyRepo.findBy({
-        currencyId: In(currencyIds)
+        currencyId: In(currencyIds),
       });
 
       if (currencies.length !== currencyIds.length) {
@@ -251,14 +246,12 @@ export class PaymentProvidersService {
     const provider = await this.findOne(id);
     await this.providersRepo.remove(provider);
   }
-<<<<<<< HEAD
-=======
 
   async assignCurrencies(providerId: string, currencyIds: string[]): Promise<PaymentProviders> {
     const provider = await this.findOne(providerId);
 
     const newCurrencies = await this.currencyRepo.findBy({
-      currencyId: In(currencyIds)
+      currencyId: In(currencyIds),
     });
 
     if (!newCurrencies.length) {
@@ -266,11 +259,11 @@ export class PaymentProvidersService {
     }
 
     // Get existing currency IDs to avoid duplicates
-    const existingIds = provider.supportedCurrencies?.map(c => c.currencyId) || [];
+    const existingIds = provider.supportedCurrencies?.map((c) => c.currencyId) || [];
 
     // Filter out currencies that are already assigned
-    const currenciesToAdd = newCurrencies.filter(currency =>
-      !existingIds.includes(currency.currencyId)
+    const currenciesToAdd = newCurrencies.filter(
+      (currency) => !existingIds.includes(currency.currencyId),
     );
 
     if (currenciesToAdd.length === 0) {
@@ -286,7 +279,7 @@ export class PaymentProvidersService {
     const provider = await this.findOne(providerId);
 
     const currencies = await this.currencyRepo.findBy({
-      currencyId: In(currencyIds)
+      currencyId: In(currencyIds),
     });
 
     if (!currencies.length) {
@@ -306,11 +299,10 @@ export class PaymentProvidersService {
     }
 
     // Filter out the currencies to remove
-    provider.supportedCurrencies = provider.supportedCurrencies.filter(currency =>
-      !currencyIds.includes(currency.currencyId)
+    provider.supportedCurrencies = provider.supportedCurrencies.filter(
+      (currency) => !currencyIds.includes(currency.currencyId),
     );
 
     return this.providersRepo.save(provider);
   }
->>>>>>> breaking/refactor-transacciones-wallet-db
 }

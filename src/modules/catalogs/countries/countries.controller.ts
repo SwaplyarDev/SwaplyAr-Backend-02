@@ -68,9 +68,9 @@ export class CountriesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Put(':id/currencies')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Asignar monedas al país',
-    description: 'Para obtener los IDs de monedas disponibles, usar GET /currencies'
+    description: 'Para obtener los IDs de monedas disponibles, usar GET /currencies',
   })
   @ApiOkResponse({ type: CountryResponseDto })
   assignCurrencies(

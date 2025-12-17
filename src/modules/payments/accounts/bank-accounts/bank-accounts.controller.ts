@@ -24,7 +24,7 @@ import { BankAccountFilterDto } from './dto/bank-accounts-filter.dto';
 @ApiTags('Bank Accounts')
 @Controller('bank-accounts')
 export class BankAccountsController {
-  constructor(private readonly bankAccountsService: BankAccountsService) { }
+  constructor(private readonly bankAccountsService: BankAccountsService) {}
 
   // ==========================================
   // CREAR UNA CUENTA BANCARIA
@@ -56,7 +56,9 @@ export class BankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  @ApiOperation({ summary: 'Obtener todas las bank accounts con filtros opcionales (sólo rol ADMIN)' })
+  @ApiOperation({
+    summary: 'Obtener todas las bank accounts con filtros opcionales (sólo rol ADMIN)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Return all bank accounts.',

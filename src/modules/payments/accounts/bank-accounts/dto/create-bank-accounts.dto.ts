@@ -74,9 +74,9 @@ export class CreateBankAccountDto {
   @IsString()
   swift?: string;
 
-  @ApiProperty({ 
-    description: 'ID de la moneda', 
-    example: 'uuid-de-moneda' 
+  @ApiProperty({
+    description: 'ID de la moneda',
+    example: 'uuid-de-moneda',
   })
   @IsOptional()
   @IsUUID('4')

@@ -35,9 +35,9 @@ export class CreateCryptoAccountDto {
   @IsBoolean()
   isActive?: boolean;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     example: '550e8400-e29b-41d4-a716-446655440003',
-    description: 'ID de la moneda (debe ser soportada por el Payment Provider)'
+    description: 'ID de la moneda (debe ser soportada por el Payment Provider)',
   })
   @IsOptional()
   @IsUUID()

@@ -61,7 +61,7 @@ export class CurrenciesController {
   @Patch(':id/deactive')
   @ApiOperation({ summary: 'inactivar moneda' })
   @ApiOkResponse({ type: [CurrencyResponseDto] })
-  async inactivate(@Param('id') id: string){
+  async inactivate(@Param('id') id: string) {
     return this.currenciesService.inactivate(id);
   }
 

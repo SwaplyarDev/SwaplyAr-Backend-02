@@ -23,18 +23,13 @@ export class BankAccountsService {
     @InjectRepository(PaymentProviders)
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
     @InjectRepository(Countries)
-    private readonly countriesRepository: Repository<Countries>, 
+    private readonly countriesRepository: Repository<Countries>,
     @InjectRepository(Currency)
     private readonly currencyRepository: Repository<Currency>,
-  ) { }
+  ) {}
 
   async create(createBankAccountDto: CreateBankAccountDto, userId: string): Promise<BankAccounts> {
-    const {
-      paymentProviderId,
-      countryId,
-      details,
-      ...bankAccountData
-    } = createBankAccountDto;
+    const { paymentProviderId, countryId, details, ...bankAccountData } = createBankAccountDto;
 
     // Verificar que el usuario existe (del contexto de autenticación)
     const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -69,7 +64,7 @@ export class BankAccountsService {
       user,
       paymentProvider,
       country,
-      ...(currency && { currency }),
+      ...(Currency && { Currency }),
       createdBy: user,
     });
 
@@ -184,10 +179,12 @@ export class BankAccountsService {
 
     if (updateBankAccountDto.currencyId) {
       const currency = await this.currencyRepository.findOne({
-        where: { currencyId: updateBankAccountDto.currencyId }
+        where: { currencyId: updateBankAccountDto.currencyId },
       });
       if (!currency) {
-        throw new NotFoundException(`Currency with ID ${updateBankAccountDto.currencyId} not found`);
+        throw new NotFoundException(
+          `Currency with ID ${updateBankAccountDto.currencyId} not found`,
+        );
       }
 
       // Validate that payment provider supports this currency
@@ -197,12 +194,12 @@ export class BankAccountsService {
       });
 
       const providerSupportsCurrency = providerWithCurrencies?.supportedCurrencies?.some(
-        supportedCurrency => supportedCurrency.currencyId === updateBankAccountDto.currencyId
+        (supportedCurrency) => supportedCurrency.currencyId === updateBankAccountDto.currencyId,
       );
-      
+
       if (!providerSupportsCurrency) {
         throw new NotFoundException(
-          `Payment Provider '${bankAccount.paymentProvider.name}' does not support currency '${currency.code}'`
+          `Payment Provider '${bankAccount.paymentProvider.name}' does not support currency '${currency.code}'`,
         );
       }
 
@@ -214,17 +211,17 @@ export class BankAccountsService {
 
       if (!countryWithCurrencies?.currencies || countryWithCurrencies.currencies.length === 0) {
         throw new NotFoundException(
-          `Country '${bankAccount.country.name}' has no supported currencies configured`
+          `Country '${bankAccount.country.name}' has no supported currencies configured`,
         );
       }
 
       const countrySupportsCurrency = countryWithCurrencies.currencies.some(
-        supportedCurrency => supportedCurrency.currencyId === updateBankAccountDto.currencyId
+        (supportedCurrency) => supportedCurrency.currencyId === updateBankAccountDto.currencyId,
       );
-      
+
       if (!countrySupportsCurrency) {
         throw new NotFoundException(
-          `Country '${bankAccount.country.name}' does not support currency '${currency.code}'`
+          `Country '${bankAccount.country.name}' does not support currency '${currency.code}'`,
         );
       }
     }
@@ -267,7 +264,9 @@ export class BankAccountsService {
     if (isCurrentUserAdmin) {
       // Los admins solo pueden inactivar cuentas creadas por otros admins
       if (!isAccountOwnerAdmin) {
-        throw new ForbiddenException('Los administradores solo pueden inactivar cuentas bancarias creadas por otros administradores');
+        throw new ForbiddenException(
+          'Los administradores solo pueden inactivar cuentas bancarias creadas por otros administradores',
+        );
       }
     } else {
       // Los usuarios solo pueden inactivar sus propias cuentas
@@ -313,7 +312,9 @@ export class BankAccountsService {
     if (isCurrentUserAdmin) {
       // Los admins solo pueden eliminar cuentas creadas por otros admins
       if (!isAccountOwnerAdmin) {
-        throw new ForbiddenException('Los administradores solo pueden eliminar cuentas bancarias creadas por otros administradores');
+        throw new ForbiddenException(
+          'Los administradores solo pueden eliminar cuentas bancarias creadas por otros administradores',
+        );
       }
     } else {
       // Los usuarios solo pueden eliminar sus propias cuentas

@@ -40,7 +40,7 @@ export class CryptoAccountsController {
     type: CryptoAccountResponseDto,
   })
   create(@Body() createCryptoAccountDto: CreateCryptoAccountDto, @Request() req) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const userId = req.user?.id;
     if (!userId) throw new UnauthorizedException();
     return this.cryptoAccountsService.create(createCryptoAccountDto, userId);

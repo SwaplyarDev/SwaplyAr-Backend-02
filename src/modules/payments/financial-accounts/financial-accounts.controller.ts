@@ -31,7 +31,7 @@ export class FinancialAccountsController {
     type: FinancialAccountResponseDto,
   })
   create(@Body() createFinancialAccountDto: CreateFinancialAccountDto, @Request() req) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const userId = req.user?.id;
     if (!userId) throw new UnauthorizedException();
     return this.financialAccountsService.create(createFinancialAccountDto, userId);

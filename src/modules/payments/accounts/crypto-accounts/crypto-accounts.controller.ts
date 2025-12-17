@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CryptoAccountsService } from './crypto-accounts.service';
 import { CreateCryptoAccountDto } from './dto/create-crypto-accounts.dto';
@@ -40,7 +41,9 @@ export class CryptoAccountsController {
   })
   create(@Body() createCryptoAccountDto: CreateCryptoAccountDto, @Request() req) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-    return this.cryptoAccountsService.create(createCryptoAccountDto, req.user.userId);
+    const userId = req.user?.id;
+    if (!userId) throw new UnauthorizedException();
+    return this.cryptoAccountsService.create(createCryptoAccountDto, userId);
   }
 
   // ==========================================

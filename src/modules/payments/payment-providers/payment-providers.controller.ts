@@ -6,13 +6,19 @@ import {
   Param,
   Patch,
   Delete,
+<<<<<<< HEAD
   UseGuards,
+=======
+  UseGuards, Put,
+>>>>>>> breaking/refactor-transacciones-wallet-db
   Query,
   Request,
 } from '@nestjs/common';
 import { PaymentProvidersService } from './payment-providers.service';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
 import { UpdatePaymentProvidersDto } from './dto/update-payment-providers.dto';
+import { AssignProviderCurrenciesDto } from './dto/assign-provider-currencies.dto';
+import { PaymentProviders } from './payment-providers.entity';
 import { PaymentProvidersFilterDto } from './dto/payment-providers-filter.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
@@ -21,24 +27,39 @@ import { Roles } from '@common/decorators/roles.decorator';
 @ApiTags('Payment Providers')
 @Controller('payment-providers')
 export class PaymentProvidersController {
-  constructor(private readonly service: PaymentProvidersService) {}
+  constructor(private readonly service: PaymentProvidersService) { }
   // ===============================================
   // MOSTRAR TODOS LOS PROVEEDORES DE PAGO (RETURN DIFERENCIADO PARA ADMIN Y USER)
   // ===============================================
   @ApiOperation({
     summary:
+<<<<<<< HEAD
       'Obtener todos los proveedores de pago con filtros opcionales (diferenciado para ADMIN y USER)',
+=======
+      'Obtener todos los proveedores de pago con filtros opcionales (diferenciado para ADMIN y USER)'
+>>>>>>> breaking/refactor-transacciones-wallet-db
   })
   @ApiResponse({ status: 200, description: 'Lista de providers obtenida con éxito' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
+<<<<<<< HEAD
   findAll(@Query() filters: PaymentProvidersFilterDto, @Request() req) {
     // Verificar si es admin chequeando req.user.roles array
     const isAdmin =
       req.user.role === 'admin' ||
       (Array.isArray(req.user.roles) && req.user.roles.some((r) => r.code === 'admin'));
 
+=======
+  findAll(@Query() filters: PaymentProvidersFilterDto,
+    @Request() req,
+  ) {
+    // Verificar si es admin chequeando req.user.roles array
+    const isAdmin = 
+      req.user.role === 'admin' || 
+      (Array.isArray(req.user.roles) && req.user.roles.some(r => r.code === 'admin'));
+    
+>>>>>>> breaking/refactor-transacciones-wallet-db
     // Si no es admin Y no especificó un filtro isActive explícitamente, forzar a true
     if (!isAdmin && filters.isActive === undefined) {
       filters.isActive = true;
@@ -109,4 +130,22 @@ export class PaymentProvidersController {
   inactivate(@Param('id') id: string) {
     return this.service.inactivate(id);
   }
+<<<<<<< HEAD
+=======
+
+  // ===============================================
+  // ASIGNAR MONEDAS AL PROVEEDOR DE PAGO
+  // ===============================================
+  @Put(':id/currencies')
+  @ApiOperation({ summary: 'Asignar monedas al provider' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  assignCurrencies(
+    @Param('id') id: string,
+    @Body() body: AssignProviderCurrenciesDto,
+  ): Promise<PaymentProviders> {
+    return this.service.assignCurrencies(id, body.currencyIds);
+  }
+>>>>>>> breaking/refactor-transacciones-wallet-db
 }

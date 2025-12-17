@@ -8,6 +8,7 @@ import {
   IsIn,
   IsUrl,
   IsUppercase,
+  IsArray,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -24,7 +25,7 @@ export class CreatePaymentProvidersDto {
 
   @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440002', description: 'ID del país' })
   @IsUUID()
-  countryId?: string;
+  countryId: string;
 
   @ApiPropertyOptional({
     description: 'URL del logo del proveedor',
@@ -60,4 +61,14 @@ export class CreatePaymentProvidersDto {
   })
   @IsUUID()
   paymentPlatformId: string;
+
+  @ApiPropertyOptional({
+    description: 'IDs de las monedas soportadas (opcional)',
+    example: ['550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002'],
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  currencyIds?: string[];
 }

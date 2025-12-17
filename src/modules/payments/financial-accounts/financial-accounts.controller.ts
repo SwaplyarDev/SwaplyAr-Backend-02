@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Request,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { FinancialAccountsService } from './financial-accounts.service';
 import { CreateFinancialAccountDto } from './dto/create-financial-accounts.dto';
@@ -31,7 +32,9 @@ export class FinancialAccountsController {
   })
   create(@Body() createFinancialAccountDto: CreateFinancialAccountDto, @Request() req) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-    return this.financialAccountsService.create(createFinancialAccountDto, req.user.userId);
+    const userId = req.user?.id;
+    if (!userId) throw new UnauthorizedException();
+    return this.financialAccountsService.create(createFinancialAccountDto, userId);
   }
 
   @Get()

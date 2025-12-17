@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { BankAccountsService } from './bank-accounts.service';
 import { CreateBankAccountDto } from './dto/create-bank-accounts.dto';
@@ -23,7 +24,7 @@ import { BankAccountFilterDto } from './dto/bank-accounts-filter.dto';
 @ApiTags('Bank Accounts')
 @Controller('bank-accounts')
 export class BankAccountsController {
-  constructor(private readonly bankAccountsService: BankAccountsService) {}
+  constructor(private readonly bankAccountsService: BankAccountsService) { }
 
   // ==========================================
   // CREAR UNA CUENTA BANCARIA
@@ -32,15 +33,20 @@ export class BankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Post()
-  @ApiOperation({ summary: 'Crear una nueva cuenta bancaria' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
+  @ApiOperation({ summary: 'Crear una nueva bank account' })
   @ApiResponse({
     status: 201,
     description: 'La cuenta bancaria ha sido creada exitosamente.',
     type: BankAccountResponseDto,
   })
   create(@Body() createBankAccountDto: CreateBankAccountDto, @Request() req) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-    return this.bankAccountsService.create(createBankAccountDto, req.user.id);
+    // Verifica que el usuario esté autenticado
+    const userId = req.user?.id;
+    if (!userId) throw new UnauthorizedException();
+    return this.bankAccountsService.create(createBankAccountDto, userId);
   }
 
   // ==========================================

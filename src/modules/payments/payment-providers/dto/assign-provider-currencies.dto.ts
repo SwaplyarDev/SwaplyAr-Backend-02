@@ -9,4 +9,4 @@ export class AssignProviderCurrenciesDto {
   @IsArray({ message: 'currencyIds debe ser un array' })
   @IsUUID('4', { each: true, message: 'Cada ID debe ser un UUID válido' })
   currencyIds: string[];
-} 
+}

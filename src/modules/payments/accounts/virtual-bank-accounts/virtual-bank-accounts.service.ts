@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VirtualBankAccounts } from './virtual-bank-accounts.entity';
@@ -20,41 +25,43 @@ export class VirtualBankAccountsService {
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
     @InjectRepository(Currency)
     private readonly currencyRepository: Repository<Currency>,
-  ) { }
+  ) {}
 
   async create(
     createVirtualBankAccountDto: CreateVirtualBankAccountDto,
     userId: string,
   ): Promise<VirtualBankAccounts> {
-    const {
-      paymentProviderId,
-      userId: dtoUserId,
-      ...virtualAccountData
-    } = createVirtualBankAccountDto;
+    const { paymentProviderId, ...virtualAccountData } = createVirtualBankAccountDto;
 
-    // Verify user exists
-    const targetUserId = dtoUserId || userId;
-    const user = await this.userRepository.findOne({ where: { id: targetUserId } });
+    // Verify user exists - always use authenticated user's ID
+    const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException(`User with ID ${targetUserId} not found`);
+      throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
     }
 
     // Verify payment provider exists
     const paymentProvider = await this.paymentProvidersRepository.findOne({
-      where: { paymentProviderId }
+      where: { paymentProviderId },
     });
     if (!paymentProvider) {
-      throw new NotFoundException(`Payment Provider with ID ${paymentProviderId} not found`);
+      throw new NotFoundException(`Proveedor de pago con ID ${paymentProviderId} no encontrado`);
+    }
+
+    // Validate provider is active
+    if (!paymentProvider.isActive) {
+      throw new ForbiddenException(`El proveedor de pago "${paymentProvider.name}" no está activo`);
     }
 
     // Validate currency if provided
     let currency: Currency | undefined;
     if (createVirtualBankAccountDto.currencyId) {
       const foundCurrency = await this.currencyRepository.findOne({
-        where: { currencyId: createVirtualBankAccountDto.currencyId }
+        where: { currencyId: createVirtualBankAccountDto.currencyId },
       });
       if (!foundCurrency) {
-        throw new NotFoundException(`Currency with ID ${createVirtualBankAccountDto.currencyId} not found`);
+        throw new NotFoundException(
+          `Currency with ID ${createVirtualBankAccountDto.currencyId} not found`,
+        );
       }
       currency = foundCurrency;
 
@@ -63,24 +70,23 @@ export class VirtualBankAccountsService {
         `SELECT c.code, c.name FROM provider_currencies pc 
          JOIN currencies c ON pc.currency_id = c.currency_id 
          WHERE pc.provider_id = $1 AND pc.currency_id = $2`,
-        [paymentProviderId, createVirtualBankAccountDto.currencyId]
+        [paymentProviderId, createVirtualBankAccountDto.currencyId],
       );
-      
+
       if (!supportedCurrency || supportedCurrency.length === 0) {
         // Get all supported currencies for error message
         const allSupported = await this.paymentProvidersRepository.query(
           `SELECT c.code FROM provider_currencies pc 
            JOIN currencies c ON pc.currency_id = c.currency_id 
            WHERE pc.provider_id = $1`,
-          [paymentProviderId]
+          [paymentProviderId],
         );
-        
-        const supportedCodes = allSupported.length > 0 
-          ? allSupported.map((c: any) => c.code).join(', ')
-          : 'none';
-          
+
+        const supportedCodes =
+          allSupported.length > 0 ? allSupported.map((c: any) => c.code).join(', ') : 'none';
+
         throw new BadRequestException(
-          `Payment Provider '${paymentProvider.name}' does not support currency '${currency.code}'. Supported currencies: ${supportedCodes}`
+          `Payment Provider '${paymentProvider.name}' does not support currency '${currency.code}'. Supported currencies: ${supportedCodes}`,
         );
       }
     }
@@ -186,10 +192,12 @@ export class VirtualBankAccountsService {
 
     if (updateVirtualBankAccountDto.currencyId) {
       const currency = await this.currencyRepository.findOne({
-        where: { currencyId: updateVirtualBankAccountDto.currencyId }
+        where: { currencyId: updateVirtualBankAccountDto.currencyId },
       });
       if (!currency) {
-        throw new NotFoundException(`Currency with ID ${updateVirtualBankAccountDto.currencyId} not found`);
+        throw new NotFoundException(
+          `Currency with ID ${updateVirtualBankAccountDto.currencyId} not found`,
+        );
       }
 
       // Check if payment provider supports this currency using direct SQL query
@@ -197,24 +205,26 @@ export class VirtualBankAccountsService {
         `SELECT c.code, c.name FROM provider_currencies pc 
          JOIN currencies c ON pc.currency_id = c.currency_id 
          WHERE pc.provider_id = $1 AND pc.currency_id = $2`,
-        [virtualBankAccount.paymentProvider.paymentProviderId, updateVirtualBankAccountDto.currencyId]
+        [
+          virtualBankAccount.paymentProvider.paymentProviderId,
+          updateVirtualBankAccountDto.currencyId,
+        ],
       );
-      
+
       if (!supportedCurrency || supportedCurrency.length === 0) {
         // Get all supported currencies for error message
         const allSupported = await this.paymentProvidersRepository.query(
           `SELECT c.code FROM provider_currencies pc 
            JOIN currencies c ON pc.currency_id = c.currency_id 
            WHERE pc.provider_id = $1`,
-          [virtualBankAccount.paymentProvider.paymentProviderId]
+          [virtualBankAccount.paymentProvider.paymentProviderId],
         );
-        
-        const supportedCodes = allSupported.length > 0 
-          ? allSupported.map((c: any) => c.code).join(', ')
-          : 'none';
-          
+
+        const supportedCodes =
+          allSupported.length > 0 ? allSupported.map((c: any) => c.code).join(', ') : 'none';
+
         throw new BadRequestException(
-          `Payment Provider '${virtualBankAccount.paymentProvider.name}' does not support currency '${currency.code}'. Supported currencies: ${supportedCodes}`
+          `Payment Provider '${virtualBankAccount.paymentProvider.name}' does not support currency '${currency.code}'. Supported currencies: ${supportedCodes}`,
         );
       }
     }
@@ -224,14 +234,94 @@ export class VirtualBankAccountsService {
     return this.virtualBankAccountsRepository.save(virtualBankAccount);
   }
 
-  async inactivate(id: string): Promise<VirtualBankAccounts> {
+  async inactivate(id: string, userId: string): Promise<VirtualBankAccounts> {
     const virtualBankAccount = await this.findOne(id);
+
+    // Get authenticated user with roles
+    const currentUser = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
+    });
+    if (!currentUser) {
+      throw new NotFoundException('Usuario actual no encontrado');
+    }
+
+    // Get account owner with roles
+    const accountOwner = await this.userRepository.findOne({
+      where: { id: virtualBankAccount.user.id },
+      relations: ['roles'],
+    });
+    if (!accountOwner) {
+      throw new NotFoundException('Propietario de la cuenta no encontrado');
+    }
+
+    // Check if user has specific role
+    const hasRole = (user: any, roleCode: string) => {
+      return user.roles?.some((role: any) => role.code === roleCode) || false;
+    };
+
+    const isCurrentUserAdmin = hasRole(currentUser, 'admin');
+    const isAccountOwnerAdmin = hasRole(accountOwner, 'admin');
+
+    // Verify permissions by role
+    if (isCurrentUserAdmin) {
+      // Admins can only inactivate accounts owned by other admins
+      if (!isAccountOwnerAdmin) {
+        throw new ForbiddenException('Los administradores solo pueden desactivar cuentas creadas por otros administradores');
+      }
+    } else {
+      // Users can only inactivate their own accounts
+      if (virtualBankAccount.user.id !== userId) {
+        throw new ForbiddenException('Solo puedes desactivar tus propias cuentas');
+      }
+    }
+
     virtualBankAccount.isActive = false;
     return this.virtualBankAccountsRepository.save(virtualBankAccount);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, userId: string): Promise<void> {
     const virtualBankAccount = await this.findOne(id);
+
+    // Get authenticated user with roles
+    const currentUser = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
+    });
+    if (!currentUser) {
+      throw new NotFoundException('Usuario actual no encontrado');
+    }
+
+    // Get account owner with roles
+    const accountOwner = await this.userRepository.findOne({
+      where: { id: virtualBankAccount.user.id },
+      relations: ['roles'],
+    });
+    if (!accountOwner) {
+      throw new NotFoundException('Propietario de la cuenta no encontrado');
+    }
+
+    // Check if user has specific role
+    const hasRole = (user: any, roleCode: string) => {
+      return user.roles?.some((role: any) => role.code === roleCode) || false;
+    };
+
+    const isCurrentUserAdmin = hasRole(currentUser, 'admin');
+    const isAccountOwnerAdmin = hasRole(accountOwner, 'admin');
+
+    // Verify permissions by role
+    if (isCurrentUserAdmin) {
+      // Admins can only delete accounts owned by other admins
+      if (!isAccountOwnerAdmin) {
+        throw new ForbiddenException('Los administradores solo pueden eliminar cuentas creadas por otros administradores');
+      }
+    } else {
+      // Users can only delete their own accounts
+      if (virtualBankAccount.user.id !== userId) {
+        throw new ForbiddenException('Solo puedes eliminar tus propias cuentas');
+      }
+    }
+
     await this.virtualBankAccountsRepository.remove(virtualBankAccount);
   }
 }

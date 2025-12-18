@@ -24,11 +24,14 @@ import { BankAccountFilterDto } from './dto/bank-accounts-filter.dto';
 @ApiTags('Bank Accounts')
 @Controller('bank-accounts')
 export class BankAccountsController {
-  constructor(private readonly bankAccountsService: BankAccountsService) { }
+  constructor(private readonly bankAccountsService: BankAccountsService) {}
 
   // ==========================================
   // CREAR UNA CUENTA BANCARIA
   // ==========================================
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('user', 'admin')
   @Post()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -36,7 +39,7 @@ export class BankAccountsController {
   @ApiOperation({ summary: 'Crear una nueva bank account' })
   @ApiResponse({
     status: 201,
-    description: 'The bank account has been successfully created.',
+    description: 'La cuenta bancaria ha sido creada exitosamente.',
     type: BankAccountResponseDto,
   })
   create(@Body() createBankAccountDto: CreateBankAccountDto, @Request() req) {
@@ -47,13 +50,15 @@ export class BankAccountsController {
   }
 
   // ==========================================
-  // MOSTRAR TODAS LAS CUENTAS BANCARIAS
+  // MOSTRAR TODAS LAS CUENTAS BANCARIAS (SOLO PARA ADMIN)
   // ==========================================
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  @ApiOperation({ summary: 'Obtener todas las bank accounts con filtros opcionales' })
+  @ApiOperation({
+    summary: 'Obtener todas las bank accounts con filtros opcionales (sólo rol ADMIN)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Return all bank accounts.',
@@ -122,14 +127,14 @@ export class BankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Patch(':id/deactivate')
-  @ApiOperation({ summary: 'Inactivar una virtual bank account' })
+  @ApiOperation({ summary: 'Inactivar una cuenta bancaria' })
   @ApiResponse({
     status: 200,
-    description: 'The virtual bank account has been successfully deactivated.',
+    description: 'La cuenta bancaria ha sido inactivada exitosamente.',
     type: BankAccountResponseDto,
   })
-  inactivate(@Param('id') id: string) {
-    return this.bankAccountsService.inactivate(id);
+  inactivate(@Param('id') id: string, @Request() req) {
+    return this.bankAccountsService.inactivate(id, req.user.id);
   }
 
   // ==========================================
@@ -139,12 +144,12 @@ export class BankAccountsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('user', 'admin')
   @Delete(':id')
-  @ApiOperation({ summary: 'Borrar una bank account' })
+  @ApiOperation({ summary: 'Eliminar una cuenta bancaria' })
   @ApiResponse({
     status: 200,
-    description: 'The bank account has been successfully deleted.',
+    description: 'La cuenta bancaria ha sido eliminada exitosamente.',
   })
-  remove(@Param('id') id: string) {
-    return this.bankAccountsService.remove(id);
+  remove(@Param('id') id: string, @Request() req) {
+    return this.bankAccountsService.remove(id, req.user.id);
   }
 }

@@ -23,99 +23,54 @@ export class BankAccountsService {
     @InjectRepository(PaymentProviders)
     private readonly paymentProvidersRepository: Repository<PaymentProviders>,
     @InjectRepository(Countries)
-    private readonly countriesRepository: Repository<Countries>, 
+    private readonly countriesRepository: Repository<Countries>,
     @InjectRepository(Currency)
     private readonly currencyRepository: Repository<Currency>,
-  ) { }
+  ) {}
 
   async create(createBankAccountDto: CreateBankAccountDto, userId: string): Promise<BankAccounts> {
-    const {
-      paymentProviderId,
-      countryId,
-      details,
-      userId: dtoUserId,
-      ...bankAccountData
-    } = createBankAccountDto;
+    const { paymentProviderId, countryId, details, ...bankAccountData } = createBankAccountDto;
 
-    // Verify user exists (either from DTO or from auth context)
-    // Verify user exists (either from DTO or from auth context)
-    const targetUserId = dtoUserId || userId;
-    const user = await this.userRepository.findOne({ where: { id: targetUserId } });
+    // Verificar que el usuario existe (del contexto de autenticación)
+    const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException(`User with ID ${targetUserId} not found`);
+      throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
     }
 
-    // Verify payment provider exists with supported currencies
+    // Verificar que el proveedor de pago existe Y está activo
     const paymentProvider = await this.paymentProvidersRepository.findOne({
       where: { paymentProviderId },
       relations: ['supportedCurrencies'],
     });
     if (!paymentProvider) {
-      throw new NotFoundException(`Payment Provider with ID ${paymentProviderId} not found`);
+      throw new NotFoundException(`Proveedor de pago con ID ${paymentProviderId} no encontrado`);
+    }
+    if (!paymentProvider.isActive) {
+      throw new ForbiddenException(`Proveedor de pago ${paymentProviderId} no está activo`);
     }
 
-    // Verify country exists with supported currencies
+    // Verificar que el país existe
     const country = await this.countriesRepository.findOne({
       where: { id: countryId },
       relations: ['currencies'],
     });
     if (!country) {
-      throw new NotFoundException(`Country with ID ${countryId} not found`);
+      throw new NotFoundException(`País con ID ${countryId} no encontrado`);
     }
 
-    // Validate currency if provided
-    let currency: Currency | undefined;
-    if (createBankAccountDto.currencyId) {
-      const foundCurrency = await this.currencyRepository.findOne({
-        where: { currencyId: createBankAccountDto.currencyId }
-      });
-      if (!foundCurrency) {
-        throw new NotFoundException(`Currency with ID ${createBankAccountDto.currencyId} not found`);
-      }
-      currency = foundCurrency;
-
-      // Validate that payment provider supports this currency
-      const providerSupportsCurrency = paymentProvider.supportedCurrencies?.some(
-        supportedCurrency => supportedCurrency.currencyId === createBankAccountDto.currencyId
-      );
-      
-      if (!providerSupportsCurrency) {
-        throw new NotFoundException(
-          `Payment Provider '${paymentProvider.name}' does not support currency '${currency.code}'`
-        );
-      }
-
-      // Validate that country supports this currency
-      if (!country.currencies || country.currencies.length === 0) {
-        throw new NotFoundException(
-          `Country '${country.name}' has no supported currencies configured`
-        );
-      }
-
-      const countrySupportsCurrency = country.currencies.some(
-        supportedCurrency => supportedCurrency.currencyId === createBankAccountDto.currencyId
-      );
-      
-      if (!countrySupportsCurrency) {
-        throw new NotFoundException(
-          `Country '${country.name}' does not support currency '${currency.code}'`
-        );
-      }
-    }
-
-    // Create Bank Account
+    // Crear cuenta bancaria (siempre asociada al usuario autenticado)
     const bankAccount = this.bankAccountsRepository.create({
       ...bankAccountData,
       user,
       paymentProvider,
       country,
-      ...(currency && { currency }),
+      ...(Currency && { Currency }),
       createdBy: user,
     });
 
     const savedBankAccount = await this.bankAccountsRepository.save(bankAccount);
 
-    // Create Details if provided
+    // Crear detalles si se proporcionan
     if (details && details.length > 0) {
       const detailsEntities = details.map((detail) =>
         this.bankAccountDetailsRepository.create({
@@ -224,10 +179,12 @@ export class BankAccountsService {
 
     if (updateBankAccountDto.currencyId) {
       const currency = await this.currencyRepository.findOne({
-        where: { currencyId: updateBankAccountDto.currencyId }
+        where: { currencyId: updateBankAccountDto.currencyId },
       });
       if (!currency) {
-        throw new NotFoundException(`Currency with ID ${updateBankAccountDto.currencyId} not found`);
+        throw new NotFoundException(
+          `Currency with ID ${updateBankAccountDto.currencyId} not found`,
+        );
       }
 
       // Validate that payment provider supports this currency
@@ -237,12 +194,12 @@ export class BankAccountsService {
       });
 
       const providerSupportsCurrency = providerWithCurrencies?.supportedCurrencies?.some(
-        supportedCurrency => supportedCurrency.currencyId === updateBankAccountDto.currencyId
+        (supportedCurrency) => supportedCurrency.currencyId === updateBankAccountDto.currencyId,
       );
-      
+
       if (!providerSupportsCurrency) {
         throw new NotFoundException(
-          `Payment Provider '${bankAccount.paymentProvider.name}' does not support currency '${currency.code}'`
+          `Payment Provider '${bankAccount.paymentProvider.name}' does not support currency '${currency.code}'`,
         );
       }
 
@@ -254,17 +211,17 @@ export class BankAccountsService {
 
       if (!countryWithCurrencies?.currencies || countryWithCurrencies.currencies.length === 0) {
         throw new NotFoundException(
-          `Country '${bankAccount.country.name}' has no supported currencies configured`
+          `Country '${bankAccount.country.name}' has no supported currencies configured`,
         );
       }
 
       const countrySupportsCurrency = countryWithCurrencies.currencies.some(
-        supportedCurrency => supportedCurrency.currencyId === updateBankAccountDto.currencyId
+        (supportedCurrency) => supportedCurrency.currencyId === updateBankAccountDto.currencyId,
       );
-      
+
       if (!countrySupportsCurrency) {
         throw new NotFoundException(
-          `Country '${bankAccount.country.name}' does not support currency '${currency.code}'`
+          `Country '${bankAccount.country.name}' does not support currency '${currency.code}'`,
         );
       }
     }
@@ -274,14 +231,98 @@ export class BankAccountsService {
     return this.bankAccountsRepository.save(bankAccount);
   }
 
-  async inactivate(id: string): Promise<BankAccounts> {
+  async inactivate(id: string, userId: string): Promise<BankAccounts> {
     const bankAccount = await this.findOne(id);
+
+    // Obtener el usuario autenticado con sus roles
+    const currentUser = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
+    });
+    if (!currentUser) {
+      throw new NotFoundException('Usuario actual no encontrado');
+    }
+
+    // Obtener el propietario de la cuenta con sus roles
+    const accountOwner = await this.userRepository.findOne({
+      where: { id: bankAccount.user.id },
+      relations: ['roles'],
+    });
+    if (!accountOwner) {
+      throw new NotFoundException('Propietario de la cuenta no encontrado');
+    }
+
+    // Verificar si el usuario tiene un rol específico
+    const hasRole = (user: any, roleCode: string) => {
+      return user.roles?.some((role: any) => role.code === roleCode) || false;
+    };
+
+    const isCurrentUserAdmin = hasRole(currentUser, 'admin');
+    const isAccountOwnerAdmin = hasRole(accountOwner, 'admin');
+
+    // Verificar permisos según el rol
+    if (isCurrentUserAdmin) {
+      // Los admins solo pueden inactivar cuentas creadas por otros admins
+      if (!isAccountOwnerAdmin) {
+        throw new ForbiddenException(
+          'Los administradores solo pueden inactivar cuentas bancarias creadas por otros administradores',
+        );
+      }
+    } else {
+      // Los usuarios solo pueden inactivar sus propias cuentas
+      if (bankAccount.user.id !== userId) {
+        throw new ForbiddenException('Solo puede inactivar sus propias cuentas bancarias');
+      }
+    }
+
     bankAccount.isActive = false;
     return this.bankAccountsRepository.save(bankAccount);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, userId: string): Promise<void> {
     const bankAccount = await this.findOne(id);
+
+    // Obtener el usuario autenticado con sus roles
+    const currentUser = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
+    });
+    if (!currentUser) {
+      throw new NotFoundException('Usuario actual no encontrado');
+    }
+
+    // Obtener el propietario de la cuenta con sus roles
+    const accountOwner = await this.userRepository.findOne({
+      where: { id: bankAccount.user.id },
+      relations: ['roles'],
+    });
+    if (!accountOwner) {
+      throw new NotFoundException('Propietario de la cuenta no encontrado');
+    }
+
+    // Verificar si el usuario tiene un rol específico
+    const hasRole = (user: any, roleCode: string) => {
+      return user.roles?.some((role: any) => role.code === roleCode) || false;
+    };
+
+    const isCurrentUserAdmin = hasRole(currentUser, 'admin');
+    const isAccountOwnerAdmin = hasRole(accountOwner, 'admin');
+
+    // Verificar permisos según el rol
+    if (isCurrentUserAdmin) {
+      // Los admins solo pueden eliminar cuentas creadas por otros admins
+      if (!isAccountOwnerAdmin) {
+        throw new ForbiddenException(
+          'Los administradores solo pueden eliminar cuentas bancarias creadas por otros administradores',
+        );
+      }
+    } else {
+      // Los usuarios solo pueden eliminar sus propias cuentas
+      if (bankAccount.user.id !== userId) {
+        throw new ForbiddenException('Solo puede eliminar sus propias cuentas bancarias');
+      }
+    }
+
     await this.bankAccountsRepository.remove(bankAccount);
   }
 }

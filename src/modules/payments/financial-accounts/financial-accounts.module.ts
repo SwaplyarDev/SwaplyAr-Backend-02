@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { FinancialAccountsService } from './financial-accounts.service';
 import { FinancialAccountsController } from './financial-accounts.controller';
 import { FinancialAccounts } from './financial-accounts.entity';
-import { PaymentPlatforms } from '../entities/payment-platforms.entity';
+import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
 import { User } from '../../users/entities/user.entity';
 import { UsersModule } from '../../users/users.module';
 import { PaymentPlatformsModule } from '../payment-platforms/payment-platform.module';

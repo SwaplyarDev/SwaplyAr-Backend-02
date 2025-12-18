@@ -7,7 +7,7 @@ import {
   Unique,
   ManyToMany,
   JoinTable,
-  OneToMany
+  OneToMany,
 } from 'typeorm';
 import { Countries } from '../countries/countries.entity';
 import { PaymentProviders } from 'src/modules/payments/payment-providers/payment-providers.entity';

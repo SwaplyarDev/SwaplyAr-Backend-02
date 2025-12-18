@@ -15,24 +15,11 @@ import { Roles } from '@common/decorators/roles.decorator';
 export class CountriesController {
   constructor(private readonly countriesService: CountriesService) {}
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('user', 'admin')
   @Get()
   @ApiOperation({ summary: 'Obtener todos los países' })
   @ApiOkResponse({ type: [CountryResponseDto] })
   async findAll() {
     return this.countriesService.findAll();
-  }
-
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  @Post()
-  @ApiOperation({ summary: 'Crear nuevo país' })
-  @ApiOkResponse({ type: CountryResponseDto })
-  async create(@Body() createDto: CreateCountryDto) {
-    return this.countriesService.create(createDto);
   }
 
   @ApiBearerAuth()
@@ -43,6 +30,16 @@ export class CountriesController {
   @ApiOkResponse({ type: CountryResponseDto })
   async findOne(@Param('id') id: string) {
     return this.countriesService.findOne(id);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Post()
+  @ApiOperation({ summary: 'Crear nuevo país' })
+  @ApiOkResponse({ type: CountryResponseDto })
+  async create(@Body() createDto: CreateCountryDto) {
+    return this.countriesService.create(createDto);
   }
 
   @ApiBearerAuth()
@@ -68,9 +65,9 @@ export class CountriesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Put(':id/currencies')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Asignar monedas al país',
-    description: 'Para obtener los IDs de monedas disponibles, usar GET /currencies'
+    description: 'Para obtener los IDs de monedas disponibles, usar GET /currencies',
   })
   @ApiOkResponse({ type: CountryResponseDto })
   assignCurrencies(

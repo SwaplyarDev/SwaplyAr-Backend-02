@@ -34,17 +34,15 @@ export class PaymentProvidersService {
 
     @InjectRepository(CryptoAccounts)
     private readonly cryptoRepo: Repository<CryptoAccounts>,
-  ) { }
+  ) {}
 
   async findAll(filters?: {
     platformCode?: string;
     providerCode?: string;
-    fiatCurrencyCode?: string;
+    currencyCode?: string;
     countryCode?: string;
-    cryptoNetworkCode?: string;
     isActive?: boolean;
   }): Promise<PaymentProviders[]> {
-
     // Si no hay filtros, usa el approach simple
     if (!filters || Object.keys(filters).length === 0) {
       return this.providersRepo.find({
@@ -57,11 +55,7 @@ export class PaymentProvidersService {
     const qb = this.providersRepo
       .createQueryBuilder('provider')
       .leftJoinAndSelect('provider.paymentPlatform', 'platform')
-      .leftJoinAndSelect('provider.country', 'country')
-      .leftJoinAndSelect('provider.bankAccounts', 'bank')
-      .leftJoinAndSelect('provider.virtualBankAccounts', 'virtual')
-      .leftJoinAndSelect('provider.cryptoAccounts', 'crypto')
-      .leftJoinAndSelect('crypto.cryptoNetwork', 'cryptoNetwork')
+      .leftJoinAndSelect('provider.supportedCurrencies', 'currency')
       .orderBy('provider.createdAt', 'DESC');
 
     // FILTRA POR CÓDIGO DE PLATAFORMA
@@ -78,25 +72,24 @@ export class PaymentProvidersService {
       });
     }
 
-    // FILTRA POR MONEDA (bank + virtual)
-    if (filters?.fiatCurrencyCode) {
-      qb.andWhere(`(bank.currency = :fiatCurrencyCode OR virtual.currency = :fiatCurrencyCode)`, {
-        fiatCurrencyCode: filters.fiatCurrencyCode,
+    // FILTRA POR MONEDA (currencies asociadas al provider)
+    if (filters?.currencyCode) {
+      qb.andWhere('currency.code = :currencyCode', {
+        currencyCode: filters.currencyCode,
       });
     }
 
-    // FILTRA POR CRYPTO NETWORK (sólo crypto)
-    if (filters?.cryptoNetworkCode) {
-      qb.andWhere('cryptoNetwork.code = :cryptoNetworkCode', {
-        cryptoNetworkCode: filters.cryptoNetworkCode,
-      });
-    }
-
-    // FILTRA POR COUNTRY CODE
+    // FILTRA POR COUNTRY CODE (usar innerJoin solo si hay filtro explícito)
     if (filters?.countryCode) {
-      qb.andWhere('country.code = :countryCode', {
-        countryCode: filters.countryCode,
-      });
+      qb.innerJoinAndSelect('provider.country', 'country').andWhere(
+        'country.code = :countryCode',
+        {
+          countryCode: filters.countryCode,
+        },
+      );
+    } else {
+      // Si no hay filtro de país, hacer left join para incluir país si existe
+      qb.leftJoinAndSelect('provider.country', 'country');
     }
 
     // FILTRA POR ATRIBUTO isActive
@@ -146,7 +139,7 @@ export class PaymentProvidersService {
     let currencies: Currency[] = [];
     if (currencyIds?.length) {
       currencies = await this.currencyRepo.findBy({
-        currencyId: In(currencyIds)
+        currencyId: In(currencyIds),
       });
 
       if (currencies.length !== currencyIds.length) {
@@ -158,7 +151,6 @@ export class PaymentProvidersService {
       ...providerData,
       paymentPlatform: platform,
       country,
-      countryId: country.id,
       supportedCurrencies: currencies,
     });
 
@@ -196,7 +188,6 @@ export class PaymentProvidersService {
         throw new NotFoundException(`Country with ID ${countryId} not found`);
       }
       provider.country = country;
-      provider.countryId = country.id;
     }
 
     Object.assign(provider, updateData);
@@ -252,7 +243,7 @@ export class PaymentProvidersService {
     const provider = await this.findOne(providerId);
 
     const newCurrencies = await this.currencyRepo.findBy({
-      currencyId: In(currencyIds)
+      currencyId: In(currencyIds),
     });
 
     if (!newCurrencies.length) {
@@ -260,11 +251,11 @@ export class PaymentProvidersService {
     }
 
     // Get existing currency IDs to avoid duplicates
-    const existingIds = provider.supportedCurrencies?.map(c => c.currencyId) || [];
+    const existingIds = provider.supportedCurrencies?.map((c) => c.currencyId) || [];
 
     // Filter out currencies that are already assigned
-    const currenciesToAdd = newCurrencies.filter(currency =>
-      !existingIds.includes(currency.currencyId)
+    const currenciesToAdd = newCurrencies.filter(
+      (currency) => !existingIds.includes(currency.currencyId),
     );
 
     if (currenciesToAdd.length === 0) {
@@ -280,7 +271,7 @@ export class PaymentProvidersService {
     const provider = await this.findOne(providerId);
 
     const currencies = await this.currencyRepo.findBy({
-      currencyId: In(currencyIds)
+      currencyId: In(currencyIds),
     });
 
     if (!currencies.length) {
@@ -300,8 +291,8 @@ export class PaymentProvidersService {
     }
 
     // Filter out the currencies to remove
-    provider.supportedCurrencies = provider.supportedCurrencies.filter(currency =>
-      !currencyIds.includes(currency.currencyId)
+    provider.supportedCurrencies = provider.supportedCurrencies.filter(
+      (currency) => !currencyIds.includes(currency.currencyId),
     );
 
     return this.providersRepo.save(provider);

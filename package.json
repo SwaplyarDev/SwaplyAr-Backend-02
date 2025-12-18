@@ -28,6 +28,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "seed:countries-providers": "ts-node scripts/seed-countries-providers.ts",
     "test:e2e": "cross-env NODE_ENV=test DATABASE_TEST_URL=postgres://testuser:testpass@localhost:5438/testdb jest --config jest-e2e.json",
     "test:e2e:sanity": "cross-env NODE_ENV=test DATABASE_TEST_URL=postgres://testuser:testpass@localhost:5438/testdb jest --config jest-e2e.json -t '#tra'",
     "prepare": "node -e \"if (process.env.NODE_ENV==='production') process.exit(0);\" || husky install",

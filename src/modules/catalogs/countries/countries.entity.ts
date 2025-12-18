@@ -5,8 +5,10 @@ import {
   CreateDateColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { Currency } from '../currencies/currencies.entity';
+import { PaymentProviders } from '../../payments/payment-providers/payment-providers.entity';
 
 @Entity('countries')
 export class Countries {
@@ -32,6 +34,9 @@ export class Countries {
     },
   })
   currencies: Currency[];
+
+  @OneToMany(() => PaymentProviders, (provider) => provider.country)
+  providers: PaymentProviders[];
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'created_at' })
   createdAt: Date;

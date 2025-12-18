@@ -5,7 +5,7 @@ import { FinancialAccounts } from './financial-accounts.entity';
 import { CreateFinancialAccountDto } from './dto/create-financial-accounts.dto';
 import { UpdateFinancialAccountDto } from './dto/update-financial-accounts.dto';
 import { User } from '../../users/entities/user.entity';
-import { PaymentPlatforms } from '../entities/payment-platforms.entity';
+import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
 
 @Injectable()
 export class FinancialAccountsService {

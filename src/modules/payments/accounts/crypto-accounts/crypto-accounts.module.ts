@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CryptoAccountsService } from './crypto-accounts.service';
 import { CryptoAccountsController } from './crypto-accounts.controller';
 import { CryptoAccounts } from './crypto-accounts.entity';
-import { PaymentProviders } from '../../entities/payment-providers.entity';
+import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
 import { CryptoNetworks } from '../../../catalogs/crypto-networks/crypto-networks.entity';
 import { User } from '../../../users/entities/user.entity';
 import { Currency } from '../../../catalogs/currencies/currencies.entity';

@@ -56,10 +56,7 @@ export class PaymentProviders {
   @OneToMany(() => BankAccounts, (bankAccount: BankAccounts) => bankAccount.paymentProvider)
   bankAccounts: BankAccounts[];
 
-  @OneToMany(
-    () => VirtualBankAccounts,
-    (virtualAccount: VirtualBankAccounts) => virtualAccount.paymentProvider,
-  )
+  @OneToMany(() => VirtualBankAccounts, (virtualAccount: VirtualBankAccounts) => virtualAccount.paymentProvider)
   virtualBankAccounts: VirtualBankAccounts[];
 
   @OneToMany(() => CryptoAccounts, (cryptoAccount: CryptoAccounts) => cryptoAccount.paymentProvider)

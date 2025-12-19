@@ -189,7 +189,9 @@ export class CryptoAccountsService {
     if (isCurrentUserAdmin) {
       // Los admins solo pueden editar cuentas creadas por otros admins
       if (!isAccountOwnerAdmin) {
-        throw new ForbiddenException('Los administradores solo pueden editar cuentas creadas por otros administradores');
+        throw new ForbiddenException(
+          'Los administradores solo pueden editar cuentas creadas por otros administradores',
+        );
       }
     } else {
       // Los usuarios solo pueden editar sus propias cuentas
@@ -271,7 +273,9 @@ export class CryptoAccountsService {
     if (isCurrentUserAdmin) {
       // Admins can only inactivate accounts owned by other admins
       if (!isAccountOwnerAdmin) {
-        throw new ForbiddenException('Los administradores solo pueden desactivar cuentas creadas por otros administradores');
+        throw new ForbiddenException(
+          'Los administradores solo pueden desactivar cuentas creadas por otros administradores',
+        );
       }
     } else {
       // Users can only inactivate their own accounts
@@ -317,7 +321,9 @@ export class CryptoAccountsService {
     if (isCurrentUserAdmin) {
       // Admins can only delete accounts owned by other admins
       if (!isAccountOwnerAdmin) {
-        throw new ForbiddenException('Los administradores solo pueden eliminar cuentas creadas por otros administradores');
+        throw new ForbiddenException(
+          'Los administradores solo pueden eliminar cuentas creadas por otros administradores',
+        );
       }
     } else {
       // Users can only delete their own accounts

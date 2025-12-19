@@ -81,12 +81,9 @@ export class PaymentProvidersService {
 
     // FILTRA POR COUNTRY CODE (usar innerJoin solo si hay filtro explícito)
     if (filters?.countryCode) {
-      qb.innerJoinAndSelect('provider.country', 'country').andWhere(
-        'country.code = :countryCode',
-        {
-          countryCode: filters.countryCode,
-        },
-      );
+      qb.innerJoinAndSelect('provider.country', 'country').andWhere('country.code = :countryCode', {
+        countryCode: filters.countryCode,
+      });
     } else {
       // Si no hay filtro de país, hacer left join para incluir país si existe
       qb.leftJoinAndSelect('provider.country', 'country');

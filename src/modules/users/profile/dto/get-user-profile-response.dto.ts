@@ -1,3 +1,4 @@
+import { UserVerificationDto } from '@admin/profiles/dto/admin-profile-response.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class LocationsDataDto {
@@ -128,6 +129,18 @@ export class UserProfileResponseDto {
 
   @ApiProperty({ example: null })
   profilePictureUrl: string;
+
+  @ApiProperty({ type: UserVerificationDto, nullable: true })
+  ultimaVerificacion: UserVerificationDto | null;
+
+  @ApiProperty({ example: 'active', description: 'Estatus basado en user.isActive' })
+  estatusCuenta: string;
+
+  @ApiProperty({ example: '2025-09-24T00:00:00.000Z' })
+  lastAccess: string;
+
+  @ApiProperty({ example: '2025-09-24T00:00:00.000Z' })
+  ultimoAcceso: string;
 }
 
 export class UpdateUserProfileResponseDto {

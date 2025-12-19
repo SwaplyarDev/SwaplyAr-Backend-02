@@ -25,6 +25,7 @@ import { QualificationModule } from 'src/modules/qualifications/qualifications.m
 import { ConversionsModule } from 'src/modules/conversions/conversions.module';
 import { CommissionsModule } from 'src/modules/conversions/commissions/commissions.module';
 import { DynamicCommissionsModule } from 'src/modules/dynamic-commissions/dynamicCommissions.module';
+import { WhatsAppModule } from 'src/modules/whatsapp/whatsapp.module';
 import { PaymentPlatformsModule } from 'src/modules/payments/payment-platforms/payment-platform.module';
 import { PaymentProvidersModule } from 'src/modules/payments/payment-providers/payment-providers.module';
 import { BankAccountsModule } from 'src/modules/payments/accounts/bank-accounts/bank-accounts.module';
@@ -57,6 +58,7 @@ import { CurrenciesModule } from 'src/modules/catalogs/currencies/currencies-mod
     ConversionsModule,
     CommissionsModule,
     DynamicCommissionsModule,
+    WhatsAppModule,
     PaymentPlatformsModule,
     PaymentProvidersModule,
     BankAccountsModule,

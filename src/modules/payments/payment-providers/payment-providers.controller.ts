@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
   Param,
   Patch,
@@ -14,6 +15,7 @@ import { PaymentProvidersService } from './payment-providers.service';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
 import { UpdatePaymentProvidersDto } from './dto/update-payment-providers.dto';
 import { PaymentProvidersFilterDto } from './dto/payment-providers-filter.dto';
+import { AssignCurrenciesDto } from 'src/modules/catalogs/countries/dto/assign-currencies.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -82,6 +84,22 @@ export class PaymentProvidersController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdatePaymentProvidersDto) {
     return this.service.update(id, dto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Put(':id/currencies')
+  @ApiOperation({
+    summary: 'Asignar monedas al proveedor',
+    description: 'Agrega monedas a las ya soportadas (no reemplaza). Para obtener los IDs de monedas disponibles, usar GET /currencies',
+  })
+  @ApiResponse({ status: 200, description: 'Monedas asignadas con éxito' })
+  assignCurrencies(
+    @Param('id') id: string,
+    @Body() assignDto: AssignCurrenciesDto,
+  ) {
+    return this.service.assignCurrencies(id, assignDto.currencyIds);
   }
 
   // ===============================================

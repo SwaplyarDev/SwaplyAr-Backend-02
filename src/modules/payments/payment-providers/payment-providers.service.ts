@@ -46,7 +46,14 @@ export class PaymentProvidersService {
     // Si no hay filtros, usa el approach simple
     if (!filters || Object.keys(filters).length === 0) {
       return this.providersRepo.find({
-        relations: ['paymentPlatform', 'supportedCurrencies', 'country'],
+        relations: [
+          'paymentPlatform',
+          'supportedCurrencies',
+          'country',
+          'bankAccounts',
+          'virtualBankAccounts',
+          'cryptoAccounts',
+        ],
         order: { createdAt: 'DESC' },
       });
     }
@@ -56,6 +63,9 @@ export class PaymentProvidersService {
       .createQueryBuilder('provider')
       .leftJoinAndSelect('provider.paymentPlatform', 'platform')
       .leftJoinAndSelect('provider.supportedCurrencies', 'currency')
+      .leftJoinAndSelect('provider.bankAccounts', 'bankAccounts')
+      .leftJoinAndSelect('provider.virtualBankAccounts', 'virtualBankAccounts')
+      .leftJoinAndSelect('provider.cryptoAccounts', 'cryptoAccounts')
       .orderBy('provider.createdAt', 'DESC');
 
     // FILTRA POR CÓDIGO DE PLATAFORMA
@@ -109,7 +119,14 @@ export class PaymentProvidersService {
   async findOne(id: string): Promise<PaymentProviders> {
     const provider = await this.providersRepo.findOne({
       where: { paymentProviderId: id },
-      relations: ['paymentPlatform', 'supportedCurrencies', 'country'],
+      relations: [
+        'paymentPlatform',
+        'supportedCurrencies',
+        'country',
+        'bankAccounts',
+        'virtualBankAccounts',
+        'cryptoAccounts',
+      ],
     });
 
     if (!provider) throw new NotFoundException('Payment provider not found');

@@ -26,6 +26,7 @@ export class PaymentProvidersFilterDto {
   @IsOptional()
   @IsString()
   @Length(2, 3)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toUpperCase() : value))
   currencyCode?: string;
 
   @ApiPropertyOptional({

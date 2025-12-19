@@ -84,6 +84,7 @@ export class PaymentProvidersService {
 
     // FILTRA POR MONEDA (currencies asociadas al provider)
     if (filters?.currencyCode) {
+      // Comparamos en uppercase para evitar problemas por mayúsculas/minúsculas
       qb.andWhere('currency.code = :currencyCode', {
         currencyCode: filters.currencyCode,
       });

@@ -166,7 +166,7 @@ export class PaymentProvidersService {
 
   async update(id: string, dto: UpdatePaymentProvidersDto): Promise<PaymentProviders> {
     const provider = await this.findOne(id);
-    const { paymentPlatformId, countryId, ...updateData } = dto;
+    const { paymentPlatformId, countryId, currencyIds, ...updateData } = dto;
 
     if (paymentPlatformId) {
       const platform = await this.platformsRepo.findOneBy({
@@ -190,7 +190,21 @@ export class PaymentProvidersService {
       provider.country = country;
     }
 
+    // Aplicar cambios simples
     Object.assign(provider, updateData);
+
+    // Si se enviaron currencyIds en el PATCH, reemplazar las monedas soportadas
+    if (currencyIds?.length) {
+      const currencies = await this.currencyRepo.findBy({
+        currencyId: In(currencyIds),
+      });
+
+      if (currencies.length !== currencyIds.length) {
+        throw new NotFoundException('One or more currencies not found');
+      }
+
+      provider.supportedCurrencies = currencies;
+    }
 
     return this.providersRepo.save(provider);
   }

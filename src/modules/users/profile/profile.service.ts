@@ -37,14 +37,20 @@ export class ProfileService {
       throw new NotFoundException(`Perfil con ID de usuario ${userId} no encontrado`);
     }
 
-    const verificationIds = profile.user?.verifications?.map((v) => v.verification_id) ?? [];
+    const verifications = profile.user?.verifications ?? [];
+    const ultimaVerificacion =
+      verifications.length > 0
+        ? verifications.sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          )[0]
+        : null;
 
     return {
       ...profile,
-      user: {
-        ...profile.user,
-        verifications: verificationIds,
-      },
+      ultimaVerificacion,
+      estatusCuenta: profile.user?.isActive ? 'active' : 'inactive',
+      lastAccess: profile.lastActivity ?? null,
+      ultimoAcceso: profile.lastActivity ?? null,
     };
   }
 

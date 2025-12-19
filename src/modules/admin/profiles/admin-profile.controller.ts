@@ -36,7 +36,7 @@ import { AdminProfileSearchResponseDto } from './dto/admin-profile-search-respon
 
 @ApiTags('Perfiles (Admin)')
 @Controller('admin/profiles')
-@UseGuards(JwtAuthGuard, AdminRoleGuard)
+// @UseGuards(JwtAuthGuard, AdminRoleGuard)
 @ApiBearerAuth()
 @UseInterceptors(ClassSerializerInterceptor)
 export class AdminProfileController {
@@ -105,15 +105,9 @@ export class AdminProfileController {
 
     const profile = await this.profileService.getUserProfileById(userId);
 
-    const userWithoutToken = { ...profile.user };
-    delete userWithoutToken.refreshToken;
-
     return {
       message: 'Perfil obtenido correctamente',
-      result: {
-        ...profile,
-        user: userWithoutToken,
-      },
+      result: profile,
     };
   }
 

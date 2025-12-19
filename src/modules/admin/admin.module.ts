@@ -4,10 +4,10 @@ import { Transaction } from '@transactions/entities/transaction.entity';
 import { AdministracionStatusLog } from './entities/administracion-status-log.entity';
 import { AdministracionMaster } from './entities/administracion-master.entity';
 import { FileUploadModule } from '../file-upload/file-upload.module';
-import { ProofOfPaymentsModule } from '@financial-accounts/proof-of-payments/proof-of-payments.module';
-import { BankModule } from '@financial-accounts/payment-methods/bank/bank.module';
+import { ProofOfPaymentsModule } from 'src/modules/payments/proof-of-payments/proof-of-payments.module';
+import { BankModule } from 'src/deprecated/financial-accounts/payment-methods/bank/bank.module';
 import { UsersModule } from '@users/users.module';
-import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
+import { ProofOfPayment } from 'src/modules/payments/proof-of-payments/entities/proof-of-payment.entity';
 import { MailerModule } from '@mailer/mailer.module';
 import { DiscountModule } from 'src/modules/discounts/discounts.module';
 import { User } from '@users/entities/user.entity';
@@ -32,6 +32,7 @@ import { UserVerificationModule } from '@users/verification/user-verification.mo
 import { UpdateStarsService } from './transaction/updateStars.service';
 import { ConversionsService } from '../conversions/services/conversions.service';
 import { HttpModule } from '@nestjs/axios';
+import { RolesModule } from '../roles/roles.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { HttpModule } from '@nestjs/axios';
     DiscountModule,
     UserVerificationModule,
     HttpModule,
+    RolesModule,
   ],
   controllers: [
     AdminProfileController,

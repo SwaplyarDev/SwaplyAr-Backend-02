@@ -19,7 +19,6 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AdminDiscountService } from './admin-discount.service';
-import { UserRole } from 'src/enum/user-role.enum';
 import { Roles } from '@common/decorators/roles.decorator';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { FilterUserDiscountsDto } from './dto/filter-user-discounts.dto';
@@ -96,7 +95,7 @@ export class AdminDiscountsController {
       */
 
   @Get('user-discounts')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
+  @Roles('admin', 'super_admin')
   @ApiOperation({
     summary: 'Obtener descuentos de todos los usuarios con filtro opcional',
   })
@@ -115,7 +114,7 @@ export class AdminDiscountsController {
   }
 
   @Get('user-history/admin/:userId')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
+  @Roles('admin', 'super_admin')
   @ApiOperation({
     summary: 'Obtener historial de cupones de un usuario específico (Admin)',
   })

@@ -11,6 +11,7 @@ import { UserCategory } from './entities/user-category.entity';
 import { OtpModule } from '@otp/otp.module';
 import { DiscountModule } from 'src/modules/discounts/discounts.module';
 import { ProfileModule } from './profile/profile.module';
+import { RolesModule } from '../roles/roles.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ProfileModule } from './profile/profile.module';
     OtpModule,
     DiscountModule,
     ProfileModule,
+    RolesModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

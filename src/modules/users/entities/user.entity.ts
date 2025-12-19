@@ -1,11 +1,16 @@
 import {
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
   Entity,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   BeforeInsert,
+  ManyToOne,
+  ManyToMany,
+  JoinTable,
+  JoinColumn,
 } from 'typeorm';
 import { UserProfile } from '@users/entities/user-profile.entity';
 import { UserAlternativeEmail } from '@users/entities/user-alternative-email.entity';
@@ -17,10 +22,13 @@ import { UserVerification } from '@users/entities/user-verification.entity';
 import { RefreshToken } from '@users/entities/resfresh-token.entity';
 import { Exclude } from 'class-transformer';
 import { OtpCode } from '@auth/entities/otp-code.entity';
-import { UserRole } from 'src/enum/user-role.enum';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
+import { Roles } from '../../roles/entities/roles.entity';
 import { customAlphabet } from 'nanoid';
+import { BankAccounts } from 'src/modules/payments/accounts/bank-accounts/bank-accounts.entity';
+import { VirtualBankAccounts } from 'src/modules/payments/accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
+import { CryptoAccounts } from 'src/modules/payments/accounts/crypto-accounts/crypto-accounts.entity';
 
 export const nanoidCustom = customAlphabet(
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
@@ -89,13 +97,17 @@ export class User {
   })
   rewardsLedger: UserRewardsLedger;
 
-  @Column({
-    type: 'enum',
-    enum: UserRole,
-    default: UserRole.User,
-    name: 'user_role',
-  })
-  role: UserRole;
+  @OneToMany(() => BankAccounts, (bankAccount: BankAccounts) => bankAccount.user)
+  bankAccounts: BankAccounts[];
+
+  @OneToMany(
+    () => VirtualBankAccounts,
+    (virtualBankAccount: VirtualBankAccounts) => virtualBankAccount.user,
+  )
+  virtualBankAccounts: VirtualBankAccounts[];
+
+  @OneToMany(() => CryptoAccounts, (cryptoAccount: CryptoAccounts) => cryptoAccount.user)
+  cryptoAccounts: CryptoAccounts[];
 
   @Column({ name: 'terms_accepted', default: false })
   termsAccepted: boolean;
@@ -117,6 +129,9 @@ export class User {
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;
 
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
+  updatedAt: Date;
+
   @Column({
     name: 'validated_at',
     nullable: true,
@@ -135,4 +150,21 @@ export class User {
 
   @Column({ nullable: true })
   refreshToken?: string;
+
+  @Column({ name: 'role_code', nullable: true })
+  roleCode: string;
+
+  @Column({ name: 'role_name', nullable: true })
+  roleName: string;
+
+  @Column({ name: 'role_description', nullable: true })
+  roleDescription: string;
+
+  @ManyToMany(() => Roles, (role) => role.users)
+  @JoinTable({
+    name: 'user_roles',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'role_id', referencedColumnName: 'role_id' },
+  })
+  roles: Roles[];
 }

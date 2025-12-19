@@ -14,7 +14,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { UpdateBankDto } from '@financial-accounts/payment-methods/bank/dto/create-bank.dto';
+import { UpdateBankDto } from 'src/deprecated/financial-accounts/payment-methods/bank/dto/create-bank.dto';
 import {
   ApiOperation,
   ApiTags,

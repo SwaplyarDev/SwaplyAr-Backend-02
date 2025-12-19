@@ -28,11 +28,11 @@ import { AdministracionStatusLog } from '@admin/entities/administracion-status-l
 import { UserStatusHistoryResponse } from '@common/interfaces/status-history.interface';
 import { Status } from 'src/enum/status.enum';
 
-import { FinancialAccountsService } from '@financial-accounts/financial-accounts.service';
+import { FinancialAccountsService } from 'src/deprecated/financial-accounts/financial-accounts.service';
 import { AmountsService } from './amounts/amounts.service';
-import { ProofOfPaymentsService } from '@financial-accounts/proof-of-payments/proof-of-payments.service';
+import { ProofOfPaymentsService } from 'src/modules/payments/proof-of-payments/proof-of-payments.service';
 import { MailerService } from '@mailer/mailer.service';
-import { ProofOfPayment } from '@financial-accounts/proof-of-payments/entities/proof-of-payment.entity';
+import { ProofOfPayment } from 'src/modules/payments/proof-of-payments/entities/proof-of-payment.entity';
 import { UserDiscount } from '../discounts/entities/user-discount.entity';
 import { validateMaxFiles } from 'src/common/utils/file-validation.util';
 

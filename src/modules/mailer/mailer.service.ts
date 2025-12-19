@@ -177,23 +177,29 @@ export class MailerService {
    * =========================== */
   private resolveTemplatePath(subdirs: string[]): string | null {
     const parts = ['modules', 'mailer', 'templates', 'email', ...subdirs];
-    
+
     // Ruta de desarrollo
     const devPath = join(process.cwd(), 'src', ...parts);
-    
+
     // Rutas de producción (probar múltiples ubicaciones)
     const distPath1 = join(__dirname, '..', '..', '..', ...parts);
     const distPath2 = join(process.cwd(), 'dist', ...parts);
     const distPath3 = join('/app', 'dist', ...parts);
-    
+
     this.logger.debug(`Buscando template en:`);
     this.logger.debug(`  devPath: ${devPath} - ${existsSync(devPath) ? 'EXISTS' : 'NOT FOUND'}`);
-    this.logger.debug(`  distPath1 (__dirname): ${distPath1} - ${existsSync(distPath1) ? 'EXISTS' : 'NOT FOUND'}`);
-    this.logger.debug(`  distPath2 (cwd/dist): ${distPath2} - ${existsSync(distPath2) ? 'EXISTS' : 'NOT FOUND'}`);
-    this.logger.debug(`  distPath3 (/app/dist): ${distPath3} - ${existsSync(distPath3) ? 'EXISTS' : 'NOT FOUND'}`);
+    this.logger.debug(
+      `  distPath1 (__dirname): ${distPath1} - ${existsSync(distPath1) ? 'EXISTS' : 'NOT FOUND'}`,
+    );
+    this.logger.debug(
+      `  distPath2 (cwd/dist): ${distPath2} - ${existsSync(distPath2) ? 'EXISTS' : 'NOT FOUND'}`,
+    );
+    this.logger.debug(
+      `  distPath3 (/app/dist): ${distPath3} - ${existsSync(distPath3) ? 'EXISTS' : 'NOT FOUND'}`,
+    );
     this.logger.debug(`  __dirname actual: ${__dirname}`);
     this.logger.debug(`  process.cwd(): ${process.cwd()}`);
-    
+
     if (existsSync(devPath)) {
       this.logger.debug(`✅ Usando devPath: ${devPath}`);
       return devPath;
@@ -210,7 +216,7 @@ export class MailerService {
       this.logger.debug(`✅ Usando distPath3: ${distPath3}`);
       return distPath3;
     }
-    
+
     this.logger.error(`❌ No se encontró el template en ninguna ubicación`);
     return null;
   }

@@ -96,7 +96,6 @@ export class NotesService {
       ...createNoteDto,
       transaction,
       attachments,
-      // img_url,
     });
 
     //  Guardar nota

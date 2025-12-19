@@ -5,7 +5,6 @@ import { ConfigModule } from '@config/config.module';
 import typeormConfig from '@config/typeorm.config';
 import { UsersModule } from '@users/users.module';
 import { TransactionsModule } from '@transactions/transactions.module';
-import { FinancialAccountsModule } from '@financial-accounts/financial-accounts.module';
 import { AuthModule } from '@auth/auth.module';
 import { MailerModule } from '@mailer/mailer.module';
 import { FileUploadModule } from 'src/modules/file-upload/file-upload.module';
@@ -27,6 +26,13 @@ import { ConversionsModule } from 'src/modules/conversions/conversions.module';
 import { CommissionsModule } from 'src/modules/conversions/commissions/commissions.module';
 import { DynamicCommissionsModule } from 'src/modules/dynamic-commissions/dynamicCommissions.module';
 import { WhatsAppModule } from 'src/modules/whatsapp/whatsapp.module';
+import { PaymentPlatformsModule } from 'src/modules/payments/payment-platforms/payment-platform.module';
+import { PaymentProvidersModule } from 'src/modules/payments/payment-providers/payment-providers.module';
+import { BankAccountsModule } from 'src/modules/payments/accounts/bank-accounts/bank-accounts.module';
+import { VirtualBankAccountsModule } from 'src/modules/payments/accounts/virtual-bank-accounts/virtual-bank-accounts.module';
+import { CryptoAccountsModule } from 'src/modules/payments/accounts/crypto-accounts/crypto-accounts.module';
+import { CountriesModule } from 'src/modules/catalogs/countries/country.modules';
+import { CurrenciesModule } from 'src/modules/catalogs/currencies/currencies-module';
 
 @Module({
   imports: [
@@ -34,7 +40,6 @@ import { WhatsAppModule } from 'src/modules/whatsapp/whatsapp.module';
     TypeOrmModule.forRootAsync(typeormConfig.asProvider()),
     UsersModule,
     TransactionsModule,
-    FinancialAccountsModule,
     FileUploadModule,
     UserAccountsModule,
     RegretsModule,
@@ -54,6 +59,14 @@ import { WhatsAppModule } from 'src/modules/whatsapp/whatsapp.module';
     CommissionsModule,
     DynamicCommissionsModule,
     WhatsAppModule,
+    PaymentPlatformsModule,
+    PaymentProvidersModule,
+    BankAccountsModule,
+    VirtualBankAccountsModule,
+    CryptoAccountsModule,
+    CountriesModule,
+    CurrenciesModule,
+
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',
       signOptions: { expiresIn: '1d' },

@@ -21,7 +21,7 @@ export class AuthService {
       sub: user.id,
       memberCode: user.memberCode,
       email: profile.email ?? '',
-      role: user.role,
+      roles: user.roles,
       fullName: `${profile.firstName ?? ''} ${profile.lastName ?? ''}`,
       terms: user.termsAccepted,
       isActive: user.isActive,
@@ -53,7 +53,7 @@ export class AuthService {
   async refreshAccessToken(refreshToken: string) {
     const user = await this.userRepo.findOne({
       where: { refreshToken },
-      relations: ['profile'],
+      relations: ['profile', 'roles'], // Agregamos la relación roles
     });
 
     if (!user || !user.refreshToken) {

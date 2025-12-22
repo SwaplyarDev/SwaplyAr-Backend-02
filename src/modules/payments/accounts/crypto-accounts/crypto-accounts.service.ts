@@ -115,7 +115,7 @@ export class CryptoAccountsService {
   }
 
   async findAll(filters: CryptoAccountFilterDto) {
-    const { paymentProviderCode } = filters;
+    const { paymentProviderCode, currencyCode } = filters;
 
     const query = this.cryptoAccountsRepository
       .createQueryBuilder('account')
@@ -128,6 +128,13 @@ export class CryptoAccountsService {
         paymentProviderCode,
       });
     }
+
+    if (currencyCode) {
+      query.andWhere('currency.code = :currencyCode', {
+        currencyCode,
+      });
+    }
+
     return await query.getMany();
   }
 

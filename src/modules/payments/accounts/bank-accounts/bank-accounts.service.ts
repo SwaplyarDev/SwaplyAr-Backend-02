@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BankAccounts } from './bank-accounts.entity';
@@ -29,7 +29,7 @@ export class BankAccountsService {
   ) {}
 
   async create(createBankAccountDto: CreateBankAccountDto, userId: string): Promise<BankAccounts> {
-    const { paymentProviderId, countryId, details, ...bankAccountData } = createBankAccountDto;
+    const { paymentProviderId, countryId, currencyId, details, ...bankAccountData } = createBankAccountDto;
 
     // Verificar que el usuario existe (del contexto de autenticación)
     const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -49,6 +49,48 @@ export class BankAccountsService {
       throw new ForbiddenException(`Proveedor de pago ${paymentProviderId} no está activo`);
     }
 
+    // Validate currency if provided
+    let currency: Currency | undefined;
+
+    if (currencyId) {
+      const foundCurrency = await this.currencyRepository.findOne({
+        where: { currencyId },
+      });
+
+      if (!foundCurrency) {
+        throw new NotFoundException(`Currency with ID ${currencyId} not found`);
+      }
+
+      // Check if payment provider supports this currency
+      const supportedCurrency = await this.paymentProvidersRepository.query(
+        `SELECT 1
+        FROM provider_currencies pc
+        WHERE pc.provider_id = $1 AND pc.currency_id = $2`,
+        [paymentProviderId, currencyId],
+      );
+
+      if (!supportedCurrency || supportedCurrency.length === 0) {
+        const allSupported = await this.paymentProvidersRepository.query(
+          `SELECT c.code
+          FROM provider_currencies pc
+          JOIN currencies c ON pc.currency_id = c.currency_id
+          WHERE pc.provider_id = $1`,
+          [paymentProviderId],
+        );
+
+        const supportedCodes =
+          allSupported.length > 0
+            ? allSupported.map((c: any) => c.code).join(', ')
+            : 'none';
+
+        throw new BadRequestException(
+          `Payment Provider '${paymentProvider.name}' does not support currency '${foundCurrency.code}'. Supported currencies: ${supportedCodes}`,
+        );
+      }
+
+      currency = foundCurrency;
+    }
+
     // Verificar que el país existe
     const country = await this.countriesRepository.findOne({
       where: { id: countryId },
@@ -64,7 +106,7 @@ export class BankAccountsService {
       user,
       paymentProvider,
       country,
-      ...(Currency && { Currency }),
+      ...(currency && { currency }),
       createdBy: user,
     });
 

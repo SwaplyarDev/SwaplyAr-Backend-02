@@ -10,6 +10,7 @@ export class CreateAmountDto {
 
   @ApiProperty({ description: 'Moneda enviada', example: 'ARS' })
   currencySent: string;
+ 
   @ApiProperty({ description: 'Cantidad recibida', example: 100 })
   @Type(() => Number)
   @IsNumber()

@@ -9,7 +9,7 @@ export class CreateTransactionDto {
   @ApiProperty({
     name: 'countryTransaction',
     description: 'País donde se realiza la transacción',
-    example: 'Argentina',
+    example: 'AR',
   })
   @IsString()
   @IsNotEmpty()

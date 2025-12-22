@@ -84,15 +84,15 @@ export class ConversionsGateway implements OnGatewayInit, OnGatewayConnection, O
 
       const commissionResult = await this.commissionsService.calculateCommissionWithCurrencyCheck(
         conversion.convertedAmount,
-        dto.fromPlatform,
-        dto.toPlatform,
+        dto.fromPlatformId,
+        dto.toPlatformId,
         dto.from,
         dto.to,
       );
 
       if (!commissionResult.valid) {
         throw new Error(
-          `No se encontró comisión válida para ${dto.fromPlatform} → ${dto.toPlatform} (${dto.from} → ${dto.to}).`,
+          `No se encontró comisión válida para ${dto.fromPlatformId} → ${dto.toPlatformId} (${dto.from} → ${dto.to}).`,
         );
       }
 
@@ -107,8 +107,8 @@ export class ConversionsGateway implements OnGatewayInit, OnGatewayConnection, O
       });
 
       this.server.emit('commission-update', {
-        fromPlatform: dto.fromPlatform,
-        toPlatform: dto.toPlatform,
+        fromPlatformId: dto.fromPlatformId,
+        toPlatformId: dto.toPlatformId,
         commissionRate: commission.commissionRate,
         updatedAt: new Date().toISOString(),
       });
@@ -117,8 +117,8 @@ export class ConversionsGateway implements OnGatewayInit, OnGatewayConnection, O
         ...conversion,
         commission,
         totalReceived,
-        fromPlatform: dto.fromPlatform,
-        toPlatform: dto.toPlatform,
+        fromPlatformId: dto.fromPlatformId,
+        toPlatformId: dto.toPlatformId,
         message: 'Conversión y comisión calculadas correctamente (actualizaciones emitidas).',
       });
 

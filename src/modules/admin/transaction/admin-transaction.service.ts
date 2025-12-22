@@ -78,6 +78,10 @@ export class AdminTransactionService {
       .createQueryBuilder('tx')
       .leftJoinAndSelect('tx.senderAccount', 'senderAccount')
       .leftJoinAndSelect('senderAccount.paymentProvider', 'senderPaymentProvider')
+      .leftJoinAndSelect(
+        'senderPaymentProvider.paymentPlatform',
+        'senderPaymentProviderPaymentPlatform',
+      )
       .leftJoinAndSelect('tx.financialAccounts', 'financialAccounts')
       .leftJoinAndSelect('financialAccounts.paymentPlatform', 'financialPaymentPlatform')
       .leftJoinAndSelect('tx.amount', 'amount')
@@ -315,8 +319,18 @@ export class AdminTransactionService {
   async getStatusHistory(id: string): Promise<StatusHistoryResponse[]> {
     try {
       const statusHistory = await this.statusLogRepository.find({
-        where: { transaction: { administacionMastersId: id } },
-        relations: ['changedByAdmin', 'changedByAdmin.profile'],
+        where: {
+          transaction: {
+            id: id,
+          },
+        },
+        relations: [
+          'transaction',
+          'administracionMaster',
+          'changedByAdmin',
+          'changedByAdmin.profile',
+        ],
+
         select: {
           id: true,
           status: true,
@@ -338,14 +352,18 @@ export class AdminTransactionService {
         throw new NotFoundException('No se encontró historial de estados.');
       }
 
-      // Transformar la respuesta para tener el formato deseado
       const formattedHistory: StatusHistoryResponse[] = statusHistory.map((log) => ({
-        ...log,
+        id: log.id,
+        administracionMaster: log.administracionMaster,
+        status: log.status,
+        changedAt: log.changedAt,
+        message: log.message,
         changedByAdminId: log.changedByAdmin.id,
         changedByAdmin: {
           id: log.changedByAdmin.id,
           name: `${log.changedByAdmin.profile.firstName} ${log.changedByAdmin.profile.lastName}`,
         },
+        additionalData: log.additionalData,
       }));
 
       this.logger.log(`Historial de estados obtenido correctamente para la transacción ${id}`);

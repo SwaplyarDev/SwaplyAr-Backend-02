@@ -307,9 +307,12 @@ export class TransactionsService {
             relations: [
               'senderAccount',
               'senderAccount.paymentProvider',
+              'senderAccount.user',
               'amount',
               'proofsOfPayment',
               'transactionUserDiscounts',
+              'transactionUserDiscounts.userDiscount',
+              'transactionUserDiscounts.userDiscount.user',
             ],
           }),
         'Error al recuperar la transacción completa',
@@ -419,7 +422,7 @@ export class TransactionsService {
 
     const [transactions, totalItems] = await this.transactionsRepository.findAndCount({
       relations: {
-        senderAccount: { paymentProvider: true },
+        senderAccount: { paymentProvider: { paymentPlatform: true }, user: true },
         proofsOfPayment: true,
         amount: true, // Nota: se puede eliminar más adelante y usar amountValue/amountCurrency
         regret: true,

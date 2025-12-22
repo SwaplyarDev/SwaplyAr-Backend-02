@@ -14,6 +14,7 @@ export class TransactionUserDiscounts {
   @ManyToOne(() => Transaction, (transaction) => transaction.transactionUserDiscounts, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'transaction_id' })
   @ApiHideProperty()
   transaction: Transaction;
 

@@ -1,32 +1,62 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { SenderFinancialAccount } from './entities/sender-financial-account.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateSenderFinancialAccountDto } from './dto/update-sender-financial-account.dto';
 import { CreateSenderFinancialAccountDto } from './dto/create-sender-financial-account.dto';
 import { PaymentProvidersService } from '../payment-providers/payment-providers.service';
+import { User } from '@users/entities/user.entity';
+import { Countries } from '../entities/countries.entity';
 
 @Injectable()
 export class SenderFinancialAccountsService {
   constructor(
     @InjectRepository(SenderFinancialAccount)
     private readonly senderRepository: Repository<SenderFinancialAccount>,
+
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+
+    @InjectRepository(Countries)
+    private readonly countriesRepository: Repository<Countries>,
     private readonly paymentProviderService: PaymentProvidersService,
   ) {}
 
-  async create(createSenderFinancialAccountDto: CreateSenderFinancialAccountDto) {
-    const { paymentProvider } = createSenderFinancialAccountDto;
-
-    const newPaymentProvider = await this.paymentProviderService.create(paymentProvider);
-
-    const data = this.senderRepository.create({
-      ...createSenderFinancialAccountDto,
-      paymentProvider: newPaymentProvider,
+  async create(dto: CreateSenderFinancialAccountDto) {
+    const user = await this.userRepository.findOne({
+      where: { email: dto.email },
     });
 
-    const savedSender = await this.senderRepository.save(data);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
-    return savedSender;
+    const paymentProvider = await this.paymentProviderService.create(dto.paymentProvider);
+
+    let country: Countries | undefined;
+
+    if (dto.countryCode) {
+      const foundCountry = await this.countriesRepository.findOne({
+        where: { code: dto.countryCode },
+      });
+
+      if (!foundCountry) {
+        throw new BadRequestException('Invalid country code');
+      }
+
+      country = foundCountry;
+    }
+
+    const senderAccount = this.senderRepository.create({
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      phoneNumber: dto.phoneNumber,
+      user,
+      country,
+      paymentProvider,
+    });
+
+    return this.senderRepository.save(senderAccount);
   }
 
   async findAll() {

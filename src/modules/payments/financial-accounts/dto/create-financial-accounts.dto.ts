@@ -11,6 +11,10 @@ export class CreateFinancialAccountDto {
   referenceId: string;
 
   @ApiProperty()
+  @IsString()
+  referenceType: string;
+
+  @ApiProperty()
   @IsUUID()
   userId: string;
 

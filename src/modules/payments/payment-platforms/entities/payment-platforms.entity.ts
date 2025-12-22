@@ -42,9 +42,9 @@ export class PaymentPlatforms {
   @OneToMany(() => FinancialAccounts, (account: FinancialAccounts) => account.paymentPlatform)
   financialAccounts: FinancialAccounts[];
 
-  @OneToMany(() => DynamicCommission, (dnmComission) => dnmComission.fromPlatform)
+  @OneToMany(() => DynamicCommission, (dnmComission) => dnmComission.fromPlatformId)
   fromComission: DynamicCommission;
 
-  @OneToMany(() => DynamicCommission, (dnmComission) => dnmComission.toPlatform)
+  @OneToMany(() => DynamicCommission, (dnmComission) => dnmComission.toPlatformId)
   toComission: DynamicCommission;
 }

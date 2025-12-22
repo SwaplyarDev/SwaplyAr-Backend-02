@@ -1,5 +1,13 @@
 import { User } from '@users/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 
 @Entity('contacts')
 export class Contact {
@@ -9,7 +17,7 @@ export class Contact {
   @Column()
   name: string;
 
-  @Column({ type: 'varchar', name: 'last_name' })
+  @Column({ type: 'varchar', name: 'lastname' })
   lastname: string;
 
   @Column({ type: 'varchar' })

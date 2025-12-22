@@ -85,7 +85,7 @@ export class OtpService {
     // 1. Buscar la transacción con la relación senderAccount
     const transaction = await this.transactionRepo.findOne({
       where: { id: transactionId },
-      relations: ['senderAccount'], // <- aquí incluimos senderAccount
+      relations: ['senderAccount', 'senderAccount.user'], // <- aquí incluimos senderAccount
     });
 
     if (!transaction) {

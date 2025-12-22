@@ -10,7 +10,6 @@ import {
   IsUppercase,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { CreatePaymentPlatformsDto } from '../../payment-platforms/dto/create-payment-platforms.dto';
 
 export class CreatePaymentProvidersDto {
   @ApiProperty({ description: 'Nombre del proveedor', example: 'PayPal' })

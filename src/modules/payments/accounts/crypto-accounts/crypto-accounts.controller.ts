@@ -84,10 +84,7 @@ export class CryptoAccountsController {
     description: 'The crypto account has been successfully updated.',
     type: CryptoAccountResponseDto,
   })
-  update(
-    @Param('id') id: string, 
-    @Body() updateCryptoAccountDto: UpdateCryptoAccountDto
-  ) {
+  update(@Param('id') id: string, @Body() updateCryptoAccountDto: UpdateCryptoAccountDto) {
     return this.cryptoAccountsService.update(id, updateCryptoAccountDto);
   }
 

@@ -16,7 +16,7 @@ export class CommissionsController {
     description: 'Comisión calculada correctamente.',
   })
   async calculateCommission(@Body() dto: CommissionRequestDto): Promise<CommissionResponseDto> {
-    const { amount, fromPlatform, toPlatform } = dto;
-    return this.commissionsService.calculateCommission(amount, fromPlatform, toPlatform);
+    const { amount, fromPlatformId, toPlatformId } = dto;
+    return this.commissionsService.calculateCommission(amount, fromPlatformId, toPlatformId);
   }
 }

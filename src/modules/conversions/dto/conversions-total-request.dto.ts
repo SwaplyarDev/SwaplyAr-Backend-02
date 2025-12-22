@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsString, IsUUID } from 'class-validator';
 
 export class ConversionTotalRequestDto {
   @ApiProperty({ description: 'Monto a convertir', example: 100 })
@@ -14,11 +14,11 @@ export class ConversionTotalRequestDto {
   @IsString()
   to: string;
 
-  @ApiProperty({ description: 'Plataforma de origen', example: 'PayPal USD' })
-  @IsString()
-  fromPlatform: string;
+  @ApiProperty({ description: 'Id de plataforma de origen' })
+  @IsUUID()
+  fromPlatformId: string;
 
-  @ApiProperty({ description: 'Plataforma de destino', example: 'Payoneer EUR' })
-  @IsString()
-  toPlatform: string;
+  @ApiProperty({ description: 'Id de plataforma de destino', example: 'Payoneer EUR' })
+  @IsUUID()
+  toPlatformId: string;
 }

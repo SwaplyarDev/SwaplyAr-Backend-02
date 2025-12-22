@@ -12,7 +12,7 @@ export class AmountsService {
     private readonly amountsRepository: Repository<Amount>,
   ) {}
   async create(createAmountDto: CreateAmountDto) {
-    const newAmount = this.amountsRepository.create(createAmountDto);
+    const newAmount = this.amountsRepository.create({ ...createAmountDto, isReceived: false });
     //una vez completada la transacción, se cambia el estado a true de received
     return await this.amountsRepository.save(newAmount);
   }

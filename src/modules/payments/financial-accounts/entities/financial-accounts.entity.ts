@@ -24,6 +24,9 @@ export class FinancialAccounts {
   @Column({ type: 'uuid', name: 'reference_id' })
   referenceId: string;
 
+  @Column({ type: 'varchar', name: 'reference_type' })
+  referenceType: string;
+
   @Column({ type: 'uuid', nullable: true, name: 'user_id' })
   userId: string;
 

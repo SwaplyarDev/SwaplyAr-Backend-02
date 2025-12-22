@@ -76,7 +76,7 @@ export class NotesController {
   @Post('verify-code')
   async verifyNoteCode(@Body() dto: ValidateNoteCodeDto) {
     const transaction = await this.transactionsService.findOne(dto.transaction_id, {
-      relations: ['senderAccount', 'senderAccount.paymentProvider', 'amount'],
+      relations: ['senderAccount', 'senderAccount.paymentProvider', 'amount', 'senderAccount.user'],
     });
 
     if (!transaction) {

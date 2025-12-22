@@ -3,7 +3,7 @@ import { AdministracionMaster } from '../../modules/admin/entities/administracio
 
 export interface StatusHistoryResponse {
   id: string;
-  transaction: AdministracionMaster;
+  administracionMaster: AdministracionMaster;
   status: Status;
   changedAt: Date;
   message: string;

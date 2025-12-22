@@ -14,7 +14,6 @@ import { DynamicCommissionsService } from '../services/dynamicCommissions.servic
 import { CreateDynamicCommissionDto } from '../dto/create-dynamic-commission.dto';
 import { UpdateDynamicCommissionDto } from '../dto/update-dynamic-commission.dto';
 import { DynamicCommissionResponseDto } from '../dto/dynamic-commission-response.dto';
-import { PlatformName } from 'src/enum/commissions.enum';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { UserRole } from 'src/enum/user-role.enum';
@@ -66,15 +65,13 @@ export class DynamicCommissionsController {
   @Roles(UserRole.Admin, UserRole.SuperAdmin)
   @ApiOperation({ summary: 'Obtener comisiones (todas o filtradas por cruce)' })
   @ApiQuery({
-    name: 'fromPlatform',
+    name: 'fromPlatformId',
     required: false,
-    enum: PlatformName,
     description: 'Filtrar por plataforma origen',
   })
   @ApiQuery({
-    name: 'toPlatform',
+    name: 'toPlatformId',
     required: false,
-    enum: PlatformName,
     description: 'Filtrar por plataforma destino',
   })
   @ApiOkResponse({
@@ -82,9 +79,9 @@ export class DynamicCommissionsController {
     type: [DynamicCommissionResponseDto],
   })
   async find(
-    @Query('fromPlatform') fromPlatform?: PlatformName,
-    @Query('toPlatform') toPlatform?: PlatformName,
+    @Query('fromPlatformId') fromPlatformId?: string,
+    @Query('toPlatformId') toPlatformId?: string,
   ): Promise<DynamicCommissionResponseDto[]> {
-    return this.dynamicCommissionsService.find(fromPlatform, toPlatform);
+    return this.dynamicCommissionsService.find(fromPlatformId, toPlatformId);
   }
 }

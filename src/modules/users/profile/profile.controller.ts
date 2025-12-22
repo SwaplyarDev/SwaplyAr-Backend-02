@@ -65,15 +65,11 @@ export class ProfileController {
       throw new UnauthorizedException('Usuario no autenticado');
     }
 
-    const profile = await this.profileService.getUserProfileById(userId);
-
-    // Si prefieres hacerlo manual:
-    const userWithoutToken = { ...profile.user };
-    delete userWithoutToken.refreshToken;
+    const profileData = await this.profileService.getUserProfileById(userId);
 
     return {
-      ...profile,
-      user: userWithoutToken,
+      message: 'Perfil obtenido correctamente',
+      result: profileData,
     };
   }
 

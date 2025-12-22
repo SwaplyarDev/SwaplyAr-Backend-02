@@ -23,7 +23,7 @@ import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { AdminUserService } from './user-admin.service';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import {
-  UpdateUserRoleResponseDto,
+  AdminUpdateUserRoleResponseDto,
   UpdateUserStatusDto,
   UpdateUserStatusResponseDto,
 } from './dto/update-user-status-dto';
@@ -46,7 +46,7 @@ export class AdminUserController {
   })
   @ApiOkResponse({
     description: 'Rol de usuario actualizado correctamente',
-    type: UpdateUserRoleResponseDto,
+    type: AdminUpdateUserRoleResponseDto,
   })
   @ApiBadRequestResponse({ description: 'Campo inválido o no se envio' })
   @ApiUnauthorizedResponse({ description: 'Usuario no autenticado o token inválido' })

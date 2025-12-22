@@ -187,4 +187,7 @@ export class User {
 
   @OneToMany(() => SenderFinancialAccount, (sender) => sender.user)
   senderAccounts: SenderFinancialAccount[];
+
+  @Column({ name: 'role_description', nullable: true })
+  roleDescription: string;
 }

@@ -58,11 +58,13 @@ export class RolesService implements OnModuleInit {
     const firstName = process.env.DEFAULT_ADMIN_FIRST_NAME || 'Admin';
     const lastName = process.env.DEFAULT_ADMIN_LAST_NAME || 'System';
     const memberCode = process.env.DEFAULT_ADMIN_MEMBER_CODE || 'ADMIN001';
-    const existingProfile = await this.userProfileRepository.findOne({ 
-      where: { email: adminEmail } 
+
+    const existingProfile = await this.userProfileRepository.findOne({
+      where: { email: adminEmail },
     });
 
     if (existingProfile) return;
+
     const adminRole = await this.findByCode('admin');
 
     const adminUser = this.userRepository.create({
@@ -71,100 +73,103 @@ export class RolesService implements OnModuleInit {
       isActive: true,
       roles: [adminRole],
     });
-        
-        const savedUser = await this.userRepository.save(adminUser);
-        
-        const adminProfile = this.userProfileRepository.create({
-            firstName,
-            lastName,
-            email: adminEmail,
-            user: savedUser
-        });
-        
-        await this.userProfileRepository.save(adminProfile);
-        await this.syncUserRoleColumns(savedUser.id);
+
+    const savedUser = await this.userRepository.save(adminUser);
+
+    const adminProfile = this.userProfileRepository.create({
+      firstName,
+      lastName,
+      email: adminEmail,
+      user: savedUser,
+    });
+
+    await this.userProfileRepository.save(adminProfile);
+
+    // Sincronizar columnas de roles después de crear el perfil
+    await this.syncUserRoleColumns(savedUser.id);
+  }
+
+  async findByCode(code: string): Promise<Roles> {
+    const role = await this.roleRepository.findOne({ where: { code } });
+    if (!role) {
+      throw new NotFoundException(`Rol con código '${code}' no encontrado`);
+    }
+    return role;
+  }
+
+  // Nuevo método para actualizar rol de usuario usando tabla de roles
+  async updateUserRole(userId: string, roleCode: string) {
+    // 1. Verificar que el rol existe en la tabla
+    const role = await this.findByCode(roleCode);
+
+    // 2. Buscar el usuario y actualizar sus roles
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
     }
 
-    async findByCode(code: string): Promise<Roles> {
-        const role = await this.roleRepository.findOne({ where: { code } });
-        if (!role) {
-            throw new NotFoundException(`Rol con código '${code}' no encontrado`);
-        }
-        return role;
+    // 3. Actualizar la relación usuario-roles
+    user.roles = [role];
+    const updatedUser = await this.userRepository.save(user);
+
+    // 4. Sincronizar columnas desnormalizadas
+    await this.syncUserRoleColumns(userId);
+
+    return {
+      userId: updatedUser.id,
+      roles: updatedUser.roles.map((r) => ({
+        role_id: r.role_id,
+        code: r.code,
+        name: r.name,
+        description: r.description,
+      })),
+    };
+  }
+
+  // Método para agregar rol adicional a usuario
+  async addUserRole(userId: string, roleCode: string) {
+    const role = await this.findByCode(roleCode);
+
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
     }
 
-    // Nuevo método para actualizar rol de usuario usando tabla de roles
-    async updateUserRole(userId: string, roleCode: string) {
-        // 1. Verificar que el rol existe en la tabla
-        const role = await this.findByCode(roleCode);
-        
-        // 2. Buscar el usuario y actualizar sus roles
-        const user = await this.userRepository.findOne({ 
-            where: { id: userId },
-            relations: ['roles']
-        });
-        
-        if (!user) {
-            throw new NotFoundException('Usuario no encontrado');
-        }
-        
-        // 3. Actualizar la relación usuario-roles
-        user.roles = [role];
-        const updatedUser = await this.userRepository.save(user);
-        
-        // 4. Sincronizar columnas desnormalizadas
-        await this.syncUserRoleColumns(userId);
-        
-        return {
-            userId: updatedUser.id,
-            roles: updatedUser.roles.map(r => ({
-                role_id: r.role_id,
-                code: r.code,
-                name: r.name,
-                description: r.description
-            }))
-        };
+    // Verificar si ya tiene el rol
+    const hasRole = user.roles.some((r) => r.code === roleCode);
+    if (hasRole) {
+      throw new ConflictException(`El usuario ya tiene el rol '${roleCode}'`);
     }
-    
-    // Método para agregar rol adicional a usuario
-    async addUserRole(userId: string, roleCode: string) {
-        const role = await this.findByCode(roleCode);
-        
-        const user = await this.userRepository.findOne({ 
-            where: { id: userId },
-            relations: ['roles']
-        });
-        
-        if (!user) {
-            throw new NotFoundException('Usuario no encontrado');
-        }
-        
-        // Verificar si ya tiene el rol
-        const hasRole = user.roles.some(r => r.code === roleCode);
-        if (hasRole) {
-            throw new ConflictException(`El usuario ya tiene el rol '${roleCode}'`);
-        }
-        
-        user.roles.push(role);
-        const updatedUser = await this.userRepository.save(user);
-        
-        // Sincronizar columnas desnormalizadas
-        await this.syncUserRoleColumns(userId);
-        
-        return {
-            userId: updatedUser.id,
-            roles: updatedUser.roles.map(r => ({
-                role_id: r.role_id,
-                code: r.code,
-                name: r.name,
-                description: r.description
-            }))
-        };
-    }
-    
-    // Método privado para sincronizar columnas desnormalizadas
-    private async syncUserRoleColumns(userId: string) {
-        await this.userRepository.query(`
+
+    user.roles.push(role);
+    const updatedUser = await this.userRepository.save(user);
+
+    // Sincronizar columnas desnormalizadas
+    await this.syncUserRoleColumns(userId);
+
+    return {
+      userId: updatedUser.id,
+      roles: updatedUser.roles.map((r) => ({
+        role_id: r.role_id,
+        code: r.code,
+        name: r.name,
+        description: r.description,
+      })),
+    };
+  }
+
+  // Método para sincronizar columnas desnormalizadas
+  async syncUserRoleColumns(userId: string) {
+    await this.userRepository.query(
+      `
             UPDATE users 
             SET 
                 role_code = COALESCE((SELECT string_agg(r.code, ', ' ORDER BY r.code) FROM user_roles ur JOIN roles r ON ur.role_id = r.role_id WHERE ur.user_id = $1), ''),
@@ -172,13 +177,14 @@ export class RolesService implements OnModuleInit {
                 role_description = COALESCE((SELECT string_agg(r.description, ', ' ORDER BY r.code) FROM user_roles ur JOIN roles r ON ur.role_id = r.role_id WHERE ur.user_id = $1), '')
             WHERE user_id = $1
         `,
-      [userId],);
-    }
-    
-    // Método para obtener todos los roles disponibles
-    async getAllRoles(): Promise<Roles[]> {
-        return await this.roleRepository.find({
-            order: { code: 'ASC' }
-        });
-    }
+      [userId],
+    );
+  }
+
+  // Método para obtener todos los roles disponibles
+  async getAllRoles(): Promise<Roles[]> {
+    return await this.roleRepository.find({
+      order: { code: 'ASC' },
+    });
+  }
 }

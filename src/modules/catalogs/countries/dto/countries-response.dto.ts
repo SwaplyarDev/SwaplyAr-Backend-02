@@ -2,7 +2,7 @@ import { Expose } from 'class-transformer';
 
 export class CountryResponseDto {
   @Expose()
-  country_id: string;
+  id: string;
 
   @Expose()
   code: string;
@@ -11,8 +11,8 @@ export class CountryResponseDto {
   name: string;
 
   @Expose()
-  currency_default?: string;
+  currencyId: string;
 
   @Expose()
-  created_at: Date;
+  createdAt: Date;
 }

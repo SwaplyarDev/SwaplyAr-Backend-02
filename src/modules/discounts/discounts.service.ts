@@ -3,7 +3,7 @@ import { User } from '@users/entities/user.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserRole } from 'src/enum/user-role.enum';
+
 import { DiscountCode } from './entities/discount-code.entity';
 import { UserDiscount } from './entities/user-discount.entity';
 import { UserRewardsLedger } from './entities/user-rewards-ledger.entity';
@@ -93,7 +93,7 @@ export class DiscountService {
   }
 
   /* Obtiene descuentos de un usuario específico por su user_id */
-  async getUserDiscountsByUserId(id: string, userRole?: UserRole): Promise<UserDiscount[]> {
+  async getUserDiscountsByUserId(id: string, userRole?: string): Promise<UserDiscount[]> {
     const qd = this.userDiscountRepo
       .createQueryBuilder('ud')
       .leftJoinAndSelect('ud.user', 'user')
@@ -105,7 +105,7 @@ export class DiscountService {
 
     if (!ud) throw new NotFoundException('Descuento de usuario no encontrado');
 
-    if (![UserRole.Admin, UserRole.SuperAdmin].includes(userRole ?? UserRole.User)) {
+    if (!['admin', 'super_admin'].includes(userRole ?? 'user')) {
       throw new ForbiddenException('No tiene permiso para acceder a este descuento');
     }
 
@@ -115,11 +115,7 @@ export class DiscountService {
   /**
    * Obtiene un descuento de usuario por ID, verifica propiedad y devuelve toda la información relevante.
    */
-  async getUserDiscountById(
-    id: string,
-    userId: string,
-    userRole?: UserRole,
-  ): Promise<UserDiscount> {
+  async getUserDiscountById(id: string, userId: string, userRole?: string): Promise<UserDiscount> {
     const ud = await this.userDiscountRepo.findOne({
       where: { id },
       relations: ['user', 'discountCode', 'transactions'],
@@ -129,7 +125,7 @@ export class DiscountService {
       throw new ForbiddenException('No tiene permiso para acceder a este descuento');
     }*/
 
-    if (ud.user.id !== userId && userRole !== UserRole.Admin && userRole !== UserRole.SuperAdmin) {
+    if (ud.user.id !== userId && userRole !== 'admin' && userRole !== 'super_admin') {
       throw new ForbiddenException('No tiene permiso para acceder a este descuento');
     }
 

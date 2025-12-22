@@ -24,27 +24,6 @@ export class UsersService {
     private rolesService: RolesService,
   ) {}
 
-  // private generateUserCode(): string {
-  //   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  //   let result = '';
-  //   for (let i = 0; i < 8; i++) {
-  //     result += chars.charAt(Math.floor(Math.random() * chars.length));
-  //   }
-  //   return result;
-  // }
-
-  // private async generateUniqueUserCode(): Promise<string> {
-  //   let code: string;
-  //   let exists: boolean;
-
-  //   do {
-  //     code = this.generateUserCode();
-  //     exists = !!(await this.userRepository.findOne({ where: { memberCode: code } }));
-  //   } while (exists);
-
-  //   return code;
-  // }
-
   async register(userDto: RegisterUserDto): Promise<User> {
     try {
       // Validaciones básicas
@@ -82,7 +61,12 @@ export class UsersService {
       user.roles = [userRole];
       user.rewardsLedger = new UserRewardsLedger();
 
-      return await this.userRepository.save(user);
+      const savedUser = await this.userRepository.save(user);
+
+      // Sincronizar columnas desnormalizadas de roles
+      await this.rolesService.syncUserRoleColumns(savedUser.id);
+
+      return savedUser;
     } catch (error) {
       if (error instanceof BadRequestException || error instanceof ConflictException) {
         throw error;
@@ -109,7 +93,7 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     return this.userRepository.find({
-      relations: { profile: true, roles: true }
+      relations: { profile: true, roles: true },
     });
   }
 

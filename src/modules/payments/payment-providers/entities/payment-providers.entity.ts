@@ -8,12 +8,16 @@ import {
   UpdateDateColumn,
   Unique,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { PaymentPlatforms } from '../../entities/payment-platforms.entity';
 import { BankAccounts } from '../../accounts/bank-accounts/bank-accounts.entity';
 import { VirtualBankAccounts } from '../../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
 import { CryptoAccounts } from '../../accounts/crypto-accounts/crypto-accounts.entity';
 import { SenderFinancialAccount } from '../../sender-accounts/entities/sender-financial-account.entity';
+import { Countries } from '../../entities/countries.entity';
+import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
 @Entity({ name: 'payment_providers' })
 @Unique(['paymentPlatform', 'code'])
@@ -31,8 +35,9 @@ export class PaymentProviders {
   @Column({ type: 'varchar', length: 50, unique: true })
   code: string;
 
-  @Column({ type: 'varchar', length: 3, nullable: true, name: 'country_code' })
-  countryCode: string;
+  @ManyToOne(() => Countries, { nullable: true })
+  @JoinColumn({ name: 'country_id' })
+  country: Countries;
 
   @Column({ type: 'varchar', nullable: true, name: 'logo_url' })
   logoUrl: string;
@@ -52,10 +57,7 @@ export class PaymentProviders {
   @OneToMany(() => BankAccounts, (bankAccount: BankAccounts) => bankAccount.paymentProvider)
   bankAccounts: BankAccounts[];
 
-  @OneToMany(
-    () => VirtualBankAccounts,
-    (virtualAccount: VirtualBankAccounts) => virtualAccount.paymentProvider,
-  )
+  @OneToMany(() => VirtualBankAccounts, (virtualAccount: VirtualBankAccounts) => virtualAccount.paymentProvider)
   virtualBankAccounts: VirtualBankAccounts[];
 
   @OneToMany(() => CryptoAccounts, (cryptoAccount: CryptoAccounts) => cryptoAccount.paymentProvider)
@@ -63,4 +65,19 @@ export class PaymentProviders {
 
   @OneToMany(() => SenderFinancialAccount, (sdrAccount) => sdrAccount.paymentProvider)
   senderAccounts: SenderFinancialAccount;
+  
+  @ManyToMany(() => Currency, (currency) => currency.providers)
+  @JoinTable({
+    name: 'provider_currencies',
+    joinColumn: {
+      name: 'provider_id',
+      referencedColumnName: 'paymentProviderId',
+    },
+    inverseJoinColumn: {
+      name: 'currency_id',
+      referencedColumnName: 'currencyId',
+    },
+  })
+  supportedCurrencies: Currency[];
+
 }

@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { PaymentProviders } from '../../payment-providers/entities/payment-providers.entity';
 import { User } from '../../../users/entities/user.entity';
+import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
 @Entity({ name: 'virtual_bank_accounts' })
 export class VirtualBankAccounts {
@@ -31,8 +32,12 @@ export class VirtualBankAccounts {
   @Column({ type: 'varchar', nullable: true, name: 'account_alias' })
   accountAlias: string;
 
-  @Column({ type: 'varchar', length: 3, nullable: true })
-  currency: string;
+  @ManyToOne(() => Currency, { nullable: true })
+  @JoinColumn({ name: 'currency_id' })
+  currency: Currency;
+
+  @Column({ type: 'uuid', nullable: true, name: 'currency_id' })
+  currencyId: string;
 
   @Column({ type: 'varchar', length: 20, default: 'user', name: 'owner_type' })
   ownerType: string;

@@ -1,19 +1,43 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToMany,
+  JoinTable,
+  OneToMany,
+} from 'typeorm';
+import { Currency } from '../currencies/currencies.entity';
+import { PaymentProviders } from '../../payments/payment-providers/payment-providers.entity';
 
 @Entity('countries')
 export class Countries {
-  @PrimaryGeneratedColumn('uuid')
-  country_id: string;
+  @PrimaryGeneratedColumn('uuid', { name: 'country_id' })
+  id: string;
 
   @Column({ type: 'char', length: 3, unique: true })
-  code: string; // ISO 3166 (ej: ARG, BRA, CHL, VEN)
+  code: string;
 
   @Column({ type: 'varchar', length: 100 })
-  name: string; // Nombre del país
+  name: string;
 
-  @Column({ type: 'varchar', length: 3, nullable: true })
-  currency_default: string; // Moneda local (ARS, BRL, CLP, VES, etc.)
+  @ManyToMany(() => Currency, (currency) => currency.countries)
+  @JoinTable({
+    name: 'countries_currencies',
+    joinColumn: {
+      name: 'country_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'currency_id',
+      referencedColumnName: 'currencyId',
+    },
+  })
+  currencies: Currency[];
 
-  @CreateDateColumn({ type: 'timestamptz', default: () => 'now()' })
-  created_at: Date; // Fecha de registro
+  @OneToMany(() => PaymentProviders, (provider) => provider.country)
+  providers: PaymentProviders[];
+
+  @CreateDateColumn({ type: 'timestamptz', default: () => 'now()', name: 'created_at' })
+  createdAt: Date;
 }

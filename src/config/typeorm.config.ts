@@ -37,7 +37,7 @@ export default registerAs('typeorm', (): TypeOrmModuleOptions => {
     url: databaseUrl,
     ssl: sslEnabled ? { rejectUnauthorized: false } : false, // SSL configurable
     // En producción no sincronizamos; en dev/test sí para iterar y e2e
-    synchronize: false,
+    synchronize: false, // Temporalmente deshabilitado para evitar conflictos con migraciones
     // En test reiniciamos el esquema para pruebas limpias
     dropSchema: isTest,
     // Soporte para correr desde ts-node (src) y desde dist

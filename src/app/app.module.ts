@@ -25,11 +25,14 @@ import { QualificationModule } from 'src/modules/qualifications/qualifications.m
 import { ConversionsModule } from 'src/modules/conversions/conversions.module';
 import { CommissionsModule } from 'src/modules/conversions/commissions/commissions.module';
 import { DynamicCommissionsModule } from 'src/modules/dynamic-commissions/dynamicCommissions.module';
+import { WhatsAppModule } from 'src/modules/whatsapp/whatsapp.module';
 import { PaymentPlatformsModule } from 'src/modules/payments/payment-platforms/payment-platform.module';
 import { PaymentProvidersModule } from 'src/modules/payments/payment-providers/payment-providers.module';
 import { BankAccountsModule } from 'src/modules/payments/accounts/bank-accounts/bank-accounts.module';
 import { VirtualBankAccountsModule } from 'src/modules/payments/accounts/virtual-bank-accounts/virtual-bank-accounts.module';
 import { CryptoAccountsModule } from 'src/modules/payments/accounts/crypto-accounts/crypto-accounts.module';
+import { CountriesModule } from 'src/modules/catalogs/countries/country.modules';
+import { CurrenciesModule } from 'src/modules/catalogs/currencies/currencies-module';
 
 @Module({
   imports: [
@@ -55,12 +58,15 @@ import { CryptoAccountsModule } from 'src/modules/payments/accounts/crypto-accou
     ConversionsModule,
     CommissionsModule,
     DynamicCommissionsModule,
+    WhatsAppModule,
     PaymentPlatformsModule,
     PaymentProvidersModule,
     BankAccountsModule,
     VirtualBankAccountsModule,
     CryptoAccountsModule,
-    
+    CountriesModule,
+    CurrenciesModule,
+
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'tu_clave_secreta',
       signOptions: { expiresIn: '1d' },

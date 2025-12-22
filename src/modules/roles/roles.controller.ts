@@ -23,12 +23,14 @@ import {
 import { JwtAuthGuard } from '../../common/jwt-auth.guard';
 import { CreateRoleDto, CreateRoleResponseDto } from './dto/create-roles.dto';
 import { RolesService } from './roles.service';
-import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { UpdateUserRoleResponseDto, AddUserRoleDto } from './dto/update-user-role.dto';
 
 @ApiTags('Roles (Admin)')
 @Controller('admin/roles')
-@UseGuards(JwtAuthGuard, AdminRoleGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
 @ApiBearerAuth()
 @UseInterceptors(ClassSerializerInterceptor)
 export class RolesController {
@@ -82,5 +84,4 @@ export class RolesController {
   async createRole(@Body() createRoleDto: CreateRoleDto) {
     return await this.rolesService.createRole(createRoleDto);
   }
-
 }

@@ -16,7 +16,6 @@ import { UpdateDynamicCommissionDto } from '../dto/update-dynamic-commission.dto
 import { DynamicCommissionResponseDto } from '../dto/dynamic-commission-response.dto';
 import { JwtAuthGuard } from '@common/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
-import { UserRole } from 'src/enum/user-role.enum';
 import { Roles } from '@common/decorators/roles.decorator';
 
 @ApiTags('Dynamic Commissions')
@@ -27,7 +26,7 @@ export class DynamicCommissionsController {
   constructor(private readonly dynamicCommissionsService: DynamicCommissionsService) {}
 
   @Post('/admin')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
+  @Roles('admin', 'super_admin')
   @ApiOperation({ summary: 'Crear una nueva comisión entre plataformas' })
   @ApiBody({ type: CreateDynamicCommissionDto })
   @ApiCreatedResponse({
@@ -42,7 +41,7 @@ export class DynamicCommissionsController {
   }
 
   @Patch('/admin')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
+  @Roles('admin', 'super_admin')
   @ApiOperation({
     summary: 'Actualizar la tasa de comisión entre dos plataformas',
   })
@@ -62,7 +61,7 @@ export class DynamicCommissionsController {
   }
 
   @Get('/admin')
-  @Roles(UserRole.Admin, UserRole.SuperAdmin)
+  @Roles('admin', 'super_admin')
   @ApiOperation({ summary: 'Obtener comisiones (todas o filtradas por cruce)' })
   @ApiQuery({
     name: 'fromPlatformId',

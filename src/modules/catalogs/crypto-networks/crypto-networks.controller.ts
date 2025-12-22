@@ -2,33 +2,22 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { CryptoNetworksService } from './crypto-networks.service';
 import { CreateCryptoNetworkDto } from './dto/create-crypto-networks.dto';
 import { UpdateCryptoNetworkDto } from './dto/update-crypto-networks.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../../common/jwt-auth.guard';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CryptoNetworkResponseDto } from './dto/crypto-networks-response.dto';
-import { Roles } from '../../../common/decorators/roles.decorator';
-import { UserRole } from '../../../enum/user-role.enum';
+import { JwtAuthGuard } from '../../../common/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
 
 @ApiTags('Crypto Networks')
 @Controller('crypto-networks')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class CryptoNetworksController {
   constructor(private readonly cryptoNetworksService: CryptoNetworksService) {}
 
-  @Post()
-  @Roles(UserRole.Admin)
-  @ApiOperation({ summary: 'Create a new crypto network' })
-  @ApiResponse({
-    status: 201,
-    description: 'The crypto network has been successfully created.',
-    type: CryptoNetworkResponseDto,
-  })
-  create(@Body() createCryptoNetworkDto: CreateCryptoNetworkDto) {
-    return this.cryptoNetworksService.create(createCryptoNetworkDto);
-  }
-
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'user')
   @Get()
-  @ApiOperation({ summary: 'Get all crypto networks' })
+  @ApiOperation({ summary: 'Obtener toda las crypto networks' })
   @ApiResponse({
     status: 200,
     description: 'Return all crypto networks.',
@@ -38,8 +27,25 @@ export class CryptoNetworksController {
     return this.cryptoNetworksService.findAll();
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Post()
+  @ApiOperation({ summary: 'Crear una nueva crypto network' })
+  @ApiResponse({
+    status: 201,
+    description: 'The crypto network has been successfully created.',
+    type: CryptoNetworkResponseDto,
+  })
+  create(@Body() createCryptoNetworkDto: CreateCryptoNetworkDto) {
+    return this.cryptoNetworksService.create(createCryptoNetworkDto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'user')
   @Get(':id')
-  @ApiOperation({ summary: 'Get a crypto network by id' })
+  @ApiOperation({ summary: 'Obtener crypto network por ID' })
   @ApiResponse({
     status: 200,
     description: 'Return the crypto network.',
@@ -49,9 +55,11 @@ export class CryptoNetworksController {
     return this.cryptoNetworksService.findOne(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Patch(':id')
-  @Roles(UserRole.Admin)
-  @ApiOperation({ summary: 'Update a crypto network' })
+  @ApiOperation({ summary: 'Actualizar crypto network' })
   @ApiResponse({
     status: 200,
     description: 'The crypto network has been successfully updated.',
@@ -61,9 +69,11 @@ export class CryptoNetworksController {
     return this.cryptoNetworksService.update(id, updateCryptoNetworkDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(':id')
-  @Roles(UserRole.Admin)
-  @ApiOperation({ summary: 'Delete a crypto network' })
+  @ApiOperation({ summary: 'Eliminar crypto network' })
   @ApiResponse({ status: 200, description: 'The crypto network has been successfully deleted.' })
   remove(@Param('id') id: string) {
     return this.cryptoNetworksService.remove(id);

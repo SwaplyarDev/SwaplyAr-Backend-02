@@ -7,10 +7,11 @@ import { PaymentProviders } from '../../payment-providers/entities/payment-provi
 import { User } from '../../../users/entities/user.entity';
 import { PaymentProvidersModule } from '../../payment-providers/payment-providers.module';
 import { UsersModule } from '../../../users/users.module';
+import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([VirtualBankAccounts, PaymentProviders, User]),
+    TypeOrmModule.forFeature([VirtualBankAccounts, PaymentProviders, User, Currency]),
     PaymentProvidersModule,
     UsersModule,
   ],

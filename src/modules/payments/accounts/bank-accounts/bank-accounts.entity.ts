@@ -11,6 +11,8 @@ import {
 import { PaymentProviders } from '../../payment-providers/entities/payment-providers.entity';
 import { User } from '../../../users/entities/user.entity';
 import { BankAccountDetails } from './bank-account-details.entity';
+import { Countries } from '../../../catalogs/countries/countries.entity';
+import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
 @Entity({ name: 'bank_accounts' })
 export class BankAccounts {
@@ -25,11 +27,17 @@ export class BankAccounts {
   @JoinColumn({ name: 'payment_provider_id' })
   paymentProvider: PaymentProviders;
 
-  @OneToMany(() => BankAccountDetails, (detail) => detail.bankAccount)
+  @OneToMany(() => BankAccountDetails, (detail) => detail.bankAccount, {
+    cascade: true,
+  })
   details: BankAccountDetails[];
 
-  @Column({ type: 'varchar', length: 3, nullable: false, name: 'country_code' })
-  countryCode: string;
+  @ManyToOne(() => Countries, { eager: true })
+  @JoinColumn({ name: 'country_id' })
+  country: Countries;
+
+  @Column({ name: 'country_id' })
+  countryId: string;
 
   @Column({ type: 'varchar', nullable: false, name: 'holder_name' })
   holderName: string;
@@ -52,8 +60,12 @@ export class BankAccounts {
   @Column({ type: 'varchar', nullable: true })
   swift: string;
 
-  @Column({ type: 'varchar', length: 3, nullable: true })
-  currency: string;
+  @ManyToOne(() => Currency, { nullable: true })
+  @JoinColumn({ name: 'currency_id' })
+  currency: Currency;
+
+  @Column({ type: 'uuid', nullable: true, name: 'currency_id' })
+  currencyId: string;
 
   @Column({ type: 'varchar', length: 20, default: 'user', name: 'owner_type' })
   ownerType: string;

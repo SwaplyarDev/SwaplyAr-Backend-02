@@ -6,6 +6,7 @@ export class CreateNoteDto {
   @IsString({ message: 'El campo "message" debe ser un texto' })
   @IsNotEmpty({ message: 'El campo "message" es obligatorio' })
   message: string;
+
   @IsString({ message: 'El campo "section" debe ser un texto' })
   @IsNotEmpty({ message: 'El campo "section" es obligatorio' })
   @IsIn(['datos_envio', 'datos_recepcion', 'monto'], {
@@ -33,12 +34,15 @@ export class CreateNoteResponseDto {
   @ApiProperty({ example: 'Nota de prueba' })
   message: string;
 
-  @ApiProperty({ example: 'https://url.com/nota.png' })
-  img_url: string;
-
   @ApiProperty({ example: '2024-01-01T00:00:00Z' })
   createdAt: Date;
 
-  @ApiProperty({ type: TransactionInfoDto })
+  @ApiProperty({ type: () => TransactionInfoDto })
   transaction: TransactionInfoDto;
+
+  @ApiProperty({})
+  attachments?: Express.Multer.File[];
+
+  @ApiProperty({ example: 'Detalles de nota' })
+  section: string;
 }

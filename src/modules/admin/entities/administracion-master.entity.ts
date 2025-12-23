@@ -3,7 +3,6 @@ import {
   PrimaryColumn,
   Column,
   ManyToOne,
-  OneToOne,
   OneToMany,
   JoinColumn,
   CreateDateColumn,
@@ -13,37 +12,35 @@ import { Status } from '../../../enum/status.enum';
 import { Transaction } from '@transactions/entities/transaction.entity';
 import { AdministracionStatusLog } from './administracion-status-log.entity';
 import { User } from '@users/entities/user.entity';
+import { ApiHideProperty } from '@nestjs/swagger';
 
-@Entity('administracion_master')
+@Entity('administracion_masters')
 export class AdministracionMaster {
-  @PrimaryColumn({ name: 'transaction_id', type: 'varchar', length: 10 })
-  transactionId: string;
+  @PrimaryColumn({ name: 'administracion_masters_id' })
+  administacionMastersId: string;
 
   // Relación con la transacción original
-  @OneToOne(() => Transaction, { eager: false })
+  @ManyToOne(() => Transaction, (trs) => trs.administrationMasters)
   @JoinColumn({ name: 'transaction_id', referencedColumnName: 'id' })
+  @ApiHideProperty()
   transaction: Transaction;
 
   // Relación con el usuario administrador
-  @ManyToOne(() => User, { eager: false })
-  @JoinColumn({ name: 'admin_user_id' })
+  @ManyToOne(() => User, (usr) => usr.a)
+  @JoinColumn({ name: 'user_id' })
   adminUser: User;
 
-  @Column({ name: 'admin_user_id', type: 'uuid' })
-  adminUserId: string;
-
   @Column({
+    name: 'status',
     type: 'enum',
     enum: Status,
     default: Status.Pending,
   })
   status: Status;
 
-  @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
-  updatedAt: Date;
+  // Logs de estado asociados
+  @OneToMany(() => AdministracionStatusLog, (log) => log.administracionMaster)
+  statusLogs: AdministracionStatusLog[];
 
   @Column({ type: 'timestamp', name: 'begin_transaction', nullable: true })
   beginTransaction: Date;
@@ -54,9 +51,9 @@ export class AdministracionMaster {
   @Column({ type: 'text', name: 'transfer_received', nullable: true })
   transferReceived: string;
 
-  // Logs de estado asociados
-  @OneToMany(() => AdministracionStatusLog, (log: AdministracionStatusLog) => log.transaction, {
-    cascade: true,
-  })
-  statusLogs: AdministracionStatusLog[];
+  @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
+  updatedAt: Date;
 }

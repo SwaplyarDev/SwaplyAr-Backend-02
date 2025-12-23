@@ -1,16 +1,14 @@
 import {
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
   Entity,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   BeforeInsert,
-  ManyToOne,
+  UpdateDateColumn,
   ManyToMany,
   JoinTable,
-  JoinColumn,
 } from 'typeorm';
 import { UserProfile } from '@users/entities/user-profile.entity';
 import { UserAlternativeEmail } from '@users/entities/user-alternative-email.entity';
@@ -24,11 +22,15 @@ import { Exclude } from 'class-transformer';
 import { OtpCode } from '@auth/entities/otp-code.entity';
 import { UserDiscount } from 'src/modules/discounts/entities/user-discount.entity';
 import { UserRewardsLedger } from 'src/modules/discounts/entities/user-rewards-ledger.entity';
-import { Roles } from '../../roles/entities/roles.entity';
 import { customAlphabet } from 'nanoid';
 import { BankAccounts } from 'src/modules/payments/accounts/bank-accounts/bank-accounts.entity';
 import { VirtualBankAccounts } from 'src/modules/payments/accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
 import { CryptoAccounts } from 'src/modules/payments/accounts/crypto-accounts/crypto-accounts.entity';
+import { AdministracionMaster } from '@admin/entities/administracion-master.entity';
+import { AdministracionStatusLog } from '@admin/entities/administracion-status-log.entity';
+import { FinancialAccounts } from 'src/modules/payments/financial-accounts/entities/financial-accounts.entity';
+import { SenderFinancialAccount } from 'src/modules/payments/sender-accounts/entities/sender-financial-account.entity';
+import { Roles } from 'src/modules/roles/entities/roles.entity';
 
 export const nanoidCustom = customAlphabet(
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
@@ -45,6 +47,9 @@ export class User {
     cascade: true,
   })
   profile: UserProfile;
+
+  @Column({ type: 'varchar', length: 255, unique: true })
+  email: string;
 
   @Exclude()
   @OneToMany(() => UserAlternativeEmail, (userEmail) => userEmail.user, {
@@ -109,6 +114,35 @@ export class User {
   @OneToMany(() => CryptoAccounts, (cryptoAccount: CryptoAccounts) => cryptoAccount.user)
   cryptoAccounts: CryptoAccounts[];
 
+  @OneToMany(() => AdministracionMaster, (adminMaster) => adminMaster.adminUser, {
+    cascade: true,
+  })
+  a: AdministracionMaster[];
+
+  @ManyToMany(() => Roles, (role) => role.users, {
+    onDelete: 'CASCADE',
+  })
+  @JoinTable({
+    name: 'user_roles',
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'role_id',
+      referencedColumnName: 'role_id',
+    },
+  })
+  roles: Roles[];
+
+  @Exclude()
+  @OneToMany(() => AdministracionStatusLog, (adminStsLog) => adminStsLog.changedByAdmin)
+  adminStatusLog: AdministracionStatusLog[];
+
+  @Exclude()
+  @OneToMany(() => FinancialAccounts, (fnclAccount) => fnclAccount.createdBy)
+  financialAccount: FinancialAccounts[];
+
   @Column({ name: 'terms_accepted', default: false })
   termsAccepted: boolean;
 
@@ -125,12 +159,6 @@ export class User {
     unique: true,
   })
   memberCode: string;
-
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
-  updatedAt: Date;
 
   @Column({
     name: 'validated_at',
@@ -151,20 +179,15 @@ export class User {
   @Column({ nullable: true })
   refreshToken?: string;
 
-  @Column({ name: 'role_code', nullable: true })
-  roleCode: string;
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
+  createdAt: Date;
 
-  @Column({ name: 'role_name', nullable: true })
-  roleName: string;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
+  updatedAt: Date;
+
+  @OneToMany(() => SenderFinancialAccount, (sender) => sender.user)
+  senderAccounts: SenderFinancialAccount[];
 
   @Column({ name: 'role_description', nullable: true })
   roleDescription: string;
-
-  @ManyToMany(() => Roles, (role) => role.users)
-  @JoinTable({
-    name: 'user_roles',
-    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'role_id', referencedColumnName: 'role_id' },
-  })
-  roles: Roles[];
 }

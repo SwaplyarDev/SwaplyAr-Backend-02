@@ -10,9 +10,9 @@ import { VirtualBankAccounts } from './virtual-bank-accounts.entity';
 import { CreateVirtualBankAccountDto } from './dto/create-virtual-bank-accounts.dto';
 import { UpdateVirtualBankAccountDto } from './dto/update-virtual-bank-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
-import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
 import { VirtualBankAccountFilterDto } from './dto/virtual-bank-accounts-filter.dto';
 import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
+import { PaymentProviders } from '../../payment-providers/entities/payment-providers.entity';
 
 @Injectable()
 export class VirtualBankAccountsService {

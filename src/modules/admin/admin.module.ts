@@ -5,7 +5,7 @@ import { AdministracionStatusLog } from './entities/administracion-status-log.en
 import { AdministracionMaster } from './entities/administracion-master.entity';
 import { FileUploadModule } from '../file-upload/file-upload.module';
 import { ProofOfPaymentsModule } from 'src/modules/payments/proof-of-payments/proof-of-payments.module';
-import { BankModule } from 'src/deprecated/financial-accounts/payment-methods/bank/bank.module';
+import { BankAccountsModule } from '../payments/accounts/bank-accounts/bank-accounts.module';
 import { UsersModule } from '@users/users.module';
 import { ProofOfPayment } from 'src/modules/payments/proof-of-payments/entities/proof-of-payment.entity';
 import { MailerModule } from '@mailer/mailer.module';
@@ -52,7 +52,7 @@ import { RolesModule } from '../roles/roles.module';
     ]),
     FileUploadModule,
     ProofOfPaymentsModule,
-    BankModule,
+    BankAccountsModule,
     UsersModule,
     MailerModule,
     DiscountModule,

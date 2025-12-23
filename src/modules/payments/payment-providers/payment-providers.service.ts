@@ -1,15 +1,15 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import { PaymentProviders } from './payment-providers.entity';
 import { CreatePaymentProvidersDto } from './dto/create-payment-providers.dto';
 import { UpdatePaymentProvidersDto } from './dto/update-payment-providers.dto';
-import { PaymentPlatforms } from '../payment-platforms/payment-platforms.entity';
 import { Countries } from 'src/modules/catalogs/countries/countries.entity';
 import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 import { BankAccounts } from '../accounts/bank-accounts/bank-accounts.entity';
 import { VirtualBankAccounts } from '../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
 import { CryptoAccounts } from '../accounts/crypto-accounts/crypto-accounts.entity';
+import { PaymentProviders } from './entities/payment-providers.entity';
+import { PaymentPlatforms } from '../payment-platforms/entities/payment-platforms.entity';
 
 @Injectable()
 export class PaymentProvidersService {

@@ -1,31 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PlatformName } from 'src/enum/commissions.enum';
-import { IsEnum, IsNumber, Min, Max } from 'class-validator';
+import { IsNumber, Min, Max, IsUUID } from 'class-validator';
 
 export class UpdateDynamicCommissionDto {
   @ApiProperty({
-    enum: PlatformName,
-    enumName: 'PlatformName',
-    example: PlatformName.PAYPAL_USD,
-    description: 'Plataforma de origen (valor válido del enum PlatformName)',
+    description: 'Id de plataforma de origen',
   })
-  @IsEnum(PlatformName, {
-    message:
-      'La plataforma debe ser un valor válido del enum PlatformName. Valores permitidos:  Banco ARS, pix BRL, PayPal USD, Payoneer EUR, Payoneer USD, wise EUR, wise USD, tether USD.',
-  })
-  fromPlatform: PlatformName;
+  @IsUUID()
+  fromPlatformId: string;
 
   @ApiProperty({
-    enum: PlatformName,
-    enumName: 'PlatformName',
-    example: PlatformName.PAYONEER_EUR,
-    description: 'Plataforma de destino (valor válido del enum PlatformName)',
+    description: 'Id de plataforma de destino',
   })
-  @IsEnum(PlatformName, {
-    message:
-      'La plataforma debe ser un valor válido del enum PlatformName. Valores permitidos:  Banco ARS, pix BRL, PayPal USD, Payoneer EUR, Payoneer USD, wise EUR, wise USD, tether USD.',
-  })
-  toPlatform: PlatformName;
+  @IsUUID()
+  toPlatformId: string;
 
   @ApiProperty({
     example: 0.14,

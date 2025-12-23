@@ -10,7 +10,7 @@ import { CryptoAccounts } from './crypto-accounts.entity';
 import { CreateCryptoAccountDto } from './dto/create-crypto-accounts.dto';
 import { UpdateCryptoAccountDto } from './dto/update-crypto-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
-import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
+import { PaymentProviders } from '../../payment-providers/entities/payment-providers.entity';
 import { CryptoNetworks } from '../../../catalogs/crypto-networks/crypto-networks.entity';
 import { CryptoAccountFilterDto } from './dto/crypto-accounts-filter.dto';
 import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';

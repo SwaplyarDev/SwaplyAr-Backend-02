@@ -39,7 +39,7 @@ export class NotesService {
     let payload: { transactionId: string };
     try {
       payload = this.otpService.verifyOtpToken(token);
-    } catch (err) {
+    } catch {
       throw new BadRequestException('Token inválido o expirado');
     }
 

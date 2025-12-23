@@ -12,10 +12,11 @@ import { OtpModule } from '@otp/otp.module';
 import { DiscountModule } from 'src/modules/discounts/discounts.module';
 import { ProfileModule } from './profile/profile.module';
 import { RolesModule } from '../roles/roles.module';
+import { Roles } from '../roles/entities/roles.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, UserProfile, UserSocials, UserCategory]),
+    TypeOrmModule.forFeature([User, UserProfile, UserSocials, UserCategory, Roles]),
     OtpModule,
     DiscountModule,
     ProfileModule,

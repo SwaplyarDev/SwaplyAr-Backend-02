@@ -1,7 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { RegretsService } from './regrets.service';
-import { CreateRegretDto, CreateRegretResponseDto } from './dto/create-regret.dto';
+import { CreateRegretDto } from './dto/create-regret.dto';
 import { UpdateRegretDto } from './dto/update-regret.dto';
+import { RegretDto } from './dto/regret-response-dto';
+
 import {
   ApiTags,
   ApiOperation,
@@ -19,7 +21,7 @@ export class RegretsController {
   @ApiOperation({ summary: 'Crear un arrepentimiento de transacción' })
   @ApiCreatedResponse({
     description: 'Arrepentimiento creado correctamente',
-    type: CreateRegretResponseDto,
+    type: RegretDto,
   })
   @ApiBody({
     description: 'Datos para crear un arrepentimiento',
@@ -33,7 +35,7 @@ export class RegretsController {
   @ApiOperation({ summary: 'Obtener todos los arrepentimientos' })
   @ApiOkResponse({
     description: 'Lista de arrepentimientos',
-    type: [CreateRegretResponseDto],
+    type: [RegretDto],
   })
   @Get()
   findAll() {
@@ -43,7 +45,7 @@ export class RegretsController {
   @ApiOperation({ summary: 'Obtener un arrepentimiento por ID' })
   @ApiOkResponse({
     description: 'Arrepentimiento encontrado',
-    type: CreateRegretResponseDto,
+    type: RegretDto,
   })
   @ApiParam({
     name: 'id',

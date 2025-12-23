@@ -14,14 +14,8 @@ export class Note {
   @PrimaryGeneratedColumn('uuid', { name: 'note_id' })
   note_id: string;
 
-  @Column('text', { array: true, nullable: true })
-  attachments: string[];
-
-  @Column()
+  @Column({ type: 'varchar', name: 'message' })
   message: string;
-
-  @Column()
-  section: string;
 
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;
@@ -29,6 +23,12 @@ export class Note {
   @OneToOne(() => TransactionEntity, (transaction) => transaction.note)
   @JoinColumn({ name: 'transaction_id' })
   transaction: TransactionEntity;
+
+  @Column('text', { array: true, nullable: true, name: 'attachments' })
+  attachments: string[];
+
+  @Column({ type: 'varchar', name: 'section' })
+  section: string;
 }
 
 /* notes [icon: note, color: orange] {

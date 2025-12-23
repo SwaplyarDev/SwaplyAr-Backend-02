@@ -45,6 +45,6 @@ export class TransactionDataDto {
 }
 
 export class ValidateOTPCodeResponseDto {
-  @ApiProperty({ type: TransactionDataDto })
+  @ApiProperty({ type: () => TransactionDataDto })
   transaction: TransactionDataDto;
 }

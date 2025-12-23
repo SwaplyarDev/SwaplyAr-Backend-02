@@ -60,7 +60,7 @@ export class UpdateStarsService {
       );
     }
 
-    const senderEmail = transaction.senderAccount?.createdBy;
+    const senderEmail = transaction.senderAccount?.user.email;
     if (!senderEmail) {
       throw new BadRequestException('No se encontró el email del remitente de la transacción.');
     }

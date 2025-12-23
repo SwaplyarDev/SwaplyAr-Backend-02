@@ -4,7 +4,7 @@ import { Currency } from './currencies.entity';
 import { CurrenciesService } from './currencies-service';
 import { CurrenciesController } from './currencies-controller';
 import { Countries } from '../countries/countries.entity';
-import { PaymentProviders } from '../../payments/payment-providers/payment-providers.entity';
+import { PaymentProviders } from 'src/modules/payments/payment-providers/entities/payment-providers.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Currency, Countries, PaymentProviders])],

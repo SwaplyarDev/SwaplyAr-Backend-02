@@ -6,11 +6,11 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-  ManyToMany,
+  OneToMany,
 } from 'typeorm';
 import { User } from '@users/entities/user.entity';
 import { DiscountCode } from './discount-code.entity';
-import { Transaction } from '@transactions/entities/transaction.entity';
+import { TransactionUserDiscounts } from '@transactions/entities/transaction-user-discounts.entity';
 
 @Entity('user_discounts')
 export class UserDiscount {
@@ -27,9 +27,6 @@ export class UserDiscount {
   @JoinColumn({ name: 'discount_code_id' })
   discountCode: DiscountCode;
 
-  @ManyToMany(() => Transaction, (transaction) => transaction.userDiscounts)
-  transactions: Transaction[];
-
   @Column({ name: 'is_used', default: false })
   isUsed: boolean;
 
@@ -41,4 +38,10 @@ export class UserDiscount {
 
   @UpdateDateColumn({ type: 'timestamp with time zone', name: 'updated_at' })
   updatedAt: Date;
+
+  @OneToMany(
+    () => TransactionUserDiscounts,
+    (transactionUserDiscounts) => transactionUserDiscounts.userDiscount,
+  )
+  transactionUserDiscounts: TransactionUserDiscounts[];
 }

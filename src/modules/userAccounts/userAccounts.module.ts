@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountsController } from './userAccounts.controller';
 import { AccountsService } from './userAccounts.service';
 import { UserAccount } from './entities/user-account.entity';
-import { FinancialAccountsModule } from 'src/deprecated/financial-accounts/financial-accounts.module';
+import { FinancialAccountsModule } from '../payments/financial-accounts/financial-accounts.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserAccount]), FinancialAccountsModule],

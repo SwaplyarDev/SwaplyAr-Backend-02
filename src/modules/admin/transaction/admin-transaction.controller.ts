@@ -54,9 +54,9 @@ import { TransactionStatesResponseDto } from './dto/get-transaction-states-respo
 import { TransactionsStatesResponseDto } from './dto/get-transactions-states-response.dto';
 
 @ApiTags('Transacciones (Admin)')
-//@ApiBearerAuth()
+@ApiBearerAuth()
 @Controller('admin')
-//@UseGuards(JwtAuthGuard, AdminRoleGuard)
+@UseGuards(JwtAuthGuard, AdminRoleGuard)
 export class AdminTransactionController {
   constructor(
     private readonly adminService: AdminTransactionService,

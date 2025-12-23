@@ -35,8 +35,14 @@ export class PaymentProviders {
   code: string;
 
   @ManyToOne(() => Countries, { nullable: true })
-  @JoinColumn({ name: 'country_id' })
+  @JoinColumn({
+    name: 'country_code',
+    referencedColumnName: 'countryCode',
+  })
   country: Countries;
+
+  @Column({ name: 'country_code' })
+  countryCode: string;
 
   @Column({ type: 'varchar', nullable: true, name: 'logo_url' })
   logoUrl: string;

@@ -23,27 +23,35 @@ import { Roles } from '@common/decorators/roles.decorator';
 export class PaymentProvidersController {
   constructor(private readonly service: PaymentProvidersService) {}
   // ===============================================
-  // MOSTRAR TODOS LOS PROVEEDORES DE PAGO (RETURN DIFERENCIADO PARA ADMIN Y USER)
+  // MOSTRAR TODOS LOS PROVEEDORES DE PAGO (PUBLICO)
+  // ===============================================
+  @Get('public')
+  @ApiOperation({
+    summary: 'Obtener providers activos (endpoint público)',
+  })
+  @ApiResponse({ status: 200 })
+  findPublic(@Query() filters: PaymentProvidersFilterDto) {
+    return this.service.findAll({
+      filters: {
+        ...filters,
+        isActive: true, // forzado
+      },
+      includeAccounts: false,
+    });
+  }
+
+  // ===============================================
+  // MOSTRAR TODOS LOS PROVEEDORES DE PAGO (SOLO ADMIN)
   // ===============================================
   @ApiOperation({
-    summary:
-      'Obtener todos los proveedores de pago con filtros opcionales (diferenciado para ADMIN y USER)',
+    summary: 'Obtener todos los proveedores de pago con filtros opcionales (Sólo rol ADMIN)',
   })
   @ApiResponse({ status: 200, description: 'Lista de providers obtenida con éxito' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
-  findAll(@Query() filters: PaymentProvidersFilterDto, @Request() req) {
-    // Verificar si es admin chequeando req.user.roles array
-    const isAdmin =
-      req.user.role === 'admin' ||
-      (Array.isArray(req.user.roles) && req.user.roles.some((r) => r.code === 'admin'));
-
-    // Si no es admin Y no especificó un filtro isActive explícitamente, forzar a true
-    if (!isAdmin && filters.isActive === undefined) {
-      filters.isActive = true;
-    }
-    return this.service.findAll(filters);
+  findAll(@Query() filters: PaymentProvidersFilterDto) {
+    return this.service.findAll({filters, includeAccounts: true});
   }
 
   // ===============================================

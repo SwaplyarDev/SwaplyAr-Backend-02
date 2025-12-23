@@ -11,6 +11,17 @@ import { BankAccounts } from '../accounts/bank-accounts/bank-accounts.entity';
 import { VirtualBankAccounts } from '../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
 import { CryptoAccounts } from '../accounts/crypto-accounts/crypto-accounts.entity';
 
+interface FindProvidersOptions {
+  filters?: {
+    platformCode?: string;
+    providerCode?: string;
+    currencyCode?: string;
+    countryCode?: string;
+    isActive?: boolean;
+  };
+  includeAccounts?: boolean;
+}
+
 @Injectable()
 export class PaymentProvidersService {
   constructor(
@@ -36,67 +47,52 @@ export class PaymentProvidersService {
     private readonly cryptoRepo: Repository<CryptoAccounts>,
   ) {}
 
-  async findAll(filters?: {
-    platformCode?: string;
-    providerCode?: string;
-    currencyCode?: string;
-    countryCode?: string;
-    isActive?: boolean;
-  }): Promise<PaymentProviders[]> {
-    // Si no hay filtros, usa el approach simple
-    if (!filters || Object.keys(filters).length === 0) {
-      return this.providersRepo.find({
-        relations: ['paymentPlatform', 'supportedCurrencies', 'country'],
-        order: { createdAt: 'DESC' },
-      });
-    }
+  async findAll(options: FindProvidersOptions): Promise<PaymentProviders[]> {
+    const { filters, includeAccounts = false } = options;
 
-    // Si hay filtros, usa QueryBuilder
     const qb = this.providersRepo
       .createQueryBuilder('provider')
       .leftJoinAndSelect('provider.paymentPlatform', 'platform')
       .leftJoinAndSelect('provider.supportedCurrencies', 'currency')
+      .leftJoinAndSelect('provider.country', 'country')
       .orderBy('provider.createdAt', 'DESC');
 
-    // FILTRA POR CÓDIGO DE PLATAFORMA
+    // SOLO ADMIN: cuentas asociadas
+    if (includeAccounts) {
+      qb.leftJoinAndSelect('provider.bankAccounts', 'bankAccounts')
+        .leftJoinAndSelect('provider.virtualBankAccounts', 'virtualBankAccounts')
+        .leftJoinAndSelect('provider.cryptoAccounts', 'cryptoAccounts');
+    }
+
+    // ================== FILTROS ==================
+
     if (filters?.platformCode) {
       qb.andWhere('platform.code = :platformCode', {
         platformCode: filters.platformCode,
       });
     }
 
-    // FILTRA POR CÓDIGO DE PROVEEDOR
     if (filters?.providerCode) {
       qb.andWhere('provider.code = :providerCode', {
         providerCode: filters.providerCode,
       });
     }
 
-    // FILTRA POR MONEDA (currencies asociadas al provider)
     if (filters?.currencyCode) {
       qb.andWhere('currency.code = :currencyCode', {
         currencyCode: filters.currencyCode,
       });
     }
 
-    // FILTRA POR COUNTRY CODE (usar innerJoin solo si hay filtro explícito)
     if (filters?.countryCode) {
-      qb.innerJoinAndSelect('provider.country', 'country').andWhere('country.code = :countryCode', {
+      qb.andWhere('country.code = :countryCode', {
         countryCode: filters.countryCode,
       });
-    } else {
-      // Si no hay filtro de país, hacer left join para incluir país si existe
-      qb.leftJoinAndSelect('provider.country', 'country');
     }
 
-    // FILTRA POR ATRIBUTO isActive
-    if (filters?.isActive === true) {
+    if (filters?.isActive !== undefined) {
       qb.andWhere('provider.isActive = :isActive', {
-        isActive: true,
-      });
-    } else if (filters?.isActive === false) {
-      qb.andWhere('provider.isActive = :isActive', {
-        isActive: false,
+        isActive: filters.isActive,
       });
     }
 

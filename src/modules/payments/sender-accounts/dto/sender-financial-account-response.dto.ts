@@ -2,6 +2,7 @@ import { Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserResponseDto } from '@users/dto/user-response.dto';
 import { PaymentProviderDto } from '../../payment-providers/dto/payment-providers-response.dto';
+import { CurrencyResponseDto } from '../../accounts/bank-accounts/dto/bank-accounts-response.dto';
 
 export class CountryDto {
   @ApiProperty({ example: 'AR' })
@@ -12,9 +13,10 @@ export class CountryDto {
   @Expose()
   name: string;
 
-  @ApiProperty({ example: 'ARS', nullable: true })
+  @ApiProperty({ type: [CurrencyResponseDto] })
   @Expose()
-  currency: string | null;
+  @Type(() => CurrencyResponseDto)
+  currencies: CurrencyResponseDto[];
 
   @ApiProperty({ example: 'es_AR', nullable: true })
   @Expose()

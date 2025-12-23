@@ -82,10 +82,15 @@ export class AdminTransactionService {
         'senderPaymentProvider.paymentPlatform',
         'senderPaymentProviderPaymentPlatform',
       )
+      .leftJoinAndSelect('senderPaymentProvider.country', 'senderPaymentProviderCountry')
       .leftJoinAndSelect('tx.financialAccounts', 'financialAccounts')
       .leftJoinAndSelect('financialAccounts.paymentPlatform', 'financialPaymentPlatform')
       .leftJoinAndSelect('tx.amount', 'amount')
       .leftJoinAndSelect('tx.proofsOfPayment', 'proofsOfPayment')
+      .leftJoinAndSelect('tx.transactionUserDiscounts', 'transactionUserDiscounts')
+      .leftJoinAndSelect('tx.administrationStatusLog', 'administrationStatusLog')
+      .leftJoinAndSelect('tx.administrationMasters','administrationMasters')
+      .leftJoinAndSelect('tx.qualifications', 'qualifications')
       .leftJoinAndSelect('tx.note', 'note')
       .leftJoinAndSelect('tx.regret', 'regret')
       .orderBy('tx.createdAt', 'DESC')
@@ -137,12 +142,12 @@ export class AdminTransactionService {
           ? {
               countryCode: tx.senderAccount.country.code,
               name: tx.senderAccount.country.name,
-              currency: tx.senderAccount.country.currency_default,
+              currencies: tx.senderAccount.country.currencies,
               locale: null,
               phonePrefix: null,
               isActive: true,
-              createdAt: tx.senderAccount.country.created_at,
-              updatedAt: tx.senderAccount.country.created_at,
+              createdAt: tx.senderAccount.country.createdAt,
+              updatedAt: tx.senderAccount.country.updatedAt,
             }
           : null,
 
@@ -150,7 +155,7 @@ export class AdminTransactionService {
           id: tx.senderAccount.paymentProvider.paymentProviderId,
           operationType: tx.senderAccount.paymentProvider.operationType,
           name: tx.senderAccount.paymentProvider.name,
-          countryCode: tx.senderAccount.paymentProvider.countryCode,
+          countryCode: tx.senderAccount.paymentProvider.country.code,
           logoUrl: tx.senderAccount.paymentProvider.logoUrl,
           isActive: tx.senderAccount.paymentProvider.isActive,
           code: tx.senderAccount.paymentProvider.code,
@@ -211,11 +216,19 @@ export class AdminTransactionService {
       relations: [
         'senderAccount',
         'senderAccount.paymentProvider',
+        'senderAccount.paymentProvider.paymentPlatform',
+        'senderAccount.paymentProvider.country',
         'financialAccounts',
+        'financialAccounts.paymentPlatform',
         'amount',
         'proofsOfPayment',
         'note',
         'regret',
+        'qualifications',
+        'administrationMasters',
+        'administrationStatusLog',
+        'transactionUserDiscounts',
+        'transaction.senderAccount.country.currencies',
       ],
     });
 
@@ -250,7 +263,6 @@ export class AdminTransactionService {
   };
 
   formatTransaction(transaction: Transaction): TransactionByIdAdminResponseDto {
-    // ⬅️ Corregido el tipo de entrada
     const sender = transaction.senderAccount;
 
     // Manejo de la nota para evitar errores de 'undefined' y convertir la fecha
@@ -272,24 +284,97 @@ export class AdminTransactionService {
       message: transaction.message,
       createdAt: transaction.createdAt.toISOString(),
       finalStatus: transaction.finalStatus,
-      regret: transaction.regret,
-      senderAccount: this.removeNulls({
-        id: sender.senderAccountId,
+      isNoteVerified: transaction.isNoteVerified,
+      noteVerificationExpiresAt: transaction.noteVerificationExpiresAt
+        ? transaction.noteVerificationExpiresAt.toISOString()
+        : '',
+
+      senderAccount: {
+        senderAccountId: sender.senderAccountId,
         firstName: sender.firstName,
         lastName: sender.lastName,
-        user: sender.user,
         phoneNumber: sender.phoneNumber,
-        paymentProvider: sender.paymentProvider,
-      }),
-      note: formattedNote, // Usamos el objeto de nota formateado
+        user: sender.user,
+        createdAt: sender.createdAt,
+        updatedAt: sender.updatedAt,
+
+        country: transaction.senderAccount.country
+          ? {
+              countryCode: transaction.senderAccount.country.code,
+              name: transaction.senderAccount.country.name,
+              currencies: transaction.senderAccount.country.currencies,
+              locale: null,
+              phonePrefix: null,
+              isActive: true,
+              createdAt: transaction.senderAccount.country.createdAt,
+              updatedAt: transaction.senderAccount.country.updatedAt,
+            }
+          : null,
+
+        paymentProvider: transaction.senderAccount.paymentProvider
+          ? {
+              id: transaction.senderAccount.paymentProvider.paymentProviderId,
+              operationType: transaction.senderAccount.paymentProvider.operationType,
+              name: transaction.senderAccount.paymentProvider.name,
+              countryCode: transaction.senderAccount.paymentProvider.country.code,
+              logoUrl: transaction.senderAccount.paymentProvider.logoUrl,
+              isActive: transaction.senderAccount.paymentProvider.isActive,
+              code: transaction.senderAccount.paymentProvider.code,
+              createdAt: transaction.senderAccount.paymentProvider.createdAt,
+              updatedAt: transaction.senderAccount.paymentProvider.updatedAt,
+
+              paymentPlatform: transaction.senderAccount.paymentProvider.paymentPlatform
+                ? {
+                    id: transaction.senderAccount.paymentProvider.paymentPlatform.paymentPlatformId,
+                    code: transaction.senderAccount.paymentProvider.paymentPlatform.code,
+                    title: transaction.senderAccount.paymentProvider.paymentPlatform.title,
+                    description:
+                      transaction.senderAccount.paymentProvider.paymentPlatform.description ?? null,
+                    isActive: transaction.senderAccount.paymentProvider.paymentPlatform.isActive,
+                    createdAt: transaction.senderAccount.paymentProvider.paymentPlatform.createdAt,
+                    updatedAt: transaction.senderAccount.paymentProvider.paymentPlatform.updatedAt,
+                  }
+                : null,
+            }
+          : null,
+      },
+
+      financialAccounts: transaction.financialAccounts,
+
+      note: transaction.note ? { note_id: transaction.note.note_id } : undefined,
+
+      regret: transaction.regret ? { regretId: transaction.regret.id } : undefined,
+
+      amountValue: transaction.amountValue,
+      amount: transaction.amount,
+      amountCurrency: transaction.amountCurrency,
+
       proofsOfPayment:
         transaction.proofsOfPayment && transaction.proofsOfPayment.length > 0
           ? transaction.proofsOfPayment
           : [],
-      amount: transaction.amount,
-      isNoteVerified: transaction.isNoteVerified,
-      noteVerificationExpiresAt: transaction.noteVerificationExpiresAt?.toISOString(),
+
+      administrationStatusLog:
+        transaction.administrationStatusLog && transaction.administrationStatusLog.length > 0
+          ? transaction.administrationStatusLog
+          : [],
+
+      transactionUserDiscounts:
+        transaction.transactionUserDiscounts && transaction.transactionUserDiscounts.length > 0
+          ? transaction.transactionUserDiscounts
+          : [],
+
+      qualifications:
+        transaction.qualifications && transaction.qualifications.length > 0
+          ? transaction.qualifications
+          : [],
+
+      administrationMasters:
+        transaction.administrationMasters && transaction.administrationMasters.length > 0
+          ? transaction.administrationMasters
+          : [],
     } as TransactionByIdAdminResponseDto;
+
   }
 
   async getTransactionsByCreatedBy(email: string): Promise<Transaction[]> {
@@ -299,10 +384,20 @@ export class AdminTransactionService {
         'senderAccount',
         'senderAccount.paymentProvider',
         'financialAccounts',
+        'financialAccounts.paymentPlatform',
         'amount',
         'proofsOfPayment',
         'note',
         'regret',
+        'qualifications',
+        'administrationMasters',
+        'administrationStatusLog',
+        'transactionUserDiscounts',
+        'senderAccount.country',
+        'senderAccount.paymentProvider',
+        'senderAccount.paymentProvider.country',
+        'senderAccount.paymentProvider.paymentPlatform',
+        'senderAccount.country.currencies',
       ],
     });
 

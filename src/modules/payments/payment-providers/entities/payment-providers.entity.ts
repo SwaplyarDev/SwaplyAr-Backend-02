@@ -11,13 +11,13 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
-import { PaymentPlatforms } from '../../entities/payment-platforms.entity';
+import { PaymentPlatforms } from '../../payment-platforms/entities/payment-platforms.entity';
 import { BankAccounts } from '../../accounts/bank-accounts/bank-accounts.entity';
 import { VirtualBankAccounts } from '../../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
 import { CryptoAccounts } from '../../accounts/crypto-accounts/crypto-accounts.entity';
 import { SenderFinancialAccount } from '../../sender-accounts/entities/sender-financial-account.entity';
-import { Countries } from '../../entities/countries.entity';
 import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
+import { Countries } from 'src/modules/catalogs/countries/countries.entity';
 
 @Entity({ name: 'payment_providers' })
 @Unique(['paymentPlatform', 'code'])
@@ -57,7 +57,10 @@ export class PaymentProviders {
   @OneToMany(() => BankAccounts, (bankAccount: BankAccounts) => bankAccount.paymentProvider)
   bankAccounts: BankAccounts[];
 
-  @OneToMany(() => VirtualBankAccounts, (virtualAccount: VirtualBankAccounts) => virtualAccount.paymentProvider)
+  @OneToMany(
+    () => VirtualBankAccounts,
+    (virtualAccount: VirtualBankAccounts) => virtualAccount.paymentProvider,
+  )
   virtualBankAccounts: VirtualBankAccounts[];
 
   @OneToMany(() => CryptoAccounts, (cryptoAccount: CryptoAccounts) => cryptoAccount.paymentProvider)
@@ -65,7 +68,7 @@ export class PaymentProviders {
 
   @OneToMany(() => SenderFinancialAccount, (sdrAccount) => sdrAccount.paymentProvider)
   senderAccounts: SenderFinancialAccount;
-  
+
   @ManyToMany(() => Currency, (currency) => currency.providers)
   @JoinTable({
     name: 'provider_currencies',
@@ -79,5 +82,4 @@ export class PaymentProviders {
     },
   })
   supportedCurrencies: Currency[];
-
 }

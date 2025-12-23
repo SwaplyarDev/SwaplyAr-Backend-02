@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { Expose } from 'class-transformer';
 import { IsOptional } from 'class-validator';
-import { Countries } from 'src/modules/payments/entities/countries.entity';
+import { Countries } from 'src/modules/catalogs/countries/countries.entity';
 import { User } from '@users/entities/user.entity';
 import { PaymentProviders } from '../../payment-providers/entities/payment-providers.entity';
 

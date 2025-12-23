@@ -38,8 +38,9 @@ export class PaymentProvidersController {
   findAll(@Query() filters: PaymentProvidersFilterDto, @Request() req) {
     // Verificar si es admin chequeando req.user.roles array
     const isAdmin =
-      req.user.role === 'admin' ||
-      (Array.isArray(req.user.roles) && req.user.roles.some((r) => r.code === 'admin'));
+      Array.isArray(req.user.roles) &&
+      req.user.roles.some((role) => role?.code?.toLowerCase() === 'admin');
+
 
     // Si no es admin Y no especificó un filtro isActive explícitamente, forzar a true
     if (!isAdmin && filters.isActive === undefined) {

@@ -9,7 +9,7 @@ import { BankAccounts } from '../accounts/bank-accounts/bank-accounts.entity';
 import { VirtualBankAccounts } from '../accounts/virtual-bank-accounts/virtual-bank-accounts.entity';
 import { CryptoAccounts } from '../accounts/crypto-accounts/crypto-accounts.entity';
 import { PaymentProviders } from './entities/payment-providers.entity';
-import { PaymentPlatforms } from '../entities/payment-platforms.entity';
+import { PaymentPlatforms } from '../payment-platforms/entities/payment-platforms.entity';
 
 @Injectable()
 export class PaymentProvidersService {

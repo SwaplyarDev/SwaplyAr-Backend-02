@@ -5,7 +5,7 @@ import { SenderFinancialAccount } from './entities/sender-financial-account.enti
 import { PaymentProvidersModule } from '../payment-providers/payment-providers.module';
 import { UsersModule } from '@users/users.module';
 import { User } from '@users/entities/user.entity';
-import { Countries } from '../entities/countries.entity';
+import { Countries } from 'src/modules/catalogs/countries/countries.entity';
 
 @Module({
   imports: [

@@ -36,9 +36,6 @@ export class BankAccounts {
   @JoinColumn({ name: 'country_id' })
   country: Countries;
 
-  @Column({ name: 'country_id' })
-  countryId: string;
-
   @Column({ type: 'varchar', nullable: false, name: 'holder_name' })
   holderName: string;
 
@@ -63,9 +60,6 @@ export class BankAccounts {
   @ManyToOne(() => Currency, { nullable: true })
   @JoinColumn({ name: 'currency_id' })
   currency: Currency;
-
-  @Column({ type: 'uuid', nullable: true, name: 'currency_id' })
-  currencyId: string;
 
   @Column({ type: 'varchar', length: 20, default: 'user', name: 'owner_type' })
   ownerType: string;

@@ -76,8 +76,7 @@ export class Transaction {
   financialAccounts: FinancialAccounts;
 
   // Mantener OneToOne pero opcional y sin obligar existencia
-  @OneToOne(() => Note, (note) => note.transaction, { onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'note_id' })
+  @OneToOne(() => Note, (note) => note.transaction)
   note?: Note | null;
 
   @OneToOne(() => Regret, (regret) => regret.transaction, { onDelete: 'SET NULL' })

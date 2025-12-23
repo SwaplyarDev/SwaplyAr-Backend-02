@@ -6,7 +6,7 @@ import { UpdateSenderFinancialAccountDto } from './dto/update-sender-financial-a
 import { CreateSenderFinancialAccountDto } from './dto/create-sender-financial-account.dto';
 import { PaymentProvidersService } from '../payment-providers/payment-providers.service';
 import { User } from '@users/entities/user.entity';
-import { Countries } from '../entities/countries.entity';
+import { Countries } from 'src/modules/catalogs/countries/countries.entity';
 
 @Injectable()
 export class SenderFinancialAccountsService {

@@ -36,9 +36,6 @@ export class VirtualBankAccounts {
   @JoinColumn({ name: 'currency_id' })
   currency: Currency;
 
-  @Column({ type: 'uuid', nullable: true, name: 'currency_id' })
-  currencyId: string;
-
   @Column({ type: 'varchar', length: 20, default: 'user', name: 'owner_type' })
   ownerType: string;
 

@@ -1,8 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { User } from '../../../../users/entities/user.entity';
-import { PaymentProviders } from '../../../payment-providers/payment-providers.entity';
+import { PaymentProviders } from 'src/modules/payments/payment-providers/entities/payment-providers.entity';
 import { CryptoNetworks } from '../../../../catalogs/crypto-networks/crypto-networks.entity';
+import { User } from '@users/entities/user.entity';
 
 export class CryptoAccountResponseDto {
   @ApiProperty()

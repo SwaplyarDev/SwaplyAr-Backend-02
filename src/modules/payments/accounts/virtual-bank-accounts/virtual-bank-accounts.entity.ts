@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
   JoinColumn,
 } from 'typeorm';
-import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
+import { PaymentProviders } from '../../payment-providers/entities/payment-providers.entity';
 import { User } from '../../../users/entities/user.entity';
 import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';
 
@@ -35,9 +35,6 @@ export class VirtualBankAccounts {
   @ManyToOne(() => Currency, { nullable: true })
   @JoinColumn({ name: 'currency_id' })
   currency: Currency;
-
-  @Column({ type: 'uuid', nullable: true, name: 'currency_id' })
-  currencyId: string;
 
   @Column({ type: 'varchar', length: 20, default: 'user', name: 'owner_type' })
   ownerType: string;

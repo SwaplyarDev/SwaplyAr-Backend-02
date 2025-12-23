@@ -1,7 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { CommissionResponseDto } from '../dto/commissions-response.dto';
 import { DynamicCommissionsService } from 'src/modules/dynamic-commissions/services/dynamicCommissions.service';
-import { PlatformName } from 'src/enum/commissions.enum';
 
 @Injectable()
 export class CommissionsService {
@@ -9,17 +8,17 @@ export class CommissionsService {
 
   async calculateCommission(
     amount: number,
-    fromPlatform: string,
-    toPlatform: string,
+    fromPlatformId: string,
+    toPlatformId: string,
   ): Promise<CommissionResponseDto> {
-    const from = fromPlatform as PlatformName;
-    const to = toPlatform as PlatformName;
-
-    const dynamicRule = await this.dynamicCommissionsService.findOneByPair(from, to);
+    const dynamicRule = await this.dynamicCommissionsService.findOneByPair(
+      fromPlatformId,
+      toPlatformId,
+    );
 
     if (!dynamicRule) {
       throw new BadRequestException(
-        `No se encontró una comisión para ${fromPlatform} → ${toPlatform}.`,
+        `No se encontró una comisión para ${fromPlatformId} → ${toPlatformId}.`,
       );
     }
 
@@ -28,8 +27,8 @@ export class CommissionsService {
     const finalAmount = +(amount - commissionValue).toFixed(2);
 
     return {
-      fromPlatform,
-      toPlatform,
+      fromPlatformId,
+      toPlatformId,
       amount,
       commissionRate,
       commissionValue,
@@ -40,8 +39,8 @@ export class CommissionsService {
 
   async calculateCommissionWithCurrencyCheck(
     amount: number,
-    fromPlatform: string,
-    toPlatform: string,
+    fromPlatformId: string,
+    toPlatformId: string,
     fromCurrency: string,
     toCurrency: string,
   ): Promise<{ valid: boolean; data?: CommissionResponseDto }> {
@@ -50,17 +49,17 @@ export class CommissionsService {
       return match ? match[0].toUpperCase() : null;
     };
 
-    const fromCurrencyInPlatform = extractCurrency(fromPlatform);
-    const toCurrencyInPlatform = extractCurrency(toPlatform);
+    const fromCurrencyInPlatform = extractCurrency(fromPlatformId);
+    const toCurrencyInPlatform = extractCurrency(toPlatformId);
 
     if (fromCurrencyInPlatform !== fromCurrency || toCurrencyInPlatform !== toCurrency) {
       return { valid: false };
     }
 
-    const from = fromPlatform as PlatformName;
-    const to = toPlatform as PlatformName;
-
-    const dynamicRule = await this.dynamicCommissionsService.findOneByPair(from, to);
+    const dynamicRule = await this.dynamicCommissionsService.findOneByPair(
+      fromPlatformId,
+      toPlatformId,
+    );
 
     if (!dynamicRule) {
       return { valid: false };
@@ -71,8 +70,8 @@ export class CommissionsService {
     const finalAmount = +(amount - commissionValue).toFixed(2);
 
     const data: CommissionResponseDto = {
-      fromPlatform,
-      toPlatform,
+      fromPlatformId,
+      toPlatformId,
       amount,
       commissionRate,
       commissionValue,

@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PlatformName } from 'src/enum/commissions.enum';
 
 export class DynamicCommissionResponseDto {
   @ApiProperty({
@@ -9,20 +8,14 @@ export class DynamicCommissionResponseDto {
   id: string;
 
   @ApiProperty({
-    enum: PlatformName,
-    enumName: 'PlatformName',
-    example: PlatformName.PAYPAL_USD,
-    description: 'Plataforma de origen (valor válido del enum PlatformName)',
+    description: 'Id de plataforma de origen',
   })
-  fromPlatform: PlatformName;
+  fromPlatformId: string;
 
   @ApiProperty({
-    enum: PlatformName,
-    enumName: 'PlatformName',
-    example: PlatformName.PAYONEER_EUR,
-    description: 'Plataforma de destino (valor válido del enum PlatformName)',
+    description: 'Id de plataforma de destino',
   })
-  toPlatform: PlatformName;
+  toPlatformId: string;
 
   @ApiProperty({
     example: 0.14,

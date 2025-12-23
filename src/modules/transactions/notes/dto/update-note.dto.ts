@@ -7,8 +7,8 @@ export class UpdateNoteDto {
   @ApiProperty({ example: 'Nota actualizada' })
   message: string;
 
-  @IsString({ message: 'El campo "img_url" debe ser una url valida' })
-  @IsNotEmpty({ message: 'El campo "img_url" es obligatorio' })
-  @ApiProperty({ example: 'https://url.com/nota.png' })
-  img_url: string;
+  @IsString({ message: 'El campo "section" debe ser un texto' })
+  @IsNotEmpty({ message: 'El campo "section" es obligatorio' })
+  @ApiProperty({ example: 'Detalles de nota' })
+  section: string;
 }

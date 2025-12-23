@@ -105,7 +105,7 @@ async createDiscountCode(
       .createQueryBuilder('ud')
       .leftJoinAndSelect('ud.user', 'user')
       .leftJoinAndSelect('ud.discountCode', 'code')
-      .leftJoinAndSelect('ud.transactions', 'transaction');
+      .leftJoinAndSelect('ud.transactionUserDiscounts', 'transactionUserDiscounts');
     this.applyUserDiscountsFilter(qb, filterDto);
     return qb.getMany();
   }

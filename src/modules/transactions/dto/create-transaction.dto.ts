@@ -1,56 +1,54 @@
 import { CreateAmountDto } from '@transactions/amounts/dto/create-amount.dto';
-import { CreateFinancialAccountDto } from '../../../deprecated/financial-accounts/dto/create-financial-accounts.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, ValidateNested, IsOptional, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
+import { CreateSenderFinancialAccountDto } from 'src/modules/payments/sender-accounts/dto/create-sender-financial-account.dto';
+import { CreateFinancialAccountDto } from 'src/modules/payments/financial-accounts/dto/create-financial-accounts.dto';
 
 export class CreateTransactionDto {
   @ApiProperty({
     name: 'countryTransaction',
     description: 'País donde se realiza la transacción',
-    example: 'Argentina',
+    example: 'AR',
   })
-  @IsString({ message: 'countryTransaction debe ser un texto' })
-  @IsNotEmpty({ message: 'countryTransaction es obligatorio' })
+  @IsString()
+  @IsNotEmpty()
   countryTransaction: string;
 
   @ApiProperty({
     name: 'message',
     description: 'Mensaje o descripción de la transacción',
     example: 'Transferencia de prueba',
+    required: false,
   })
-  @IsString({ message: 'message debe ser un texto' })
-  @IsOptional({ message: 'message es opcional' })
-  message: string;
+  @IsString()
+  @IsOptional()
+  message?: string;
 
-  @ApiProperty({
-    name: 'financialAccounts',
-    description: 'Datos de las cuentas financieras (emisor y receptor)',
-    type: CreateFinancialAccountDto,
-  })
-  @ValidateNested({ message: 'financialAccounts debe ser un objeto válido' })
-  @Type(() => CreateFinancialAccountDto)
-  @IsNotEmpty({ message: 'financialAccounts es obligatorio' })
+  @ApiProperty({ type: CreateSenderFinancialAccountDto })
+  senderAccount: CreateSenderFinancialAccountDto;
+
+  @ApiProperty({ type: CreateFinancialAccountDto })
   financialAccounts: CreateFinancialAccountDto;
 
   @ApiProperty({
     name: 'amount',
-    description: 'Detalle de los montos involucrados en la transacción',
+    description: 'Detalle del monto de la transacción',
     type: CreateAmountDto,
   })
-  @ValidateNested({ message: 'amount debe ser un objeto válido' })
+  @ValidateNested()
   @Type(() => CreateAmountDto)
-  @IsNotEmpty({ message: 'amount es obligatorio' })
+  @IsNotEmpty()
   amount: CreateAmountDto;
 
   @ApiProperty({
     name: 'userDiscountIds',
-    description: 'Array de identificadores de descuentos aplicables a la transacción (opcional)',
+    description: 'IDs de descuentos aplicables a la transacción',
     example: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001'],
     required: false,
     type: [String],
   })
   @IsOptional()
-  @IsUUID('4', { each: true, message: 'Cada userDiscountId debe ser un UUID válido' })
+  @IsUUID('4', { each: true })
   userDiscountIds?: string[];
 }

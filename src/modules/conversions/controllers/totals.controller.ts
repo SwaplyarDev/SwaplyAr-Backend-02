@@ -53,15 +53,15 @@ export class TotalsController {
 
     const commissionResult = await this.commissionsService.calculateCommissionWithCurrencyCheck(
       conversion.convertedAmount,
-      dto.fromPlatform,
-      dto.toPlatform,
+      dto.fromPlatformId,
+      dto.toPlatformId,
       dto.from,
       dto.to,
     );
 
     if (!commissionResult.valid) {
       throw new BadRequestException(
-        `No se encontró una comisión válida para la combinación ${dto.fromPlatform} → ${dto.toPlatform} 
+        `No se encontró una comisión válida para la combinación ${dto.fromPlatformId} → ${dto.toPlatformId} 
         en la conversión ${dto.from} → ${dto.to}. Verifica que la regla esté creada o que las plataformas sean coherentes.`,
       );
     }
@@ -74,8 +74,8 @@ export class TotalsController {
       commission,
       totalReceived,
       message: 'Conversión y comisión calculadas correctamente.',
-      fromPlatform: dto.fromPlatform,
-      toPlatform: dto.toPlatform,
+      fromPlatformId: dto.fromPlatformId,
+      toPlatformId: dto.toPlatformId,
     };
   }
 }

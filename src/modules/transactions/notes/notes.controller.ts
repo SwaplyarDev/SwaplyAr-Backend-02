@@ -76,20 +76,14 @@ export class NotesController {
   @Post('verify-code')
   async verifyNoteCode(@Body() dto: ValidateNoteCodeDto) {
     const transaction = await this.transactionsService.findOne(dto.transaction_id, {
-      relations: [
-        'senderAccount',
-        'senderAccount.paymentMethod',
-        'receiverAccount',
-        'receiverAccount.paymentMethod',
-        'amount',
-      ],
+      relations: ['senderAccount', 'senderAccount.paymentProvider', 'amount', 'senderAccount.user'],
     });
 
     if (!transaction) {
       throw new NotFoundException('Transacción no encontrada');
     }
 
-    const email = transaction.senderAccount.createdBy;
+    const email = transaction.senderAccount.user.email;
 
     if (!email) {
       throw new BadRequestException('Email no asociado a la transacción');
@@ -135,7 +129,7 @@ export class NotesController {
       properties: {
         message: { type: 'string', example: 'Pago recibido correctamente' },
         section: { type: 'string', example: 'datos_envio, datos_recepcion, monto' },
-        files: {
+        attachments: {
           type: 'array',
           items: { type: 'string', format: 'binary' },
           description: 'Archivos opcionales (máximo 5)',

@@ -25,7 +25,7 @@ export class ProofOfPaymentsService {
 
     const newProofOfPayment = this.proofOfPaypementRepository.create({
       imgUrl: imgUrl,
-      createAt: new Date(),
+      createdAt: new Date(),
     });
     return await this.proofOfPaypementRepository.save(newProofOfPayment);
   }

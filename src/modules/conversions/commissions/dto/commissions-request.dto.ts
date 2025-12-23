@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsPositive, IsString } from 'class-validator';
+import { IsNumber, IsPositive, IsUUID } from 'class-validator';
 
 export class CommissionRequestDto {
   @ApiProperty({
@@ -11,16 +11,14 @@ export class CommissionRequestDto {
   amount: number;
 
   @ApiProperty({
-    example: 'Payoneer USD',
-    description: 'Plataforma o medio de destino (receptor de la comisión).',
+    description: 'Id de plataforma o medio de destino (receptor de la comisión).',
   })
-  @IsString()
-  toPlatform: string;
+  @IsUUID()
+  toPlatformId: string;
 
   @ApiProperty({
-    example: 'PayPal USD',
-    description: 'Plataforma o medio de origen (emisor del monto).',
+    description: 'Id de plataforma o medio de origen (emisor del monto).',
   })
-  @IsString()
-  fromPlatform: string;
+  @IsUUID()
+  fromPlatformId: string;
 }

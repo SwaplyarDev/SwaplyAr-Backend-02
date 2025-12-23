@@ -6,7 +6,7 @@ import { BankAccountDetails } from './bank-account-details.entity';
 import { CreateBankAccountDto } from './dto/create-bank-accounts.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-accounts.dto';
 import { User } from '../../../users/entities/user.entity';
-import { PaymentProviders } from '../../payment-providers/payment-providers.entity';
+import { PaymentProviders } from '../../payment-providers/entities/payment-providers.entity';
 import { Countries } from '../../../catalogs/countries/countries.entity';
 import { BankAccountFilterDto } from './dto/bank-accounts-filter.dto';
 import { Currency } from 'src/modules/catalogs/currencies/currencies.entity';

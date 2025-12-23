@@ -8,16 +8,16 @@ import {
 } from 'typeorm';
 
 @Entity('dynamic_commissions')
-@Unique(['fromPlatform', 'toPlatform'])
+@Unique(['fromPlatformId', 'toPlatformId'])
 export class DynamicCommission {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn('uuid', { name: 'dynamic_commissions_id' })
   id: string;
 
-  @Column({ name: 'from_platform', type: 'varchar', length: 20 })
-  fromPlatform: string;
+  @Column({ name: 'from_platform_id', type: 'uuid' })
+  fromPlatformId: string;
 
-  @Column({ name: 'to_platform', type: 'varchar', length: 20 })
-  toPlatform: string;
+  @Column({ name: 'to_platform_id', type: 'uuid' })
+  toPlatformId: string;
 
   @Column({ name: 'commission_rate', type: 'float' })
   commissionRate: number;

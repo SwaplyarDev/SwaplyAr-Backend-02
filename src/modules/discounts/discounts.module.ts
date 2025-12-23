@@ -8,10 +8,18 @@ import { AuthModule } from '@auth/auth.module';
 import { DiscountCode } from './entities/discount-code.entity';
 import { UserDiscount } from './entities/user-discount.entity';
 import { UserRewardsLedger } from './entities/user-rewards-ledger.entity';
+import { TransactionUserDiscounts } from '@transactions/entities/transaction-user-discounts.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([DiscountCode, UserDiscount, User, Transaction, UserRewardsLedger]),
+    TypeOrmModule.forFeature([
+      DiscountCode,
+      UserDiscount,
+      User,
+      Transaction,
+      UserRewardsLedger,
+      TransactionUserDiscounts,
+    ]),
     AuthModule,
   ],
   controllers: [DiscountsController],

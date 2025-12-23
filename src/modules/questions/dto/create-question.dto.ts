@@ -2,13 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateQuestionDto {
-  // @IsString()
-  // @IsNotEmpty()
-  // title: string;
-
-  // @IsString()
-  // @IsNotEmpty()
-  // description: string;
   @ApiProperty({
     example: '¿Cómo se usa la app?',
     description: 'Título de la pregunta frecuente',

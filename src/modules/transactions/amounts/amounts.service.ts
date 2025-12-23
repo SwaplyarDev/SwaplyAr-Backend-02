@@ -12,16 +12,13 @@ export class AmountsService {
     private readonly amountsRepository: Repository<Amount>,
   ) {}
   async create(createAmountDto: CreateAmountDto) {
-    const newAmount = this.amountsRepository.create({
-      ...createAmountDto,
-      received: false,
-    });
+    const newAmount = this.amountsRepository.create({ ...createAmountDto, isReceived: false });
     //una vez completada la transacción, se cambia el estado a true de received
     return await this.amountsRepository.save(newAmount);
   }
 
   findAll() {
-    return `This action returns all amounts`;
+    return this.amountsRepository.find();
   }
 
   findOne(id: string) {

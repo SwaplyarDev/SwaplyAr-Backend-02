@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Regret } from './entities/regrets.entity';
 import { CreateRegretDto } from './dto/create-regret.dto';
 import { UpdateRegretDto } from './dto/update-regret.dto';
-import { SenderFinancialAccount } from 'src/modules/payments/sender-financial-accounts/entities/sender-financial-account.entity';
+import { SenderFinancialAccount } from 'src/modules/payments/sender-accounts/entities/sender-financial-account.entity';
 import { Transaction } from '@transactions/entities/transaction.entity';
 
 @Injectable()
@@ -33,7 +33,7 @@ export class RegretsService {
 
     if (
       transaction.senderAccount.lastName !== last_name ||
-      transaction.senderAccount.createdBy !== email ||
+      transaction.senderAccount.user.email !== email ||
       normalizePhone(transaction.senderAccount.phoneNumber) !== normalizePhone(phone_number)
     ) {
       throw new BadRequestException(

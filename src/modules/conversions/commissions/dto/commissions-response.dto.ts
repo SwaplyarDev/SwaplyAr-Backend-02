@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CommissionResponseDto {
-  @ApiProperty({ example: 'PayPal USD', description: 'Origen de la transacción.' })
-  fromPlatform: string;
+  @ApiProperty({ example: 'PayPal USD', description: 'Id de origen de la transacción.' })
+  fromPlatformId: string;
 
-  @ApiProperty({ example: 'Payoneer EUR', description: 'Destino de la transacción.' })
-  toPlatform: string;
+  @ApiProperty({ example: 'Payoneer EUR', description: 'Id de destino de la transacción.' })
+  toPlatformId: string;
 
   @ApiProperty({
     example: 85.39001438,

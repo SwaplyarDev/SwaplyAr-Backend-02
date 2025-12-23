@@ -121,7 +121,8 @@ export class CryptoAccountsService {
       .createQueryBuilder('account')
       .leftJoinAndSelect('account.user', 'user')
       .leftJoinAndSelect('account.paymentProvider', 'provider')
-      .leftJoinAndSelect('account.currency', 'currency');
+      .leftJoinAndSelect('account.currency', 'currency')
+      .leftJoinAndSelect('account.cryptoNetwork', 'cryptoNetwork');
 
     if (paymentProviderCode) {
       query.andWhere('provider.code = :paymentProviderCode', {

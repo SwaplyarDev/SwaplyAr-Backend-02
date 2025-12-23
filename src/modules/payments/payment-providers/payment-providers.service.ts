@@ -51,8 +51,12 @@ export class PaymentProvidersService {
           'supportedCurrencies',
           'country',
           'bankAccounts',
+          'bankAccounts.currency',
           'virtualBankAccounts',
+          'virtualBankAccounts.currency',
           'cryptoAccounts',
+          'cryptoAccounts.currency',
+          'cryptoAccounts.cryptoNetwork',
         ],
         order: { createdAt: 'DESC' },
       });
@@ -64,8 +68,12 @@ export class PaymentProvidersService {
       .leftJoinAndSelect('provider.paymentPlatform', 'platform')
       .leftJoinAndSelect('provider.supportedCurrencies', 'currency')
       .leftJoinAndSelect('provider.bankAccounts', 'bankAccounts')
+      .leftJoinAndSelect('bankAccounts.currency', 'bankAccountCurrency')
       .leftJoinAndSelect('provider.virtualBankAccounts', 'virtualBankAccounts')
+      .leftJoinAndSelect('virtualBankAccounts.currency', 'virtualBankAccountCurrency')
       .leftJoinAndSelect('provider.cryptoAccounts', 'cryptoAccounts')
+      .leftJoinAndSelect('cryptoAccounts.currency', 'cryptoAccountCurrency')
+      .leftJoinAndSelect('cryptoAccounts.cryptoNetwork', 'cryptoNetwork')
       .orderBy('provider.createdAt', 'DESC');
 
     // FILTRA POR CÓDIGO DE PLATAFORMA
@@ -125,8 +133,12 @@ export class PaymentProvidersService {
         'supportedCurrencies',
         'country',
         'bankAccounts',
+        'bankAccounts.currency',
         'virtualBankAccounts',
+        'virtualBankAccounts.currency',
         'cryptoAccounts',
+        'cryptoAccounts.currency',
+        'cryptoAccounts.cryptoNetwork',
       ],
     });
 
